@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>P-Boom Suplements</title>
+    <link rel="icon" href="img/logo.png" type="image/x-icon" />
+    <link rel="stylesheet" href="css/styles.css" />
+
+    <!-- Google Fonts -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap"
+      rel="stylesheet">
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Vast+Shadow&display=swap"
+      rel="stylesheet"
+    />
+    <script src="js/script.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <nav class="nav">
+        <img class="nav__logo" src="img/icons/logo.png" alt="Logo" />
+        <ul class="nav__links">
+          <li><a href="index.html">INICIO</a></li>
+          <li><a href="">SUPLEMENTOS</a></li>
+          <li><a href="">TESTIMONIOS</a></li>
+          <li><a href="">CONTACTO</a></li>
+        </ul>
+      </nav>
+    </header>
+       <main class="main-container">
+      <section class="product-detail">
+        <div class="product-detail__inner">
+
+          <div class="product-detail__media">
+            <img
+              id="prod-image"
+              src=""
+              alt=""
+              class="product-detail__img"
+            />
+          </div>
+
+        
+          <div class="product-detail__info">
+            <h1 id="prod-title" class="product-detail__title"></h1>
+            <p id="prod-subtitle" class="product-detail__subtitle"></p>
+
+            <div class="product-detail__meta">
+              <span id="prod-price" class="product-detail__price"></span>
+              <span id="prod-tag" class="product-detail__tag"></span>
+            </div>
+
+            <a
+              id="prod-whatsapp"
+              href="#"
+              target="_blank"
+              rel="noopener"
+              class="product-detail__cta"
+            >
+              Comprar por WhatsApp
+            </a>
+
+            <div class="product-tabs">
+              <div class="product-tabs__list" role="tablist" aria-label="Información del suplemento">
+                <button
+                  class="product-tabs__btn is-active"
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="tab-beneficios"
+                  data-tab="beneficios"
+                >
+                  Beneficios
+                </button>
+                <button
+                  class="product-tabs__btn"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="tab-descripcion"
+                  data-tab="descripcion"
+                >
+                  Descripción
+                </button>
+                <button
+                  class="product-tabs__btn"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="tab-uso"
+                  data-tab="uso"
+                >
+                  Cómo usar
+                </button>
+              </div>
+
+
+              <div
+                id="tab-beneficios"
+                class="product-tabs__panel is-active"
+                role="tabpanel"
+                aria-labelledby="tab-beneficios"
+                data-tab-panel="beneficios"
+              ></div>
+
+              <div
+                id="tab-descripcion"
+                class="product-tabs__panel"
+                role="tabpanel"
+                aria-labelledby="tab-descripcion"
+                data-tab-panel="descripcion"
+                hidden
+              ></div>
+
+              <div
+                id="tab-uso"
+                class="product-tabs__panel"
+                role="tabpanel"
+                aria-labelledby="tab-uso"
+                data-tab-panel="uso"
+                hidden
+              ></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="js/product-data.js"></script>
+    <script src="js/product-page.js"></script>
+
+    </body>
+    </html>
