@@ -74,7 +74,7 @@ body {
 
 .title p {
   width: 80%;
-  color: var(--cardss);
+  color: var(--grisClaro);
   font-weight: 100;
 }
 
@@ -86,13 +86,6 @@ body {
 }
 
 /* -------- Navbar -------- */
-
-.nav {
-  position: sticky;
-  background: color-mix(in srgb, var(--bg-0) 70%, transparent);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--line);
-}
 
 .nav {
   display: flex;
@@ -115,7 +108,7 @@ body {
 
 .nav__links a {
   text-decoration: none;
-  color: var(--txt);
+  color: var(--blanco);
   font-size: 1.125rem;
   font-weight: 600;
   padding: 8px 12px;
@@ -124,12 +117,12 @@ body {
 }
 
 .nav__links a:hover {
-  background-color: var(--accent);
+  background-color: var(--Cyan);
   color: #0b1a24;
 }
 
 .nav__links a:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--Cyan);
   outline-offset: 2px;
   background-color: #ffffff14;
 }
@@ -143,7 +136,7 @@ body {
 /*Hero*/
 
 .hero {
-  color: #ffffff;
+  color: var(--blanco);
   width: 100%;
   height: 500px;
   padding: 0 50px;
@@ -157,7 +150,7 @@ body {
       rgba(1, 145, 198, 0.7),
       transparent 70%
     ),
-    linear-gradient(180deg, #19263f 0%, #26517b 70%);
+    linear-gradient(180deg, #264378 0%, #26517b 70%);
   overflow: hidden;
 }
 
@@ -173,9 +166,10 @@ body {
 .hero__slogan button {
   margin-top: 30px;
   line-height: 1;
-  background-color: #cd1d14;
-  color: var(--txt);
+  background-color: #741a16;
+  color: var(--blanco);
   border: none;
+  border-radius: 10px;
   padding: 10px;
   font-size: 1rem;
   font-weight: 600;
@@ -191,7 +185,7 @@ body {
 
 .hero__img {
   height: 500px;
-  filter: drop-shadow(15px 0 25px rgba(0, 207, 255, 0.65))
+  filter: drop-shadow(15px 0 25px rgba(1, 145, 198, 0.65))
     drop-shadow(-5px 0 15px rgba(1, 146, 198, 0.5));
 }
 
@@ -224,12 +218,12 @@ body {
   width: 100%;
   transition: transform 0.3s ease;
   transition: border 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
-  box-shadow: 0 0 0 rgba(0, 255, 255, 0); /* sin brillo inicial */
+ 
 }
 
 .product-card:hover {
   transform: translateY(-5px);
-  border-color: rgba(1, 145, 198); /* color neón (cyan) */
+  border-color: rgba(1, 145, 198);
   box-shadow: 0 0 10px rgba(1, 145, 198), 0 0 20px rgb(1, 145, 198),
     0 0 40px rgba(1, 145, 198);
 }
@@ -254,14 +248,14 @@ body {
 }
 
 .product-card__name {
-  color: var(--cardsp);
+  color: var(--blanco);
   top: 8px;
   font-weight: 600;
   font-size: 1rem;
 }
 
 .product-card__price {
-  color: var(--cardsp);
+  color: var(--blanco);
   font-size: 1.375rem;
   margin-top: 8px;
   text-shadow: 0 0 5px rgba(1, 145, 198), 0 0 10px rgb(1, 145, 198),
@@ -667,10 +661,6 @@ body {
   }
   .nav__links {
     width: 100%;
-  }
-
-  .nav__links a {
-    
   }
 
   .hero{

@@ -1,0 +1,39 @@
+:root {
+  --bg: #000;
+  --surface: rgba(24, 24, 24, 0.7);
+  --blanco: #fff;
+  --Cyan: rgba(1, 145, 198);
+  --grisClaro: #b3b3b3;
+  /* Base negra en capas */
+  --bg-0: #050709; /* body/background absoluto (negro realista) */
+  --bg-1: #0a0f14; /* secciones principales (ligeramente más claras) */
+  --bg-2: #0f1620; /* superficies elevadas (cards/nav) */
+
+  /* Superficies/contornos */
+  --surface-1: #111925; /* panels/cards */
+  --surface-2: #0c141d; /* bloques secundarios */
+  --line: rgba(255, 255, 255, 0.08); /* bordes sutiles */
+  --line-strong: rgba(255, 255, 255, 0.14);
+
+  /* Texto */
+  --text: #e9eef7;
+  --muted: #a9b4c6;
+
+  /* Marca / acentos */
+  --brand: rgba(1, 145, 198); /* tu azul */
+  --neon: #00cfff; /* azul neón para glow */
+  --hot: #ff2e63; /* acento cálido pequeño (badges/hover) */
+
+  /* Sombras/blur */
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --ring: 0 0 0 3px rgba(1, 146, 198, 0.25);
+
+  --footer-bg: #050709;
+    --footer-surface: #0B1017;
+    --footer-surface-soft: #101724;
+    --footer-text: #E9EEF7;
+    --footer-muted: #A9B4C6;
+    --footer-line: rgba(255,255,255,0.08);
+    --footer-accent: #5AB4E9; /* rgba(90,180,233,0.9) */
+    --footer-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
