@@ -73,12 +73,13 @@ const productos = [
 
 const lista = document.getElementById("top-products__list");
 
+if (lista){
 productos.forEach((p) => {
   const card = document.createElement("article");
   card.classList.add("product-card");
 
   card.innerHTML = `
-        <img src="${p.imagen}" alt=${p.nombre} class="product-card__img"  loading="lazy" />
+        <img src="${p.imagen}" alt="${p.nombre}" class="product-card__img"  loading="lazy" />
 
         <div class="product-card__info">
           <h3 class="product-card__name">${p.nombre}</h3>
@@ -108,3 +109,7 @@ productos.forEach((p) => {
 
   lista.appendChild(card);
 });
+
+}
+
+
