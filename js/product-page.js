@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const priceEl = document.getElementById("prod-price");
   const tagEl = document.getElementById("prod-tag");
   const waEl = document.getElementById("prod-whatsapp");
-
+  
   const beneficiosEl = document.getElementById("tab-beneficios");
   const descripcionEl = document.getElementById("tab-descripcion");
   const usoEl = document.getElementById("tab-uso");
