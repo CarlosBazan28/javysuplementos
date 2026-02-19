@@ -79,17 +79,21 @@ productos.forEach((p) => {
   card.classList.add("product-card");
 
   card.innerHTML = `
-        <img src="${p.imagen}" alt="${p.nombre}" class="product-card__img"  loading="lazy" />
+        <spa class="product-card__badge">Top</spa>
+
+        <div class="product-card__media">
+          <img src="${p.imagen}" alt="${p.nombre}" class="product-card__img"  loading="lazy" />
+        </div>
 
         <div class="product-card__info">
           <h3 class="product-card__name">${p.nombre}</h3>
-          <p class="product-card__price">${p.precio}</p>
+          <p class="product-card__price">$ ${p.precio}</p>
           <p class="product-card__disclaimer">Disponibilidad sujeta a confirmación por WhatsApp</p>
         </div>
 
         <div class="product-card__actions">
           <button class="product-card__btn product-card__btn--buy">Whatsapp</button>
-          <button class="product-card__btn product-card__btn--info">Más información</button>  
+          <button class="product-card__btn product-card__btn--info">Más info</button>  
         </div>
     `;
 

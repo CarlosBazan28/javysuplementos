@@ -41,6 +41,39 @@
         </ul>
       </nav>
     </header>
+    <form class="search" role="search" id="searchForm">
+      <label class="search__label" for="searchInput">Buscar</label>
+
+      <span class="search__icon" aria-hidden="true">
+        <svg with="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M21 21l-4.3-4.3m1.8-5.2a7 7 0 11-14 0 7 7 0 0114 0z"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </span>
+
+      <input 
+        id="searchInput"
+        class="search__input"
+        type="search"
+        placeholder="Creatina, BCAA, Proteina"
+        autocomplete="off"
+      />
+
+      <button
+        id="searchClear"
+        type="button"
+        class="search__clear"
+        aria-label="Limpiar búsqueda"
+        hidden
+      >
+        x
+      </button>
+
+      <button type="submit" class="search__submit">Buscar</button>
+    </form>
+
+
+
     <footer class="footer">
   <div class="footer__glow"></div>                                         
   <div class="footer__inner">
