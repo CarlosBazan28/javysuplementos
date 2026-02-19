@@ -87,45 +87,7 @@ body {
 
 /* -------- Navbar -------- */
 
-.nav {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  align-items: center;
-  height: 150px;
-}
 
-.nav__logo {
-  width: 150px;
-  display: block;
-}
-
-.nav__links {
-  list-style: none;
-  display: flex;
-  gap: 16px;
-}
-
-.nav__links a {
-  text-decoration: none;
-  color: var(--blanco);
-  font-size: 1.125rem;
-  font-weight: 600;
-  padding: 8px 12px;
-  transition: background 0.25s ease, color 0.25s ease, transform 0.1s ease;
-  outline: none;
-}
-
-.nav__links a:hover {
-  background-color: var(--Cyan);
-  color: #0b1a24;
-}
-
-.nav__links a:focus-visible {
-  outline: 2px solid var(--Cyan);
-  outline-offset: 2px;
-  background-color: #ffffff14;
-}
 
 /*Main*/
 .main__container {
