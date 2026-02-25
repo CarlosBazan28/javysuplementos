@@ -45,7 +45,7 @@
     color:rgba(255, 255, 255, .45);
 }
 
-/* Quitar la X nativa del input type="search" (Chrome/Safari/Edge) */
+
 .search__input[type="search"]::-webkit-search-cancel-button,
 .search__input[type="search"]::-webkit-search-decoration,
 .search__input[type="search"]::-webkit-search-results-button,
