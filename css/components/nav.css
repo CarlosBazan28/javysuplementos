@@ -3,9 +3,10 @@
 .nav {
   display: flex;
   flex-direction: row;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
   height: 150px;
+  padding: 0 24px;
 }
 
 .nav__logo {
@@ -17,6 +18,8 @@
   list-style: none;
   display: flex;
   gap: 16px;
+  flex: 1;      
+  justify-content: center
 }
 
 .nav__links a {
@@ -41,4 +44,45 @@
   outline-offset: 2px;
   border-radius:999px;
   background-color: #ffffff14;
+}
+
+.cart-btn{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  cursor: pointer;
+}
+
+.cart-icon{
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display: block;
+}
+
+.cart-badge{
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--Cyan);
+  color: #0b1a24;
+  border: 2px solid #0b1a24;
+}
+
+.cart-badge[hidden]{
+  display: none;
 }

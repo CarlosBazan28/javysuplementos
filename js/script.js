@@ -79,7 +79,7 @@ productos.forEach((p) => {
   card.classList.add("product-card");
 
   card.innerHTML = `
-        <spa class="product-card__badge">Top</spa>
+        
 
         <div class="product-card__media">
           <img src="${p.imagen}" alt="${p.nombre}" class="product-card__img"  loading="lazy" />
