@@ -187,17 +187,21 @@ searchClear?.addEventListener("click", () => {
   renderCatalog();
 });
 
+function selectCategory(button) {
+  catalogState.category = button.dataset.category || "todos";
+
+  document.querySelectorAll(".catalog-filter").forEach((item) => {
+    item.classList.toggle("is-active", item === button);
+  });
+
+  renderCatalog();
+}
+
 catalogFilters?.addEventListener("click", (event) => {
   const button = event.target.closest(".catalog-filter");
   if (!button) return;
 
-    catalogState.category = button.dataset.category || "todos";
-
-    document.querySelectorAll(".catalog-filter").forEach((item) => {
-      item.classList.toggle("is-active", item === button);
-    });
-
-    renderCatalog();
+  selectCategory(button);
 });
 
 emptyAdvisorBtn?.addEventListener("click", () => {
@@ -211,10 +215,18 @@ function enableDragScroll(element) {
   let startX = 0;
   let scrollLeft = 0;
   let didDrag = false;
+  let dragDistance = 0;
+  let pressedFilter = null;
+  let suppressClick = false;
+  const dragThreshold = 10;
 
   element.addEventListener("pointerdown", (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+
     isDown = true;
     didDrag = false;
+    dragDistance = 0;
+    pressedFilter = event.target.closest(".catalog-filter");
     startX = event.clientX;
     scrollLeft = element.scrollLeft;
     element.classList.add("is-dragging");
@@ -225,20 +237,39 @@ function enableDragScroll(element) {
     if (!isDown) return;
 
     const distance = event.clientX - startX;
-    if (Math.abs(distance) > 5) didDrag = true;
+    dragDistance = Math.max(dragDistance, Math.abs(distance));
+    if (dragDistance < dragThreshold) return;
+
+    didDrag = true;
     element.scrollLeft = scrollLeft - distance;
   });
 
   function stopDrag(event) {
+    const shouldSelectFilter = event?.type === "pointerup" && pressedFilter && !didDrag;
+
     isDown = false;
     element.classList.remove("is-dragging");
     if (event?.pointerId) element.releasePointerCapture?.(event.pointerId);
+
+    if (shouldSelectFilter) {
+      selectCategory(pressedFilter);
+      suppressClick = true;
+    }
+
+    pressedFilter = null;
   }
 
   element.addEventListener("pointerup", stopDrag);
   element.addEventListener("pointercancel", stopDrag);
   element.addEventListener("pointerleave", stopDrag);
   element.addEventListener("click", (event) => {
+    if (suppressClick) {
+      event.preventDefault();
+      event.stopPropagation();
+      suppressClick = false;
+      return;
+    }
+
     if (!didDrag) return;
 
     event.preventDefault();
