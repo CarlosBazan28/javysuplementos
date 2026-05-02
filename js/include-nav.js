@@ -10,6 +10,24 @@
 
   const consultationBtn = document.getElementById("consultationBtn") || document.getElementById("cartBtn");
   consultationBtn?.addEventListener("click", () => {
-    window.consultation?.openWhatsApp?.();
+    window.consultation?.openPanel?.();
+  });
+
+  const navToggle = document.getElementById("navToggle");
+  const navMenu = document.getElementById("navMenu");
+
+  navToggle?.addEventListener("click", () => {
+    const isOpen = navToggle.getAttribute("aria-expanded") === "true";
+    navToggle.setAttribute("aria-expanded", String(!isOpen));
+    navToggle.classList.toggle("is-open", !isOpen);
+    navMenu?.classList.toggle("is-open", !isOpen);
+  });
+
+  navMenu?.addEventListener("click", (event) => {
+    if (!(event.target instanceof HTMLAnchorElement)) return;
+
+    navToggle?.setAttribute("aria-expanded", "false");
+    navToggle?.classList.remove("is-open");
+    navMenu.classList.remove("is-open");
   });
 })();

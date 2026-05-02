@@ -13,6 +13,7 @@ const supplementsList = document.getElementById("supplementsList");
 const catalogCount = document.getElementById("catalogCount");
 const catalogEmpty = document.getElementById("catalogEmpty");
 const emptyAdvisorBtn = document.getElementById("emptyAdvisorBtn");
+const catalogFilters = document.getElementById("catalogFilters");
 
 function normalizeText(value = "") {
   return value
@@ -176,7 +177,51 @@ filterButtons.forEach((button) => {
 });
 
 emptyAdvisorBtn?.addEventListener("click", () => {
-  window.consultation?.openWhatsApp?.();
+  window.consultation?.openPanel?.();
 });
 
+function enableDragScroll(element) {
+  if (!element) return;
+
+  let isDown = false;
+  let startX = 0;
+  let scrollLeft = 0;
+  let didDrag = false;
+
+  element.addEventListener("pointerdown", (event) => {
+    isDown = true;
+    didDrag = false;
+    startX = event.clientX;
+    scrollLeft = element.scrollLeft;
+    element.classList.add("is-dragging");
+    element.setPointerCapture?.(event.pointerId);
+  });
+
+  element.addEventListener("pointermove", (event) => {
+    if (!isDown) return;
+
+    const distance = event.clientX - startX;
+    if (Math.abs(distance) > 5) didDrag = true;
+    element.scrollLeft = scrollLeft - distance;
+  });
+
+  function stopDrag(event) {
+    isDown = false;
+    element.classList.remove("is-dragging");
+    if (event?.pointerId) element.releasePointerCapture?.(event.pointerId);
+  }
+
+  element.addEventListener("pointerup", stopDrag);
+  element.addEventListener("pointercancel", stopDrag);
+  element.addEventListener("pointerleave", stopDrag);
+  element.addEventListener("click", (event) => {
+    if (!didDrag) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    didDrag = false;
+  }, true);
+}
+
+enableDragScroll(catalogFilters);
 renderCatalog();

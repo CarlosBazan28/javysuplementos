@@ -199,3 +199,76 @@
 .product-card__btn--buy:hover {
   background: #00e676;
 }
+
+@media (max-width: 620px) {
+  .top-products__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: calc(100% - 20px);
+  }
+
+  .product-card {
+    gap: 9px;
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .product-card:hover {
+    transform: none;
+  }
+
+  .product-card__badge {
+    top: 8px;
+    left: 8px;
+    max-width: calc(100% - 16px);
+    padding: 5px 8px;
+    font-size: 0.62rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .product-card__media {
+    border-radius: 10px;
+    padding: 4px;
+  }
+
+  .product-card__info {
+    gap: 6px;
+  }
+
+  .product-card__meta {
+    display: grid;
+    gap: 3px;
+    font-size: 0.62rem;
+  }
+
+  .product-card__name {
+    font-size: 0.82rem;
+    min-height: 2.8em;
+  }
+
+  .product-card__price {
+    font-size: 1.05rem;
+    margin-top: 2px;
+  }
+
+  .product-card__flavors,
+  .product-card__disclaimer {
+    font-size: 0.68rem;
+  }
+
+  .product-card__actions {
+    display: grid;
+    gap: 7px;
+    padding-top: 4px;
+  }
+
+  .product-card__btn {
+    width: 100%;
+    min-height: 34px;
+    padding: 8px 6px;
+    border-radius: 9px;
+    font-size: 0.72rem;
+  }
+}

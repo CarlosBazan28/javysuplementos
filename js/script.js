@@ -36,7 +36,7 @@ if (heroProductsBtn) {
 
 if (heroAdvisorBtn) {
   heroAdvisorBtn.addEventListener("click", () => {
-    window.consultation?.openWhatsApp?.();
+    window.consultation?.openPanel?.();
   });
 }
 

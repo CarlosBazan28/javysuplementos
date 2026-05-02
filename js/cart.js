@@ -44,6 +44,43 @@ function updateConsultationBadge() {
   badge.hidden = count === 0;
 }
 
+function renderConsultationPanel() {
+  const panel = document.getElementById("consultationPanel");
+  const list = document.getElementById("consultationList");
+  const empty = document.getElementById("consultationEmpty");
+  const sendBtn = document.getElementById("consultationSend");
+  const clearBtn = document.getElementById("consultationClear");
+  if (!panel || !list || !empty || !sendBtn || !clearBtn) return;
+
+  const items = getConsultation();
+  list.innerHTML = "";
+  empty.hidden = items.length > 0;
+  sendBtn.disabled = items.length === 0;
+  clearBtn.disabled = items.length === 0;
+
+  items.forEach((item) => {
+    const product = getProductById(item.id);
+    const row = document.createElement("li");
+    row.className = "consultation-item";
+    row.innerHTML = `
+      <img src="${product?.imagen || "img/icons/logo.png"}" alt="${product?.nombre || item.id}" class="consultation-item__img" />
+      <div class="consultation-item__info">
+        <strong>${product?.nombre || item.id}</strong>
+        <span>${product?.marca || "Producto"} · ${product?.categoria || "Suplemento"}</span>
+      </div>
+      <button class="consultation-item__remove" type="button" aria-label="Quitar ${product?.nombre || item.id}">
+        Quitar
+      </button>
+    `;
+
+    row.querySelector(".consultation-item__remove")?.addEventListener("click", () => {
+      removeItem(item.id);
+    });
+
+    list.appendChild(row);
+  });
+}
+
 function addItem(id) {
   const items = getConsultation();
   const exists = items.some((item) => item.id === id);
@@ -54,43 +91,43 @@ function addItem(id) {
   }
 
   updateConsultationBadge();
+  renderConsultationPanel();
 }
 
 function removeItem(id) {
   const items = getConsultation().filter((item) => item.id !== id);
   saveConsultation(items);
   updateConsultationBadge();
+  renderConsultationPanel();
 }
 
 function clearConsultation() {
   saveConsultation([]);
   updateConsultationBadge();
+  renderConsultationPanel();
+}
+
+function getPanelFieldValue(id) {
+  return document.getElementById(id)?.value?.trim() || "";
 }
 
 function buildConsultationMessage() {
   const items = getConsultation();
+  const objective = getPanelFieldValue("consultationObjective");
+  const question = getPanelFieldValue("consultationQuestion");
 
-  if (!items.length) {
-    return [
-      "Hola Javy, quiero asesoría sobre suplementos.",
-      "",
-      "Mi objetivo es:",
-      "Mi duda es:",
-    ].join("\n");
-  }
-
-  const productLines = items.map((item, index) => {
+  const lines = items.map((item, index) => {
     const product = getProductById(item.id);
     return `${index + 1}. ${product?.nombre || item.id}`;
   });
 
   return [
-    "Hola Javy, quiero asesoría sobre estos suplementos:",
+    items.length ? "Hola Javy, quiero asesoria sobre estos suplementos:" : "Hola Javy, quiero asesoria sobre suplementos.",
     "",
-    ...productLines,
+    ...lines,
     "",
-    "Mi objetivo es:",
-    "Mi duda es:",
+    `Mi objetivo es: ${objective || ""}`,
+    `Mi duda es: ${question || ""}`,
   ].join("\n");
 }
 
@@ -98,6 +135,92 @@ function openWhatsApp() {
   const message = encodeURIComponent(buildConsultationMessage());
   window.open(`https://wa.me/${CONSULTATION_PHONE}?text=${message}`, "_blank");
 }
+
+function openPanel() {
+  const panel = document.getElementById("consultationPanel");
+  const overlay = document.getElementById("consultationOverlay");
+  if (!panel || !overlay) return openWhatsApp();
+
+  renderConsultationPanel();
+  panel.classList.add("is-open");
+  overlay.hidden = false;
+  document.body.classList.add("has-consultation-open");
+  panel.querySelector(".consultation-panel__close")?.focus();
+}
+
+function closePanel() {
+  const panel = document.getElementById("consultationPanel");
+  const overlay = document.getElementById("consultationOverlay");
+  if (!panel || !overlay) return;
+
+  panel.classList.remove("is-open");
+  overlay.hidden = true;
+  document.body.classList.remove("has-consultation-open");
+}
+
+function createConsultationPanel() {
+  if (document.getElementById("consultationPanel")) return;
+
+  const overlay = document.createElement("div");
+  overlay.className = "consultation-overlay";
+  overlay.id = "consultationOverlay";
+  overlay.hidden = true;
+
+  const panel = document.createElement("aside");
+  panel.className = "consultation-panel";
+  panel.id = "consultationPanel";
+  panel.setAttribute("aria-label", "Mi consulta");
+  panel.innerHTML = `
+    <div class="consultation-panel__header">
+      <div>
+        <p class="consultation-panel__eyebrow">Asesoría por WhatsApp</p>
+        <h2>Mi consulta</h2>
+      </div>
+      <button class="consultation-panel__close" type="button" aria-label="Cerrar consulta">x</button>
+    </div>
+
+    <p class="consultation-empty" id="consultationEmpty">Aún no agregaste productos.</p>
+    <ul class="consultation-list" id="consultationList"></ul>
+
+    <div class="consultation-form">
+      <label for="consultationObjective">Objetivo</label>
+      <select id="consultationObjective">
+        <option value="">Seleccionar</option>
+        <option>Ganar masa muscular</option>
+        <option>Bajar grasa</option>
+        <option>Mejorar rendimiento</option>
+        <option>Empezar desde cero</option>
+      </select>
+
+      <label for="consultationQuestion">Duda</label>
+      <textarea id="consultationQuestion" rows="4" placeholder="Ej: entreno 4 veces por semana y quiero saber cuál me conviene"></textarea>
+    </div>
+
+    <div class="consultation-panel__actions">
+      <button class="consultation-panel__clear" id="consultationClear" type="button">Vaciar</button>
+      <button class="consultation-panel__send" id="consultationSend" type="button">Enviar por WhatsApp</button>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(panel);
+
+  overlay.addEventListener("click", closePanel);
+  panel.querySelector(".consultation-panel__close")?.addEventListener("click", closePanel);
+  panel.querySelector("#consultationClear")?.addEventListener("click", clearConsultation);
+  panel.querySelector("#consultationSend")?.addEventListener("click", openWhatsApp);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closePanel();
+  });
+
+  renderConsultationPanel();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  createConsultationPanel();
+  updateConsultationBadge();
+});
 
 window.consultation = {
   getItems: getConsultation,
@@ -109,9 +232,11 @@ window.consultation = {
   clear: clearConsultation,
   buildMessage: buildConsultationMessage,
   openWhatsApp,
+  openPanel,
+  closePanel,
+  renderPanel: renderConsultationPanel,
 };
 
-// Compatibilidad temporal con el nombre anterior mientras migramos la interfaz.
 window.cart = {
   getCart: getConsultation,
   saveCart: saveConsultation,
