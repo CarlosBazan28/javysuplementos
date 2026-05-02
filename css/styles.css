@@ -125,12 +125,10 @@ body {
   align-items: center;
 }
 
-.hero__slogan button {
+.hero__button button{
   margin-top: 30px;
   line-height: 1;
-  background-color: #741a16;
   color: var(--blanco);
-  border: none;
   border-radius: 10px;
   padding: 10px;
   font-size: 1rem;
@@ -139,10 +137,17 @@ body {
   transition: all 0.3s ease;
 }
 
+.hero__button--pri{
+  background:#ff002bcc;
+}
+
+.hero__button--sec{
+  background:var(--Cyan,);
+}
+
 .hero__slogan button:hover {
-  background-color: #a90b02;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 188, 212, 0.4);
+  transform: translateY(-1px);
+  
 }
 
 .hero__img {
