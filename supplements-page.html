@@ -42,7 +42,7 @@
       </section>
 
       <section class="catalog-tools" aria-label="Herramientas del catálogo">
-        <form class="search" role="search" id="searchForm">
+        <form class="search catalog-search" role="search" id="searchForm">
           <label class="search__label" for="searchInput">Buscar</label>
 
           <span class="search__icon" aria-hidden="true">
@@ -56,7 +56,7 @@
             id="searchInput"
             class="search__input"
             type="search"
-            placeholder="Creatina, whey, ISO, l-carnitina"
+            placeholder="Buscar producto, marca, sabor u objetivo"
             autocomplete="off"
           />
 
@@ -73,13 +73,8 @@
           <button type="submit" class="search__submit">Buscar</button>
         </form>
 
-        <div class="catalog-filters" id="catalogFilters" aria-label="Filtrar por categoría">
-          <button class="catalog-filter is-active" type="button" data-category="todos">Todos</button>
-          <button class="catalog-filter" type="button" data-category="destacados">Destacados</button>
-          <button class="catalog-filter" type="button" data-category="proteinas">Proteínas</button>
-          <button class="catalog-filter" type="button" data-category="creatinas">Creatinas</button>
-          <button class="catalog-filter" type="button" data-category="definicion">Definición</button>
-        </div>
+        <p class="catalog-tools__hint">Desliza los filtros para ver más categorías.</p>
+        <div class="catalog-filters" id="catalogFilters" aria-label="Filtrar por categoría"></div>
       </section>
 
       <section class="catalog-results" aria-live="polite">

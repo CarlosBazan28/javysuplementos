@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   priceEl.textContent = `$${product.precio.toFixed(2)}`;
   tagEl.textContent = product.tag || "";
   brandEl.textContent = product.marca || "Por confirmar";
-  categoryEl.textContent = product.categoria || "Suplemento";
+  categoryEl.textContent = product.categoria || "Producto";
   flavorsEl.textContent = product.sabores?.length ? product.sabores.join(", ") : "Consultar sabores disponibles";
   statusEl.textContent = product.disponible ? "Disponible" : "Consultar stock";
 
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   addConsultationEl?.addEventListener("click", () => {
     window.consultation?.addItem?.(productId);
-    addConsultationEl.textContent = "Agregado a mi consulta";
+    addConsultationEl.textContent = "Agregado a asesoría";
   });
 
   beneficiosEl.innerHTML = crearLista(product.beneficios);

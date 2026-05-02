@@ -66,7 +66,7 @@ function renderConsultationPanel() {
       <img src="${product?.imagen || "img/icons/logo.png"}" alt="${product?.nombre || item.id}" class="consultation-item__img" />
       <div class="consultation-item__info">
         <strong>${product?.nombre || item.id}</strong>
-        <span>${product?.marca || "Producto"} · ${product?.categoria || "Suplemento"}</span>
+        <span>${product?.marca || "Producto"} · ${product?.categoria || "Categoría por confirmar"}</span>
       </div>
       <button class="consultation-item__remove" type="button" aria-label="Quitar ${product?.nombre || item.id}">
         Quitar
@@ -169,12 +169,12 @@ function createConsultationPanel() {
   const panel = document.createElement("aside");
   panel.className = "consultation-panel";
   panel.id = "consultationPanel";
-  panel.setAttribute("aria-label", "Mi consulta");
+  panel.setAttribute("aria-label", "Asesoría por WhatsApp");
   panel.innerHTML = `
     <div class="consultation-panel__header">
       <div>
-        <p class="consultation-panel__eyebrow">Asesoría por WhatsApp</p>
-        <h2>Mi consulta</h2>
+        <p class="consultation-panel__eyebrow">WhatsApp con Javy</p>
+        <h2>Asesoría</h2>
       </div>
       <button class="consultation-panel__close" type="button" aria-label="Cerrar consulta">x</button>
     </div>

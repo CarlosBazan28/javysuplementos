@@ -8,7 +8,6 @@ const catalogState = {
 const searchForm = document.getElementById("searchForm");
 const searchInput = document.getElementById("searchInput");
 const searchClear = document.getElementById("searchClear");
-const filterButtons = document.querySelectorAll(".catalog-filter");
 const supplementsList = document.getElementById("supplementsList");
 const catalogCount = document.getElementById("catalogCount");
 const catalogEmpty = document.getElementById("catalogEmpty");
@@ -77,12 +76,36 @@ function getFlavorLabel(product) {
   return `Sabores: ${product.sabores.slice(0, 3).join(", ")} +${product.sabores.length - 3}`;
 }
 
+function getCategoryFilters() {
+  const categories = products
+    .map(([, product]) => product.categoria)
+    .filter(Boolean)
+    .filter((category, index, list) => list.indexOf(category) === index)
+    .sort((a, b) => a.localeCompare(b, "es"));
+
+  return [
+    { label: "Todos", value: "todos" },
+    { label: "Destacados", value: "destacados" },
+    ...categories.map((category) => ({ label: category, value: slugify(category) })),
+  ];
+}
+
+function renderFilters() {
+  if (!catalogFilters) return;
+
+  catalogFilters.innerHTML = getCategoryFilters().map((filter) => `
+    <button class="catalog-filter${filter.value === catalogState.category ? " is-active" : ""}" type="button" data-category="${filter.value}">
+      ${filter.label}
+    </button>
+  `).join("");
+}
+
 function renderProductCard(id, product) {
   const card = document.createElement("article");
-  card.className = "product-card";
+  card.className = `product-card${product.imagenPendiente ? " product-card--image-pending" : ""}`;
 
   card.innerHTML = `
-    <span class="product-card__badge">${product.categoria || "Suplemento"}</span>
+    ${product.destacado ? '<span class="product-card__badge">Destacado</span>' : ""}
 
     <div class="product-card__media">
       <img src="${product.imagen}" alt="${product.alt || product.nombre}" class="product-card__img" loading="lazy" />
@@ -98,7 +121,7 @@ function renderProductCard(id, product) {
       <h3 class="product-card__name">${product.nombre}</h3>
       <p class="product-card__price">$ ${formatPrice(product.precio)}</p>
       <p class="product-card__flavors">${getFlavorLabel(product)}</p>
-      <p class="product-card__disclaimer">${product.subtitulo || "Disponible para consulta por WhatsApp"}</p>
+      <p class="product-card__disclaimer">${product.presentacion || product.subtitulo || "Disponible para asesoría por WhatsApp"}</p>
     </div>
 
     <div class="product-card__actions">
@@ -164,16 +187,17 @@ searchClear?.addEventListener("click", () => {
   renderCatalog();
 });
 
-filterButtons.forEach((button) => {
-  button.addEventListener("click", () => {
+catalogFilters?.addEventListener("click", (event) => {
+  const button = event.target.closest(".catalog-filter");
+  if (!button) return;
+
     catalogState.category = button.dataset.category || "todos";
 
-    filterButtons.forEach((item) => {
+    document.querySelectorAll(".catalog-filter").forEach((item) => {
       item.classList.toggle("is-active", item === button);
     });
 
     renderCatalog();
-  });
 });
 
 emptyAdvisorBtn?.addEventListener("click", () => {
@@ -223,5 +247,6 @@ function enableDragScroll(element) {
   }, true);
 }
 
+renderFilters();
 enableDragScroll(catalogFilters);
 renderCatalog();
