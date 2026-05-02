@@ -69,11 +69,41 @@ function formatPrice(price) {
   return Number(price).toFixed(2);
 }
 
-function getFlavorLabel(product) {
-  if (!product.sabores?.length) return "Sabores: consultar";
-  if (product.sabores.length <= 3) return `Sabores: ${product.sabores.join(", ")}`;
+function escapeHTML(value = "") {
+  return value
+    .toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
-  return `Sabores: ${product.sabores.slice(0, 3).join(", ")} +${product.sabores.length - 3}`;
+function renderFlavorOptions(product) {
+  const flavors = product.sabores || [];
+  const label = flavors.length === 1 ? "Sabor" : "Sabores";
+
+  if (!flavors.length) {
+    return `
+      <div class="product-card__flavors" aria-label="Sabores disponibles">
+        <span class="product-card__flavor-label">Sabores</span>
+        <span class="product-card__flavor-chip product-card__flavor-chip--muted">Consultar</span>
+      </div>
+    `;
+  }
+
+  const visibleFlavors = flavors.slice(0, 3);
+  const hiddenCount = flavors.length - visibleFlavors.length;
+
+  return `
+    <div class="product-card__flavors" aria-label="${label} disponibles">
+      <span class="product-card__flavor-label">${label}</span>
+      <span class="product-card__flavor-list">
+        ${visibleFlavors.map((flavor) => `<span class="product-card__flavor-chip">${escapeHTML(flavor)}</span>`).join("")}
+        ${hiddenCount > 0 ? `<span class="product-card__flavor-chip product-card__flavor-chip--more">+${hiddenCount}</span>` : ""}
+      </span>
+    </div>
+  `;
 }
 
 function getCategoryFilters() {
@@ -120,7 +150,7 @@ function renderProductCard(id, product) {
       </div>
       <h3 class="product-card__name">${product.nombre}</h3>
       <p class="product-card__price">$ ${formatPrice(product.precio)}</p>
-      <p class="product-card__flavors">${getFlavorLabel(product)}</p>
+      ${renderFlavorOptions(product)}
       <p class="product-card__disclaimer">${product.presentacion || product.subtitulo || "Disponible para asesoría por WhatsApp"}</p>
     </div>
 

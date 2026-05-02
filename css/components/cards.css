@@ -148,9 +148,48 @@
 
 .product-card__flavors {
   color: #d9e8f5;
-  font-size: 0.8rem;
-  font-weight: 700;
-  line-height: 1.35;
+  display: grid;
+  gap: 6px;
+}
+
+.product-card__flavor-label {
+  color: #a9b4c6;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.product-card__flavor-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.product-card__flavor-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  max-width: 100%;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(90,180,233,0.10);
+  border: 1px solid rgba(90,180,233,0.20);
+  color: #e9f6ff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.product-card__flavor-chip--muted {
+  color: #a9b4c6;
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.10);
+}
+
+.product-card__flavor-chip--more {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.14);
 }
 
 .product-card__disclaimer {
@@ -265,9 +304,26 @@
     margin-top: 2px;
   }
 
-  .product-card__flavors,
   .product-card__disclaimer {
     font-size: 0.68rem;
+  }
+
+  .product-card__flavors {
+    gap: 5px;
+  }
+
+  .product-card__flavor-label {
+    font-size: 0.6rem;
+  }
+
+  .product-card__flavor-list {
+    gap: 4px;
+  }
+
+  .product-card__flavor-chip {
+    min-height: 24px;
+    padding: 0 6px;
+    font-size: 0.62rem;
   }
 
   .product-card__actions {
