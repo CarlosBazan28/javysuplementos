@@ -22,29 +22,21 @@ function normalizeText(value = "") {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
-function inferCategory(product) {
-  const haystack = normalizeText(`${product.nombre} ${product.subtitulo} ${product.tag}`);
+function slugify(value = "") {
+  return normalizeText(value)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 
-  if (haystack.includes("creatina")) return "creatinas";
-  if (
-    haystack.includes("whey") ||
-    haystack.includes("protein") ||
-    haystack.includes("proteina") ||
-    haystack.includes("iso")
-  ) {
-    return "proteinas";
-  }
-  if (
-    haystack.includes("lipo") ||
-    haystack.includes("carnitina") ||
-    haystack.includes("termogenico") ||
-    haystack.includes("definicion") ||
-    haystack.includes("grasa")
-  ) {
-    return "definicion";
-  }
+function getProductCategory(product) {
+  return slugify(product.categoria || "otros");
+}
 
-  return "otros";
+function productMatchesCategory(product) {
+  if (catalogState.category === "todos") return true;
+  if (catalogState.category === "destacados") return Boolean(product.destacado);
+
+  return getProductCategory(product) === catalogState.category;
 }
 
 function getSearchText(id, product) {
@@ -52,7 +44,11 @@ function getSearchText(id, product) {
     id,
     product.nombre,
     product.subtitulo,
+    product.categoria,
+    product.marca,
     product.tag,
+    product.sabores?.join(" "),
+    product.objetivos?.join(" "),
     product.descripcion?.join(" "),
     product.beneficios?.join(" "),
   ].join(" "));
@@ -62,7 +58,7 @@ function getFilteredProducts() {
   const query = normalizeText(catalogState.query.trim());
 
   return products.filter(([id, product]) => {
-    const categoryMatch = catalogState.category === "todos" || inferCategory(product) === catalogState.category;
+    const categoryMatch = productMatchesCategory(product);
     const queryMatch = !query || getSearchText(id, product).includes(query);
 
     return categoryMatch && queryMatch;
@@ -73,18 +69,34 @@ function formatPrice(price) {
   return Number(price).toFixed(2);
 }
 
+function getFlavorLabel(product) {
+  if (!product.sabores?.length) return "Sabores: consultar";
+  if (product.sabores.length <= 3) return `Sabores: ${product.sabores.join(", ")}`;
+
+  return `Sabores: ${product.sabores.slice(0, 3).join(", ")} +${product.sabores.length - 3}`;
+}
+
 function renderProductCard(id, product) {
   const card = document.createElement("article");
   card.className = "product-card";
 
   card.innerHTML = `
+    <span class="product-card__badge">${product.categoria || "Suplemento"}</span>
+
     <div class="product-card__media">
       <img src="${product.imagen}" alt="${product.alt || product.nombre}" class="product-card__img" loading="lazy" />
     </div>
 
     <div class="product-card__info">
+      <div class="product-card__meta">
+        <span>${product.marca || "Marca por confirmar"}</span>
+        <span class="${product.disponible ? "is-available" : "is-unavailable"}">
+          ${product.disponible ? "Disponible" : "Consultar stock"}
+        </span>
+      </div>
       <h3 class="product-card__name">${product.nombre}</h3>
       <p class="product-card__price">$ ${formatPrice(product.precio)}</p>
+      <p class="product-card__flavors">${getFlavorLabel(product)}</p>
       <p class="product-card__disclaimer">${product.subtitulo || "Disponible para consulta por WhatsApp"}</p>
     </div>
 

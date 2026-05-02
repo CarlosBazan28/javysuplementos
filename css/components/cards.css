@@ -91,6 +91,28 @@
   flex: 1;
 }
 
+.product-card__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: #a9b4c6;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.product-card__meta span {
+  min-width: 0;
+}
+
+.product-card__meta .is-available {
+  color: #00e676;
+}
+
+.product-card__meta .is-unavailable {
+  color: #ffb300;
+}
+
 .product-card__name {
   color: var(--blanco);
   font-weight: 600;
@@ -111,6 +133,13 @@
   text-shadow: 0 0 5px rgba(1, 145, 198), 0 0 10px rgb(1, 145, 198),
     0 0 20px rgba(1, 145, 198), 0 0 40px rgb(1, 145, 198),
     0 0 80px rgba(1, 145, 198);
+}
+
+.product-card__flavors {
+  color: #d9e8f5;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .product-card__disclaimer {

@@ -24,6 +24,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const subtitleEl = document.getElementById("prod-subtitle");
   const priceEl = document.getElementById("prod-price");
   const tagEl = document.getElementById("prod-tag");
+  const brandEl = document.getElementById("prod-brand");
+  const categoryEl = document.getElementById("prod-category");
+  const flavorsEl = document.getElementById("prod-flavors");
+  const statusEl = document.getElementById("prod-status");
   const waEl = document.getElementById("prod-whatsapp");
   const addConsultationEl = document.getElementById("prod-add-consultation");
 
@@ -35,6 +39,10 @@ document.addEventListener("DOMContentLoaded", () => {
   subtitleEl.textContent = product.subtitulo;
   priceEl.textContent = `$${product.precio.toFixed(2)}`;
   tagEl.textContent = product.tag || "";
+  brandEl.textContent = product.marca || "Por confirmar";
+  categoryEl.textContent = product.categoria || "Suplemento";
+  flavorsEl.textContent = product.sabores?.length ? product.sabores.join(", ") : "Consultar sabores disponibles";
+  statusEl.textContent = product.disponible ? "Disponible" : "Consultar stock";
 
   imgEl.src = product.imagen;
   imgEl.alt = product.alt || product.nombre;

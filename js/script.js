@@ -7,7 +7,7 @@ const productos = productEntries.map(([id, product]) => ({
   imagen: product.imagen,
   alt: product.alt || product.nombre,
   tag: product.tag || "",
-}));
+})).filter((product) => PRODUCTS[product.id]?.destacado);
 
 const lista = document.getElementById("top-products__list");
 const heroProductsBtn = document.querySelector(".hero__button--pri");
