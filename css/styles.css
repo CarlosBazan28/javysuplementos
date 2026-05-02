@@ -129,6 +129,7 @@ body {
   margin-top: 30px;
   line-height: 1;
   color: var(--blanco);
+  border: none;
   border-radius: 10px;
   padding: 10px;
   font-size: 1rem;
@@ -142,7 +143,7 @@ body {
 }
 
 .hero__button--sec{
-  background:var(--Cyan,);
+  background: var(--Cyan);
 }
 
 .hero__slogan button:hover {
@@ -409,12 +410,18 @@ body {
   border: 1px solid rgba(255, 180, 0, 0.45);
 }
 
+.product-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
 .product-detail__cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin-bottom: 18px;
   padding: 0.7rem 1.2rem;
   border-radius: 999px;
   border: 1px solid rgba(90, 180, 233, 0.9);
@@ -428,6 +435,12 @@ body {
   font-size: 0.95rem;
   font-weight: 600;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.product-detail__cta--secondary {
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: none;
 }
 
 .product-detail__cta:hover {

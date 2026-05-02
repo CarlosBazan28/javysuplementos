@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   const productId = params.get("id");
 
-  if (!productId || !PRODUCTS[productId]) {
+  if (typeof PRODUCTS === "undefined" || !productId || !PRODUCTS[productId]) {
     document.body.innerHTML = `
       <main style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#050709;color:#fff;font-family:system-ui;padding:1.5rem;text-align:center;">
         <div>
@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const product = PRODUCTS[productId];
 
-  document.title = `Javy Supplements – ${product.nombre}`;
+  document.title = `Javy Supplements - ${product.nombre}`;
 
   const imgEl = document.getElementById("prod-image");
   const titleEl = document.getElementById("prod-title");
@@ -25,7 +25,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const priceEl = document.getElementById("prod-price");
   const tagEl = document.getElementById("prod-tag");
   const waEl = document.getElementById("prod-whatsapp");
-  
+  const addConsultationEl = document.getElementById("prod-add-consultation");
+
   const beneficiosEl = document.getElementById("tab-beneficios");
   const descripcionEl = document.getElementById("tab-descripcion");
   const usoEl = document.getElementById("tab-uso");
@@ -38,8 +39,15 @@ document.addEventListener("DOMContentLoaded", () => {
   imgEl.src = product.imagen;
   imgEl.alt = product.alt || product.nombre;
 
-  const mensaje = encodeURIComponent(product.whatsappMensaje || `Hola, quiero información sobre ${product.nombre}`);
+  const mensaje = encodeURIComponent(
+    `Hola Javy, quiero asesoría sobre ${product.nombre}.\n\nMi objetivo es:\nMi duda es:`
+  );
   waEl.href = `https://wa.me/50763932305?text=${mensaje}`;
+
+  addConsultationEl?.addEventListener("click", () => {
+    window.consultation?.addItem?.(productId);
+    addConsultationEl.textContent = "Agregado a mi consulta";
+  });
 
   beneficiosEl.innerHTML = crearLista(product.beneficios);
   descripcionEl.innerHTML = crearParrafos(product.descripcion);
@@ -52,14 +60,14 @@ function crearLista(items = []) {
   if (!items.length) return "<p>Información no disponible.</p>";
   return `
     <ul class="product-detail__list">
-      ${items.map((t) => `<li>${t}</li>`).join("")}
+      ${items.map((text) => `<li>${text}</li>`).join("")}
     </ul>
   `;
 }
 
 function crearParrafos(lines = []) {
   if (!lines.length) return "<p>Información no disponible.</p>";
-  return lines.map((t) => `<p>${t}</p>`).join("");
+  return lines.map((text) => `<p>${text}</p>`).join("");
 }
 
 function setupTabs() {
@@ -70,10 +78,10 @@ function setupTabs() {
     btn.addEventListener("click", () => {
       const target = btn.dataset.tab;
 
-      tabButtons.forEach((b) => {
-        const isActive = b === btn;
-        b.classList.toggle("is-active", isActive);
-        b.setAttribute("aria-selected", isActive ? "true" : "false");
+      tabButtons.forEach((button) => {
+        const isActive = button === btn;
+        button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-selected", isActive ? "true" : "false");
       });
 
       tabPanels.forEach((panel) => {

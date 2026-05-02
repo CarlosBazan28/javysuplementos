@@ -142,6 +142,11 @@
 
 .product-card__btn:active{ transform: translateY(1px);}
 
+.product-card__btn:disabled{
+  opacity: 0.75;
+  cursor: default;
+}
+
 .product-card__btn:focus-visible{
   outline: 2px solid rgba(1,145,198,0.7);
   outline-offset: 2px;
