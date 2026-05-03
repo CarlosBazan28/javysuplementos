@@ -35,6 +35,16 @@ function getProductById(id) {
   return PRODUCTS[id] || null;
 }
 
+function escapeHTML(value = "") {
+  return value
+    .toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function updateConsultationBadge() {
   const badge = document.getElementById("consultationBadge") || document.getElementById("cartBadge");
   if (!badge) return;
@@ -60,15 +70,17 @@ function renderConsultationPanel() {
 
   items.forEach((item) => {
     const product = getProductById(item.id);
+    const productName = product?.nombre || item.id;
     const row = document.createElement("li");
     row.className = "consultation-item";
     row.innerHTML = `
-      <img src="${product?.imagen || "img/icons/logo.png"}" alt="${product?.nombre || item.id}" class="consultation-item__img" />
+      <img src="${product?.imagen || "img/icons/logo.png"}" alt="${escapeHTML(productName)}" class="consultation-item__img" />
       <div class="consultation-item__info">
-        <strong>${product?.nombre || item.id}</strong>
-        <span>${product?.marca || "Producto"} · ${product?.categoria || "Categoría por confirmar"}</span>
+        <strong>${escapeHTML(productName)}</strong>
+        <span>${escapeHTML(product?.marca || "Producto")} · ${escapeHTML(product?.categoria || "Categoría por confirmar")}</span>
+        ${item.flavor ? `<span>Sabor: ${escapeHTML(item.flavor)}</span>` : ""}
       </div>
-      <button class="consultation-item__remove" type="button" aria-label="Quitar ${product?.nombre || item.id}">
+      <button class="consultation-item__remove" type="button" aria-label="Quitar ${escapeHTML(productName)}">
         Quitar
       </button>
     `;
@@ -81,15 +93,18 @@ function renderConsultationPanel() {
   });
 }
 
-function addItem(id) {
+function addItem(id, options = {}) {
   const items = getConsultation();
-  const exists = items.some((item) => item.id === id);
+  const flavor = options.flavor?.trim() || "";
+  const existingItem = items.find((item) => item.id === id);
 
-  if (!exists) {
-    items.push({ id });
-    saveConsultation(items);
+  if (existingItem) {
+    if (flavor) existingItem.flavor = flavor;
+  } else {
+    items.push(flavor ? { id, flavor } : { id });
   }
 
+  saveConsultation(items);
   updateConsultationBadge();
   renderConsultationPanel();
 }
@@ -118,7 +133,8 @@ function buildConsultationMessage() {
 
   const lines = items.map((item, index) => {
     const product = getProductById(item.id);
-    return `${index + 1}. ${product?.nombre || item.id}`;
+    const flavorText = item.flavor ? ` - Sabor: ${item.flavor}` : "";
+    return `${index + 1}. ${product?.nombre || item.id}${flavorText}`;
   });
 
   return [

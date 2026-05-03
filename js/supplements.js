@@ -46,11 +46,10 @@ function getSearchText(id, product) {
     product.subtitulo,
     product.categoria,
     product.marca,
+    product.presentacion,
     product.tag,
     product.sabores?.join(" "),
     product.objetivos?.join(" "),
-    product.descripcion?.join(" "),
-    product.beneficios?.join(" "),
   ].join(" "));
 }
 
@@ -79,29 +78,29 @@ function escapeHTML(value = "") {
     .replace(/'/g, "&#039;");
 }
 
-function renderFlavorOptions(product) {
+function renderFlavorOptions(id, product) {
   const flavors = product.sabores || [];
   const label = flavors.length === 1 ? "Sabor" : "Sabores";
+  const selectId = `flavor-${slugify(id)}`;
 
   if (!flavors.length) {
     return `
       <div class="product-card__flavors" aria-label="Sabores disponibles">
-        <span class="product-card__flavor-label">Sabores</span>
-        <span class="product-card__flavor-chip product-card__flavor-chip--muted">Consultar</span>
+        <label class="product-card__flavor-label" for="${selectId}">Sabor</label>
+        <select class="product-card__flavor-select" id="${selectId}" disabled>
+          <option>Consultar disponibilidad</option>
+        </select>
       </div>
     `;
   }
 
-  const visibleFlavors = flavors.slice(0, 3);
-  const hiddenCount = flavors.length - visibleFlavors.length;
-
   return `
     <div class="product-card__flavors" aria-label="${label} disponibles">
-      <span class="product-card__flavor-label">${label}</span>
-      <span class="product-card__flavor-list">
-        ${visibleFlavors.map((flavor) => `<span class="product-card__flavor-chip">${escapeHTML(flavor)}</span>`).join("")}
-        ${hiddenCount > 0 ? `<span class="product-card__flavor-chip product-card__flavor-chip--more">+${hiddenCount}</span>` : ""}
-      </span>
+      <label class="product-card__flavor-label" for="${selectId}">${label}</label>
+      <select class="product-card__flavor-select" id="${selectId}" data-flavor-select>
+        <option value="">Elegir sabor (${flavors.length})</option>
+        ${flavors.map((flavor) => `<option value="${escapeHTML(flavor)}">${escapeHTML(flavor)}</option>`).join("")}
+      </select>
     </div>
   `;
 }
@@ -143,14 +142,14 @@ function renderProductCard(id, product) {
 
     <div class="product-card__info">
       <div class="product-card__meta">
-        <span>${product.marca || "Marca por confirmar"}</span>
+        <span>${escapeHTML(product.marca || "Marca en revisión")}</span>
         <span class="${product.disponible ? "is-available" : "is-unavailable"}">
           ${product.disponible ? "Disponible" : "Consultar stock"}
         </span>
       </div>
-      <h3 class="product-card__name">${product.nombre}</h3>
+      <h3 class="product-card__name">${escapeHTML(product.nombre)}</h3>
       <p class="product-card__price">$ ${formatPrice(product.precio)}</p>
-      ${renderFlavorOptions(product)}
+      ${renderFlavorOptions(id, product)}
       <p class="product-card__disclaimer">${product.presentacion || product.subtitulo || "Disponible para asesoría por WhatsApp"}</p>
     </div>
 
@@ -164,7 +163,8 @@ function renderProductCard(id, product) {
   const detailsBtn = card.querySelector(".product-card__btn--info");
 
   addBtn.addEventListener("click", () => {
-    window.consultation?.addItem?.(id);
+    const selectedFlavor = card.querySelector("[data-flavor-select]")?.value || "";
+    window.consultation?.addItem?.(id, { flavor: selectedFlavor });
     addBtn.textContent = "Agregado";
     addBtn.disabled = true;
 
