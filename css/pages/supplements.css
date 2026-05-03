@@ -197,8 +197,10 @@
 
 .catalog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(230px, 270px));
   gap: 18px;
+  align-items: stretch;
+  justify-content: start;
 }
 
 .catalog-empty {
@@ -258,5 +260,6 @@
   .catalog-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
+    justify-content: stretch;
   }
 }

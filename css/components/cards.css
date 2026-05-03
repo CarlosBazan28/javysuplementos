@@ -9,12 +9,12 @@
 .top-products__list {
   display: grid;
   grid-auto-rows: auto;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 270px));
   gap: 18px;
-  width: 95%;
+  width: min(1180px, calc(100% - 28px));
   margin-bottom: 40px;
-
-  align-items: start;
+  align-items: stretch;
+  justify-content: center;
 }
 
 .product-card {
@@ -22,6 +22,8 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-width: 0;
+  height: 100%;
 
   padding: 16px;
   border-radius: 14px;
@@ -199,15 +201,16 @@
 }
 
 .product-card__actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: auto;
   padding-top: 10px;
 }
 
 .product-card__btn {
-  flex: 1;
   border: none;
+  min-width: 0;
   min-height: 44px;
   padding: 0 14px;
   font-weight: 700;
@@ -327,7 +330,7 @@
   }
 
   .product-card__actions {
-    display: grid;
+    grid-template-columns: 1fr;
     gap: 7px;
     padding-top: 4px;
   }
