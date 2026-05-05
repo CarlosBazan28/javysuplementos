@@ -18,6 +18,57 @@ create table if not exists public.products (
   updated_at timestamptz default now()
 );
 
+alter table public.products add column if not exists id uuid default gen_random_uuid();
+alter table public.products add column if not exists name text;
+alter table public.products add column if not exists brand text;
+alter table public.products add column if not exists category text;
+alter table public.products add column if not exists price numeric;
+alter table public.products add column if not exists presentation text;
+alter table public.products add column if not exists image_url text;
+alter table public.products add column if not exists description text;
+alter table public.products add column if not exists available boolean default true;
+alter table public.products add column if not exists featured boolean default false;
+alter table public.products add column if not exists tags text[] default '{}';
+alter table public.products add column if not exists goals text[] default '{}';
+alter table public.products add column if not exists legacy_id text;
+alter table public.products add column if not exists created_at timestamptz default now();
+alter table public.products add column if not exists updated_at timestamptz default now();
+
+update public.products set name = coalesce(name, 'Producto sin nombre') where name is null;
+update public.products set category = coalesce(category, 'Producto') where category is null;
+update public.products set id = gen_random_uuid() where id is null;
+alter table public.products alter column id set not null;
+alter table public.products alter column name set not null;
+alter table public.products alter column category set not null;
+alter table public.products alter column available set default true;
+alter table public.products alter column featured set default false;
+alter table public.products alter column tags set default '{}';
+alter table public.products alter column goals set default '{}';
+alter table public.products alter column created_at set default now();
+alter table public.products alter column updated_at set default now();
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'products_pkey'
+      and conrelid = 'public.products'::regclass
+  ) then
+    alter table public.products add constraint products_pkey primary key (id);
+  end if;
+
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'products_legacy_id_key'
+      and conrelid = 'public.products'::regclass
+  ) then
+    alter table public.products add constraint products_legacy_id_key unique (legacy_id);
+  end if;
+end;
+$$;
+
 create table if not exists public.product_flavors (
   id uuid primary key default gen_random_uuid(),
   product_id uuid not null references public.products(id) on delete cascade,
@@ -25,6 +76,43 @@ create table if not exists public.product_flavors (
   available boolean default true,
   created_at timestamptz default now()
 );
+
+alter table public.product_flavors add column if not exists id uuid default gen_random_uuid();
+alter table public.product_flavors add column if not exists product_id uuid;
+alter table public.product_flavors add column if not exists name text;
+alter table public.product_flavors add column if not exists available boolean default true;
+alter table public.product_flavors add column if not exists created_at timestamptz default now();
+
+update public.product_flavors set name = coalesce(name, 'Sabor sin nombre') where name is null;
+update public.product_flavors set id = gen_random_uuid() where id is null;
+alter table public.product_flavors alter column id set not null;
+alter table public.product_flavors alter column name set not null;
+alter table public.product_flavors alter column available set default true;
+alter table public.product_flavors alter column created_at set default now();
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'product_flavors_pkey'
+      and conrelid = 'public.product_flavors'::regclass
+  ) then
+    alter table public.product_flavors add constraint product_flavors_pkey primary key (id);
+  end if;
+
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'product_flavors_product_id_fkey'
+      and conrelid = 'public.product_flavors'::regclass
+  ) then
+    alter table public.product_flavors
+      add constraint product_flavors_product_id_fkey
+      foreign key (product_id) references public.products(id) on delete cascade;
+  end if;
+end;
+$$;
 
 create index if not exists products_category_idx on public.products (category);
 create index if not exists products_featured_idx on public.products (featured);
