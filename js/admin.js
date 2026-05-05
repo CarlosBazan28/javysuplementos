@@ -20,6 +20,15 @@ const flavorList = document.getElementById("flavorList");
 let adminProducts = [];
 let selectedProduct = null;
 
+function withTimeout(promise, ms = 12000, message = "La solicitud tardo demasiado. Revisa internet, Supabase o intenta de nuevo.") {
+  let timeoutId;
+  const timeout = new Promise((_, reject) => {
+    timeoutId = window.setTimeout(() => reject(new Error(message)), ms);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timeoutId));
+}
+
 function setMessage(target, message, isError = false) {
   if (!target) return;
   target.textContent = message || "";
@@ -185,18 +194,39 @@ async function checkSession() {
 loginForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   setMessage(loginMessage, "Validando...");
+  const submitButton = loginForm.querySelector("button[type='submit']");
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "Entrando...";
+  }
 
   const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
 
-  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-  if (error) {
-    setMessage(loginMessage, error.message, true);
-    return;
-  }
+  try {
+    if (!window.supabaseClient) {
+      throw new Error("Supabase no esta disponible. Revisa el CDN o la conexion.");
+    }
 
-  setMessage(loginMessage, "");
-  await showAdmin();
+    const { data, error } = await withTimeout(
+      supabaseClient.auth.signInWithPassword({ email, password })
+    );
+
+    if (error) throw error;
+    if (!data?.session) {
+      throw new Error("El login no devolvio una sesion activa. Revisa si el usuario esta confirmado en Supabase Auth.");
+    }
+
+    setMessage(loginMessage, "");
+    await showAdmin();
+  } catch (error) {
+    setMessage(loginMessage, error.message || "No se pudo iniciar sesion.", true);
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = "Entrar";
+    }
+  }
 });
 
 logoutBtn?.addEventListener("click", async () => {
