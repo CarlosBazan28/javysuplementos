@@ -24,7 +24,11 @@
       href="https://fonts.googleapis.com/css2?family=Vast+Shadow&display=swap"
       rel="stylesheet"
     />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="js/supabase-config.js" defer></script>
+    <script src="js/whatsapp-config.js" defer></script>
     <script src="js/product-data.js" defer></script>
+    <script src="js/db.js" defer></script>
     <script src="js/cart.js" defer></script>
     <script src="js/supplements.js" defer></script>
     <script src="js/include-nav.js" defer></script>
@@ -37,7 +41,7 @@
         <p class="catalog-hero__eyebrow">Catálogo de suplementos</p>
         <h1 class="catalog-hero__title">Encuentra el suplemento correcto para tu objetivo</h1>
         <p class="catalog-hero__text">
-          Busca por nombre, marca u objetivo y agrega productos a tu consulta para recibir asesoría por WhatsApp.
+          Busca por nombre, marca u objetivo y agrega productos a tu cotización para recibir disponibilidad y precio final por WhatsApp.
         </p>
       </section>
 
@@ -77,6 +81,16 @@
         <div class="catalog-filters" id="catalogFilters" aria-label="Filtrar por categoría"></div>
       </section>
 
+      <section class="goal-advisor" aria-labelledby="goalAdvisorTitle">
+        <div class="goal-advisor__header">
+          <p class="goal-advisor__eyebrow">Guía rápida</p>
+          <h2 id="goalAdvisorTitle">Elige tu objetivo</h2>
+          <p>Si el cliente no sabe qué producto escoger, puede empezar por su meta y pedir una recomendación.</p>
+        </div>
+        <div class="goal-grid" id="goalGrid"></div>
+        <div class="goal-result" id="goalResult" hidden></div>
+      </section>
+
       <section class="catalog-results" aria-live="polite">
         <div class="catalog-results__bar">
           <p class="catalog-results__count" id="catalogCount"></p>
@@ -86,8 +100,8 @@
 
         <div class="catalog-empty" id="catalogEmpty" hidden>
           <h2>No encontramos productos con esa búsqueda</h2>
-          <p>Prueba con otro nombre, marca u objetivo. También puedes escribirle directo a Javy para recibir asesoría.</p>
-          <button class="catalog-empty__btn" type="button" id="emptyAdvisorBtn">Consultar por WhatsApp</button>
+          <p>Prueba con otro nombre, marca u objetivo. También puedes escribirle directo a Javy para consultar disponibilidad.</p>
+          <button class="catalog-empty__btn" type="button" id="emptyAdvisorBtn">Consultar disponibilidad</button>
         </div>
       </section>
     </main>

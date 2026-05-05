@@ -28,8 +28,13 @@
       href="https://fonts.googleapis.com/css2?family=Vast+Shadow&display=swap"
       rel="stylesheet"
     />
-    <script src="js/script.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="js/supabase-config.js" defer></script>
+    <script src="js/whatsapp-config.js" defer></script>
+    <script src="js/product-data.js" defer></script>
+    <script src="js/db.js" defer></script>
     <script src="js/cart.js" defer></script>
+    <script src="js/product-page.js" defer></script>
     <script src="js/include-nav.js" defer></script>
   </head>
   <body>
@@ -77,22 +82,29 @@
             </dl>
 
             <div class="product-detail__actions">
-              <a
+              <button
                 id="prod-whatsapp"
-                href="#"
-                target="_blank"
-                rel="noopener"
+                type="button"
                 class="product-detail__cta"
               >
-                Consultar por WhatsApp
-              </a>
+                Cotizar este producto
+              </button>
 
               <button
                 id="prod-add-consultation"
                 type="button"
                 class="product-detail__cta product-detail__cta--secondary"
               >
-                Agregar a asesoría
+                Agregar a cotización
+              </button>
+
+              <button
+                id="prod-availability"
+                type="button"
+                class="product-detail__cta product-detail__cta--secondary"
+                hidden
+              >
+                Consultar disponibilidad
               </button>
             </div>
 
@@ -161,9 +173,6 @@
         </div>
       </section>
     </main>
-
-    <script src="js/product-data.js"></script>
-    <script src="js/product-page.js"></script>
 
     </body>
     </html>

@@ -1,25 +1,10 @@
-const productEntries = typeof PRODUCTS !== "undefined" ? Object.entries(PRODUCTS) : [];
-const productos = productEntries.map(([id, product]) => ({
-  id,
-  nombre: product.nombre,
-  descripcion: product.subtitulo || product.descripcion?.[0] || "",
-  precio: product.precio,
-  marca: product.marca,
-  categoria: product.categoria,
-  disponible: product.disponible,
-  imagen: product.imagen,
-  imagenPendiente: product.imagenPendiente,
-  alt: product.alt || product.nombre,
-  sabores: product.sabores || [],
-  tag: product.tag || "",
-})).filter((product) => PRODUCTS[product.id]?.destacado);
-
 const lista = document.getElementById("top-products__list");
 const heroProductsBtn = document.querySelector(".hero__button--pri");
 const heroAdvisorBtn = document.querySelector(".hero__button--sec");
 
 function formatPrice(price) {
-  return Number(price).toFixed(2);
+  const value = Number(price || 0);
+  return value > 0 ? value.toFixed(2) : "Consultar";
 }
 
 function escapeHTML(value = "") {
@@ -32,17 +17,34 @@ function escapeHTML(value = "") {
     .replace(/'/g, "&#039;");
 }
 
+function slugify(value = "") {
+  return value
+    .toString()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function productCanBeQuoted(product) {
+  if (product.available === false) return false;
+  if (!product.flavors?.length) return true;
+  return product.flavors.some((flavor) => flavor.available !== false);
+}
+
 function renderFlavorOptions(product) {
-  const flavors = product.sabores || [];
+  const flavors = product.flavors || [];
   const label = flavors.length === 1 ? "Sabor" : "Sabores";
-  const selectId = `home-flavor-${product.id}`;
+  const selectId = `home-flavor-${slugify(product.id)}`;
+  const enabled = productCanBeQuoted(product);
 
   if (!flavors.length) {
     return `
       <div class="product-card__flavors" aria-label="Sabores disponibles">
         <label class="product-card__flavor-label" for="${selectId}">Sabor</label>
         <select class="product-card__flavor-select" id="${selectId}" disabled>
-          <option>Consultar disponibilidad</option>
+          <option>No aplica / consultar</option>
         </select>
       </div>
     `;
@@ -51,12 +53,30 @@ function renderFlavorOptions(product) {
   return `
     <div class="product-card__flavors" aria-label="${label} disponibles">
       <label class="product-card__flavor-label" for="${selectId}">${label}</label>
-      <select class="product-card__flavor-select" id="${selectId}" data-flavor-select>
+      <select class="product-card__flavor-select" id="${selectId}" data-flavor-select ${enabled ? "" : "disabled"}>
         <option value="">Elegir sabor (${flavors.length})</option>
-        ${flavors.map((flavor) => `<option value="${escapeHTML(flavor)}">${escapeHTML(flavor)}</option>`).join("")}
+        ${flavors.map((flavor) => `
+          <option value="${escapeHTML(flavor.id)}" ${flavor.available === false ? "disabled" : ""}>
+            ${escapeHTML(flavor.name)}${flavor.available === false ? " - No disponible" : ""}
+          </option>
+        `).join("")}
       </select>
     </div>
   `;
+}
+
+function getSelectedFlavor(card, product, shouldRequire = true) {
+  const select = card.querySelector("[data-flavor-select]");
+  if (!select || !product.flavors?.length) return { flavor: "", flavor_id: "" };
+
+  if (!select.value) {
+    if (shouldRequire) select.focus();
+    return null;
+  }
+
+  const flavor = product.flavors.find((item) => item.id === select.value);
+  if (!flavor || flavor.available === false) return null;
+  return { flavor: flavor.name, flavor_id: flavor.id };
 }
 
 function showAddedState(button) {
@@ -68,6 +88,83 @@ function showAddedState(button) {
     button.textContent = originalText;
     button.disabled = false;
   }, 1200);
+}
+
+function renderFeaturedProducts(productos) {
+  if (!lista) return;
+
+  if (!productos.length) {
+    lista.innerHTML = `
+      <p class="product-card__disclaimer">
+        No hay productos destacados por el momento.
+      </p>
+    `;
+    return;
+  }
+
+  lista.innerHTML = "";
+
+  productos.forEach((product) => {
+    const canQuote = productCanBeQuoted(product);
+    const card = document.createElement("article");
+    card.classList.add("product-card");
+    if (product.imagenPendiente) card.classList.add("product-card--image-pending");
+
+    card.innerHTML = `
+      <div class="product-card__media">
+        <img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.name)}" class="product-card__img" loading="lazy" />
+      </div>
+
+      <div class="product-card__info">
+        <div class="product-card__meta">
+          <span>${escapeHTML(product.brand || "Marca en revision")}</span>
+          <span class="${canQuote ? "is-available" : "is-unavailable"}">
+            ${canQuote ? "Disponible" : "Consultar stock"}
+          </span>
+        </div>
+        <h3 class="product-card__name">${escapeHTML(product.name)}</h3>
+        <p class="product-card__price">$ ${formatPrice(product.price)}</p>
+        ${renderFlavorOptions(product)}
+        <p class="product-card__disclaimer">${escapeHTML(product.presentation || "Cotizacion por WhatsApp")}</p>
+      </div>
+
+      <div class="product-card__actions product-card__actions--catalog">
+        ${canQuote ? '<button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotizacion</button>' : ""}
+        ${canQuote ? '<button class="product-card__btn product-card__btn--quote" type="button">Cotizar este producto</button>' : '<button class="product-card__btn product-card__btn--quote" type="button">Consultar disponibilidad</button>'}
+        <button class="product-card__btn product-card__btn--info" type="button">Ver detalles</button>
+      </div>
+    `;
+
+    const btnConsulta = card.querySelector(".product-card__btn--buy");
+    btnConsulta?.addEventListener("click", () => {
+      const selectedFlavor = getSelectedFlavor(card, product);
+      if (product.flavors?.length && !selectedFlavor) {
+        btnConsulta.textContent = "Elige sabor";
+        window.setTimeout(() => { btnConsulta.textContent = "Agregar a cotizacion"; }, 1200);
+        return;
+      }
+
+      window.consultation?.addItem?.(product, selectedFlavor || {});
+      showAddedState(btnConsulta);
+    });
+
+    const btnQuote = card.querySelector(".product-card__btn--quote");
+    btnQuote?.addEventListener("click", () => {
+      const selectedFlavor = canQuote ? getSelectedFlavor(card, product, false) : {};
+      if (canQuote) {
+        window.consultation?.quoteSingleProduct?.(product, selectedFlavor || {});
+      } else {
+        window.consultation?.askAvailability?.(product, selectedFlavor || {});
+      }
+    });
+
+    const btnInfo = card.querySelector(".product-card__btn--info");
+    btnInfo.addEventListener("click", () => {
+      window.location.href = `product-page.html?id=${encodeURIComponent(product.id)}`;
+    });
+
+    lista.appendChild(card);
+  });
 }
 
 if (heroProductsBtn) {
@@ -82,56 +179,13 @@ if (heroAdvisorBtn) {
   });
 }
 
-if (lista) {
-  if (!productos.length) {
-    lista.innerHTML = `
-      <p class="product-card__disclaimer">
-        No hay productos disponibles por el momento.
-      </p>
-    `;
-  }
+async function initHomeProducts() {
+  if (!lista) return;
+  lista.innerHTML = `<p class="product-card__disclaimer">Cargando productos destacados...</p>`;
 
-  productos.forEach((p) => {
-    const card = document.createElement("article");
-    card.classList.add("product-card");
-    if (p.imagenPendiente) card.classList.add("product-card--image-pending");
-
-    card.innerHTML = `
-      <div class="product-card__media">
-        <img src="${p.imagen}" alt="${escapeHTML(p.alt)}" class="product-card__img" loading="lazy" />
-      </div>
-
-      <div class="product-card__info">
-        <div class="product-card__meta">
-          <span>${escapeHTML(p.marca || "Marca en revisión")}</span>
-          <span class="${p.disponible ? "is-available" : "is-unavailable"}">
-            ${p.disponible ? "Disponible" : "Consultar stock"}
-          </span>
-        </div>
-        <h3 class="product-card__name">${escapeHTML(p.nombre)}</h3>
-        <p class="product-card__price">$ ${formatPrice(p.precio)}</p>
-        ${renderFlavorOptions(p)}
-        <p class="product-card__disclaimer">Agregalo a tu consulta para pedir asesoría por WhatsApp</p>
-      </div>
-
-      <div class="product-card__actions">
-        <button class="product-card__btn product-card__btn--buy" type="button">Agregar a consulta</button>
-        <button class="product-card__btn product-card__btn--info" type="button">Ver detalles</button>
-      </div>
-    `;
-
-    const btnConsulta = card.querySelector(".product-card__btn--buy");
-    btnConsulta.addEventListener("click", () => {
-      const selectedFlavor = card.querySelector("[data-flavor-select]")?.value || "";
-      window.consultation?.addItem?.(p.id, { flavor: selectedFlavor });
-      showAddedState(btnConsulta);
-    });
-
-    const btnInfo = card.querySelector(".product-card__btn--info");
-    btnInfo.addEventListener("click", () => {
-      window.location.href = `product-page.html?id=${encodeURIComponent(p.id)}`;
-    });
-
-    lista.appendChild(card);
-  });
+  const allProducts = await window.catalogDb.getProductsWithFlavors();
+  const featuredProducts = allProducts.filter((product) => product.featured).slice(0, 12);
+  renderFeaturedProducts(featuredProducts);
 }
+
+initHomeProducts();

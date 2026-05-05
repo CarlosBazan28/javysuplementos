@@ -36,6 +36,135 @@
   margin-bottom: 24px;
 }
 
+.goal-advisor {
+  display: grid;
+  gap: 16px;
+  margin: 0 0 26px;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(11,16,23,0.92), rgba(16,23,36,0.82));
+}
+
+.goal-advisor__header {
+  display: grid;
+  gap: 6px;
+  max-width: 760px;
+}
+
+.goal-advisor__eyebrow,
+.goal-result__eyebrow {
+  color: var(--Cyan);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.goal-advisor h2,
+.goal-result h3 {
+  color: var(--blanco);
+  margin: 0;
+}
+
+.goal-advisor p,
+.goal-result p {
+  color: var(--grisClaro);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.goal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.goal-card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  min-height: 190px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.035);
+}
+
+.goal-card__icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(90,180,233,0.16);
+  color: #e9f6ff;
+  font-weight: 900;
+}
+
+.goal-card h3 {
+  color: var(--blanco);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.goal-card p {
+  font-size: 0.85rem;
+}
+
+.goal-card button,
+.goal-result__btn {
+  align-self: end;
+  border: 0;
+  border-radius: 12px;
+  background: var(--Cyan);
+  color: #08141c;
+  cursor: pointer;
+  font-weight: 900;
+  min-height: 42px;
+  padding: 0 12px;
+}
+
+.goal-result {
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid rgba(90,180,233,0.22);
+  border-radius: 14px;
+  background: rgba(90,180,233,0.08);
+}
+
+.goal-result[hidden] {
+  display: none;
+}
+
+.goal-result__content {
+  display: grid;
+  gap: 8px;
+}
+
+.goal-result__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.goal-result__chips span {
+  border: 1px solid rgba(90,180,233,0.24);
+  border-radius: 999px;
+  color: #e9f6ff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 6px 8px;
+}
+
+.goal-result ul {
+  color: var(--grisClaro);
+  margin: 0;
+  padding-left: 18px;
+}
+
 .search__label{
   position:absolute;
   width: 1px;
@@ -261,5 +390,13 @@
     grid-template-columns: repeat(auto-fit, minmax(min(136px, 100%), 180px));
     gap: 10px;
     justify-content: center;
+  }
+
+  .goal-advisor {
+    padding: 14px;
+  }
+
+  .goal-grid {
+    grid-template-columns: 1fr;
   }
 }

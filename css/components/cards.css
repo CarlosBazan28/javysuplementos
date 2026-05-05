@@ -191,6 +191,11 @@
   outline-offset: 2px;
 }
 
+.product-card__flavor-select.needs-selection {
+  border-color: #ffb300;
+  box-shadow: 0 0 0 3px rgba(255,179,0,0.18);
+}
+
 .product-card__disclaimer {
   font-size: 0.75rem;
   color: #9c9c9c;
@@ -203,6 +208,14 @@
   gap: 10px;
   margin-top: auto;
   padding-top: 10px;
+}
+
+.product-card__actions--catalog {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.product-card__actions--catalog .product-card__btn--info {
+  grid-column: 1 / -1;
 }
 
 .product-card__btn {
@@ -249,6 +262,16 @@
 
 .product-card__btn--buy:hover {
   background: #00e676;
+}
+
+.product-card__btn--quote {
+  background: rgba(90,180,233,0.16);
+  color: #e9f6ff;
+  border: 1px solid rgba(90,180,233,0.35);
+}
+
+.product-card__btn--quote:hover {
+  background: rgba(90,180,233,0.24);
 }
 
 @media (max-width: 620px) {
@@ -328,6 +351,10 @@
     grid-template-columns: 1fr;
     gap: 7px;
     padding-top: 4px;
+  }
+
+  .product-card__actions--catalog .product-card__btn--info {
+    grid-column: auto;
   }
 
   .product-card__btn {

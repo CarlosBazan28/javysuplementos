@@ -1,6 +1,5 @@
 const CONSULTATION_KEY = "javy-consultation";
 const LEGACY_CART_KEY = "cart";
-const CONSULTATION_PHONE = "50763932305";
 
 function readStorage(key) {
   try {
@@ -10,29 +9,96 @@ function readStorage(key) {
   }
 }
 
+function saveConsultation(items) {
+  localStorage.setItem(CONSULTATION_KEY, JSON.stringify(items));
+}
+
+function getLegacyProductSnapshot(id) {
+  if (typeof PRODUCTS === "undefined" || !PRODUCTS[id]) return null;
+  const product = PRODUCTS[id];
+
+  return {
+    product_id: product.id,
+    legacy_id: product.id,
+    name: product.nombre,
+    brand: product.marca,
+    category: product.categoria,
+    price: Number(product.precio || 0),
+    presentation: product.presentacion || "",
+    image: product.imagen || "img/icons/logo.png",
+    available: product.disponible !== false,
+  };
+}
+
+function normalizeQuoteItem(item) {
+  if (item.product_id && item.name) {
+    return {
+      product_id: item.product_id,
+      legacy_id: item.legacy_id || item.product_id,
+      name: item.name,
+      brand: item.brand || "",
+      category: item.category || "",
+      price: Number(item.price || 0),
+      presentation: item.presentation || "",
+      image: item.image || "img/icons/logo.png",
+      flavor: item.flavor || "",
+      flavor_id: item.flavor_id || "",
+      quantity: Math.max(1, Number(item.quantity || 1)),
+    };
+  }
+
+  const fallback = getLegacyProductSnapshot(item.id || item.product_id);
+  if (!fallback) {
+    return {
+      product_id: item.id || item.product_id,
+      name: item.id || item.product_id || "Producto",
+      brand: "",
+      category: "",
+      price: 0,
+      presentation: "",
+      image: "img/icons/logo.png",
+      flavor: item.flavor || "",
+      quantity: Math.max(1, Number(item.quantity || 1)),
+    };
+  }
+
+  return {
+    ...fallback,
+    flavor: item.flavor || "",
+    quantity: Math.max(1, Number(item.quantity || 1)),
+  };
+}
+
+function productToQuoteItem(product, options = {}) {
+  return {
+    product_id: product.id,
+    legacy_id: product.legacy_id || product.id,
+    name: product.name || product.nombre,
+    brand: product.brand || product.marca || "",
+    category: product.category || product.categoria || "",
+    price: Number(product.price ?? product.precio ?? 0),
+    presentation: product.presentation || product.presentacion || "",
+    image: product.image || product.imagen || "img/icons/logo.png",
+    flavor: options.flavor || "",
+    flavor_id: options.flavor_id || "",
+    quantity: Math.max(1, Number(options.quantity || 1)),
+  };
+}
+
 function getConsultation() {
-  const current = readStorage(CONSULTATION_KEY);
+  const current = readStorage(CONSULTATION_KEY).map(normalizeQuoteItem);
   if (current.length) return current;
 
   const legacyCart = readStorage(LEGACY_CART_KEY);
   if (!legacyCart.length) return [];
 
-  const migrated = legacyCart.map((item) => ({ id: item.id }));
+  const migrated = legacyCart.map(normalizeQuoteItem);
   saveConsultation(migrated);
   return migrated;
 }
 
-function saveConsultation(items) {
-  localStorage.setItem(CONSULTATION_KEY, JSON.stringify(items));
-}
-
 function getConsultationCount() {
-  return getConsultation().length;
-}
-
-function getProductById(id) {
-  if (typeof PRODUCTS === "undefined") return null;
-  return PRODUCTS[id] || null;
+  return getConsultation().reduce((total, item) => total + Number(item.quantity || 1), 0);
 }
 
 function escapeHTML(value = "") {
@@ -45,6 +111,16 @@ function escapeHTML(value = "") {
     .replace(/'/g, "&#039;");
 }
 
+function formatPrice(price) {
+  const value = Number(price || 0);
+  return value > 0 ? `$${value.toFixed(2)}` : "Consultar";
+}
+
+function getDisplayPresentation(item) {
+  if (!item.presentation) return "";
+  return item.name.toLowerCase().includes(item.presentation.toLowerCase()) ? "" : ` ${item.presentation}`;
+}
+
 function updateConsultationBadge() {
   const badge = document.getElementById("consultationBadge") || document.getElementById("cartBadge");
   if (!badge) return;
@@ -52,6 +128,16 @@ function updateConsultationBadge() {
   const count = getConsultationCount();
   badge.textContent = String(count);
   badge.hidden = count === 0;
+}
+
+function updateQuantity(index, quantity) {
+  const items = getConsultation();
+  if (!items[index]) return;
+
+  items[index].quantity = Math.max(1, Number(quantity || 1));
+  saveConsultation(items);
+  updateConsultationBadge();
+  renderConsultationPanel();
 }
 
 function renderConsultationPanel() {
@@ -68,40 +154,56 @@ function renderConsultationPanel() {
   sendBtn.disabled = items.length === 0;
   clearBtn.disabled = items.length === 0;
 
-  items.forEach((item) => {
-    const product = getProductById(item.id);
-    const productName = product?.nombre || item.id;
+  items.forEach((item, index) => {
     const row = document.createElement("li");
     row.className = "consultation-item";
     row.innerHTML = `
-      <img src="${product?.imagen || "img/icons/logo.png"}" alt="${escapeHTML(productName)}" class="consultation-item__img" />
+      <img src="${escapeHTML(item.image)}" alt="${escapeHTML(item.name)}" class="consultation-item__img" />
       <div class="consultation-item__info">
-        <strong>${escapeHTML(productName)}</strong>
-        <span>${escapeHTML(product?.marca || "Producto")} · ${escapeHTML(product?.categoria || "Categoría por confirmar")}</span>
+        <strong>${escapeHTML(item.name)}</strong>
+        <span>${escapeHTML(item.brand || "Producto")} · ${escapeHTML(item.category || "Categoria por confirmar")}</span>
+        <span>${escapeHTML(item.presentation || "Presentacion por confirmar")} · ${formatPrice(item.price)}</span>
         ${item.flavor ? `<span>Sabor: ${escapeHTML(item.flavor)}</span>` : ""}
+        <label class="consultation-item__quantity">
+          Cantidad
+          <input type="number" min="1" step="1" value="${item.quantity}" data-quote-quantity="${index}" />
+        </label>
       </div>
-      <button class="consultation-item__remove" type="button" aria-label="Quitar ${escapeHTML(productName)}">
+      <button class="consultation-item__remove" type="button" aria-label="Quitar ${escapeHTML(item.name)}">
         Quitar
       </button>
     `;
 
     row.querySelector(".consultation-item__remove")?.addEventListener("click", () => {
-      removeItem(item.id);
+      removeItem(index);
+    });
+
+    row.querySelector("[data-quote-quantity]")?.addEventListener("change", (event) => {
+      updateQuantity(index, event.target.value);
     });
 
     list.appendChild(row);
   });
 }
 
-function addItem(id, options = {}) {
+function addItem(productOrId, options = {}) {
+  const product = typeof productOrId === "string"
+    ? getLegacyProductSnapshot(productOrId)
+    : productOrId;
+
+  if (!product) return;
+
+  const nextItem = productToQuoteItem(product, options);
   const items = getConsultation();
-  const flavor = options.flavor?.trim() || "";
-  const existingItem = items.find((item) => item.id === id);
+  const existingItem = items.find((item) => (
+    item.product_id === nextItem.product_id &&
+    (item.flavor || "") === (nextItem.flavor || "")
+  ));
 
   if (existingItem) {
-    if (flavor) existingItem.flavor = flavor;
+    existingItem.quantity += nextItem.quantity;
   } else {
-    items.push(flavor ? { id, flavor } : { id });
+    items.push(nextItem);
   }
 
   saveConsultation(items);
@@ -109,9 +211,13 @@ function addItem(id, options = {}) {
   renderConsultationPanel();
 }
 
-function removeItem(id) {
-  const items = getConsultation().filter((item) => item.id !== id);
-  saveConsultation(items);
+function removeItem(indexOrId) {
+  const items = getConsultation();
+  const nextItems = typeof indexOrId === "number"
+    ? items.filter((_, index) => index !== indexOrId)
+    : items.filter((item) => item.product_id !== indexOrId && item.legacy_id !== indexOrId);
+
+  saveConsultation(nextItems);
   updateConsultationBadge();
   renderConsultationPanel();
 }
@@ -128,28 +234,77 @@ function getPanelFieldValue(id) {
 
 function buildConsultationMessage() {
   const items = getConsultation();
-  const objective = getPanelFieldValue("consultationObjective");
-  const question = getPanelFieldValue("consultationQuestion");
+  const customerName = getPanelFieldValue("quoteCustomerName");
+  const customerZone = getPanelFieldValue("quoteCustomerZone");
+  const comment = getPanelFieldValue("quoteComment");
 
-  const lines = items.map((item, index) => {
-    const product = getProductById(item.id);
-    const flavorText = item.flavor ? ` - Sabor: ${item.flavor}` : "";
-    return `${index + 1}. ${product?.nombre || item.id}${flavorText}`;
+  const lines = items.map((item) => {
+    const flavorText = item.flavor ? ` | Sabor: ${item.flavor}` : "";
+    const priceText = item.price > 0 ? ` | Precio aprox: $${Number(item.price).toFixed(2)}` : "";
+    return `- ${item.name}${getDisplayPresentation(item)}${flavorText} | Cantidad: ${item.quantity}${priceText}`;
   });
 
   return [
-    items.length ? "Hola Javy, quiero asesoria sobre estos suplementos:" : "Hola Javy, quiero asesoria sobre suplementos.",
+    "Hola Javy, quiero hacer una cotizacion.",
     "",
-    ...lines,
+    "Productos:",
+    ...(lines.length ? lines : ["- Quiero cotizar suplementos disponibles."]),
     "",
-    `Mi objetivo es: ${objective || ""}`,
-    `Mi duda es: ${question || ""}`,
+    "Datos:",
+    `Nombre: ${customerName || ""}`,
+    `Zona: ${customerZone || ""}`,
+    "",
+    "Comentario:",
+    comment || "",
+    "",
+    "Quiero saber disponibilidad, precio final y opciones de entrega.",
   ].join("\n");
 }
 
 function openWhatsApp() {
-  const message = encodeURIComponent(buildConsultationMessage());
-  window.open(`https://wa.me/${CONSULTATION_PHONE}?text=${message}`, "_blank");
+  const message = buildConsultationMessage();
+  if (typeof openJavyWhatsapp === "function") {
+    openJavyWhatsapp(message);
+    return;
+  }
+
+  const encodedMessage = encodeURIComponent(message);
+  window.open(`https://wa.me/50763932305?text=${encodedMessage}`, "_blank");
+}
+
+function quoteSingleProduct(product, options = {}) {
+  const item = productToQuoteItem(product, options);
+  const flavorText = item.flavor ? `\nSabor: ${item.flavor}` : "";
+  const priceText = item.price > 0 ? `\nPrecio aprox: $${item.price.toFixed(2)}` : "";
+  const message = [
+    `Hola Javy, quiero cotizar este producto: ${item.name}.`,
+    item.presentation ? `Presentacion: ${item.presentation}` : "",
+    item.brand ? `Marca: ${item.brand}` : "",
+    flavorText,
+    priceText,
+    "",
+    "Quiero saber disponibilidad, precio final y opciones de entrega.",
+  ].filter(Boolean).join("\n");
+
+  if (typeof openJavyWhatsapp === "function") {
+    openJavyWhatsapp(message);
+  }
+}
+
+function askAvailability(product, options = {}) {
+  const item = productToQuoteItem(product, options);
+  const message = [
+    `Hola Javy, quiero consultar disponibilidad de ${item.name}.`,
+    item.brand ? `Marca: ${item.brand}` : "",
+    item.presentation ? `Presentacion: ${item.presentation}` : "",
+    item.flavor ? `Sabor: ${item.flavor}` : "",
+    "",
+    "Me confirmas disponibilidad, precio final y opciones de entrega?",
+  ].filter(Boolean).join("\n");
+
+  if (typeof openJavyWhatsapp === "function") {
+    openJavyWhatsapp(message);
+  }
 }
 
 function openPanel() {
@@ -185,36 +340,33 @@ function createConsultationPanel() {
   const panel = document.createElement("aside");
   panel.className = "consultation-panel";
   panel.id = "consultationPanel";
-  panel.setAttribute("aria-label", "Asesoría por WhatsApp");
+  panel.setAttribute("aria-label", "Cotizacion por WhatsApp");
   panel.innerHTML = `
     <div class="consultation-panel__header">
       <div>
         <p class="consultation-panel__eyebrow">WhatsApp con Javy</p>
-        <h2>Asesoría</h2>
+        <h2>Mi cotizacion</h2>
       </div>
-      <button class="consultation-panel__close" type="button" aria-label="Cerrar consulta">x</button>
+      <button class="consultation-panel__close" type="button" aria-label="Cerrar cotizacion">x</button>
     </div>
 
-    <p class="consultation-empty" id="consultationEmpty">Aún no agregaste productos.</p>
+    <p class="consultation-empty" id="consultationEmpty">Aun no agregaste productos a la cotizacion.</p>
     <ul class="consultation-list" id="consultationList"></ul>
 
     <div class="consultation-form">
-      <label for="consultationObjective">Objetivo</label>
-      <select id="consultationObjective">
-        <option value="">Seleccionar</option>
-        <option>Ganar masa muscular</option>
-        <option>Bajar grasa</option>
-        <option>Mejorar rendimiento</option>
-        <option>Empezar desde cero</option>
-      </select>
+      <label for="quoteCustomerName">Nombre</label>
+      <input id="quoteCustomerName" type="text" placeholder="Tu nombre" autocomplete="name" />
 
-      <label for="consultationQuestion">Duda</label>
-      <textarea id="consultationQuestion" rows="4" placeholder="Ej: entreno 4 veces por semana y quiero saber cuál me conviene"></textarea>
+      <label for="quoteCustomerZone">Zona</label>
+      <input id="quoteCustomerZone" type="text" placeholder="Ej: San Miguelito, Condado, Brisas" autocomplete="address-level2" />
+
+      <label for="quoteComment">Comentario</label>
+      <textarea id="quoteComment" rows="4" placeholder="Ej: quiero entrega a domicilio despues de las 5 pm"></textarea>
     </div>
 
     <div class="consultation-panel__actions">
       <button class="consultation-panel__clear" id="consultationClear" type="button">Vaciar</button>
-      <button class="consultation-panel__send" id="consultationSend" type="button">Enviar por WhatsApp</button>
+      <button class="consultation-panel__send" id="consultationSend" type="button">Enviar cotizacion por WhatsApp</button>
     </div>
   `;
 
@@ -251,6 +403,8 @@ window.consultation = {
   openPanel,
   closePanel,
   renderPanel: renderConsultationPanel,
+  quoteSingleProduct,
+  askAvailability,
 };
 
 window.cart = {
