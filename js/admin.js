@@ -163,20 +163,30 @@ function renderFlavors() {
 async function loadAdminProducts() {
   setMessage(adminStatus, "Cargando productos desde Supabase...");
   try {
-    adminProducts = await window.catalogDb.getProductsWithFlavors({ cache: false, fallback: false });
+    adminProducts = await withTimeout(
+      window.catalogDb.getProductsWithFlavors({ cache: false, fallback: false }),
+      12000,
+      "El panel abrio, pero la carga de productos tardo demasiado. Revisa schema.sql y las politicas RLS."
+    );
     fillCategoryFilter();
     renderProductList();
     setMessage(adminStatus, `${adminProducts.length} productos cargados.`);
   } catch (error) {
+    adminProducts = [];
+    fillCategoryFilter();
+    renderProductList();
     setMessage(adminStatus, `No se pudo cargar Supabase: ${error.message}. Ejecuta schema.sql y revisa RLS/Auth.`, true);
   }
 }
 
 async function showAdmin() {
+  setMessage(loginMessage, "Login correcto. Abriendo panel...");
   authView.hidden = true;
+  authView.setAttribute("hidden", "");
   adminView.hidden = false;
-  await loadAdminProducts();
+  adminView.removeAttribute("hidden");
   resetProductForm();
+  await loadAdminProducts();
 }
 
 async function checkSession() {
@@ -235,14 +245,14 @@ async function handleLogin(event) {
       throw new Error("El login no devolvio una sesion activa. Revisa si el usuario esta confirmado en Supabase Auth.");
     }
 
-    setMessage(loginMessage, "");
+    setMessage(loginMessage, "Login correcto. Preparando panel...");
     await showAdmin();
   } catch (error) {
     setMessage(loginMessage, error.message || "No se pudo iniciar sesion.", true);
   } finally {
     if (submitButton) {
-      submitButton.disabled = false;
-      submitButton.textContent = "Entrar";
+      submitButton.disabled = !adminView.hidden;
+      submitButton.textContent = adminView.hidden ? "Entrar" : "Sesion iniciada";
     }
   }
 }
@@ -256,7 +266,10 @@ loginForm?.querySelector("button[type='submit']")?.addEventListener("click", (ev
 logoutBtn?.addEventListener("click", async () => {
   await supabaseClient.auth.signOut();
   adminView.hidden = true;
+  adminView.setAttribute("hidden", "");
   authView.hidden = false;
+  authView.removeAttribute("hidden");
+  setMessage(loginMessage, "");
 });
 
 newProductBtn?.addEventListener("click", resetProductForm);
