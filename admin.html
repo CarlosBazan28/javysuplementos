@@ -24,7 +24,9 @@
           <h1>Javy Supplements</h1>
           <p>Inicia sesion con el usuario creado en Supabase Auth para administrar productos y sabores.</p>
 
-          <form class="admin-form" id="loginForm">
+          <p class="admin-message admin-message--login" id="loginMessage" aria-live="polite"></p>
+
+          <form class="admin-form" id="loginForm" novalidate>
             <label for="loginEmail">Correo</label>
             <input id="loginEmail" type="email" autocomplete="email" required />
 
@@ -33,7 +35,6 @@
 
             <button type="submit">Entrar</button>
           </form>
-          <p class="admin-message" id="loginMessage"></p>
         </div>
       </section>
 

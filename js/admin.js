@@ -185,14 +185,24 @@ async function checkSession() {
     return;
   }
 
-  const { data } = await supabaseClient.auth.getSession();
-  if (data.session) {
-    await showAdmin();
+  try {
+    const { data, error } = await withTimeout(
+      supabaseClient.auth.getSession(),
+      8000,
+      "No se pudo revisar la sesion actual. Intenta entrar manualmente."
+    );
+
+    if (error) throw error;
+    if (data.session) {
+      await showAdmin();
+    }
+  } catch (error) {
+    setMessage(loginMessage, error.message, true);
   }
 }
 
-loginForm?.addEventListener("submit", async (event) => {
-  event.preventDefault();
+async function handleLogin(event) {
+  event?.preventDefault?.();
   setMessage(loginMessage, "Validando...");
   const submitButton = loginForm.querySelector("button[type='submit']");
   if (submitButton) {
@@ -204,6 +214,14 @@ loginForm?.addEventListener("submit", async (event) => {
   const password = document.getElementById("loginPassword").value;
 
   try {
+    if (!email || !password) {
+      throw new Error("Escribe el correo y la contrasena del usuario admin.");
+    }
+
+    if (!email.includes("@")) {
+      throw new Error("El usuario de Supabase Auth debe entrar con formato de correo.");
+    }
+
     if (!window.supabaseClient) {
       throw new Error("Supabase no esta disponible. Revisa el CDN o la conexion.");
     }
@@ -227,6 +245,12 @@ loginForm?.addEventListener("submit", async (event) => {
       submitButton.textContent = "Entrar";
     }
   }
+}
+
+loginForm?.addEventListener("submit", handleLogin);
+loginForm?.querySelector("button[type='submit']")?.addEventListener("click", (event) => {
+  event.preventDefault();
+  handleLogin(event);
 });
 
 logoutBtn?.addEventListener("click", async () => {
