@@ -83,7 +83,7 @@ function renderProductList() {
     <li>
       <button class="admin-product-item${selectedProduct?.id === product.id ? " is-active" : ""}" type="button" data-product-id="${product.id}">
         <strong>${product.name}</strong>
-        <span>${product.brand || "Marca"} · ${product.category} · ${product.available ? "Disponible" : "Consultar stock"}</span>
+        <span>${product.brand || "Marca"} - ${product.category} - ${product.available ? "Disponible" : "Consultar stock"}</span>
       </button>
     </li>
   `).join("");
@@ -374,7 +374,8 @@ seedProductsBtn?.addEventListener("click", async () => {
     setMessage(adminStatus, "Migrando productos locales...");
     const result = await window.catalogDb.seedProductsFromLocalData();
     await loadAdminProducts();
-    setMessage(adminStatus, `Migracion lista. Creados: ${result.created}. Omitidos: ${result.skipped}. Sabores: ${result.flavorsCreated}. Errores: ${result.errors.length}.`, Boolean(result.errors.length));
+    const errorDetails = result.errors.length ? ` Primeros errores: ${result.errors.slice(0, 3).join(" | ")}` : "";
+    setMessage(adminStatus, `Migracion lista. Creados: ${result.created}. Omitidos: ${result.skipped}. Sabores: ${result.flavorsCreated}. Errores: ${result.errors.length}.${errorDetails}`, Boolean(result.errors.length));
   } catch (error) {
     setMessage(adminStatus, error.message, true);
   }

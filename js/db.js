@@ -1,4 +1,4 @@
-const PRODUCT_SELECT = `
+const PRODUCT_BASE_SELECT = `
   id,
   name,
   brand,
@@ -13,7 +13,11 @@ const PRODUCT_SELECT = `
   goals,
   legacy_id,
   created_at,
-  updated_at,
+  updated_at
+`;
+
+const PRODUCT_SELECT = `
+  ${PRODUCT_BASE_SELECT},
   product_flavors (
     id,
     name,
@@ -153,6 +157,18 @@ function normalizeLocalProduct(product) {
   });
 }
 
+function isUsableRemoteProduct(product) {
+  const isRepairPlaceholder =
+    product.name === "Producto sin nombre" &&
+    product.category === "Producto" &&
+    !product.legacy_id &&
+    !product.brand &&
+    !product.presentation &&
+    !product.description;
+
+  return !isRepairPlaceholder;
+}
+
 function getLocalProducts() {
   if (typeof PRODUCT_LIST !== "undefined") {
     return PRODUCT_LIST.map(normalizeLocalProduct);
@@ -204,6 +220,19 @@ async function getProductsWithFlavors(options = {}) {
       if (error) throw error;
 
       if (data?.length) {
+        const normalizedProducts = data.map(normalizeProductFromDb);
+        const usableProducts = normalizedProducts.filter(isUsableRemoteProduct);
+
+        if (usableProducts.length || !allowFallback) {
+          productsCache = allowFallback ? usableProducts : normalizedProducts;
+          productsCacheSource = "supabase";
+          return productsCache;
+        }
+
+        console.warn("Supabase solo tiene productos de reparacion. La web usara datos locales hasta migrar el catalogo.");
+      }
+
+      if (data?.length && !allowFallback) {
         productsCache = data.map(normalizeProductFromDb);
         productsCacheSource = "supabase";
         return productsCache;
@@ -232,7 +261,7 @@ async function createProduct(productData) {
   const { data, error } = await supabaseClient
     .from("products")
     .insert(payload)
-    .select(PRODUCT_SELECT)
+    .select(PRODUCT_BASE_SELECT)
     .single();
 
   if (error) throw error;
@@ -249,7 +278,7 @@ async function updateProduct(id, productData) {
     .from("products")
     .update(payload)
     .eq("id", id)
-    .select(PRODUCT_SELECT)
+    .select(PRODUCT_BASE_SELECT)
     .single();
 
   if (error) throw error;
