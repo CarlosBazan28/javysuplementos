@@ -1,15 +1,21 @@
 <header>
       <nav class="nav">
         <img class="nav__logo" src="img/icons/logo.png" alt="Logo" />
-        <ul class="nav__links">
+        <button class="nav__toggle" id="navToggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="navMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <ul class="nav__links" id="navMenu">
           <li><a href="index.html">INICIO</a></li>
           <li><a href="supplements-page.html">SUPLEMENTOS</a></li>
-          <li><a href="">TESTIMONIOS</a></li>
-          <li><a href="">CONTACTO</a></li>
+          <li><a href="index.html#testimonios">TESTIMONIOS</a></li>
+          <li><a href="index.html#contacto">CONTACTO</a></li>
         </ul>
-        <button class="cart-btn" id="cartBtn" aria-label="Abrir carrito">
-          <img class="cart-icon" src="img/icons/bolsa-compra.png" alt=""/>
-          <span class="cart-badge" id="cartBadge" hidden>0</span>
+        <button class="cart-btn" id="consultationBtn" type="button" aria-label="Abrir cotización">
+          <img class="cart-icon" src="img/icons/whatsapp.png" alt=""/>
+          <span class="cart-label">Cotización</span>
+          <span class="cart-badge" id="consultationBadge" hidden>0</span>
         </button>
       </nav>
     </header>

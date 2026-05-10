@@ -1,0 +1,241 @@
+.has-consultation-open {
+  overflow: hidden;
+}
+
+.consultation-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.62);
+  z-index: 90;
+}
+
+.consultation-overlay[hidden] {
+  display: none;
+}
+
+.consultation-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 100;
+  width: min(420px, 100%);
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  background: linear-gradient(180deg, #070b12, #0d1420);
+  border-left: 1px solid rgba(90, 180, 233, 0.22);
+  box-shadow: -24px 0 60px rgba(0,0,0,0.55);
+  color: #fff;
+  transform: translateX(100%);
+  transition: transform 0.22s ease;
+}
+
+.consultation-panel.is-open {
+  transform: translateX(0);
+}
+
+.consultation-panel__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.consultation-panel__eyebrow {
+  color: var(--Cyan);
+  font-size: 0.75rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.consultation-panel h2 {
+  font-size: 1.35rem;
+  margin: 0;
+}
+
+.consultation-panel__close {
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.15rem;
+}
+
+.consultation-empty {
+  color: #a9b4c6;
+  border: 1px dashed rgba(255,255,255,0.16);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.consultation-empty[hidden] {
+  display: none;
+}
+
+.consultation-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.consultation-item {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+}
+
+.consultation-item__img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+}
+
+.consultation-item__info {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.consultation-item__info strong {
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+
+.consultation-item__info span {
+  color: #a9b4c6;
+  font-size: 0.75rem;
+}
+
+.consultation-item__quantity {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #d9e8f5;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.consultation-item__quantity input {
+  width: 64px;
+  min-height: 34px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  background: #101724;
+  color: #fff;
+  font: inherit;
+  padding: 0 8px;
+}
+
+.consultation-item__remove {
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 8px 10px;
+}
+
+.consultation-form {
+  display: grid;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.consultation-form label {
+  color: #d9e8f5;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.consultation-form select,
+.consultation-form input,
+.consultation-form textarea {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  background: #101724;
+  color: #fff;
+  font: inherit;
+  padding: 11px;
+}
+
+.consultation-form textarea {
+  resize: vertical;
+  min-height: 92px;
+}
+
+.consultation-panel__actions {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+}
+
+.consultation-panel__clear,
+.consultation-panel__send {
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 900;
+  padding: 12px 14px;
+}
+
+.consultation-panel__clear {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+.consultation-panel__send {
+  background: #00c853;
+  color: #06120a;
+}
+
+.consultation-panel__clear:disabled,
+.consultation-panel__send:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.consultation-panel button:focus-visible,
+.consultation-form input:focus-visible,
+.consultation-form select:focus-visible,
+.consultation-form textarea:focus-visible {
+  outline: 2px solid var(--Cyan);
+  outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+  .consultation-panel {
+    width: 100%;
+    padding: 14px;
+  }
+
+  .consultation-panel__actions {
+    grid-template-columns: 1fr;
+  }
+
+  .consultation-item {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  .consultation-item__remove {
+    grid-column: 1 / -1;
+  }
+}

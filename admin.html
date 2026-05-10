@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin | Javy Supplements</title>
+    <link rel="icon" href="img/icons/logo.png" type="image/x-icon" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/admin.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="js/supabase-config.js" defer></script>
+    <script src="js/whatsapp-config.js" defer></script>
+    <script src="js/product-data.js" defer></script>
+    <script src="js/db.js" defer></script>
+    <script src="js/admin.js" defer></script>
+  </head>
+  <body class="admin-page">
+    <main>
+      <section class="admin-auth" id="authView">
+        <div class="admin-auth__card">
+          <p class="admin-eyebrow">Panel administrador</p>
+          <h1>Javy Supplements</h1>
+          <p>Inicia sesion con el usuario creado en Supabase Auth para administrar productos y sabores.</p>
+
+          <p class="admin-message admin-message--login" id="loginMessage" aria-live="polite"></p>
+
+          <form class="admin-form" id="loginForm" novalidate>
+            <label for="loginEmail">Correo</label>
+            <input id="loginEmail" type="email" autocomplete="email" required />
+
+            <label for="loginPassword">Contrasena</label>
+            <input id="loginPassword" type="password" autocomplete="current-password" required />
+
+            <button type="submit">Entrar</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="admin-shell" id="adminView" hidden>
+        <header class="admin-header">
+          <div>
+            <p class="admin-eyebrow">Catalogo conectado a Supabase</p>
+            <h1>Panel de productos</h1>
+          </div>
+          <div class="admin-header__actions">
+            <a href="supplements-page.html">Ver catalogo</a>
+            <button type="button" id="seedProductsBtn">Migrar productos locales a Supabase</button>
+            <button type="button" id="logoutBtn">Cerrar sesion</button>
+          </div>
+        </header>
+
+        <div class="admin-layout">
+          <aside class="admin-sidebar">
+            <div class="admin-toolbar">
+              <button type="button" id="newProductBtn">Nuevo producto</button>
+              <input id="adminSearch" type="search" placeholder="Buscar producto" />
+              <select id="adminCategoryFilter">
+                <option value="todos">Todas las categorias</option>
+              </select>
+            </div>
+            <p class="admin-message" id="adminStatus"></p>
+            <ul class="admin-product-list" id="adminProductList"></ul>
+          </aside>
+
+          <section class="admin-editor">
+            <form class="admin-product-form" id="productForm">
+              <div class="admin-editor__title">
+                <div>
+                  <p class="admin-eyebrow">Producto</p>
+                  <h2 id="editorTitle">Nuevo producto</h2>
+                </div>
+                <button type="button" class="admin-danger" id="deleteProductBtn" hidden>Eliminar</button>
+              </div>
+
+              <div class="admin-grid">
+                <label>
+                  Nombre
+                  <input name="name" required />
+                </label>
+                <label>
+                  Marca
+                  <input name="brand" />
+                </label>
+                <label>
+                  Categoria
+                  <input name="category" required />
+                </label>
+                <label>
+                  Precio
+                  <input name="price" type="number" min="0" step="0.01" />
+                </label>
+                <label>
+                  Presentacion
+                  <input name="presentation" />
+                </label>
+                <label>
+                  URL de imagen
+                  <input name="image_url" />
+                </label>
+              </div>
+
+              <label>
+                Descripcion
+                <textarea name="description" rows="4"></textarea>
+              </label>
+
+              <div class="admin-grid">
+                <label>
+                  Tags separados por coma
+                  <input name="tags" placeholder="proteina, masa, recuperacion" />
+                </label>
+                <label>
+                  Objetivos separados por coma
+                  <input name="goals" placeholder="Ganar masa muscular, Recuperacion" />
+                </label>
+              </div>
+
+              <div class="admin-switches">
+                <label>
+                  <input name="available" type="checkbox" checked />
+                  Disponible
+                </label>
+                <label>
+                  <input name="featured" type="checkbox" />
+                  Destacado
+                </label>
+              </div>
+
+              <div class="admin-form-actions">
+                <button type="submit">Guardar producto</button>
+              </div>
+            </form>
+
+            <section class="admin-flavors">
+              <div class="admin-editor__title">
+                <div>
+                  <p class="admin-eyebrow">Sabores</p>
+                  <h2>Disponibilidad por sabor</h2>
+                </div>
+              </div>
+
+              <form class="admin-flavor-add" id="flavorForm">
+                <input id="newFlavorName" placeholder="Nuevo sabor" />
+                <label>
+                  <input id="newFlavorAvailable" type="checkbox" checked />
+                  Disponible
+                </label>
+                <button type="submit">Agregar sabor</button>
+              </form>
+
+              <ul class="admin-flavor-list" id="flavorList"></ul>
+            </section>
+          </section>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

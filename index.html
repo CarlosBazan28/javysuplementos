@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>P-Boom Suplements</title>
 
-    <link rel="icon" href="img/logo.png" type="image/x-icon" />
+    <link rel="icon" href="img/icons/logo.png" type="image/x-icon" />
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/components/nav.css">
     <link rel="stylesheet" href="css/tokens.css">
     <link rel="stylesheet" href="css/components/cards.css">
+    <link rel="stylesheet" href="css/components/cart.css">
 
     <!-- Google Fonts -->
 
@@ -20,8 +21,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Vast+Shadow&display=swap" rel="stylesheet"/>
 
-    <script src="js/script.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="js/supabase-config.js" defer></script>
+    <script src="js/whatsapp-config.js" defer></script>
+    <script src="js/product-data.js" defer></script>
+    <script src="js/db.js" defer></script>
     <script src="js/cart.js" defer></script>
+    <script src="js/script.js" defer></script>
     <script src="js/include-nav.js" defer></script>
   </head>
   <body>
@@ -31,7 +37,7 @@
         <div class="hero__slogan">
           <h2>Tu Salud y Bienestar es nuestra prioridad</h2>
           <div class="hero__button">
-            <button>Ver productos</button> <button>Hablar con asesor 💬</button>
+            <button class="hero__button--pri">Ver productos</button> <button class="hero__button--sec">Abrir cotización</button>
           </div>
         </div>
         <img
@@ -40,7 +46,7 @@
           alt="Javito posando con proteina"
         />
       </section>
-      <section class="top-products">
+      <section class="top-products" id="productos">
         <div class="title">
           <h2>Los Suplementos mas comprados</h2>
           <p>
@@ -59,7 +65,7 @@
           <h2>Aprende sobre tus suplementos</h2>
           <p>
             Cómo funcionan proteínas, creatinas, quemadores y más.
-Videos hechos por Javy, sin tecnicismos.
+            Videos hechos por Javy, sin tecnicismos.
           </p>
         </div>
       <div class="instagram-videos__grid">

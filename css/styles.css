@@ -125,10 +125,9 @@ body {
   align-items: center;
 }
 
-.hero__slogan button {
+.hero__button button{
   margin-top: 30px;
   line-height: 1;
-  background-color: #741a16;
   color: var(--blanco);
   border: none;
   border-radius: 10px;
@@ -139,10 +138,17 @@ body {
   transition: all 0.3s ease;
 }
 
+.hero__button--pri{
+  background:#ff002bcc;
+}
+
+.hero__button--sec{
+  background: var(--Cyan);
+}
+
 .hero__slogan button:hover {
-  background-color: #a90b02;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 188, 212, 0.4);
+  transform: translateY(-1px);
+  
 }
 
 .hero__img {
@@ -401,7 +407,60 @@ body {
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
   background: rgba(255, 140, 0, 0.14);
+  color: #ffbf5a;
   border: 1px solid rgba(255, 180, 0, 0.45);
+}
+
+.product-detail__tag.is-unavailable {
+  background: rgba(255, 179, 0, 0.12);
+  color: #ffcf6d;
+}
+
+.product-detail__data {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+.product-detail__data div {
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.035);
+}
+
+.product-detail__data dt {
+  color: #a9b4c6;
+  font-size: 0.75rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.product-detail__data dd {
+  color: #fff;
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+.product-detail__select {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid rgba(90, 180, 233, 0.28);
+  border-radius: 10px;
+  background: #101724;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  padding: 0 10px;
+}
+
+.product-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
 }
 
 .product-detail__cta {
@@ -409,7 +468,6 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin-bottom: 18px;
   padding: 0.7rem 1.2rem;
   border-radius: 999px;
   border: 1px solid rgba(90, 180, 233, 0.9);
@@ -423,6 +481,12 @@ body {
   font-size: 0.95rem;
   font-weight: 600;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.product-detail__cta--secondary {
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: none;
 }
 
 .product-detail__cta:hover {
@@ -495,6 +559,12 @@ body {
 
 .product-detail__list li {
   margin-bottom: 6px;
+}
+
+@media (max-width: 520px) {
+  .product-detail__data {
+    grid-template-columns: 1fr;
+  }
 }
 /* Responsive */
 

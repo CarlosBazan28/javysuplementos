@@ -1,265 +1,184 @@
-const PRODUCTS = {
-  "creatina-nutrex-60": {
-    nombre: "Creatina Nutrex - 60 Servidas",
-    subtitulo: "Monohidrato de creatina pura para fuerza, potencia y rendimiento.",
-    precio: 15.99,
-    tag: "⚡ Fuerza y rendimiento",
-    imagen: "img/products/creatine-nutrex-60srv.png",
-    alt: "Creatina Nutrex de 60 servidas",
-    whatsappMensaje: "Hola Javy, quiero más información sobre la Creatina Nutrex de 60 servidas.",
-    beneficios: [
-      "Incrementa fuerza y potencia en entrenamientos de alta intensidad.",
-      "Ayuda a mejorar el rendimiento en series cortas y explosivas.",
-      "Apoya la recuperación entre sesiones de entrenamiento.",
-      "Fórmula pura y fácil de mezclar."
-    ],
-    descripcion: [
-      "La Creatina Nutrex es monohidrato de creatina de alta calidad, ideal para quienes buscan mejorar fuerza, potencia y rendimiento en el gimnasio o en deportes explosivos.",
-      "Es un suplemento ampliamente estudiado y recomendado tanto para principiantes como para atletas avanzados.",
-      "Puede combinarse con proteína o pre-entreno sin problema."
-    ],
-    uso: [
-      "Tomar 3–5 g al día, preferiblemente a la misma hora.",
-      "Se puede consumir antes o después del entrenamiento.",
-      "Mantener una buena hidratación durante el día.",
-      "Usar de forma constante para mejores resultados."
-    ]
-  },
+const PRODUCT_PLACEHOLDER_IMAGE = "img/products/product-placeholder.svg";
 
-  "creatina-nutrex-fruit-punch-60": {
-    nombre: "Creatina Nutrex - 60 Servidas (Sabor Fruit Punch)",
-    subtitulo: "Creatina micronizada con sabor Fruit Punch para una mejor experiencia.",
-    precio: 16.99,
-    tag: "🍓 Sabor Fruit Punch",
-    imagen: "img/products/creatine-fruit-punch-60srv.png",
-    alt: "Creatina Nutrex sabor Fruit Punch de 60 servidas",
-    whatsappMensaje: "Hola Javy, quiero más información sobre la Creatina Nutrex Fruit Punch de 60 servidas.",
-    beneficios: [
-      "Aporta los mismos beneficios de la creatina monohidratada pura.",
-      "Formato con sabor para hacer más agradable su consumo.",
-      "Ayuda a mejorar fuerza, potencia y recuperación.",
-      "Micronizada para mejor disolución."
-    ],
-    descripcion: [
-      "Esta versión saborizada de Creatina Nutrex está pensada para quienes prefieren un sabor agradable al mezclar su creatina.",
-      "Mantiene la calidad y efectividad del monohidrato de creatina, con una mejor experiencia de consumo.",
-      "Ideal para tomar con agua fría antes o después del entrenamiento."
-    ],
-    uso: [
-      "Tomar 1 scoop (3–5 g) mezclado en 200–250 ml de agua.",
-      "Consumir una vez al día, de forma constante.",
-      "Puede tomarse antes o después del entrenamiento.",
-      "No es necesario hacer fases de carga."
-    ]
-  },
+function product({
+  id,
+  nombre,
+  precio,
+  categoria,
+  marca,
+  presentacion = "",
+  sabores = [],
+  objetivos = [],
+  disponible = true,
+  destacado = false,
+  imagen = PRODUCT_PLACEHOLDER_IMAGE,
+  imagenPendiente = imagen === PRODUCT_PLACEHOLDER_IMAGE,
+  subtitulo,
+  beneficios,
+  descripcion,
+  uso,
+}) {
+  const flavorText = sabores.length ? ` Sabores disponibles: ${sabores.join(", ")}.` : "";
+  const goalText = objetivos.length ? ` Ideal para: ${objetivos.join(", ")}.` : "";
 
-  "lcarnitina-nutrex": {
-    nombre: "L-Carnitina Nutrex",
-    subtitulo: "Ayuda a convertir grasa en energía y mejorar la resistencia.",
-    precio: 19.99,
-    tag: "🔥 Apoyo para definición",
-    imagen: "img/products/lcarnite-60caps.png",
-    alt: "L-Carnitina Nutrex 60 cápsulas",
-    whatsappMensaje: "Hola Javy, quiero más información sobre la L-Carnitina Nutrex.",
-    beneficios: [
-      "Apoya el uso de grasa como fuente de energía.",
-      "Puede ayudar a mejorar la resistencia durante el entrenamiento.",
-      "Práctica presentación en cápsulas.",
-      "Útil en etapas de pérdida de grasa o definición."
+  return {
+    id,
+    nombre,
+    subtitulo: subtitulo || `${categoria}${presentacion ? ` ${presentacion}` : ""}.${goalText}`,
+    precio,
+    categoria,
+    marca,
+    presentacion,
+    sabores,
+    objetivos,
+    disponible,
+    destacado,
+    tag: disponible ? "Disponible" : "Consultar stock",
+    imagen,
+    imagenPendiente,
+    alt: nombre,
+    whatsappMensaje: `Hola Javy, quiero asesoría sobre ${nombre}.`,
+    beneficios: beneficios || [
+      objetivos.length ? `Apoya objetivos de ${objetivos.join(", ").toLowerCase()}.` : "Apoya tu rutina de suplementación.",
+      "Producto agregado desde el catálogo disponible.",
+      "Javy puede orientarte sobre uso, sabor y disponibilidad.",
     ],
-    descripcion: [
-      "La L-Carnitina participa en el transporte de ácidos grasos hacia la mitocondria, donde se convierten en energía.",
-      "Es un buen complemento para planes de pérdida de grasa combinados con buena alimentación y entrenamiento.",
-      "No es un producto milagroso, pero sí un apoyo adicional dentro de una estrategia completa."
+    descripcion: descripcion || [
+      `${nombre} es un producto de ${marca} dentro de la categoría ${categoria.toLowerCase()}.`,
+      `Precio de catálogo: $${Number(precio).toFixed(2)}.${flavorText}`,
     ],
-    uso: [
-      "Tomar la porción recomendada en el envase, generalmente 1–2 cápsulas al día.",
-      "Consumir 30–60 minutos antes del entrenamiento.",
-      "Puede combinarse con termogénicos según tolerancia individual.",
-      "Mantenerse hidratado y acompañar con un plan alimenticio adecuado."
-    ]
-  },
+    uso: uso || [
+      "Consultar la dosis indicada en la etiqueta del producto.",
+      "Usar como complemento de una alimentación y entrenamiento adecuados.",
+      "Si tienes condiciones médicas o sensibilidad a estimulantes, consulta antes de usar.",
+    ],
+  };
+}
 
-  "whey-nutrex-2lb": {
-    nombre: "Whey Nutrex 2lb",
-    subtitulo: "Proteína de suero premium ideal para la recuperación muscular.",
-    precio: 29.99,
-    tag: "💪 Recuperación muscular",
-    imagen: "img/products/whey-nutrex-2lb.png",
-    alt: "Whey Nutrex 2lb",
-    whatsappMensaje: "Hola Javy, quiero más información sobre la Whey Nutrex 2lb.",
-    beneficios: [
-      "Aporta proteína de alta calidad para reparar y construir músculo.",
-      "Ayuda a cubrir requerimientos diarios de proteína.",
-      "Práctica presentación de 2lb, ideal para empezar.",
-      "Se mezcla bien con agua o leche."
-    ],
-    descripcion: [
-      "Whey Nutrex 2lb es una proteína de suero pensada para apoyar la recuperación y el crecimiento muscular.",
-      "Es una excelente opción para después del entrenamiento o como snack proteico durante el día.",
-      "Puede ser utilizada tanto en objetivos de aumento de masa muscular como en definición, ajustando la dieta total."
-    ],
-    uso: [
-      "Mezclar 1 scoop en 200–250 ml de agua o leche.",
-      "Consumir después del entrenamiento o entre comidas.",
-      "Ajustar la cantidad de scoops según tus requerimientos de proteína diarios.",
-      "Guardar en un lugar fresco y seco."
-    ]
-  },
+const PRODUCT_LIST = [
+  product({
+    id: "cbum-energy-drink-355ml",
+    nombre: "CBUM Energy Drink 355 ml",
+    precio: 2.5,
+    categoria: "Bebidas y Snacks",
+    marca: "CBUM",
+    presentacion: "355 ml",
+    sabores: ["Peach Mango", "Blue Snow Cone", "Citrus Burst", "Piña Colada", "Orange Sunrise", "Pink Lemonade", "Blueberry Lemonade"],
+    objetivos: ["Energía", "Enfoque"],
+    destacado: true,
+    imagen: "img/products/cbum-energy-drink-355ml.webp",
+  }),
 
-  "whey-nutrex-5lb": {
-    nombre: "Whey Nutrex 5lb",
-    subtitulo: "Mayor rendimiento con proteína de alta pureza y excelente sabor.",
-    precio: 54.99,
-    tag: "📦 Formato económico",
-    imagen: "img/products/whey-nutrex-5lb.png",
-    alt: "Whey Nutrex 5lb",
-    whatsappMensaje: "Hola Javy, quiero más información sobre la Whey Nutrex 5lb.",
-    beneficios: [
-      "Presentación grande para un uso más prolongado.",
-      "Relación cantidad/precio más conveniente.",
-      "Apoya la construcción y mantenimiento de masa muscular.",
-      "Buena disolución y sabor agradable."
-    ],
-    descripcion: [
-      "La versión de 5lb de Whey Nutrex es ideal para quienes consumen proteína de forma constante.",
-      "Su tamaño la hace más conveniente a nivel costo/beneficio.",
-      "Recomendada para personas que entrenan varias veces por semana y buscan cubrir sus necesidades de proteína."
-    ],
-    uso: [
-      "Tomar 1 scoop después del entrenamiento.",
-      "Se puede agregar un scoop extra en otro momento del día según tus requerimientos.",
-      "Combinar con una dieta equilibrada y entrenamiento constante."
-    ]
-  },
+  product({ id: "brutal-mass-15lb", nombre: "Terror Labz Brutal Mass Gainer 15 lb", precio: 60, categoria: "Ganadores de Peso", marca: "Terror Labz", presentacion: "15 lb", sabores: ["Chocolate", "Cookies"], objetivos: ["Ganar masa muscular", "Subir calorías"], destacado: true, imagen: "img/products/brutal-mass-15lb.webp" }),
+  product({ id: "brutal-mass-7-5lb", nombre: "Terror Labz Brutal Mass Gainer 7.5 lb", precio: 33.5, categoria: "Ganadores de Peso", marca: "Terror Labz", presentacion: "7.5 lb", sabores: ["Chocolate", "Cookies"], objetivos: ["Ganar masa muscular", "Subir calorías"] }),
+  product({ id: "nutrex-mass-infusion-12lb", nombre: "Nutrex Mass Infusion 12 lb", precio: 62, categoria: "Ganadores de Peso", marca: "Nutrex", presentacion: "12 lb", sabores: ["Vainilla", "Chocolate"], objetivos: ["Ganar masa muscular", "Subir calorías"], destacado: true, imagen: "img/products/nutrex-mass-infusion-12lb.webp" }),
+  product({ id: "optimum-nutrition-serious-mass-12lb", nombre: "Optimum Nutrition Serious Mass 12 lb", precio: 62, categoria: "Ganadores de Peso", marca: "Optimum Nutrition", presentacion: "12 lb", sabores: ["Chocolate", "Chocolate Peanut Butter", "Vainilla"], objetivos: ["Ganar masa muscular", "Subir calorías"], destacado: true, imagen: "img/products/optimum-nutrition-serious-mass-12lb.webp" }),
+  product({ id: "carnivor-mass-6lb", nombre: "MuscleMeds Carnivor Mass 6 lb", precio: 47, categoria: "Ganadores de Peso", marca: "MuscleMeds", presentacion: "6 lb", sabores: ["Chocolate", "Chocolate Peanut Butter", "Vainilla"], objetivos: ["Ganar masa muscular", "Subir calorías"], imagen: "img/products/carnivor-mass-6lb.webp" }),
+  product({ id: "biosport-xtreme-gainer-3kg", nombre: "BioSport Xtreme Gainer 3 kg", precio: 35, categoria: "Ganadores de Peso", marca: "BioSport USA", presentacion: "3 kg / 6.6 lb", sabores: ["Vainilla", "Chocolate", "Fresa", "Cookies & Cream"], objetivos: ["Ganar masa muscular", "Subir calorías"], imagen: "img/products/biosport-xtreme-gainer-3kg.webp" }),
 
-  "isofit-nutrex-2lb": {
-    nombre: "Isofit Nutrex 2lb",
-    subtitulo: "Aislado de suero 100% puro, rápida absorción y alto valor biológico.",
-    precio: 42.99,
-    tag: "🥛 Aislado de suero",
-    imagen: "img/products/isofit-2lb-nutrex.png",
-    alt: "Isofit Nutrex 2lb",
-    whatsappMensaje: "Hola Javy, quiero más información sobre Isofit Nutrex 2lb.",
-    beneficios: [
-      "Aislado de suero con menor contenido de lactosa, grasas y carbohidratos.",
-      "Rápida absorción, ideal para después del entrenamiento.",
-      "Proteína de alto valor biológico.",
-      "Buena opción para definición o cuando se busca una fuente más limpia."
-    ],
-    descripcion: [
-      "Isofit Nutrex es un aislado de suero pensado para quienes buscan una proteína más refinada y con menos impurezas.",
-      "Ideal en etapas de definición o para personas que buscan proteína con mejor digestibilidad.",
-      "También es una excelente opción para quienes cuidan más de cerca sus macros."
-    ],
-    uso: [
-      "Mezclar 1 scoop con agua fría para mejorar la absorción.",
-      "Consumir después del entrenamiento o en ayunas si lo recomienda tu plan.",
-      "Mantener una ingesta adecuada de agua durante el día."
-    ]
-  },
+  product({ id: "mutant-iso-surge-5lb", nombre: "Mutant ISO Surge 5 lb", precio: 74, categoria: "Proteínas ISO", marca: "Mutant", presentacion: "5 lb", sabores: ["Fresa", "Cookies", "Vainilla", "Triple Chocolate"], objetivos: ["Recuperación", "Definición"], destacado: true, imagen: "img/products/mutant-iso-surge-5lb.webp" }),
+  product({ id: "biosport-absolute-iso-4lb", nombre: "Biosport Absolute ISO 4 lb", precio: 65, categoria: "Proteínas ISO", marca: "Biosport", presentacion: "4 lb", sabores: ["Cookies", "Vainilla", "Chocolate"], objetivos: ["Recuperación", "Definición"], imagen: "img/products/biosport-absolute-iso-4lb.webp" }),
+  product({ id: "nutrex-isofit-protein-5lb", nombre: "Nutrex Isofit Protein 5 lb", precio: 75, categoria: "Proteínas ISO", marca: "Nutrex", presentacion: "5 lb", sabores: ["Fresa", "Cookies", "Vainilla", "Chocolate", "Banana"], objetivos: ["Recuperación", "Definición"], destacado: true, imagen: "img/products/nutrex-isofit-protein-5lb.webp" }),
+  product({ id: "carnivor-iso-4lb", nombre: "Carnivor ISO 4 lb", precio: 63, categoria: "Proteínas ISO", marca: "MuscleMeds", presentacion: "4 lb", sabores: ["Fresa", "Chocolate", "Chocolate Maní", "Cookies", "Vainilla"], objetivos: ["Recuperación", "Definición"], imagen: "img/products/carnivor-iso-4lb.webp" }),
+  product({ id: "nutrex-isofit-protein-2lb", nombre: "Nutrex Isofit Protein 2 lb", precio: 40, categoria: "Proteínas ISO", marca: "Nutrex", presentacion: "2 lb", sabores: ["Chocolate", "Cookies", "Fresa", "Banana", "Vainilla"], objetivos: ["Recuperación", "Definición"], destacado: true, imagen: "img/products/nutrex-isofit-protein-2lb.webp" }),
+  product({ id: "isomorph-28g-protein", nombre: "APS Isomorph 28 Pure Whey Isolate", precio: 36, categoria: "Proteínas ISO", marca: "APS Nutrition", presentacion: "27 servidas", sabores: ["Honey Granola", "Cookies", "Chocolate", "Vainilla", "Fresa"], objetivos: ["Recuperación", "Definición"], imagen: "img/products/isomorph-28g-protein.webp" }),
+  product({ id: "htp-precision-protein", nombre: "HTP Precision Protein 2 lb", precio: 36, categoria: "Proteínas ISO", marca: "HTP", presentacion: "2 lb", sabores: ["Chocolate Peanut Butter", "Cookies", "Chocolate", "Honey Granola", "Fresa", "Vainilla"], objetivos: ["Recuperación", "Definición"], imagen: "img/products/htp-precision-protein.webp" }),
+  product({ id: "carnivor-iso-2lb", nombre: "Carnivor ISO 2 lb", precio: 38.5, categoria: "Proteínas ISO", marca: "MuscleMeds", presentacion: "2 lb", sabores: ["Chocolate", "Chocolate Peanut Butter", "Vainilla", "Cookies"], objetivos: ["Recuperación", "Definición"], imagen: "img/products/carnivor-iso-2lb.webp" }),
+  product({ id: "raw-grass-fed-isolate-2lb", nombre: "RAW Grass Fed Isolate Protein 2 lb", precio: 45, categoria: "Proteínas ISO", marca: "RAW Nutrition", presentacion: "2 lb", sabores: ["Vainilla", "Chocolate"], objetivos: ["Recuperación", "Definición"], imagen: "img/products/raw-grass-fed-isolate-2lb.webp" }),
 
-  "isofit-nutrex-5lb": {
-    nombre: "Isofit Nutrex 5lb",
-    subtitulo: "Aislado de suero ultra premium para resultados profesionales.",
-    precio: 79.99,
-    tag: "🏆 Alta exigencia",
-    imagen: "img/products/isofit-5lb-nutrex.png",
-    alt: "Isofit Nutrex 5lb",
-    whatsappMensaje: "Hola Javy, quiero más información sobre Isofit Nutrex 5lb.",
-    beneficios: [
-      "Máxima pureza en proteína de suero.",
-      "Ideal para atletas exigentes o preparaciones específicas.",
-      "Menos lactosa, grasas y carbohidratos por porción.",
-      "Presentación grande para uso frecuente."
-    ],
-    descripcion: [
-      "Isofit 5lb está pensada para quienes usan proteína aislada de forma regular y buscan la mejor calidad posible.",
-      "Es una proteína de alta gama, con excelente perfil nutricional.",
-      "Apta para fases de definición, recomposición o preparación deportiva."
-    ],
-    uso: [
-      "Consumir 1 scoop al día o según indicación de tu plan.",
-      "Preferiblemente después del entrenamiento.",
-      "Puede combinarse con creatina u otros suplementos según tu objetivo."
-    ]
-  },
+  product({ id: "mutant-whey-protein-5lb", nombre: "Mutant Whey 5 lb", precio: 50, categoria: "Proteínas Whey", marca: "Mutant", presentacion: "5 lb", sabores: ["Vainilla", "Brownie", "Triple Chocolate", "Cookies & Cream", "Fresa"], objetivos: ["Recuperación", "Masa muscular"], imagen: "img/products/mutant-whey-protein-5lb.webp" }),
+  product({ id: "optimum-nutrition-gold-standard-whey-5lb", nombre: "Optimum Nutrition Gold Standard 100% Whey 5 lb", precio: 75, categoria: "Proteínas Whey", marca: "Optimum Nutrition", presentacion: "5 lb", sabores: ["Chocolate", "Vainilla", "Cookies & Cream", "Fresas con crema"], objetivos: ["Recuperación", "Masa muscular"], destacado: true, imagen: "img/products/optimum-nutrition-gold-standard-whey-5lb.webp" }),
+  product({ id: "muscletech-nitro-tech-whey-gold-5lb", nombre: "MuscleTech Nitro-Tech Whey Gold 5 lb", precio: 72, categoria: "Proteínas Whey", marca: "MuscleTech", presentacion: "5 lb", sabores: ["Chocolate", "Vainilla", "Chocolate Peanut Butter", "Cookies & Cream"], objetivos: ["Recuperación", "Masa muscular"], imagen: "img/products/muscletech-nitro-tech-whey-gold-5lb.webp" }),
+  product({ id: "xtreme-whey-5lb", nombre: "Bio-Sport Xtreme Whey 5 lb", precio: 55, categoria: "Proteínas Whey", marca: "Bio-Sport", presentacion: "5 lb", sabores: ["Chocolate", "Vainilla", "Fresa"], objetivos: ["Recuperación", "Masa muscular"], imagen: "img/products/xtreme-whey-5lb.webp" }),
+  product({ id: "prosupps-whey-premium-5lb", nombre: "ProSupps Whey Concentrate Premium Protein 5 lb", precio: 58, categoria: "Proteínas Whey", marca: "ProSupps", presentacion: "5 lb", sabores: ["Vainilla"], objetivos: ["Recuperación", "Masa muscular"], imagen: "img/products/prosupps-whey-premium-5lb.webp" }),
+  product({ id: "nutrabol-c4-whey-5lb", nombre: "Cellucor C4 Whey Protein 5 lb", precio: 71, categoria: "Proteínas Whey", marca: "Cellucor C4", presentacion: "5 lb", sabores: ["Reese's Chocolate Peanut Butter", "Vanilla Bean"], objetivos: ["Recuperación", "Masa muscular"], imagen: "img/products/nutrabol-c4-whey-5lb.webp" }),
+  product({ id: "nutricost-protein-1-5lb", nombre: "Nutricost Whey Protein Concentrate 1.5 lb", precio: 24, categoria: "Proteínas Whey", marca: "Nutricost", presentacion: "1.5 lb", sabores: ["Vainilla", "Chocolate"], objetivos: ["Recuperación", "Masa muscular"], imagen: "img/products/nutricost-whey-protein-1-5lb.webp" }),
+  product({ id: "muscletech-nitro-tech-whey-gold-2lb", nombre: "MuscleTech Nitro-Tech Whey Gold 2 lb", precio: 40, categoria: "Proteínas Whey", marca: "MuscleTech", presentacion: "2 lb", sabores: ["Cookies & Cream", "Vainilla"], objetivos: ["Recuperación", "Masa muscular"], imagen: "img/products/muscletech-nitro-tech-whey-gold-2lb.webp" }),
+  product({ id: "nutrex-100-whey-protein", nombre: "Nutrex 100% Whey Protein 2 lb", precio: 35, categoria: "Proteínas Whey", marca: "Nutrex", presentacion: "2 lb", sabores: ["Chocolate", "Vainilla", "Cookies & Cream"], objetivos: ["Recuperación", "Masa muscular"], imagen: "img/products/nutrex-100-whey-protein.webp" }),
+  product({ id: "nutrabol-c4-whey-2lb", nombre: "Cellucor C4 Whey Protein 2 lb", precio: 38, categoria: "Proteínas Whey", marca: "Cellucor C4", presentacion: "2 lb", sabores: ["Hershey's Milk Chocolate", "Reese's Chocolate Peanut Butter", "Vanilla Bean"], objetivos: ["Recuperación", "Masa muscular"], imagen: "img/products/nutrabol-c4-whey-2lb.webp" }),
 
-  "iso100-2lb": {
-    nombre: "ISO 100 2lb",
-    subtitulo: "Proteína hidrolizada Dymatize para máxima digestión y pureza.",
-    precio: 43.99,
-    tag: "⚙️ Hidrolizada",
-    imagen: "img/products/iso100-2lb.png",
-    alt: "ISO 100 Dymatize 2lb",
-    whatsappMensaje: "Hola Javy, quiero más información sobre ISO 100 2lb.",
-    beneficios: [
-      "Proteína hidrolizada de rápida absorción.",
-      "Excelente opción para después del entrenamiento.",
-      "Muy baja en carbohidratos y grasas.",
-      "Fácil digestión para muchas personas."
-    ],
-    descripcion: [
-      "ISO 100 de Dymatize es una de las proteínas hidrolizadas más reconocidas del mercado.",
-      "Está pensada para maximizar la absorción y reducir al mínimo las impurezas.",
-      "Ideal para quienes priorizan la calidad y digestibilidad de la proteína."
-    ],
-    uso: [
-      "Tomar 1 scoop con agua fría después del entrenamiento.",
-      "También puede consumirse en la mañana o entre comidas si lo indica tu plan.",
-      "Guardar bien cerrada para mantener la frescura del producto."
-    ]
-  },
+  product({ id: "nutricost-casein-5lb", nombre: "Nutricost Casein 5 lb", precio: 75, categoria: "Caseínas", marca: "Nutricost", presentacion: "5 lb", sabores: ["Chocolate", "Vainilla"], objetivos: ["Recuperación nocturna", "Masa muscular"] }),
+  product({ id: "nutricost-casein-2lb", nombre: "Nutricost Casein 2 lb", precio: 38, categoria: "Caseínas", marca: "Nutricost", presentacion: "2 lb", sabores: ["Chocolate", "Vainilla"], objetivos: ["Recuperación nocturna", "Masa muscular"] }),
 
-  "iso100-5lb": {
-    nombre: "ISO 100 5lb",
-    subtitulo: "Versión avanzada de ISO 100 con proteína ultra filtrada.",
-    precio: 79.99,
-    tag: "⚙️ Hidrolizada · Formato grande",
-    imagen: "img/products/iso100-5lb.png",
-    alt: "ISO 100 Dymatize 5lb",
-    whatsappMensaje: "Hola Javy, quiero más información sobre ISO 100 5lb.",
-    beneficios: [
-      "Proteína hidrolizada en formato grande, ideal para uso constante.",
-      "Perfil muy limpio en carbohidratos y grasas.",
-      "Excelente para recuperación muscular de alto nivel.",
-      "Buena opción para atletas avanzados."
-    ],
-    descripcion: [
-      "La versión de 5lb de ISO 100 es ideal para quienes usan proteína hidrolizada de forma frecuente.",
-      "Combina pureza, buena digestión y mejor relación cantidad/precio frente a formatos más pequeños."
-    ],
-    uso: [
-      "Consumir 1 scoop en agua después del entrenamiento.",
-      "Según el plan, puede tomarse un segundo scoop en otro momento del día.",
-      "Acompañar siempre con una dieta acorde a tu objetivo."
-    ]
-  },
+  product({ id: "nutrex-bcaa", nombre: "Nutrex BCAA", precio: 15, categoria: "Aminoácidos", marca: "Nutrex", sabores: ["Fruit Punch", "Green Apple", "Watermelon"], objetivos: ["Recuperación", "Rendimiento"] }),
+  product({ id: "nutrex-eaa", nombre: "Nutrex EAA", precio: 25, categoria: "Aminoácidos", marca: "Nutrex", sabores: ["Limón y Lima", "Manzana", "Naranja", "Fresa Sandía"], objetivos: ["Recuperación", "Rendimiento"] }),
+  product({ id: "amino-energy-30-serv", nombre: "Amino Energy 30 servidas", precio: 34, categoria: "Aminoácidos", marca: "Optimum Nutrition", sabores: ["Uva", "Blue Raspberry", "Sandía", "Fruit Fusion"], objetivos: ["Energía", "Recuperación"] }),
+  product({ id: "amino-energy-varios-sabores", nombre: "Amino Energy", precio: 25, categoria: "Aminoácidos", marca: "Optimum Nutrition", sabores: ["Uva", "Green Apple", "Blue Raspberry", "Mojito", "Fresa Lima", "Naranja", "Sandía", "Fruit Fusion"], objetivos: ["Energía", "Recuperación"] }),
+  product({ id: "skull-bcaa-eaa", nombre: "Skull BCAA + EAA", precio: 20, categoria: "Aminoácidos", marca: "Skull", objetivos: ["Recuperación", "Rendimiento"] }),
+  product({ id: "xtend-bcaa-30-serv", nombre: "Xtend BCAA 30 servidas", precio: 25, categoria: "Aminoácidos", marca: "Xtend", sabores: ["Mango Madness", "Glacial Grape", "Fruit Punch"], objetivos: ["Recuperación", "Rendimiento"] }),
+  product({ id: "primaforce-eaa-30-serv", nombre: "Primaforce EAA 30 servidas", precio: 16.5, categoria: "Aminoácidos", marca: "Primaforce", sabores: ["Tropical Fruit Punch"], objetivos: ["Recuperación", "Rendimiento"] }),
 
-  "lipo6-black-intense": {
-    nombre: "Lipo 6 Black Intense Nutrex",
-    subtitulo: "Termogénico potente para energía, enfoque y quema de grasa.",
-    precio: 29.99,
-    tag: "🔥 Termogénico potente",
-    imagen: "img/products/lipo-6-black-60caps.png",
-    alt: "Lipo 6 Black Intense Nutrex 60 cápsulas",
-    whatsappMensaje: "Hola Javy, quiero más información sobre Lipo 6 Black Intense.",
-    beneficios: [
-      "Aporta energía y enfoque para entrenar con más intensidad.",
-      "Apoya procesos de quema de grasa dentro de un plan completo.",
-      "Fórmula estimulante para uso controlado.",
-      "Útil en etapas de definición."
-    ],
-    descripcion: [
-      "Lipo 6 Black Intense es un termogénico diseñado para apoyar la quema de grasa, aumentando energía y enfoque.",
-      "Debe utilizarse con responsabilidad y siempre acompañado de una buena alimentación y entrenamiento adecuado.",
-      "No es un producto milagroso y no reemplaza hábitos saludables."
-    ],
-    uso: [
-      "Seguir la dosis indicada en el envase, respetando la tolerancia individual.",
-      "Evitar su uso cerca de la hora de dormir por su contenido estimulante.",
-      "No mezclar con otros estimulantes fuertes sin la guía adecuada.",
-      "No recomendado para personas sensibles a la cafeína o con ciertas condiciones médicas."
-    ]
-  }
-};
+  product({ id: "olympus-creatine-60-serv", nombre: "Olympus Creatine 60 servidas", precio: 10.5, categoria: "Creatinas", marca: "Olympus", presentacion: "60 servidas", objetivos: ["Fuerza", "Rendimiento"] }),
+  product({ id: "olympus-creatine-100-serv", nombre: "Olympus Creatine 100 servidas", precio: 16.5, categoria: "Creatinas", marca: "Olympus", presentacion: "100 servidas", objetivos: ["Fuerza", "Rendimiento"] }),
+  product({ id: "muscletech-cell-tech-3lb", nombre: "MuscleTech Cell-Tech 3 lb", precio: 34, categoria: "Creatinas", marca: "MuscleTech", presentacion: "3 lb", sabores: ["Fruit Punch"], objetivos: ["Fuerza", "Rendimiento", "Volumen"] }),
+  product({ id: "muscletech-cell-tech-6lb", nombre: "MuscleTech Cell-Tech 6 lb", precio: 47, categoria: "Creatinas", marca: "MuscleTech", presentacion: "6 lb", sabores: ["Fruit Punch"], objetivos: ["Fuerza", "Rendimiento", "Volumen"] }),
+  product({ id: "muscletech-platinum-creatine-400g", nombre: "MuscleTech Platinum Creatine 400 g", precio: 28, categoria: "Creatinas", marca: "MuscleTech", presentacion: "80 servidas", objetivos: ["Fuerza", "Rendimiento"] }),
+  product({ id: "nutricost-creatine-flavored-45-serv", nombre: "Nutricost Creatine 45 servidas saborizada", precio: 15, categoria: "Creatinas", marca: "Nutricost", presentacion: "45 servidas", sabores: ["Uva", "Mandarina Naranja", "Fruit Punch", "Berry Blast"], objetivos: ["Fuerza", "Rendimiento"] }),
+  product({ id: "nutrex-creatine-flavored-60-serv", nombre: "Nutrex Creatine 60 servidas saborizada", precio: 18, categoria: "Creatinas", marca: "Nutrex", presentacion: "60 servidas", sabores: ["Fruit Punch", "Fresa Sandía"], objetivos: ["Fuerza", "Rendimiento"], imagen: "img/products/nutrex-creatine-flavored-60-serv.webp" }),
+  product({ id: "nutrex-creatine-60-serv", nombre: "Nutrex Creatine Monohydrate 60 servidas", precio: 12.5, categoria: "Creatinas", marca: "Nutrex", presentacion: "60 servidas", objetivos: ["Fuerza", "Rendimiento"], destacado: true, imagen: "img/products/nutrex-creatine-60-serv.webp" }),
+  product({ id: "nutrex-creatine-200-serv", nombre: "Nutrex Creatine Monohydrate 200 servidas", precio: 33.5, categoria: "Creatinas", marca: "Nutrex", presentacion: "200 servidas", objetivos: ["Fuerza", "Rendimiento"], destacado: true, imagen: "img/products/nutrex-creatine-200-serv.webp" }),
+  product({ id: "bpi-creatine-max-60-serv", nombre: "BPI Creatine Max 60 servidas", precio: 11.5, categoria: "Creatinas", marca: "BPI Sports", presentacion: "60 servidas", objetivos: ["Fuerza", "Rendimiento"] }),
+  product({ id: "optimum-nutrition-creatine-60-serv", nombre: "Optimum Nutrition Creatine 60 servidas", precio: 15.5, categoria: "Creatinas", marca: "Optimum Nutrition", presentacion: "60 servidas", objetivos: ["Fuerza", "Rendimiento"] }),
+
+  product({ id: "nutrex-glutamine-300g", nombre: "Nutrex Glutamine 300 g", precio: 15, categoria: "Glutamina", marca: "Nutrex", presentacion: "60 servidas", objetivos: ["Recuperación"] }),
+
+  product({ id: "adiplex-kiwi-berry", nombre: "Adiplex", precio: 13.5, categoria: "Pre Entrenos", marca: "Adiplex", sabores: ["Kiwi-Berry"], objetivos: ["Energía", "Enfoque"] }),
+  product({ id: "mesomorph-pre-workout", nombre: "Mesomorph Pre-Workout", precio: 26.5, categoria: "Pre Entrenos", marca: "APS Nutrition", sabores: ["Varios sabores"], objetivos: ["Energía", "Enfoque", "Rendimiento"], destacado: true, imagen: "img/products/mesomorph-pre-workout.webp" }),
+  product({ id: "skull-preworkout-xtreme", nombre: "Skull Pre-Workout Xtreme", precio: 20, categoria: "Pre Entrenos", marca: "Skull", sabores: ["Sour Apple Rage"], objetivos: ["Energía", "Enfoque"] }),
+  product({ id: "hyde-nightmare", nombre: "ProSupps Hyde Nightmare", precio: 27.5, categoria: "Pre Entrenos", marca: "ProSupps", sabores: ["Jawbreaker"], objetivos: ["Energía", "Enfoque"] }),
+  product({ id: "hyde-nightmare-intense-energy", nombre: "ProSupps Hyde Nightmare Intense Energy", precio: 27.5, categoria: "Pre Entrenos", marca: "ProSupps", sabores: ["Blood Berry"], objetivos: ["Energía", "Enfoque"], disponible: false }),
+  product({ id: "nutrex-outrage", nombre: "Nutrex Outrage", precio: 22, categoria: "Pre Entrenos", marca: "Nutrex", sabores: ["Lemon Lime", "Blue Raspberry", "Fruit Punch"], objetivos: ["Energía", "Enfoque"] }),
+  product({ id: "maniac-extreme-preworkout", nombre: "Maniac Extreme Pre-Workout", precio: 25, categoria: "Pre Entrenos", marca: "Maniac", sabores: ["Green Apple", "Watermelon"], objetivos: ["Energía", "Enfoque"] }),
+  product({ id: "mutant-big-greens-30-serv", nombre: "Mutant Big Greens 30 servidas", precio: 20, categoria: "Salud y Bienestar", marca: "Mutant", sabores: ["Chocolate"], objetivos: ["Salud general"], disponible: false }),
+  product({ id: "primaforce-beta-alanine-100-serv", nombre: "Primaforce Beta-Alanine 100 servidas", precio: 15, categoria: "Pre Entrenos", marca: "Primaforce", presentacion: "100 servidas", objetivos: ["Rendimiento", "Resistencia"] }),
+  product({ id: "raw-cbum-essential-30-serv", nombre: "RAW Nutrition CBUM Essential 30 servidas", precio: 24, categoria: "Pre Entrenos", marca: "RAW Nutrition", sabores: ["Orange", "Blue Raspberry", "Sour Watermelon", "Fruit Burst", "Citrus Grapefruit", "Peach Mango"], objetivos: ["Energía", "Enfoque"] }),
+
+  product({ id: "nutrex-lipo-6-black-60-caps", nombre: "Nutrex Lipo-6 Black 60 cápsulas", precio: 20, categoria: "Quemadores", marca: "Nutrex", presentacion: "60 cápsulas", objetivos: ["Definición", "Energía"], destacado: true, imagen: "img/products/nutrex-lipo-6-black-60-caps.webp" }),
+  product({ id: "nutrex-lipo-6-hers-60-caps", nombre: "Nutrex Lipo-6 Hers 60 cápsulas", precio: 20, categoria: "Quemadores", marca: "Nutrex", presentacion: "60 cápsulas", objetivos: ["Definición", "Energía"] }),
+  product({ id: "nutrex-lipo-6-hardcore-60-caps", nombre: "Nutrex Lipo-6 Hardcore 60 cápsulas", precio: 22, categoria: "Quemadores", marca: "Nutrex", presentacion: "60 cápsulas", objetivos: ["Definición", "Energía"] }),
+  product({ id: "nutrex-lipo-6-stim-free-60-caps", nombre: "Nutrex Lipo-6 Stim-Free 60 cápsulas", precio: 20, categoria: "Quemadores", marca: "Nutrex", presentacion: "60 cápsulas", objetivos: ["Definición"] }),
+  product({ id: "nutrex-lipo-6-intense-60-caps", nombre: "Nutrex Lipo-6 Intense 60 cápsulas", precio: 22, categoria: "Quemadores", marca: "Nutrex", presentacion: "60 cápsulas", objetivos: ["Definición", "Energía"] }),
+  product({ id: "lipodrene-fat-burner", nombre: "Lipodrene Fat Burner", precio: 33, categoria: "Quemadores", marca: "Hi-Tech Pharmaceuticals", sabores: ["Amarillo", "Hardcore", "Xtreme"], objetivos: ["Definición", "Energía"] }),
+  product({ id: "h2o-diuretico", nombre: "H2O Diurético", precio: 18, categoria: "Quemadores", marca: "H2O", objetivos: ["Definición"] }),
+  product({ id: "xpel-diuretico", nombre: "Xpel Diurético", precio: 18, categoria: "Quemadores", marca: "Xpel", objetivos: ["Definición"] }),
+  product({ id: "liquid-l-carnitine", nombre: "L-Carnitine Líquida", precio: 18, categoria: "Quemadores", marca: "L-Carnitine", sabores: ["Orange Mango", "Berry Blast", "Strawberry Watermelon"], objetivos: ["Definición", "Energía"] }),
+  product({ id: "carniburn-fuego", nombre: "Carniburn Fuego", precio: 35, categoria: "Quemadores", marca: "Carniburn", sabores: ["Sour Gummie", "Strawberry Watermelon"], objetivos: ["Definición", "Energía"] }),
+
+  product({ id: "nutrex-tribulus-90-caps", nombre: "Nutrex Tribulus 90 cápsulas", precio: 15, categoria: "Potenciadores", marca: "Nutrex", presentacion: "90 cápsulas", objetivos: ["Vitalidad", "Rendimiento"] }),
+  product({ id: "tongkat-ali-complex-1000mg", nombre: "Tongkat Ali Complex 1000 mg 60 cápsulas", precio: 15.5, categoria: "Potenciadores", marca: "Tongkat Ali", presentacion: "60 cápsulas", objetivos: ["Vitalidad", "Rendimiento"] }),
+  product({ id: "nutrex-t-up-max-60-caps", nombre: "Nutrex T-UP Max 60 cápsulas", precio: 20, categoria: "Potenciadores", marca: "Nutrex", presentacion: "60 cápsulas", objetivos: ["Vitalidad", "Rendimiento"] }),
+  product({ id: "mutant-caffeine-240-tabs", nombre: "Mutant Caffeine 240 tabletas", precio: 12.5, categoria: "Energía y Cafeína", marca: "Mutant", presentacion: "240 tabletas", objetivos: ["Energía", "Enfoque"] }),
+
+  product({ id: "mutant-multivitamin-60-tabs", nombre: "Mutant Multivitamin 60 tabletas", precio: 14, categoria: "Multivitamínicos", marca: "Mutant", presentacion: "60 tabletas", objetivos: ["Salud general"] }),
+  product({ id: "nutrex-vitadapt", nombre: "Nutrex Vitadapt", precio: 19, categoria: "Multivitamínicos", marca: "Nutrex", objetivos: ["Salud general", "Energía"] }),
+  product({ id: "maltodextrin-2lb", nombre: "Maltodextrin 2 lb", precio: 20, categoria: "Carbohidratos", marca: "Maltodextrin", presentacion: "2 lb / 60 servidas", objetivos: ["Energía", "Subir calorías"] }),
+  product({ id: "maltodextrin-8lb", nombre: "Maltodextrin 8 lb", precio: 45, categoria: "Carbohidratos", marca: "Maltodextrin", presentacion: "8 lb / 242 servidas", objetivos: ["Energía", "Subir calorías"] }),
+
+  product({ id: "nad-plus", nombre: "NAD+", precio: 50, categoria: "Salud y Bienestar", marca: "NAD+", objetivos: ["Energía", "Salud celular"] }),
+  product({ id: "resveratrol-120-caps", nombre: "Resveratrol 120 cápsulas", precio: 25.5, categoria: "Salud y Bienestar", marca: "Resveratrol", presentacion: "120 cápsulas", objetivos: ["Salud cardiovascular", "Antioxidante"] }),
+  product({ id: "liv52-protector-hepatico", nombre: "Liv52 Protector Hepático", precio: 15, categoria: "Salud y Bienestar", marca: "Liv52", objetivos: ["Salud hepática", "Digestión"] }),
+  product({ id: "biosport-magnesium-glycinate-60-caps", nombre: "Biosport Magnesium Glycinate 60 cápsulas", precio: 10.5, categoria: "Salud y Bienestar", marca: "Biosport", presentacion: "60 cápsulas", objetivos: ["Sueño", "Relajación"] }),
+  product({ id: "biosport-omega-3-60-caps", nombre: "Biosport Omega 3 60 cápsulas", precio: 9, categoria: "Salud y Bienestar", marca: "Biosport", presentacion: "60 cápsulas", objetivos: ["Salud cardiovascular", "Bienestar general"] }),
+  product({ id: "ashwagandha-90-caps", nombre: "Ashwagandha 90 cápsulas", precio: 16.5, categoria: "Salud y Bienestar", marca: "Ashwagandha", presentacion: "90 cápsulas", objetivos: ["Estrés", "Sueño", "Energía"] }),
+  product({ id: "biotin-vitamin-b7-120-caps", nombre: "Biotin Vitamin B7 120 cápsulas", precio: 15, categoria: "Salud y Bienestar", marca: "Biotin", presentacion: "120 cápsulas", objetivos: ["Cabello", "Piel", "Uñas"] }),
+  product({ id: "biotin-women-120-caps", nombre: "Biotin Women 120 cápsulas", precio: 18, categoria: "Salud y Bienestar", marca: "Biotin Women", presentacion: "120 cápsulas", objetivos: ["Cabello", "Piel", "Uñas"] }),
+  product({ id: "vitamin-e-30-caps", nombre: "Vitamin E 30 cápsulas", precio: 10.5, categoria: "Salud y Bienestar", marca: "Vitamin E", presentacion: "30 cápsulas", objetivos: ["Antioxidante", "Piel"] }),
+  product({ id: "potassium-99mg-30-caps", nombre: "Potassium 99 mg 30 cápsulas", precio: 9.5, categoria: "Salud y Bienestar", marca: "Potassium", presentacion: "30 cápsulas", objetivos: ["Minerales", "Bienestar general"] }),
+  product({ id: "potassium-99mg-240-caps", nombre: "Potassium 99 mg 240 cápsulas", precio: 20, categoria: "Salud y Bienestar", marca: "Potassium", presentacion: "240 cápsulas", objetivos: ["Minerales", "Bienestar general"] }),
+  product({ id: "nac-1000mg-120-caps", nombre: "NAC 1000 mg 120 cápsulas", precio: 20, categoria: "Salud y Bienestar", marca: "NAC", presentacion: "120 cápsulas", objetivos: ["Antioxidante", "Sistema inmune"] }),
+  product({ id: "olive-leaf-extract-90-caps", nombre: "Olive Leaf Extract 75 mg 90 cápsulas", precio: 25, categoria: "Salud y Bienestar", marca: "Olive Leaf", presentacion: "90 cápsulas", objetivos: ["Sistema inmune", "Antioxidante"] }),
+  product({ id: "zma-90-caps", nombre: "ZMA 90 cápsulas", precio: 22, categoria: "Salud y Bienestar", marca: "ZMA", presentacion: "30 servidas", objetivos: ["Sueño", "Recuperación"] }),
+  product({ id: "zma-180-caps", nombre: "ZMA 180 cápsulas", precio: 22.5, categoria: "Salud y Bienestar", marca: "ZMA", presentacion: "180 cápsulas", objetivos: ["Sueño", "Recuperación"] }),
+  product({ id: "r-alpha-lipoic-acid-120-caps", nombre: "R-Alpha Lipoic Acid 120 cápsulas", precio: 25, categoria: "Salud y Bienestar", marca: "R-ALA", presentacion: "120 cápsulas", objetivos: ["Antioxidante", "Metabolismo"] }),
+  product({ id: "primaforce-tudca-500mg-30-caps", nombre: "Primaforce TUDCA 500 mg 30 cápsulas", precio: 27.5, categoria: "Salud y Bienestar", marca: "Primaforce", presentacion: "30 cápsulas", objetivos: ["Salud hepática", "Digestión"] }),
+  product({ id: "l-arginine-50-serv", nombre: "L-Arginine 50 servidas", precio: 16.5, categoria: "Salud y Bienestar", marca: "L-Arginine", presentacion: "50 servidas", objetivos: ["Pump", "Circulación"] }),
+  product({ id: "calcium-vitamin-d-240-caps", nombre: "Calcium + Vitamin D 240 cápsulas", precio: 18, categoria: "Salud y Bienestar", marca: "Calcium + Vitamin D", presentacion: "240 cápsulas", objetivos: ["Huesos", "Bienestar general"] }),
+  product({ id: "magnesium-complex-240-caps", nombre: "Magnesium Complex 240 cápsulas", precio: 20, categoria: "Salud y Bienestar", marca: "Magnesium Complex", presentacion: "240 cápsulas", objetivos: ["Sueño", "Relajación"] }),
+  product({ id: "vitamin-c-500mg-240-caps", nombre: "Vitamin C 500 mg 240 cápsulas", precio: 15, categoria: "Salud y Bienestar", marca: "Vitamin C", presentacion: "240 cápsulas", objetivos: ["Sistema inmune", "Antioxidante"] }),
+  product({ id: "revive-vitamin-c-200-caps", nombre: "Revive Vitamin C 200 cápsulas", precio: 13.5, categoria: "Salud y Bienestar", marca: "Revive", presentacion: "200 cápsulas", objetivos: ["Sistema inmune", "Antioxidante"] }),
+  product({ id: "inositol-500mg-240-caps", nombre: "Inositol 500 mg 240 cápsulas", precio: 20, categoria: "Salud y Bienestar", marca: "Inositol", presentacion: "240 cápsulas", objetivos: ["Bienestar mental", "Relajación"] }),
+  product({ id: "zinc-chelate-50mg-120-caps", nombre: "Zinc Chelate 50 mg 120 cápsulas", precio: 15.5, categoria: "Salud y Bienestar", marca: "Zinc Chelate", presentacion: "120 cápsulas", objetivos: ["Sistema inmune", "Piel"] }),
+  product({ id: "astragalus-500mg-240-caps", nombre: "Astragalus 500 mg 240 cápsulas", precio: 16.5, categoria: "Salud y Bienestar", marca: "Astragalus", presentacion: "240 cápsulas", objetivos: ["Sistema inmune", "Energía"] }),
+];
+
+const PRODUCTS = Object.fromEntries(PRODUCT_LIST.map((item) => [item.id, item]));

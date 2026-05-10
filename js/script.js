@@ -1,119 +1,191 @@
-const productos = [
-  {
-    id: "creatina-nutrex-60",
-    nombre: "Creatina Nutrex - 60 Servidas",
-    descripcion: "Monohidrato de creatina pura para fuerza y rendimiento.",
-    precio: 15.99,
-    imagen: "img/products/creatine-nutrex-60srv.png",
-  },
-  {
-    id: "creatina-nutrex-fruit-punch-60",
-    nombre: "Creatina Nutrex - 60 Servidas (Sabor Fruit Punch)",
-    descripcion: "Creatina micronizada con sabor Fruit Punch para mejor experiencia.",
-    precio: 16.99,
-    imagen: "img/products/creatine-fruit-punch-60srv.png",
-  },
-  {
-    id: "lcarnitina-nutrex",
-    nombre: "L-Carnitina Nutrex",
-    descripcion: "Ayuda a convertir la grasa en energía y mejora la resistencia.",
-    precio: 19.99,
-    imagen: "img/products/lcarnite-60caps.png",
-  },
-  {
-    id: "whey-nutrex-2lb",
-    nombre: "Whey Nutrex 2lb",
-    descripcion: "Proteína de suero premium ideal para la recuperación muscular.",
-    precio: 29.99,
-    imagen: "img/products/whey-nutrex-2lb.png",
-  },
-  {
-    id: "whey-nutrex-5lb",
-    nombre: "Whey Nutrex 5lb",
-    descripcion: "Mayor rendimiento con proteína de alta pureza y excelente sabor.",
-    precio: 54.99,
-    imagen: "img/products/whey-nutrex-5lb.png",
-  },
-  {
-    id: "isofit-nutrex-2lb",
-    nombre: "Isofit Nutrex 2lb",
-    descripcion: "Aislado de suero 100% puro, rápida absorción y alto valor biológico.",
-    precio: 42.99,
-    imagen: "img/products/isofit-2lb-nutrex.png",
-  },
-  {
-    id: "isofit-nutrex-5lb",
-    nombre: "Isofit Nutrex 5lb",
-    descripcion: "Aislado de suero ultra premium para resultados profesionales.",
-    precio: 79.99,
-    imagen: "img/products/isofit-5lb-nutrex.png",
-  },
-  {
-    id: "iso100-2lb",
-    nombre: "ISO 100 2lb",
-    descripcion: "Proteína hidrolizada Dymatize para máxima digestión y pureza.",
-    precio: 43.99,
-    imagen: "img/products/iso100-2lb.png",
-  },
-  {
-    id: "iso100-5lb",
-    nombre: "ISO 100 5lb",
-    descripcion: "Versión avanzada de ISO 100 con proteína ultra filtrada.",
-    precio: 79.99,
-    imagen: "img/products/iso100-5lb.png",
-  },
-  {
-    id: "lipo6-black-intense",
-    nombre: "Lipo 6 Black Intense Nutrex",
-    descripcion: "Termogénico potente para energía, enfoque y quema de grasa extrema.",
-    precio: 29.99,
-    imagen: "img/products/lipo-6-black-60caps.png",
-  },
-];
-
 const lista = document.getElementById("top-products__list");
+const heroProductsBtn = document.querySelector(".hero__button--pri");
+const heroAdvisorBtn = document.querySelector(".hero__button--sec");
 
-if (lista){
-productos.forEach((p) => {
-  const card = document.createElement("article");
-  card.classList.add("product-card");
-
-  card.innerHTML = `
-        
-
-        <div class="product-card__media">
-          <img src="${p.imagen}" alt="${p.nombre}" class="product-card__img"  loading="lazy" />
-        </div>
-
-        <div class="product-card__info">
-          <h3 class="product-card__name">${p.nombre}</h3>
-          <p class="product-card__price">$ ${p.precio}</p>
-          <p class="product-card__disclaimer">Disponibilidad sujeta a confirmación por WhatsApp</p>
-        </div>
-
-        <div class="product-card__actions">
-          <button class="product-card__btn product-card__btn--buy">Whatsapp</button>
-          <button class="product-card__btn product-card__btn--info">Más info</button>  
-        </div>
-    `;
-
-  
-  const btnWhatsapp = card.querySelector(".product-card__btn--buy");
-  btnWhatsapp.addEventListener("click", () => {
-    const mensaje = encodeURIComponent(
-      `Hola Javy, quiero más información sobre: ${p.nombre}`
-    );
-    window.open(`https://wa.me/50763932305?text=${mensaje}`, "_blank");
-  });
-
-  const btnInfo = card.querySelector(".product-card__btn--info");
-  btnInfo.addEventListener("click", () => {
-    window.location.href = `product-page.html?id=${encodeURIComponent(p.id)}`;
-  });
-
-  lista.appendChild(card);
-});
-
+function formatPrice(price) {
+  const value = Number(price || 0);
+  return value > 0 ? value.toFixed(2) : "Consultar";
 }
 
+function escapeHTML(value = "") {
+  return value
+    .toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
+function slugify(value = "") {
+  return value
+    .toString()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function productCanBeQuoted(product) {
+  if (product.available === false) return false;
+  if (!product.flavors?.length) return true;
+  return product.flavors.some((flavor) => flavor.available !== false);
+}
+
+function renderFlavorOptions(product) {
+  const flavors = product.flavors || [];
+  const label = flavors.length === 1 ? "Sabor" : "Sabores";
+  const selectId = `home-flavor-${slugify(product.id)}`;
+  const enabled = productCanBeQuoted(product);
+
+  if (!flavors.length) {
+    return `
+      <div class="product-card__flavors" aria-label="Sabores disponibles">
+        <label class="product-card__flavor-label" for="${selectId}">Sabor</label>
+        <select class="product-card__flavor-select" id="${selectId}" disabled>
+          <option>No aplica / consultar</option>
+        </select>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="product-card__flavors" aria-label="${label} disponibles">
+      <label class="product-card__flavor-label" for="${selectId}">${label}</label>
+      <select class="product-card__flavor-select" id="${selectId}" data-flavor-select ${enabled ? "" : "disabled"}>
+        <option value="">Elegir sabor (${flavors.length})</option>
+        ${flavors.map((flavor) => `
+          <option value="${escapeHTML(flavor.id)}" ${flavor.available === false ? "disabled" : ""}>
+            ${escapeHTML(flavor.name)}${flavor.available === false ? " - No disponible" : ""}
+          </option>
+        `).join("")}
+      </select>
+    </div>
+  `;
+}
+
+function getSelectedFlavor(card, product, shouldRequire = true) {
+  const select = card.querySelector("[data-flavor-select]");
+  if (!select || !product.flavors?.length) return { flavor: "", flavor_id: "" };
+
+  if (!select.value) {
+    if (shouldRequire) select.focus();
+    return null;
+  }
+
+  const flavor = product.flavors.find((item) => item.id === select.value);
+  if (!flavor || flavor.available === false) return null;
+  return { flavor: flavor.name, flavor_id: flavor.id };
+}
+
+function showAddedState(button) {
+  const originalText = button.textContent;
+  button.textContent = "Agregado";
+  button.disabled = true;
+
+  window.setTimeout(() => {
+    button.textContent = originalText;
+    button.disabled = false;
+  }, 1200);
+}
+
+function renderFeaturedProducts(productos) {
+  if (!lista) return;
+
+  if (!productos.length) {
+    lista.innerHTML = `
+      <p class="product-card__disclaimer">
+        No hay productos destacados por el momento.
+      </p>
+    `;
+    return;
+  }
+
+  lista.innerHTML = "";
+
+  productos.forEach((product) => {
+    const canQuote = productCanBeQuoted(product);
+    const card = document.createElement("article");
+    card.classList.add("product-card");
+    if (product.imagenPendiente) card.classList.add("product-card--image-pending");
+
+    card.innerHTML = `
+      <div class="product-card__media">
+        <img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.name)}" class="product-card__img" loading="lazy" />
+      </div>
+
+      <div class="product-card__info">
+        <div class="product-card__meta">
+          <span>${escapeHTML(product.brand || "Marca en revision")}</span>
+          <span class="${canQuote ? "is-available" : "is-unavailable"}">
+            ${canQuote ? "Disponible" : "Consultar stock"}
+          </span>
+        </div>
+        <h3 class="product-card__name">${escapeHTML(product.name)}</h3>
+        <p class="product-card__price">$ ${formatPrice(product.price)}</p>
+        ${renderFlavorOptions(product)}
+        <p class="product-card__disclaimer">${escapeHTML(product.presentation || "Cotizacion por WhatsApp")}</p>
+      </div>
+
+      <div class="product-card__actions product-card__actions--catalog">
+        ${canQuote ? '<button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotizacion</button>' : ""}
+        ${canQuote ? '<button class="product-card__btn product-card__btn--quote" type="button">Cotizar este producto</button>' : '<button class="product-card__btn product-card__btn--quote" type="button">Consultar disponibilidad</button>'}
+        <button class="product-card__btn product-card__btn--info" type="button">Ver detalles</button>
+      </div>
+    `;
+
+    const btnConsulta = card.querySelector(".product-card__btn--buy");
+    btnConsulta?.addEventListener("click", () => {
+      const selectedFlavor = getSelectedFlavor(card, product);
+      if (product.flavors?.length && !selectedFlavor) {
+        btnConsulta.textContent = "Elige sabor";
+        window.setTimeout(() => { btnConsulta.textContent = "Agregar a cotizacion"; }, 1200);
+        return;
+      }
+
+      window.consultation?.addItem?.(product, selectedFlavor || {});
+      showAddedState(btnConsulta);
+    });
+
+    const btnQuote = card.querySelector(".product-card__btn--quote");
+    btnQuote?.addEventListener("click", () => {
+      const selectedFlavor = canQuote ? getSelectedFlavor(card, product, false) : {};
+      if (canQuote) {
+        window.consultation?.quoteSingleProduct?.(product, selectedFlavor || {});
+      } else {
+        window.consultation?.askAvailability?.(product, selectedFlavor || {});
+      }
+    });
+
+    const btnInfo = card.querySelector(".product-card__btn--info");
+    btnInfo.addEventListener("click", () => {
+      window.location.href = `product-page.html?id=${encodeURIComponent(product.id)}`;
+    });
+
+    lista.appendChild(card);
+  });
+}
+
+if (heroProductsBtn) {
+  heroProductsBtn.addEventListener("click", () => {
+    document.getElementById("productos")?.scrollIntoView({ behavior: "smooth" });
+  });
+}
+
+if (heroAdvisorBtn) {
+  heroAdvisorBtn.addEventListener("click", () => {
+    window.consultation?.openPanel?.();
+  });
+}
+
+async function initHomeProducts() {
+  if (!lista) return;
+  lista.innerHTML = `<p class="product-card__disclaimer">Cargando productos destacados...</p>`;
+
+  const allProducts = await window.catalogDb.getProductsWithFlavors();
+  const featuredProducts = allProducts.filter((product) => product.featured).slice(0, 12);
+  renderFeaturedProducts(featuredProducts);
+}
+
+initHomeProducts();
