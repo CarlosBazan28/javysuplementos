@@ -5,6 +5,10 @@ body.admin-page {
   font-family: "Figtree", system-ui, sans-serif;
 }
 
+.admin-page [hidden] {
+  display: none !important;
+}
+
 .admin-auth {
   min-height: 100vh;
   display: grid;

@@ -20,6 +20,16 @@ const flavorList = document.getElementById("flavorList");
 let adminProducts = [];
 let selectedProduct = null;
 
+function setAdminView(view) {
+  const isAdmin = view === "admin";
+
+  authView.hidden = isAdmin;
+  adminView.hidden = !isAdmin;
+  authView.toggleAttribute("hidden", isAdmin);
+  adminView.toggleAttribute("hidden", !isAdmin);
+  document.body.classList.toggle("is-admin-open", isAdmin);
+}
+
 function withTimeout(promise, ms = 12000, message = "La solicitud tardo demasiado. Revisa internet, Supabase o intenta de nuevo.") {
   let timeoutId;
   const timeout = new Promise((_, reject) => {
@@ -33,6 +43,26 @@ function setMessage(target, message, isError = false) {
   if (!target) return;
   target.textContent = message || "";
   target.style.color = isError ? "#ff8fa3" : "#a9b4c6";
+}
+
+function getLoginErrorMessage(error) {
+  const message = error?.message || "";
+  const normalized = normalizeText(message);
+
+  if (
+    normalized.includes("invalid login credentials") ||
+    normalized.includes("invalid credentials") ||
+    normalized.includes("email not found") ||
+    normalized.includes("password")
+  ) {
+    return "Correo o contrasena incorrectos. Revisa los datos e intenta nuevamente.";
+  }
+
+  if (normalized.includes("email not confirmed") || normalized.includes("confirm")) {
+    return "El usuario existe, pero falta confirmarlo en Supabase Auth.";
+  }
+
+  return message || "No se pudo iniciar sesion. Revisa el correo y la contrasena.";
 }
 
 function normalizeText(value = "") {
@@ -180,40 +210,34 @@ async function loadAdminProducts() {
 }
 
 async function showAdmin() {
-  setMessage(loginMessage, "Login correcto. Abriendo panel...");
-  authView.hidden = true;
-  authView.setAttribute("hidden", "");
-  adminView.hidden = false;
-  adminView.removeAttribute("hidden");
+  setMessage(loginMessage, "");
+  setAdminView("admin");
   resetProductForm();
   await loadAdminProducts();
 }
 
-async function checkSession() {
+function showLogin(message = "", isError = false) {
+  setAdminView("login");
+  setMessage(loginMessage, message, isError);
+
+  const submitButton = loginForm?.querySelector("button[type='submit']");
+  if (submitButton) {
+    submitButton.disabled = false;
+    submitButton.textContent = "Entrar";
+  }
+}
+
+function initializeAdmin() {
+  showLogin();
+
   if (!window.supabaseClient) {
     setMessage(loginMessage, "Supabase no esta disponible. Revisa el CDN o la conexion.", true);
-    return;
-  }
-
-  try {
-    const { data, error } = await withTimeout(
-      supabaseClient.auth.getSession(),
-      8000,
-      "No se pudo revisar la sesion actual. Intenta entrar manualmente."
-    );
-
-    if (error) throw error;
-    if (data.session) {
-      await showAdmin();
-    }
-  } catch (error) {
-    setMessage(loginMessage, error.message, true);
   }
 }
 
 async function handleLogin(event) {
   event?.preventDefault?.();
-  setMessage(loginMessage, "Validando...");
+  setMessage(loginMessage, "Validando credenciales...");
   const submitButton = loginForm.querySelector("button[type='submit']");
   if (submitButton) {
     submitButton.disabled = true;
@@ -245,14 +269,13 @@ async function handleLogin(event) {
       throw new Error("El login no devolvio una sesion activa. Revisa si el usuario esta confirmado en Supabase Auth.");
     }
 
-    setMessage(loginMessage, "Login correcto. Preparando panel...");
     await showAdmin();
   } catch (error) {
-    setMessage(loginMessage, error.message || "No se pudo iniciar sesion.", true);
+    showLogin(getLoginErrorMessage(error), true);
   } finally {
     if (submitButton) {
-      submitButton.disabled = !adminView.hidden;
-      submitButton.textContent = adminView.hidden ? "Entrar" : "Sesion iniciada";
+      submitButton.disabled = false;
+      submitButton.textContent = "Entrar";
     }
   }
 }
@@ -265,11 +288,7 @@ loginForm?.querySelector("button[type='submit']")?.addEventListener("click", (ev
 
 logoutBtn?.addEventListener("click", async () => {
   await supabaseClient.auth.signOut();
-  adminView.hidden = true;
-  adminView.setAttribute("hidden", "");
-  authView.hidden = false;
-  authView.removeAttribute("hidden");
-  setMessage(loginMessage, "");
+  showLogin();
 });
 
 newProductBtn?.addEventListener("click", resetProductForm);
@@ -381,4 +400,4 @@ seedProductsBtn?.addEventListener("click", async () => {
   }
 });
 
-checkSession();
+initializeAdmin();
