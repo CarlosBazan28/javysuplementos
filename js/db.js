@@ -1,6 +1,18 @@
 const PRODUCT_BASE_SELECT = `
   id,
   slug,
+  nombre,
+  subtitulo,
+  precio_centavos,
+  moneda,
+  tag,
+  imagen_url,
+  alt,
+  whatsapp_mensaje,
+  beneficios,
+  descripcion,
+  uso,
+  is_active,
   name,
   brand,
   category,
@@ -73,6 +85,25 @@ function getProductSlug(productData = {}) {
   return createSlug(source) || `producto-${Date.now()}`;
 }
 
+function getUsefulText(...values) {
+  return values.find((value) => {
+    if (typeof value !== "string") return false;
+    const cleanValue = value.trim();
+    return cleanValue && cleanValue !== "Producto sin nombre";
+  })?.trim() || "";
+}
+
+function toTextLines(value, fallback = []) {
+  if (Array.isArray(value)) return value.map((item) => item?.toString().trim()).filter(Boolean);
+  if (typeof value === "string") {
+    return value
+      .split("\n")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return fallback;
+}
+
 function normalizeFlavor(flavor, index = 0) {
   if (typeof flavor === "string") {
     return {
@@ -95,16 +126,16 @@ function normalizeProductFromDb(product) {
     .filter((flavor) => flavor.name)
     .sort((a, b) => a.name.localeCompare(b.name, "es"));
 
-  const image = product.image_url || product.image || product.imagen || DB_PLACEHOLDER_IMAGE;
-  const available = product.available ?? product.disponible ?? true;
+  const image = product.image_url || product.imagen_url || product.image || product.imagen || DB_PLACEHOLDER_IMAGE;
+  const available = product.available ?? product.is_active ?? product.disponible ?? true;
   const featured = product.featured ?? product.destacado ?? false;
   const goals = asArray(product.goals || product.objetivos);
   const tags = asArray(product.tags || product.etiquetas);
-  const name = product.name || product.nombre || "";
+  const name = getUsefulText(product.name, product.nombre);
   const brand = product.brand || product.marca || "";
-  const category = product.category || product.categoria || "Producto";
+  const category = getUsefulText(product.category === "Producto" ? "" : product.category, product.categoria, product.tag) || "Producto";
   const presentation = product.presentation || product.presentacion || "";
-  const price = Number(product.price ?? product.precio ?? 0);
+  const price = Number(product.price ?? product.precio ?? (product.precio_centavos != null ? product.precio_centavos / 100 : 0));
   const descriptionText = product.description || product.descripcion || product.subtitulo || "";
   const descriptionLines = Array.isArray(descriptionText)
     ? descriptionText
@@ -145,20 +176,20 @@ function normalizeProductFromDb(product) {
     tag: available ? "Disponible" : "Consultar stock",
     alt: name,
     subtitulo: product.subtitulo || `${category}${presentation ? ` ${presentation}` : ""}.`,
-    beneficios: product.beneficios || [
+    beneficios: toTextLines(product.beneficios, [
       goals.length ? `Apoya objetivos de ${goals.join(", ").toLowerCase()}.` : "Apoya tu rutina de suplementacion.",
       "Producto disponible para cotizacion por WhatsApp.",
       "Javy puede orientarte sobre uso, sabor y disponibilidad.",
-    ],
+    ]),
     descripcion: descriptionLines.length ? descriptionLines : [
       `${name} es un producto de ${brand || "marca por confirmar"} dentro de la categoria ${category.toLowerCase()}.`,
       `Precio de catalogo: $${price.toFixed(2)}.`,
     ],
-    uso: product.uso || [
+    uso: toTextLines(product.uso, [
       "Consultar la dosis indicada en la etiqueta del producto.",
       "Usar como complemento de una alimentacion y entrenamiento adecuados.",
       "Si tienes condiciones medicas o sensibilidad a estimulantes, consulta antes de usar.",
-    ],
+    ]),
   };
 }
 
@@ -211,31 +242,44 @@ function mapProductToDb(productData = {}) {
   const category = productData.category?.trim();
   const price = productData.price === "" || productData.price == null ? null : Number(productData.price);
   const presentation = productData.presentation?.trim() || null;
-  const imageUrl = productData.image_url?.trim() || productData.image?.trim() || null;
-  const description = productData.description?.trim() || null;
+  const imageUrl = productData.image_url?.trim() || productData.image?.trim() || DB_PLACEHOLDER_IMAGE;
+  const descriptionLines = toTextLines(productData.descripcion || productData.description);
+  const description = descriptionLines.join("\n") || null;
   const available = productData.available ?? true;
   const featured = productData.featured ?? false;
+  const subtitle = productData.subtitulo || `${category || "Producto"}${presentation ? ` ${presentation}` : ""}.`;
+  const benefits = toTextLines(productData.beneficios, [
+    category ? `Producto de la categoria ${category}.` : "Producto disponible para cotizacion.",
+    "Javy puede confirmar disponibilidad, precio final y forma de entrega por WhatsApp.",
+  ]);
+  const usage = toTextLines(productData.uso, [
+    "Consultar la dosis indicada en la etiqueta del producto.",
+    "Usar como complemento de una alimentacion y entrenamiento adecuados.",
+  ]);
 
   return {
     slug: getProductSlug(productData),
-    name,
     nombre: name,
+    subtitulo: subtitle,
+    precio_centavos: price == null ? 0 : Math.round(price * 100),
+    moneda: "USD",
+    tag: available ? "Disponible" : "Consultar stock",
+    imagen_url: imageUrl,
+    alt: name,
+    whatsapp_mensaje: `Hola Javy, quiero asesoría sobre ${name}.`,
+    beneficios: benefits,
+    descripcion: descriptionLines.length ? descriptionLines : [subtitle],
+    uso: usage,
+    is_active: available,
+    name,
     brand,
-    marca: brand,
     category,
-    categoria: category,
     price,
-    precio: price,
     presentation,
-    presentacion: presentation,
     image_url: imageUrl,
-    imagen: imageUrl,
     description,
-    descripcion: description,
     available,
-    disponible: available,
     featured,
-    destacado: featured,
     tags: asArray(productData.tags),
     goals: asArray(productData.goals),
     legacy_id: productData.legacy_id?.trim() || null,
@@ -344,9 +388,7 @@ async function createFlavor(productId, flavorData) {
     .insert({
       product_id: productId,
       name: flavorData.name?.trim(),
-      nombre: flavorData.name?.trim(),
       available: flavorData.available ?? true,
-      disponible: flavorData.available ?? true,
     })
     .select()
     .single();
@@ -362,9 +404,7 @@ async function updateFlavor(id, flavorData) {
     .from("product_flavors")
     .update({
       name: flavorData.name?.trim(),
-      nombre: flavorData.name?.trim(),
       available: flavorData.available ?? true,
-      disponible: flavorData.available ?? true,
     })
     .eq("id", id)
     .select()
@@ -416,6 +456,9 @@ async function seedProductsFromLocalData() {
         presentation: product.presentation,
         image_url: product.image,
         description: Array.isArray(product.descripcion) ? product.descripcion.join("\n") : product.description,
+        beneficios: product.beneficios,
+        descripcion: product.descripcion,
+        uso: product.uso,
         available: product.available,
         featured: product.featured,
         tags: product.tags,
