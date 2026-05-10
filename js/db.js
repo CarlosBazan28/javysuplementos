@@ -206,17 +206,36 @@ function getLocalProducts() {
 }
 
 function mapProductToDb(productData = {}) {
+  const name = productData.name?.trim();
+  const brand = productData.brand?.trim() || null;
+  const category = productData.category?.trim();
+  const price = productData.price === "" || productData.price == null ? null : Number(productData.price);
+  const presentation = productData.presentation?.trim() || null;
+  const imageUrl = productData.image_url?.trim() || productData.image?.trim() || null;
+  const description = productData.description?.trim() || null;
+  const available = productData.available ?? true;
+  const featured = productData.featured ?? false;
+
   return {
     slug: getProductSlug(productData),
-    name: productData.name?.trim(),
-    brand: productData.brand?.trim() || null,
-    category: productData.category?.trim(),
-    price: productData.price === "" || productData.price == null ? null : Number(productData.price),
-    presentation: productData.presentation?.trim() || null,
-    image_url: productData.image_url?.trim() || productData.image?.trim() || null,
-    description: productData.description?.trim() || null,
-    available: productData.available ?? true,
-    featured: productData.featured ?? false,
+    name,
+    nombre: name,
+    brand,
+    marca: brand,
+    category,
+    categoria: category,
+    price,
+    precio: price,
+    presentation,
+    presentacion: presentation,
+    image_url: imageUrl,
+    imagen: imageUrl,
+    description,
+    descripcion: description,
+    available,
+    disponible: available,
+    featured,
+    destacado: featured,
     tags: asArray(productData.tags),
     goals: asArray(productData.goals),
     legacy_id: productData.legacy_id?.trim() || null,
@@ -325,7 +344,9 @@ async function createFlavor(productId, flavorData) {
     .insert({
       product_id: productId,
       name: flavorData.name?.trim(),
+      nombre: flavorData.name?.trim(),
       available: flavorData.available ?? true,
+      disponible: flavorData.available ?? true,
     })
     .select()
     .single();
@@ -341,7 +362,9 @@ async function updateFlavor(id, flavorData) {
     .from("product_flavors")
     .update({
       name: flavorData.name?.trim(),
+      nombre: flavorData.name?.trim(),
       available: flavorData.available ?? true,
+      disponible: flavorData.available ?? true,
     })
     .eq("id", id)
     .select()
