@@ -2,6 +2,7 @@ create extension if not exists pgcrypto;
 
 create table if not exists public.products (
   id uuid primary key default gen_random_uuid(),
+  slug text not null unique,
   name text not null,
   brand text,
   category text not null,
@@ -19,6 +20,7 @@ create table if not exists public.products (
 );
 
 alter table public.products add column if not exists id uuid default gen_random_uuid();
+alter table public.products add column if not exists slug text;
 alter table public.products add column if not exists name text;
 alter table public.products add column if not exists brand text;
 alter table public.products add column if not exists category text;
@@ -37,7 +39,11 @@ alter table public.products add column if not exists updated_at timestamptz defa
 update public.products set name = coalesce(name, 'Producto sin nombre') where name is null;
 update public.products set category = coalesce(category, 'Producto') where category is null;
 update public.products set id = gen_random_uuid() where id is null;
+update public.products
+set slug = lower(regexp_replace(coalesce(slug, legacy_id, name || '-' || id::text), '[^a-zA-Z0-9]+', '-', 'g'))
+where slug is null or slug = '';
 alter table public.products alter column id set not null;
+alter table public.products alter column slug set not null;
 alter table public.products alter column name set not null;
 alter table public.products alter column category set not null;
 alter table public.products alter column available set default true;
@@ -56,6 +62,15 @@ begin
       and conrelid = 'public.products'::regclass
   ) then
     alter table public.products add constraint products_pkey primary key (id);
+  end if;
+
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'products_slug_key'
+      and conrelid = 'public.products'::regclass
+  ) then
+    alter table public.products add constraint products_slug_key unique (slug);
   end if;
 
   if not exists (
@@ -116,6 +131,7 @@ $$;
 
 create index if not exists products_category_idx on public.products (category);
 create index if not exists products_featured_idx on public.products (featured);
+create index if not exists products_slug_idx on public.products (slug);
 create index if not exists products_legacy_id_idx on public.products (legacy_id);
 create index if not exists product_flavors_product_id_idx on public.product_flavors (product_id);
 

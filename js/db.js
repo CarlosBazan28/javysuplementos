@@ -1,5 +1,6 @@
 const PRODUCT_BASE_SELECT = `
   id,
+  slug,
   name,
   brand,
   category,
@@ -50,6 +51,28 @@ function asArray(value) {
   return [];
 }
 
+function createSlug(value = "") {
+  return value
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/&/g, " y ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-{2,}/g, "-");
+}
+
+function getProductSlug(productData = {}) {
+  const source = productData.slug || productData.legacy_id || [
+    productData.brand,
+    productData.name,
+    productData.presentation,
+  ].filter(Boolean).join(" ");
+
+  return createSlug(source) || `producto-${Date.now()}`;
+}
+
 function normalizeFlavor(flavor, index = 0) {
   if (typeof flavor === "string") {
     return {
@@ -89,6 +112,7 @@ function normalizeProductFromDb(product) {
 
   return {
     id: product.id,
+    slug: product.slug || createSlug(product.legacy_id || name),
     legacy_id: product.legacy_id || product.legacyId || product.id,
     name,
     brand,
@@ -183,6 +207,7 @@ function getLocalProducts() {
 
 function mapProductToDb(productData = {}) {
   return {
+    slug: getProductSlug(productData),
     name: productData.name?.trim(),
     brand: productData.brand?.trim() || null,
     category: productData.category?.trim(),
