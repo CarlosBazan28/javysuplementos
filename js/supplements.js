@@ -313,7 +313,12 @@ function renderProductCard(product) {
   });
 
   detailsBtn.addEventListener("click", () => {
-    window.location.href = `product-page.html?id=${encodeURIComponent(product.id)}`;
+    const url = `product-page.html?id=${encodeURIComponent(product.id)}`;
+    if (window.navigateWithTransition) {
+      window.navigateWithTransition(url);
+      return;
+    }
+    window.location.href = url;
   });
 
   return card;
