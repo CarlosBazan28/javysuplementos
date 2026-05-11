@@ -28,12 +28,18 @@
   border-left: 1px solid rgba(90, 180, 233, 0.22);
   box-shadow: -24px 0 60px rgba(0,0,0,0.55);
   color: #fff;
-  transform: translateX(100%);
-  transition: transform 0.22s ease;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  visibility: hidden;
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease;
 }
 
 .consultation-panel.is-open {
-  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  visibility: visible;
 }
 
 .consultation-panel__header {

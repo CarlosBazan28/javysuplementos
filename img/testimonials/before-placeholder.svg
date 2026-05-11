@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Placeholder antes</title>
+  <desc id="desc">Imagen temporal para una foto real de antes del cliente.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#162334"/>
+      <stop offset="0.55" stop-color="#0b111b"/>
+      <stop offset="1" stop-color="#101724"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="32%" r="58%">
+      <stop offset="0" stop-color="#5ab4e9" stop-opacity="0.34"/>
+      <stop offset="0.72" stop-color="#5ab4e9" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <rect width="800" height="1000" fill="url(#glow)"/>
+  <path d="M120 780c70-118 157-177 280-177s210 59 280 177v84H120v-84z" fill="#26364b"/>
+  <circle cx="400" cy="408" r="124" fill="#2f435d"/>
+  <path d="M265 596c34-71 79-107 135-107s101 36 135 107" fill="none" stroke="#6fbcea" stroke-width="28" stroke-linecap="round" opacity="0.46"/>
+  <rect x="94" y="88" width="612" height="824" rx="42" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="2"/>
+  <text x="400" y="138" fill="#9fdbff" font-family="Arial, sans-serif" font-size="30" font-weight="800" text-anchor="middle">FOTO TEMPORAL</text>
+  <text x="400" y="830" fill="#ffffff" font-family="Arial, sans-serif" font-size="64" font-weight="900" text-anchor="middle">ANTES</text>
+  <text x="400" y="878" fill="#a9b4c6" font-family="Arial, sans-serif" font-size="25" font-weight="700" text-anchor="middle">Reemplazar por foto real autorizada</text>
+</svg>
