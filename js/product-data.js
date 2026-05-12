@@ -102,7 +102,7 @@ const PRODUCT_LIST = [
 
   product({ id: "nutrex-bcaa", nombre: "Nutrex BCAA", precio: 15, categoria: "Aminoácidos", marca: "Nutrex", sabores: ["Fruit Punch", "Green Apple", "Watermelon"], objetivos: ["Recuperación", "Rendimiento"], imagen: "img/products/nutrex-bcaa.webp" }),
   product({ id: "nutrex-eaa", nombre: "Nutrex EAA", precio: 25, categoria: "Aminoácidos", marca: "Nutrex", sabores: ["Limón y Lima", "Manzana", "Naranja", "Fresa Sandía"], objetivos: ["Recuperación", "Rendimiento"], imagen: "img/products/nutrex-eaa.webp" }),
-  product({ id: "amino-energy-30-serv", nombre: "Amino Energy 30 servidas", precio: 34, categoria: "Aminoácidos", marca: "Optimum Nutrition", sabores: ["Uva", "Blue Raspberry", "Sandía", "Fruit Fusion"], objetivos: ["Energía", "Recuperación"] }),
+  product({ id: "amino-energy-30-serv", nombre: "Amino Energy 30 servidas", precio: 34, categoria: "Aminoácidos", marca: "Optimum Nutrition", sabores: ["Uva", "Blue Raspberry", "Sandía", "Fruit Fusion"], objetivos: ["Energía", "Recuperación"], imagen: "img/products/amino-energy-30-serv.webp" }),
   product({ id: "amino-energy-varios-sabores", nombre: "Amino Energy", precio: 25, categoria: "Aminoácidos", marca: "Optimum Nutrition", sabores: ["Uva", "Green Apple", "Blue Raspberry", "Mojito", "Fresa Lima", "Naranja", "Sandía", "Fruit Fusion"], objetivos: ["Energía", "Recuperación"] }),
   product({ id: "skull-bcaa-eaa", nombre: "Skull BCAA + EAA", precio: 20, categoria: "Aminoácidos", marca: "Skull", objetivos: ["Recuperación", "Rendimiento"] }),
   product({ id: "xtend-bcaa-30-serv", nombre: "Xtend BCAA 30 servidas", precio: 25, categoria: "Aminoácidos", marca: "Xtend", sabores: ["Mango Madness", "Glacial Grape", "Fruit Punch"], objetivos: ["Recuperación", "Rendimiento"] }),
@@ -110,9 +110,9 @@ const PRODUCT_LIST = [
 
   product({ id: "olympus-creatine-60-serv", nombre: "Olympus Creatine 60 servidas", precio: 10.5, categoria: "Creatinas", marca: "Olympus", presentacion: "60 servidas", objetivos: ["Fuerza", "Rendimiento"] }),
   product({ id: "olympus-creatine-100-serv", nombre: "Olympus Creatine 100 servidas", precio: 16.5, categoria: "Creatinas", marca: "Olympus", presentacion: "100 servidas", objetivos: ["Fuerza", "Rendimiento"] }),
-  product({ id: "muscletech-cell-tech-3lb", nombre: "MuscleTech Cell-Tech 3 lb", precio: 34, categoria: "Creatinas", marca: "MuscleTech", presentacion: "3 lb", sabores: ["Fruit Punch"], objetivos: ["Fuerza", "Rendimiento", "Volumen"] }),
+  product({ id: "muscletech-cell-tech-3lb", nombre: "MuscleTech Cell-Tech 3 lb", precio: 34, categoria: "Creatinas", marca: "MuscleTech", presentacion: "3 lb", sabores: ["Fruit Punch"], objetivos: ["Fuerza", "Rendimiento", "Volumen"], imagen: "img/products/muscletech-cell-tech-3lb.webp" }),
   product({ id: "muscletech-cell-tech-6lb", nombre: "MuscleTech Cell-Tech 6 lb", precio: 47, categoria: "Creatinas", marca: "MuscleTech", presentacion: "6 lb", sabores: ["Fruit Punch"], objetivos: ["Fuerza", "Rendimiento", "Volumen"] }),
-  product({ id: "muscletech-platinum-creatine-400g", nombre: "MuscleTech Platinum Creatine 400 g", precio: 28, categoria: "Creatinas", marca: "MuscleTech", presentacion: "80 servidas", objetivos: ["Fuerza", "Rendimiento"] }),
+  product({ id: "muscletech-platinum-creatine-400g", nombre: "MuscleTech Platinum Creatine 400 g", precio: 28, categoria: "Creatinas", marca: "MuscleTech", presentacion: "80 servidas", objetivos: ["Fuerza", "Rendimiento"], imagen: "img/products/muscletech-platinum-creatine-400g.webp" }),
   product({ id: "nutricost-creatine-flavored-45-serv", nombre: "Nutricost Creatine 45 servidas saborizada", precio: 15, categoria: "Creatinas", marca: "Nutricost", presentacion: "45 servidas", sabores: ["Uva", "Mandarina Naranja", "Fruit Punch", "Berry Blast"], objetivos: ["Fuerza", "Rendimiento"] }),
   product({ id: "nutrex-creatine-flavored-60-serv", nombre: "Nutrex Creatine 60 servidas saborizada", precio: 18, categoria: "Creatinas", marca: "Nutrex", presentacion: "60 servidas", sabores: ["Fruit Punch", "Fresa Sandía"], objetivos: ["Fuerza", "Rendimiento"], imagen: "img/products/nutrex-creatine-flavored-60-serv.webp" }),
   product({ id: "nutrex-creatine-60-serv", nombre: "Nutrex Creatine Monohydrate 60 servidas", precio: 12.5, categoria: "Creatinas", marca: "Nutrex", presentacion: "60 servidas", objetivos: ["Fuerza", "Rendimiento"], destacado: true, imagen: "img/products/nutrex-creatine-60-serv.webp" }),
@@ -120,7 +120,7 @@ const PRODUCT_LIST = [
   product({ id: "bpi-creatine-max-60-serv", nombre: "BPI Creatine Max 60 servidas", precio: 11.5, categoria: "Creatinas", marca: "BPI Sports", presentacion: "60 servidas", objetivos: ["Fuerza", "Rendimiento"] }),
   product({ id: "optimum-nutrition-creatine-60-serv", nombre: "Optimum Nutrition Creatine 60 servidas", precio: 15.5, categoria: "Creatinas", marca: "Optimum Nutrition", presentacion: "60 servidas", objetivos: ["Fuerza", "Rendimiento"] }),
 
-  product({ id: "nutrex-glutamine-300g", nombre: "Nutrex Glutamine 300 g", precio: 15, categoria: "Glutamina", marca: "Nutrex", presentacion: "60 servidas", objetivos: ["Recuperación"] }),
+  product({ id: "nutrex-glutamine-300g", nombre: "Nutrex Glutamine 300 g", precio: 15, categoria: "Glutamina", marca: "Nutrex", presentacion: "60 servidas", objetivos: ["Recuperación"], imagen: "img/products/nutrex-glutamine-300g.webp" }),
 
   product({ id: "adiplex-kiwi-berry", nombre: "Adiplex", precio: 13.5, categoria: "Pre Entrenos", marca: "Adiplex", sabores: ["Kiwi-Berry"], objetivos: ["Energía", "Enfoque"] }),
   product({ id: "mesomorph-pre-workout", nombre: "Mesomorph Pre-Workout", precio: 26.5, categoria: "Pre Entrenos", marca: "APS Nutrition", sabores: ["Varios sabores"], objetivos: ["Energía", "Enfoque", "Rendimiento"], destacado: true, imagen: "img/products/mesomorph-pre-workout.webp" }),
@@ -146,7 +146,7 @@ const PRODUCT_LIST = [
 
   product({ id: "nutrex-tribulus-90-caps", nombre: "Nutrex Tribulus 90 cápsulas", precio: 15, categoria: "Potenciadores", marca: "Nutrex", presentacion: "90 cápsulas", objetivos: ["Vitalidad", "Rendimiento"] }),
   product({ id: "tongkat-ali-complex-1000mg", nombre: "Tongkat Ali Complex 1000 mg 60 cápsulas", precio: 15.5, categoria: "Potenciadores", marca: "Tongkat Ali", presentacion: "60 cápsulas", objetivos: ["Vitalidad", "Rendimiento"] }),
-  product({ id: "nutrex-t-up-max-60-caps", nombre: "Nutrex T-UP Max 60 cápsulas", precio: 20, categoria: "Potenciadores", marca: "Nutrex", presentacion: "60 cápsulas", objetivos: ["Vitalidad", "Rendimiento"] }),
+  product({ id: "nutrex-t-up-max-60-caps", nombre: "Nutrex T-UP Max 60 cápsulas", precio: 20, categoria: "Potenciadores", marca: "Nutrex", presentacion: "60 cápsulas", objetivos: ["Vitalidad", "Rendimiento"], imagen: "img/products/nutrex-t-up-max-60-caps.webp" }),
   product({ id: "mutant-caffeine-240-tabs", nombre: "Mutant Caffeine 240 tabletas", precio: 12.5, categoria: "Energía y Cafeína", marca: "Mutant", presentacion: "240 tabletas", objetivos: ["Energía", "Enfoque"] }),
 
   product({ id: "mutant-multivitamin-60-tabs", nombre: "Mutant Multivitamin 60 tabletas", precio: 14, categoria: "Multivitamínicos", marca: "Mutant", presentacion: "60 tabletas", objetivos: ["Salud general"] }),
