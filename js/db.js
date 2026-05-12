@@ -104,6 +104,36 @@ function toTextLines(value, fallback = []) {
   return fallback;
 }
 
+function isPlaceholderImage(image = "") {
+  return !image || image === DB_PLACEHOLDER_IMAGE || image.includes("product-placeholder.svg");
+}
+
+function isLocalProductImage(image = "") {
+  return /^\.?\/?img\/products\//.test(image);
+}
+
+function findLocalProductMatch(product = {}) {
+  if (typeof PRODUCTS === "undefined") return null;
+
+  const candidates = [
+    product.legacy_id,
+    product.legacyId,
+    product.local_id,
+    product.slug,
+    product.id,
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (PRODUCTS[candidate]) return PRODUCTS[candidate];
+  }
+
+  const name = getUsefulText(product.name, product.nombre);
+  if (!name) return null;
+
+  const productSlug = createSlug(name);
+  return Object.values(PRODUCTS).find((localProduct) => createSlug(localProduct.nombre || localProduct.name) === productSlug) || null;
+}
+
 function normalizeFlavor(flavor, index = 0) {
   if (typeof flavor === "string") {
     return {
@@ -126,7 +156,12 @@ function normalizeProductFromDb(product) {
     .filter((flavor) => flavor.name)
     .sort((a, b) => a.name.localeCompare(b.name, "es"));
 
-  const image = product.image_url || product.imagen_url || product.image || product.imagen || DB_PLACEHOLDER_IMAGE;
+  const localProduct = findLocalProductMatch(product);
+  const remoteImage = product.image_url || product.imagen_url || product.image || product.imagen || "";
+  const localImage = localProduct?.imagen || localProduct?.image || "";
+  const image = localImage && (isPlaceholderImage(remoteImage) || isLocalProductImage(remoteImage))
+    ? localImage
+    : remoteImage || localImage || DB_PLACEHOLDER_IMAGE;
   const available = product.available ?? product.is_active ?? product.disponible ?? true;
   const featured = product.featured ?? product.destacado ?? false;
   const goals = asArray(product.goals || product.objetivos);
