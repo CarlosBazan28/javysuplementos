@@ -5,72 +5,6 @@ const catalogState = {
   category: "todos",
 };
 
-const OBJECTIVE_GUIDES = [
-  {
-    id: "masa-muscular",
-    emoji: "M",
-    title: "Ganar masa muscular",
-    description: "Opciones con proteina, creatina y ganadores de peso.",
-    categories: ["Ganadores de Peso", "Proteinas Whey", "Proteinas ISO", "Creatinas"],
-    goals: ["Ganar masa muscular", "Masa muscular", "Subir calorias", "Fuerza"],
-    message: "Hola Javy, quiero una recomendacion para ganar masa muscular.\nMe interesan opciones como proteina, creatina o ganador de masa.\nQuiero saber que tienes disponible, precios y que me recomiendas segun mi presupuesto.",
-  },
-  {
-    id: "definicion",
-    emoji: "D",
-    title: "Definicion / bajar grasa",
-    description: "Productos para apoyar energia, control y etapa de definicion.",
-    categories: ["Quemadores", "Proteinas ISO", "Salud y Bienestar"],
-    goals: ["Definicion", "Energia"],
-    message: "Hola Javy, quiero una recomendacion para definicion o bajar grasa.\nQuiero saber que quemadores, proteinas o suplementos tienes disponibles y cual me conviene.",
-  },
-  {
-    id: "energia",
-    emoji: "E",
-    title: "Mas energia para entrenar",
-    description: "Pre entrenos, bebidas y opciones para enfoque.",
-    categories: ["Pre Entrenos", "Bebidas y Snacks", "Energia y Cafeina"],
-    goals: ["Energia", "Enfoque", "Rendimiento"],
-    message: "Hola Javy, quiero mas energia para entrenar.\nMe interesan pre entrenos, bebidas o cafeina. Quiero saber disponibilidad, precios y cual me recomiendas.",
-  },
-  {
-    id: "recuperacion",
-    emoji: "R",
-    title: "Recuperacion muscular",
-    description: "Opciones para recuperarte mejor despues de entrenar.",
-    categories: ["Aminoacidos", "Glutamina", "Proteinas Whey", "Proteinas ISO"],
-    goals: ["Recuperacion", "Rendimiento"],
-    message: "Hola Javy, quiero una recomendacion para recuperacion muscular.\nQuiero saber que aminoacidos, glutamina o proteina tienes disponible.",
-  },
-  {
-    id: "salud",
-    emoji: "S",
-    title: "Salud y vitaminas",
-    description: "Vitaminas, bienestar general y soporte diario.",
-    categories: ["Salud y Bienestar", "Multivitaminicos"],
-    goals: ["Salud general", "Bienestar general", "Sistema inmune", "Antioxidante"],
-    message: "Hola Javy, quiero una recomendacion de salud y vitaminas.\nQuiero saber que tienes disponible para bienestar general y que me recomiendas.",
-  },
-  {
-    id: "empezando",
-    emoji: "1",
-    title: "Estoy empezando",
-    description: "Una ruta sencilla para comenzar sin comprar de mas.",
-    categories: ["Proteinas Whey", "Creatinas", "Salud y Bienestar"],
-    goals: ["Masa muscular", "Fuerza", "Salud general"],
-    message: "Hola Javy, estoy empezando con suplementos.\nQuiero una recomendacion sencilla segun mi objetivo, presupuesto y rutina.",
-  },
-  {
-    id: "no-se",
-    emoji: "?",
-    title: "No se que necesito",
-    description: "Javy te orienta segun objetivo, rutina y presupuesto.",
-    categories: ["Proteinas Whey", "Creatinas", "Pre Entrenos", "Salud y Bienestar"],
-    goals: [],
-    message: "Hola Javy, no se que suplemento necesito.\nQuiero que me orientes segun mi objetivo, rutina, presupuesto y disponibilidad.",
-  },
-];
-
 const searchForm = document.getElementById("searchForm");
 const searchInput = document.getElementById("searchInput");
 const searchClear = document.getElementById("searchClear");
@@ -79,8 +13,7 @@ const catalogCount = document.getElementById("catalogCount");
 const catalogEmpty = document.getElementById("catalogEmpty");
 const emptyAdvisorBtn = document.getElementById("emptyAdvisorBtn");
 const catalogFilters = document.getElementById("catalogFilters");
-const goalGrid = document.getElementById("goalGrid");
-const goalResult = document.getElementById("goalResult");
+const catalogFloatingQuote = document.getElementById("catalogFloatingQuote");
 
 function normalizeText(value = "") {
   return value
@@ -313,7 +246,12 @@ function renderProductCard(product) {
   });
 
   detailsBtn.addEventListener("click", () => {
-    window.location.href = `product-page.html?id=${encodeURIComponent(product.id)}`;
+    const url = `product-page.html?id=${encodeURIComponent(product.id)}`;
+    if (window.navigateWithTransition) {
+      window.navigateWithTransition(url);
+      return;
+    }
+    window.location.href = url;
   });
 
   return card;
@@ -338,53 +276,6 @@ function renderLoading() {
   if (!supplementsList || !catalogCount) return;
   catalogCount.textContent = "Cargando catalogo...";
   supplementsList.innerHTML = `<p class="catalog-empty">Estamos preparando los productos.</p>`;
-}
-
-function productMatchesObjective(product, guide) {
-  const category = normalizeText(product.category);
-  const goals = normalizeText(product.goals?.join(" "));
-  const tags = normalizeText(product.tags?.join(" "));
-  const haystack = `${category} ${goals} ${tags}`;
-
-  return guide.categories.some((item) => haystack.includes(normalizeText(item))) ||
-    guide.goals.some((item) => haystack.includes(normalizeText(item)));
-}
-
-function renderObjectiveCards() {
-  if (!goalGrid) return;
-
-  goalGrid.innerHTML = OBJECTIVE_GUIDES.map((guide) => `
-    <article class="goal-card">
-      <span class="goal-card__icon" aria-hidden="true">${escapeHTML(guide.emoji)}</span>
-      <h3>${escapeHTML(guide.title)}</h3>
-      <p>${escapeHTML(guide.description)}</p>
-      <button type="button" data-goal="${escapeHTML(guide.id)}">Ver recomendaciones</button>
-    </article>
-  `).join("");
-}
-
-function renderObjectiveResult(guide) {
-  if (!goalResult) return;
-
-  const relatedProducts = products.filter((product) => productMatchesObjective(product, guide)).slice(0, 6);
-  const categories = guide.categories.map((category) => `<span>${escapeHTML(category)}</span>`).join("");
-  const productLinks = relatedProducts.length
-    ? relatedProducts.map((product) => `<li>${escapeHTML(product.name)}${product.available === false ? " (consultar stock)" : ""}</li>`).join("")
-    : "<li>Javy puede recomendarte segun tu presupuesto y rutina.</li>";
-
-  goalResult.hidden = false;
-  goalResult.innerHTML = `
-    <div class="goal-result__content">
-      <p class="goal-result__eyebrow">Recomendacion para</p>
-      <h3>${escapeHTML(guide.title)}</h3>
-      <p>${escapeHTML(guide.description)}</p>
-      <div class="goal-result__chips">${categories}</div>
-      <ul>${productLinks}</ul>
-    </div>
-    <button class="goal-result__btn" type="button" data-goal-whatsapp="${escapeHTML(guide.id)}">
-      Cotizar este objetivo por WhatsApp
-    </button>
-  `;
 }
 
 searchForm?.addEventListener("submit", (event) => {
@@ -425,28 +316,23 @@ catalogFilters?.addEventListener("click", (event) => {
   selectCategory(button);
 });
 
-goalGrid?.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-goal]");
-  if (!button) return;
-
-  const guide = OBJECTIVE_GUIDES.find((item) => item.id === button.dataset.goal);
-  if (!guide) return;
-  renderObjectiveResult(guide);
-  goalResult?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-});
-
-goalResult?.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-goal-whatsapp]");
-  if (!button) return;
-
-  const guide = OBJECTIVE_GUIDES.find((item) => item.id === button.dataset.goalWhatsapp);
-  if (!guide) return;
-  openJavyWhatsapp(guide.message);
-});
-
 emptyAdvisorBtn?.addEventListener("click", () => {
   openJavyWhatsapp("Hola Javy, quiero consultar disponibilidad de suplementos.");
 });
+
+function updateFloatingQuoteVisibility() {
+  if (!catalogFloatingQuote) return;
+
+  const shouldShow = window.scrollY > 260;
+  catalogFloatingQuote.hidden = !shouldShow;
+  catalogFloatingQuote.classList.toggle("is-visible", shouldShow);
+}
+
+catalogFloatingQuote?.addEventListener("click", () => {
+  window.consultation?.openPanel?.();
+});
+
+window.addEventListener("scroll", updateFloatingQuoteVisibility, { passive: true });
 
 function enableDragScroll(element) {
   if (!element) return;
@@ -520,8 +406,8 @@ function enableDragScroll(element) {
 
 async function initCatalog() {
   renderLoading();
-  renderObjectiveCards();
   enableDragScroll(catalogFilters);
+  updateFloatingQuoteVisibility();
 
   products = await window.catalogDb.getProductsWithFlavors();
   renderFilters();

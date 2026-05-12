@@ -160,7 +160,12 @@ function renderFeaturedProducts(productos) {
 
     const btnInfo = card.querySelector(".product-card__btn--info");
     btnInfo.addEventListener("click", () => {
-      window.location.href = `product-page.html?id=${encodeURIComponent(product.id)}`;
+      const url = `product-page.html?id=${encodeURIComponent(product.id)}`;
+      if (window.navigateWithTransition) {
+        window.navigateWithTransition(url);
+        return;
+      }
+      window.location.href = url;
     });
 
     lista.appendChild(card);

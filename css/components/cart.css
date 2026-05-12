@@ -6,7 +6,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.62);
-  z-index: 90;
+  z-index: 950;
 }
 
 .consultation-overlay[hidden] {
@@ -17,7 +17,7 @@
   position: fixed;
   top: 0;
   right: 0;
-  z-index: 100;
+  z-index: 1000;
   width: min(420px, 100%);
   height: 100dvh;
   display: flex;
@@ -28,12 +28,18 @@
   border-left: 1px solid rgba(90, 180, 233, 0.22);
   box-shadow: -24px 0 60px rgba(0,0,0,0.55);
   color: #fff;
-  transform: translateX(100%);
-  transition: transform 0.22s ease;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  visibility: hidden;
+  transition: opacity 0.22s ease, transform 0.22s ease;
 }
 
 .consultation-panel.is-open {
-  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  visibility: visible;
 }
 
 .consultation-panel__header {
@@ -225,6 +231,7 @@
   .consultation-panel {
     width: 100%;
     padding: 14px;
+    border-left: 0;
   }
 
   .consultation-panel__actions {
