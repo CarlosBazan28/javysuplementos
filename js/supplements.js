@@ -16,6 +16,7 @@ const catalogFilters = document.getElementById("catalogFilters");
 const catalogFloatingQuote = document.getElementById("catalogFloatingQuote");
 const catalogScrollTop = document.getElementById("catalogScrollTop");
 let lastCatalogScrollY = window.scrollY || 0;
+let scrollTopIsVisible = false;
 
 function normalizeText(value = "") {
   return value
@@ -336,10 +337,16 @@ function updateScrollTopVisibility() {
   const currentScrollY = window.scrollY || document.documentElement.scrollTop || 0;
   const scrollingUp = currentScrollY < lastCatalogScrollY - 8;
   const farEnough = currentScrollY > 520;
-  const shouldShow = scrollingUp && farEnough;
+  const scrollingDown = currentScrollY > lastCatalogScrollY + 8;
 
-  catalogScrollTop.hidden = !shouldShow;
-  catalogScrollTop.classList.toggle("is-visible", shouldShow);
+  if (scrollingDown || !farEnough) {
+    scrollTopIsVisible = false;
+  } else if (scrollingUp && farEnough) {
+    scrollTopIsVisible = true;
+  }
+
+  catalogScrollTop.hidden = !scrollTopIsVisible;
+  catalogScrollTop.classList.toggle("is-visible", scrollTopIsVisible);
   lastCatalogScrollY = Math.max(0, currentScrollY);
 }
 
