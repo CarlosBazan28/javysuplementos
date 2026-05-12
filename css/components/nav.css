@@ -367,7 +367,7 @@
 
 .page-transition.page-transition-in {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
 }
 
 .page-transition.page-transition-out {

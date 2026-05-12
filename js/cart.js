@@ -1,5 +1,7 @@
 const CONSULTATION_KEY = "javy-consultation";
 const LEGACY_CART_KEY = "cart";
+let consultationScrollY = 0;
+let consultationScrollLocked = false;
 
 function readStorage(key) {
   try {
@@ -122,12 +124,14 @@ function getDisplayPresentation(item) {
 }
 
 function updateConsultationBadge() {
-  const badge = document.getElementById("consultationBadge") || document.getElementById("cartBadge");
-  if (!badge) return;
+  const badges = document.querySelectorAll("#consultationBadge, #cartBadge, [data-consultation-count]");
+  if (!badges.length) return;
 
   const count = getConsultationCount();
-  badge.textContent = String(count);
-  badge.hidden = count === 0;
+  badges.forEach((badge) => {
+    badge.textContent = String(count);
+    badge.hidden = count === 0;
+  });
 }
 
 function updateQuantity(index, quantity) {
@@ -307,16 +311,34 @@ function askAvailability(product, options = {}) {
   }
 }
 
+function lockConsultationScroll() {
+  if (consultationScrollLocked) return;
+
+  consultationScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  document.body.classList.add("has-consultation-open");
+  consultationScrollLocked = true;
+}
+
+function unlockConsultationScroll() {
+  if (!consultationScrollLocked) return;
+
+  const targetY = consultationScrollY;
+  document.body.classList.remove("has-consultation-open");
+  consultationScrollLocked = false;
+  window.scrollTo(0, targetY);
+}
+
 function openPanel() {
   const panel = document.getElementById("consultationPanel");
   const overlay = document.getElementById("consultationOverlay");
   if (!panel || !overlay) return openWhatsApp();
 
   renderConsultationPanel();
-  panel.classList.add("is-open");
   overlay.hidden = false;
-  document.body.classList.add("has-consultation-open");
-  panel.querySelector(".consultation-panel__close")?.focus();
+  panel.setAttribute("aria-hidden", "false");
+  panel.classList.add("is-open");
+  lockConsultationScroll();
+  panel.querySelector(".consultation-panel__close")?.focus({ preventScroll: true });
 }
 
 function closePanel() {
@@ -325,8 +347,9 @@ function closePanel() {
   if (!panel || !overlay) return;
 
   panel.classList.remove("is-open");
+  panel.setAttribute("aria-hidden", "true");
   overlay.hidden = true;
-  document.body.classList.remove("has-consultation-open");
+  unlockConsultationScroll();
 }
 
 function createConsultationPanel() {
@@ -340,7 +363,10 @@ function createConsultationPanel() {
   const panel = document.createElement("aside");
   panel.className = "consultation-panel";
   panel.id = "consultationPanel";
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-modal", "true");
   panel.setAttribute("aria-label", "Cotizacion por WhatsApp");
+  panel.setAttribute("aria-hidden", "true");
   panel.innerHTML = `
     <div class="consultation-panel__header">
       <div>
