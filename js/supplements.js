@@ -14,6 +14,9 @@ const catalogEmpty = document.getElementById("catalogEmpty");
 const emptyAdvisorBtn = document.getElementById("emptyAdvisorBtn");
 const catalogFilters = document.getElementById("catalogFilters");
 const catalogFloatingQuote = document.getElementById("catalogFloatingQuote");
+const catalogScrollTop = document.getElementById("catalogScrollTop");
+let lastCatalogScrollY = window.scrollY || 0;
+let scrollTopIsVisible = false;
 
 function normalizeText(value = "") {
   return value
@@ -328,11 +331,40 @@ function updateFloatingQuoteVisibility() {
   catalogFloatingQuote.classList.toggle("is-visible", shouldShow);
 }
 
+function updateScrollTopVisibility() {
+  if (!catalogScrollTop) return;
+
+  const currentScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  const scrollingUp = currentScrollY < lastCatalogScrollY - 8;
+  const farEnough = currentScrollY > 520;
+  const scrollingDown = currentScrollY > lastCatalogScrollY + 8;
+
+  if (scrollingDown || !farEnough) {
+    scrollTopIsVisible = false;
+  } else if (scrollingUp && farEnough) {
+    scrollTopIsVisible = true;
+  }
+
+  catalogScrollTop.hidden = !scrollTopIsVisible;
+  catalogScrollTop.classList.toggle("is-visible", scrollTopIsVisible);
+  lastCatalogScrollY = Math.max(0, currentScrollY);
+}
+
 catalogFloatingQuote?.addEventListener("click", () => {
   window.consultation?.openPanel?.();
 });
 
-window.addEventListener("scroll", updateFloatingQuoteVisibility, { passive: true });
+catalogScrollTop?.addEventListener("click", () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+});
+
+window.addEventListener("scroll", () => {
+  updateFloatingQuoteVisibility();
+  updateScrollTopVisibility();
+}, { passive: true });
 
 function enableDragScroll(element) {
   if (!element) return;
@@ -408,6 +440,7 @@ async function initCatalog() {
   renderLoading();
   enableDragScroll(catalogFilters);
   updateFloatingQuoteVisibility();
+  updateScrollTopVisibility();
 
   products = await window.catalogDb.getProductsWithFlavors();
   renderFilters();
