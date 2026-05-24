@@ -20,6 +20,14 @@ const PRODUCT_BASE_SELECT = `
   presentation,
   image_url,
   description,
+  old_price,
+  description_short,
+  description_long,
+  label,
+  show_on_home,
+  home_order,
+  is_available,
+  is_featured,
   available,
   featured,
   tags,
@@ -34,12 +42,28 @@ const PRODUCT_SELECT = `
   product_flavors (
     id,
     name,
+    presentation,
+    price,
+    stock,
     available,
+    is_available,
     created_at
   )
 `;
 
 const DB_PLACEHOLDER_IMAGE = "img/products/product-placeholder.svg";
+const PRODUCT_IMAGE_BUCKET = "product-images";
+
+const DEFAULT_CATEGORIES = [
+  { name: "Proteinas", slug: "proteinas", sort_order: 1 },
+  { name: "Creatinas", slug: "creatinas", sort_order: 2 },
+  { name: "Pre-entrenos", slug: "pre-entrenos", sort_order: 3 },
+  { name: "Quemadores", slug: "quemadores", sort_order: 4 },
+  { name: "Vitaminas", slug: "vitaminas", sort_order: 5 },
+  { name: "Aminoacidos", slug: "aminoacidos", sort_order: 6 },
+  { name: "Accesorios", slug: "accesorios", sort_order: 7 },
+  { name: "Otros", slug: "otros", sort_order: 8 },
+];
 
 let productsCache = null;
 let productsCacheSource = "local";
@@ -104,11 +128,44 @@ function toTextLines(value, fallback = []) {
   return fallback;
 }
 
+function isPlaceholderImage(image = "") {
+  return !image || image === DB_PLACEHOLDER_IMAGE || image.includes("product-placeholder.svg");
+}
+
+function isLocalProductImage(image = "") {
+  return /^\.?\/?img\/products\//.test(image);
+}
+
+function findLocalProductMatch(product = {}) {
+  if (typeof PRODUCTS === "undefined") return null;
+
+  const candidates = [
+    product.legacy_id,
+    product.legacyId,
+    product.local_id,
+    product.slug,
+    product.id,
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (PRODUCTS[candidate]) return PRODUCTS[candidate];
+  }
+
+  const name = getUsefulText(product.name, product.nombre);
+  if (!name) return null;
+
+  const productSlug = createSlug(name);
+  return Object.values(PRODUCTS).find((localProduct) => createSlug(localProduct.nombre || localProduct.name) === productSlug) || null;
+}
+
 function normalizeFlavor(flavor, index = 0) {
   if (typeof flavor === "string") {
     return {
       id: `local-flavor-${index}-${flavor.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
       name: flavor,
+      presentation: "",
+      price: null,
+      stock: null,
       available: true,
     };
   }
@@ -116,7 +173,10 @@ function normalizeFlavor(flavor, index = 0) {
   return {
     id: flavor?.id || `local-flavor-${index}`,
     name: flavor?.name || flavor?.nombre || "",
-    available: flavor?.available ?? flavor?.disponible ?? true,
+    presentation: flavor?.presentation || flavor?.presentacion || "",
+    price: flavor?.price == null || flavor?.price === "" ? null : Number(flavor.price),
+    stock: flavor?.stock == null || flavor?.stock === "" ? null : Number(flavor.stock),
+    available: flavor?.available ?? flavor?.is_available ?? flavor?.disponible ?? true,
   };
 }
 
@@ -126,9 +186,16 @@ function normalizeProductFromDb(product) {
     .filter((flavor) => flavor.name)
     .sort((a, b) => a.name.localeCompare(b.name, "es"));
 
-  const image = product.image_url || product.imagen_url || product.image || product.imagen || DB_PLACEHOLDER_IMAGE;
-  const available = product.available ?? product.is_active ?? product.disponible ?? true;
-  const featured = product.featured ?? product.destacado ?? false;
+  const localProduct = findLocalProductMatch(product);
+  const remoteImage = product.image_url || product.imagen_url || product.image || product.imagen || "";
+  const localImage = localProduct?.imagen || localProduct?.image || "";
+  const image = localImage && (isPlaceholderImage(remoteImage) || isLocalProductImage(remoteImage))
+    ? localImage
+    : remoteImage || localImage || DB_PLACEHOLDER_IMAGE;
+  const available = product.is_available ?? product.available ?? product.is_active ?? product.disponible ?? true;
+  const featured = product.is_featured ?? product.featured ?? product.destacado ?? false;
+  const showOnHome = product.show_on_home ?? product.en_inicio ?? featured ?? false;
+  const homeOrder = product.home_order == null || product.home_order === "" ? null : Number(product.home_order);
   const goals = asArray(product.goals || product.objetivos);
   const tags = asArray(product.tags || product.etiquetas);
   const name = getUsefulText(product.name, product.nombre);
@@ -136,7 +203,8 @@ function normalizeProductFromDb(product) {
   const category = getUsefulText(product.category === "Producto" ? "" : product.category, product.categoria, product.tag) || "Producto";
   const presentation = product.presentation || product.presentacion || "";
   const price = Number(product.price ?? product.precio ?? (product.precio_centavos != null ? product.precio_centavos / 100 : 0));
-  const descriptionText = product.description || product.descripcion || product.subtitulo || "";
+  const descriptionText = product.description_long || product.description || product.descripcion || product.subtitulo || "";
+  const descriptionShort = product.description_short || product.subtitulo || descriptionText;
   const descriptionLines = Array.isArray(descriptionText)
     ? descriptionText
     : descriptionText.toString().split("\n").filter(Boolean);
@@ -149,12 +217,20 @@ function normalizeProductFromDb(product) {
     brand,
     category,
     price,
+    old_price: product.old_price == null || product.old_price === "" ? null : Number(product.old_price),
     presentation,
     image,
     image_url: image,
     description: descriptionText,
+    description_short: descriptionShort,
+    description_long: descriptionText,
     available,
+    is_available: available,
     featured,
+    is_featured: featured,
+    show_on_home: showOnHome,
+    home_order: homeOrder,
+    label: product.label || product.tag_visual || "",
     tags,
     goals,
     flavors,
@@ -171,11 +247,12 @@ function normalizeProductFromDb(product) {
     imagenPendiente: image === DB_PLACEHOLDER_IMAGE,
     disponible: available,
     destacado: featured,
+    enInicio: showOnHome,
     sabores: flavors.map((flavor) => flavor.name),
     objetivos: goals,
     tag: available ? "Disponible" : "Consultar stock",
     alt: name,
-    subtitulo: product.subtitulo || `${category}${presentation ? ` ${presentation}` : ""}.`,
+    subtitulo: descriptionShort || `${category}${presentation ? ` ${presentation}` : ""}.`,
     beneficios: toTextLines(product.beneficios, [
       goals.length ? `Apoya objetivos de ${goals.join(", ").toLowerCase()}.` : "Apoya tu rutina de suplementacion.",
       "Producto disponible para cotizacion por WhatsApp.",
@@ -241,13 +318,19 @@ function mapProductToDb(productData = {}) {
   const brand = productData.brand?.trim() || null;
   const category = productData.category?.trim();
   const price = productData.price === "" || productData.price == null ? null : Number(productData.price);
+  const oldPrice = productData.old_price === "" || productData.old_price == null ? null : Number(productData.old_price);
   const presentation = productData.presentation?.trim() || null;
   const imageUrl = productData.image_url?.trim() || productData.image?.trim() || DB_PLACEHOLDER_IMAGE;
-  const descriptionLines = toTextLines(productData.descripcion || productData.description);
+  const descriptionShort = productData.description_short?.trim() || productData.subtitulo?.trim() || null;
+  const descriptionLong = productData.description_long?.trim() || productData.description?.trim() || null;
+  const descriptionLines = toTextLines(productData.descripcion || descriptionLong || descriptionShort);
   const description = descriptionLines.join("\n") || null;
-  const available = productData.available ?? true;
-  const featured = productData.featured ?? false;
-  const subtitle = productData.subtitulo || `${category || "Producto"}${presentation ? ` ${presentation}` : ""}.`;
+  const available = productData.is_available ?? productData.available ?? true;
+  const featured = productData.is_featured ?? productData.featured ?? false;
+  const showOnHome = productData.show_on_home ?? productData.featured ?? false;
+  const homeOrder = productData.home_order === "" || productData.home_order == null ? null : Number(productData.home_order);
+  const label = productData.label?.trim() || null;
+  const subtitle = descriptionShort || productData.subtitulo || `${category || "Producto"}${presentation ? ` ${presentation}` : ""}.`;
   const benefits = toTextLines(productData.beneficios, [
     category ? `Producto de la categoria ${category}.` : "Producto disponible para cotizacion.",
     "Javy puede confirmar disponibilidad, precio final y forma de entrega por WhatsApp.",
@@ -275,11 +358,19 @@ function mapProductToDb(productData = {}) {
     brand,
     category,
     price,
+    old_price: oldPrice,
     presentation,
     image_url: imageUrl,
     description,
+    description_short: descriptionShort || subtitle,
+    description_long: descriptionLong || description,
     available,
+    is_available: available,
     featured,
+    is_featured: featured,
+    show_on_home: Boolean(showOnHome),
+    home_order: homeOrder,
+    label,
     tags: asArray(productData.tags),
     goals: asArray(productData.goals),
     legacy_id: productData.legacy_id?.trim() || null,
@@ -343,6 +434,118 @@ async function getProductById(id) {
   return products.find((product) => product.id === id || product.legacy_id === id) || null;
 }
 
+async function getCategories() {
+  if (hasSupabaseClient()) {
+    try {
+      const { data, error } = await supabaseClient
+        .from("categories")
+        .select("id, name, slug, sort_order, is_active")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("name", { ascending: true });
+
+      if (error) throw error;
+      if (data?.length) return data;
+    } catch (error) {
+      console.warn("No se pudieron cargar categorias desde Supabase:", error.message);
+    }
+  }
+
+  return DEFAULT_CATEGORIES;
+}
+
+async function getAdminProfile(userId) {
+  ensureSupabaseForWrite();
+  if (!userId) return null;
+
+  const { data, error } = await supabaseClient
+    .from("admin_profiles")
+    .select("id, user_id, role, is_active")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data || null;
+}
+
+async function getHomeProducts() {
+  const products = await getProductsWithFlavors();
+  const homeProducts = products
+    .filter((product) => product.show_on_home)
+    .sort((a, b) => {
+      const orderA = a.home_order ?? 999;
+      const orderB = b.home_order ?? 999;
+      if (orderA !== orderB) return orderA - orderB;
+      return a.name.localeCompare(b.name, "es");
+    });
+
+  if (homeProducts.length) return homeProducts.slice(0, 8);
+
+  return products
+    .filter((product) => product.featured)
+    .slice(0, 8);
+}
+
+async function updateHomeProducts(productIds = []) {
+  ensureSupabaseForWrite();
+
+  const cleanIds = [...new Set(productIds.filter(Boolean))];
+  if (cleanIds.length < 4) {
+    throw new Error("No puedes mostrar menos de 4 productos en el inicio.");
+  }
+
+  if (cleanIds.length > 8) {
+    throw new Error("No puedes mostrar mas de 8 productos en el inicio.");
+  }
+
+  const { error: resetError } = await supabaseClient
+    .from("products")
+    .update({ show_on_home: false, home_order: null, is_featured: false, featured: false })
+    .not("id", "is", null);
+
+  if (resetError) throw resetError;
+
+  for (const [index, id] of cleanIds.entries()) {
+    const { error } = await supabaseClient
+      .from("products")
+      .update({
+        show_on_home: true,
+        home_order: index + 1,
+        is_featured: true,
+        featured: true,
+      })
+      .eq("id", id);
+
+    if (error) throw error;
+  }
+
+  productsCache = null;
+  return getHomeProducts();
+}
+
+async function uploadProductImage(file) {
+  ensureSupabaseForWrite();
+  if (!file) return "";
+
+  const extension = file.name.split(".").pop()?.toLowerCase() || "webp";
+  const safeName = createSlug(file.name.replace(/\.[^.]+$/, "")) || "producto";
+  const path = `${Date.now()}-${safeName}.${extension}`;
+
+  const { error } = await supabaseClient.storage
+    .from(PRODUCT_IMAGE_BUCKET)
+    .upload(path, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
+
+  if (error) throw error;
+
+  const { data } = supabaseClient.storage.from(PRODUCT_IMAGE_BUCKET).getPublicUrl(path);
+  return data?.publicUrl || "";
+}
+
 async function createProduct(productData) {
   ensureSupabaseForWrite();
   const payload = mapProductToDb(productData);
@@ -388,7 +591,11 @@ async function createFlavor(productId, flavorData) {
     .insert({
       product_id: productId,
       name: flavorData.name?.trim(),
-      available: flavorData.available ?? true,
+      presentation: flavorData.presentation?.trim() || null,
+      price: flavorData.price === "" || flavorData.price == null ? null : Number(flavorData.price),
+      stock: flavorData.stock === "" || flavorData.stock == null ? null : Number(flavorData.stock),
+      available: flavorData.is_available ?? flavorData.available ?? true,
+      is_available: flavorData.is_available ?? flavorData.available ?? true,
     })
     .select()
     .single();
@@ -404,7 +611,11 @@ async function updateFlavor(id, flavorData) {
     .from("product_flavors")
     .update({
       name: flavorData.name?.trim(),
-      available: flavorData.available ?? true,
+      presentation: flavorData.presentation?.trim() || null,
+      price: flavorData.price === "" || flavorData.price == null ? null : Number(flavorData.price),
+      stock: flavorData.stock === "" || flavorData.stock == null ? null : Number(flavorData.stock),
+      available: flavorData.is_available ?? flavorData.available ?? true,
+      is_available: flavorData.is_available ?? flavorData.available ?? true,
     })
     .eq("id", id)
     .select()
@@ -456,11 +667,18 @@ async function seedProductsFromLocalData() {
         presentation: product.presentation,
         image_url: product.image,
         description: Array.isArray(product.descripcion) ? product.descripcion.join("\n") : product.description,
+        description_short: product.subtitulo,
+        description_long: Array.isArray(product.descripcion) ? product.descripcion.join("\n") : product.description,
         beneficios: product.beneficios,
         descripcion: product.descripcion,
         uso: product.uso,
         available: product.available,
+        is_available: product.available,
         featured: product.featured,
+        is_featured: product.featured,
+        show_on_home: product.show_on_home || product.featured,
+        home_order: product.home_order,
+        label: product.label,
         tags: product.tags,
         goals: product.goals,
         legacy_id: product.legacy_id,
@@ -491,6 +709,11 @@ function getProductsCacheSource() {
 window.catalogDb = {
   getProductsWithFlavors,
   getProductById,
+  getCategories,
+  getAdminProfile,
+  getHomeProducts,
+  updateHomeProducts,
+  uploadProductImage,
   createProduct,
   updateProduct,
   deleteProduct,

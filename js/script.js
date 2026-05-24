@@ -188,9 +188,15 @@ async function initHomeProducts() {
   if (!lista) return;
   lista.innerHTML = `<p class="product-card__disclaimer">Cargando productos destacados...</p>`;
 
-  const allProducts = await window.catalogDb.getProductsWithFlavors();
-  const featuredProducts = allProducts.filter((product) => product.featured).slice(0, 12);
-  renderFeaturedProducts(featuredProducts);
+  try {
+    const homeProducts = await window.catalogDb.getHomeProducts();
+    renderFeaturedProducts(homeProducts);
+  } catch (error) {
+    console.warn("No se pudieron cargar productos del inicio:", error.message);
+    const allProducts = await window.catalogDb.getProductsWithFlavors();
+    const featuredProducts = allProducts.filter((product) => product.featured).slice(0, 8);
+    renderFeaturedProducts(featuredProducts);
+  }
 }
 
 initHomeProducts();
