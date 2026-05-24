@@ -7,154 +7,335 @@
     <link rel="icon" href="img/icons/logo.png" type="image/x-icon" />
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/tokens.css" />
-    <link rel="stylesheet" href="css/admin.css" />
+    <link rel="stylesheet" href="css/admin-dashboard.css?v=admin-auth" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap"
+      rel="stylesheet"
+    />
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="js/supabase-config.js" defer></script>
-    <script src="js/whatsapp-config.js" defer></script>
     <script src="js/product-data.js" defer></script>
-    <script src="js/db.js" defer></script>
-    <script src="js/admin.js" defer></script>
+    <script src="js/db.js?v=admin-auth" defer></script>
+    <script src="js/auth.js?v=admin-auth" defer></script>
+    <script src="js/admin-dashboard.js?v=admin-auth" defer></script>
   </head>
-  <body class="admin-page">
-    <main>
-      <section class="admin-auth" id="authView">
-        <div class="admin-auth__card">
-          <p class="admin-eyebrow">Panel administrador</p>
-          <h1>Javy Supplements</h1>
-          <p>Inicia sesion con el usuario creado en Supabase Auth para administrar productos y sabores.</p>
-
-          <p class="admin-message admin-message--login" id="loginMessage" aria-live="polite"></p>
-
-          <form class="admin-form" id="loginForm" novalidate>
-            <label for="loginEmail">Correo</label>
-            <input id="loginEmail" type="email" autocomplete="email" required />
-
-            <label for="loginPassword">Contrasena</label>
-            <input id="loginPassword" type="password" autocomplete="current-password" required />
-
-            <button type="submit">Entrar</button>
-          </form>
+  <body class="admin-dashboard-page">
+    <main class="admin-app" id="adminApp">
+      <section class="admin-gate" id="adminGate" aria-live="polite">
+        <div class="admin-gate__card">
+          <img src="img/icons/logo.png" alt="Javy Supplements" />
+          <p class="admin-kicker">Panel privado</p>
+          <h1>Validando acceso</h1>
+          <p id="adminGateMessage">Revisando sesion y permisos de administrador...</p>
+          <span class="admin-loader" aria-hidden="true"></span>
         </div>
       </section>
 
-      <section class="admin-shell" id="adminView" hidden>
-        <header class="admin-header">
-          <div>
-            <p class="admin-eyebrow">Catalogo conectado a Supabase</p>
-            <h1>Panel de productos</h1>
-          </div>
-          <div class="admin-header__actions">
-            <a href="supplements-page.html">Ver catalogo</a>
-            <button type="button" id="seedProductsBtn">Migrar productos locales a Supabase</button>
-            <button type="button" id="logoutBtn">Cerrar sesion</button>
-          </div>
-        </header>
+      <section class="admin-dashboard" id="adminDashboard" hidden>
+        <aside class="admin-sidebar" aria-label="Navegacion del panel">
+          <a class="admin-brand" href="index.html" aria-label="Volver al inicio">
+            <img src="img/icons/logo.png" alt="" />
+            <span>
+              <strong>Javy</strong>
+              <small>Admin</small>
+            </span>
+          </a>
 
-        <div class="admin-layout">
-          <aside class="admin-sidebar">
-            <div class="admin-toolbar">
-              <button type="button" id="newProductBtn">Nuevo producto</button>
-              <input id="adminSearch" type="search" placeholder="Buscar producto" />
-              <select id="adminCategoryFilter">
-                <option value="todos">Todas las categorias</option>
-              </select>
+          <nav class="admin-nav" aria-label="Secciones">
+            <button class="admin-nav__item is-active" type="button" data-admin-section="dashboard">
+              <span aria-hidden="true">D</span>
+              Dashboard
+            </button>
+            <button class="admin-nav__item" type="button" data-admin-section="products">
+              <span aria-hidden="true">P</span>
+              Productos
+            </button>
+            <button class="admin-nav__item" type="button" data-admin-section="variants">
+              <span aria-hidden="true">S</span>
+              Sabores
+            </button>
+            <button class="admin-nav__item" type="button" data-admin-section="home">
+              <span aria-hidden="true">I</span>
+              Productos del inicio
+            </button>
+            <button class="admin-nav__item" type="button" data-admin-section="settings">
+              <span aria-hidden="true">C</span>
+              Configuracion
+            </button>
+          </nav>
+
+          <button class="admin-logout" id="adminLogoutBtn" type="button">Cerrar sesion</button>
+        </aside>
+
+        <section class="admin-main">
+          <header class="admin-topbar">
+            <div>
+              <p class="admin-kicker">Catalogo conectado a Supabase</p>
+              <h1 id="adminSectionTitle">Dashboard</h1>
             </div>
-            <p class="admin-message" id="adminStatus"></p>
-            <ul class="admin-product-list" id="adminProductList"></ul>
-          </aside>
+            <div class="admin-topbar__actions">
+              <input id="adminQuickSearch" type="search" placeholder="Buscar producto" aria-label="Buscar producto" />
+              <a class="admin-view-site" href="index.html">Ver web</a>
+              <button class="admin-primary" id="adminNewProductBtn" type="button">Agregar producto</button>
+            </div>
+          </header>
 
-          <section class="admin-editor">
-            <form class="admin-product-form" id="productForm">
-              <div class="admin-editor__title">
-                <div>
-                  <p class="admin-eyebrow">Producto</p>
-                  <h2 id="editorTitle">Nuevo producto</h2>
+          <section class="admin-section is-active" id="section-dashboard" data-section-panel="dashboard">
+            <div class="admin-stats" id="adminStats"></div>
+            <div class="admin-panel admin-panel--split">
+              <div>
+                <div class="admin-panel__head">
+                  <div>
+                    <p class="admin-kicker">Actividad</p>
+                    <h2>Ultimos productos editados</h2>
+                  </div>
                 </div>
-                <button type="button" class="admin-danger" id="deleteProductBtn" hidden>Eliminar</button>
+                <div class="admin-recent" id="adminRecentProducts"></div>
+              </div>
+              <div>
+                <div class="admin-panel__head">
+                  <div>
+                    <p class="admin-kicker">Acciones rapidas</p>
+                    <h2>Mantenimiento</h2>
+                  </div>
+                </div>
+                <div class="admin-actions-grid">
+                  <button type="button" id="adminSeedBtn">Migrar productos locales</button>
+                  <button type="button" data-admin-section-jump="home">Ordenar inicio</button>
+                  <button type="button" data-admin-section-jump="products">Gestionar catalogo</button>
+                </div>
+                <p class="admin-help-text">La migracion evita duplicados usando <code>legacy_id</code>.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="admin-section" id="section-products" data-section-panel="products">
+            <div class="admin-panel">
+              <div class="admin-panel__head admin-panel__head--wrap">
+                <div>
+                  <p class="admin-kicker">Catalogo</p>
+                  <h2>Productos</h2>
+                </div>
+                <div class="admin-filters">
+                  <select id="adminCategoryFilter" aria-label="Filtrar por categoria"></select>
+                  <select id="adminAvailabilityFilter" aria-label="Filtrar por disponibilidad">
+                    <option value="all">Todos</option>
+                    <option value="available">Disponibles</option>
+                    <option value="unavailable">No disponibles</option>
+                  </select>
+                  <select id="adminHomeFilter" aria-label="Filtrar por inicio">
+                    <option value="all">Inicio: todos</option>
+                    <option value="home">En inicio</option>
+                    <option value="not-home">Fuera del inicio</option>
+                  </select>
+                  <select id="adminSortFilter" aria-label="Ordenar productos">
+                    <option value="recent">Mas recientes</option>
+                    <option value="name">Nombre</option>
+                    <option value="price">Precio</option>
+                    <option value="availability">Disponibilidad</option>
+                  </select>
+                </div>
               </div>
 
-              <div class="admin-grid">
+              <div class="admin-table-wrap" id="adminProductTableWrap"></div>
+              <div class="admin-product-cards" id="adminProductCards"></div>
+              <div class="admin-empty" id="adminProductsEmpty" hidden>No hay productos con esos filtros.</div>
+              <div class="admin-load-more">
+                <button type="button" id="adminLoadMoreBtn" hidden>Ver mas productos</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="admin-section" id="section-variants" data-section-panel="variants">
+            <div class="admin-panel">
+              <div class="admin-panel__head admin-panel__head--wrap">
+                <div>
+                  <p class="admin-kicker">Sabores y variantes</p>
+                  <h2>Gestion rapida por producto</h2>
+                </div>
+                <select id="variantProductSelect" aria-label="Seleccionar producto"></select>
+              </div>
+              <div id="variantManager"></div>
+            </div>
+          </section>
+
+          <section class="admin-section" id="section-home" data-section-panel="home">
+            <div class="admin-panel">
+              <div class="admin-panel__head admin-panel__head--wrap">
+                <div>
+                  <p class="admin-kicker">Pagina principal</p>
+                  <h2>Productos del inicio</h2>
+                  <p class="admin-help-text">Selecciona entre 4 y 8 productos. El orden aqui se refleja en el home.</p>
+                </div>
+                <strong class="admin-home-counter" id="adminHomeCounter">0 de 8</strong>
+              </div>
+              <div class="admin-home-layout">
+                <div>
+                  <h3>Seleccionados</h3>
+                  <div class="admin-home-list" id="adminHomeList"></div>
+                </div>
+                <div>
+                  <h3>Agregar al inicio</h3>
+                  <div class="admin-home-pool" id="adminHomePool"></div>
+                </div>
+              </div>
+              <div class="admin-sticky-actions">
+                <button class="admin-primary" id="adminSaveHomeBtn" type="button">Guardar inicio</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="admin-section" id="section-settings" data-section-panel="settings">
+            <div class="admin-panel">
+              <div class="admin-panel__head">
+                <div>
+                  <p class="admin-kicker">Configuracion</p>
+                  <h2>Estado del sistema</h2>
+                </div>
+              </div>
+              <div class="admin-settings-grid">
+                <article>
+                  <strong>Base de datos</strong>
+                  <p>Productos, categorias, sabores y perfiles admin viven en Supabase.</p>
+                </article>
+                <article>
+                  <strong>Imagenes</strong>
+                  <p>Las nuevas imagenes se suben al bucket <code>product-images</code>.</p>
+                </article>
+                <article>
+                  <strong>Seguridad</strong>
+                  <p>Solo usuarios con perfil admin activo pueden escribir.</p>
+                </article>
+              </div>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <section class="admin-drawer" id="productDrawer" hidden aria-hidden="true">
+      <div class="admin-drawer__backdrop" data-close-product-drawer></div>
+      <form class="admin-drawer__panel" id="adminProductForm" novalidate>
+        <div class="admin-drawer__head">
+          <div>
+            <p class="admin-kicker">Producto</p>
+            <h2 id="productDrawerTitle">Agregar producto</h2>
+          </div>
+          <button type="button" class="admin-icon-btn" aria-label="Cerrar editor" data-close-product-drawer>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+
+        <div class="admin-form-scroll">
+          <details class="admin-form-group" open>
+            <summary>Informacion basica</summary>
+            <div class="admin-form-grid">
+              <label>
+                Nombre del producto
+                <input name="name" placeholder="Ej: Whey Protein Gold Standard" required />
+                <small data-field-error="name"></small>
+              </label>
+              <label>
+                Marca
+                <input name="brand" placeholder="Ej: Optimum Nutrition" />
+              </label>
+              <label>
+                Categoria
+                <select name="category" required></select>
+                <small data-field-error="category"></small>
+              </label>
+              <label>
+                Presentacion
+                <input name="presentation" placeholder="Ej: 5 lb, 30 servicios" />
+              </label>
+              <label class="admin-form-grid__wide">
+                Descripcion corta
+                <input name="description_short" placeholder="Ej: Proteina de alta calidad para recuperacion muscular" />
+              </label>
+              <label class="admin-form-grid__wide">
+                Descripcion larga
+                <textarea name="description_long" rows="4" placeholder="Ej: Ideal para aumentar consumo de proteina diaria..."></textarea>
+              </label>
+            </div>
+          </details>
+
+          <details class="admin-form-group" open>
+            <summary>Precio y oferta</summary>
+            <div class="admin-form-grid">
+              <label>
+                Precio actual
+                <input name="price" type="number" min="0" step="0.01" placeholder="Ej: 45.00" required />
+                <small data-field-error="price"></small>
+              </label>
+              <label>
+                Precio anterior
+                <input name="old_price" type="number" min="0" step="0.01" placeholder="Ej: 55.00" />
+                <small data-field-error="old_price"></small>
+              </label>
+            </div>
+          </details>
+
+          <details class="admin-form-group" open>
+            <summary>Imagen</summary>
+            <div class="admin-image-field">
+              <img id="productImagePreview" src="img/products/product-placeholder.svg" alt="Vista previa de producto" />
+              <div>
                 <label>
-                  Nombre
-                  <input name="name" required />
-                </label>
-                <label>
-                  Marca
-                  <input name="brand" />
-                </label>
-                <label>
-                  Categoria
-                  <input name="category" required />
-                </label>
-                <label>
-                  Precio
-                  <input name="price" type="number" min="0" step="0.01" />
-                </label>
-                <label>
-                  Presentacion
-                  <input name="presentation" />
+                  Subir imagen
+                  <input name="image_file" type="file" accept="image/*" />
                 </label>
                 <label>
                   URL de imagen
-                  <input name="image_url" />
+                  <input name="image_url" placeholder="https://... o img/products/producto.webp" />
                 </label>
+                <small>Si subes una imagen, se guardara en Supabase Storage.</small>
               </div>
+            </div>
+          </details>
 
+          <details class="admin-form-group" open>
+            <summary>Disponibilidad, inicio y etiquetas</summary>
+            <div class="admin-form-grid">
               <label>
-                Descripcion
-                <textarea name="description" rows="4"></textarea>
+                Etiqueta visual
+                <input name="label" placeholder="Nuevo, Oferta, Mas vendido" />
               </label>
-
-              <div class="admin-grid">
-                <label>
-                  Tags separados por coma
-                  <input name="tags" placeholder="proteina, masa, recuperacion" />
-                </label>
-                <label>
-                  Objetivos separados por coma
-                  <input name="goals" placeholder="Ganar masa muscular, Recuperacion" />
-                </label>
+              <label>
+                Orden de aparicion
+                <input name="home_order" type="number" min="1" max="8" step="1" placeholder="Ej: 1" />
+                <small data-field-error="home_order"></small>
+              </label>
+              <label>
+                Tags separados por coma
+                <input name="tags" placeholder="proteina, masa, recuperacion" />
+              </label>
+              <label>
+                Objetivos separados por coma
+                <input name="goals" placeholder="Ganar masa muscular, Recuperacion" />
+              </label>
+              <div class="admin-switch-row admin-form-grid__wide">
+                <label><input name="is_available" type="checkbox" checked /> Disponible</label>
+                <label><input name="is_featured" type="checkbox" /> Destacado</label>
+                <label><input name="show_on_home" type="checkbox" /> Mostrar en inicio</label>
               </div>
-
-              <div class="admin-switches">
-                <label>
-                  <input name="available" type="checkbox" checked />
-                  Disponible
-                </label>
-                <label>
-                  <input name="featured" type="checkbox" />
-                  Destacado
-                </label>
-              </div>
-
-              <div class="admin-form-actions">
-                <button type="submit">Guardar producto</button>
-              </div>
-            </form>
-
-            <section class="admin-flavors">
-              <div class="admin-editor__title">
-                <div>
-                  <p class="admin-eyebrow">Sabores</p>
-                  <h2>Disponibilidad por sabor</h2>
-                </div>
-              </div>
-
-              <form class="admin-flavor-add" id="flavorForm">
-                <input id="newFlavorName" placeholder="Nuevo sabor" />
-                <label>
-                  <input id="newFlavorAvailable" type="checkbox" checked />
-                  Disponible
-                </label>
-                <button type="submit">Agregar sabor</button>
-              </form>
-
-              <ul class="admin-flavor-list" id="flavorList"></ul>
-            </section>
-          </section>
+            </div>
+          </details>
         </div>
-      </section>
-    </main>
+
+        <div class="admin-drawer__actions">
+          <button type="button" class="admin-danger" id="adminDeleteProductBtn" hidden>Eliminar</button>
+          <span class="admin-form-message" id="adminProductFormMessage" aria-live="polite"></span>
+          <button type="button" class="admin-secondary" data-close-product-drawer>Cancelar</button>
+          <button class="admin-primary" type="submit">Guardar producto</button>
+        </div>
+      </form>
+    </section>
+
+    <div class="admin-toast-region" id="adminToastRegion" aria-live="polite"></div>
   </body>
 </html>
