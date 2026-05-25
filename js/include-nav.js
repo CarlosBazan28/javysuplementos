@@ -5,7 +5,57 @@
   document.body.classList.add("page-transition");
   const html = await fetch("Editables/nav.html", { cache: "no-store" }).then((response) => response.text());
   host.innerHTML = html;
+  window.javyIcons?.enhance?.(host);
   document.dispatchEvent(new CustomEvent("javy:nav-ready"));
+
+  const adminLinks = host.querySelectorAll(".admin-nav-btn[href]");
+
+  const setAdminLinks = (text, href) => {
+    adminLinks.forEach((link) => {
+      const iconName = href.includes("admin") ? "layout-dashboard" : "log-in";
+      const icon = window.javyIcons?.get?.(iconName, "btn-icon admin-nav-btn__icon") || "";
+      link.href = href;
+      link.innerHTML = `
+        ${icon}
+        <span>${text}</span>
+      `;
+      link.classList.remove("is-auth-checking");
+      link.removeAttribute("aria-busy");
+    });
+  };
+
+  const setAdminLinksChecking = () => {
+    adminLinks.forEach((link) => {
+      link.classList.add("is-auth-checking");
+      link.setAttribute("aria-busy", "true");
+    });
+  };
+
+  const updateAdminEntryState = async () => {
+    if (!adminLinks.length || !window.javyAuth?.hasSupabase?.()) return;
+
+    try {
+      setAdminLinksChecking();
+      const { session, profile } = await window.javyAuth.getCurrentAdminSession();
+      if (session && profile) {
+        setAdminLinks("Panel administrativo", "admin.html");
+        return;
+      }
+
+      setAdminLinks("Iniciar sesión", "login.html");
+    } catch (error) {
+      console.warn("No se pudo verificar la sesion administrativa:", error.message);
+      setAdminLinks("Iniciar sesión", "login.html");
+    }
+  };
+
+  updateAdminEntryState();
+
+  if (window.supabaseClient?.auth?.onAuthStateChange) {
+    window.supabaseClient.auth.onAuthStateChange(() => {
+      updateAdminEntryState();
+    });
+  }
 
   // Actualiza el contador apenas cargue el nav compartido.
   window.consultation?.updateBadge?.();
