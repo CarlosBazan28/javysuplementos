@@ -20,8 +20,9 @@
     <script src="js/supabase-config.js" defer></script>
     <script src="js/product-data.js" defer></script>
     <script src="js/db.js?v=admin-auth" defer></script>
-    <script src="js/auth.js?v=admin-auth" defer></script>
-    <script src="js/admin-dashboard.js?v=admin-auth" defer></script>
+    <script src="js/auth.js?v=session-state" defer></script>
+    <script src="js/icons.js?v=icons" defer></script>
+    <script src="js/admin-dashboard.js?v=session-state" defer></script>
   </head>
   <body class="admin-dashboard-page">
     <main class="admin-app" id="adminApp">
@@ -47,28 +48,31 @@
 
           <nav class="admin-nav" aria-label="Secciones">
             <button class="admin-nav__item is-active" type="button" data-admin-section="dashboard">
-              <span aria-hidden="true">D</span>
+              <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="layout-dashboard" aria-hidden="true"></span>
               Dashboard
             </button>
             <button class="admin-nav__item" type="button" data-admin-section="products">
-              <span aria-hidden="true">P</span>
+              <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="package" aria-hidden="true"></span>
               Productos
             </button>
             <button class="admin-nav__item" type="button" data-admin-section="variants">
-              <span aria-hidden="true">S</span>
+              <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="tags" aria-hidden="true"></span>
               Sabores
             </button>
             <button class="admin-nav__item" type="button" data-admin-section="home">
-              <span aria-hidden="true">I</span>
+              <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="home" aria-hidden="true"></span>
               Productos del inicio
             </button>
             <button class="admin-nav__item" type="button" data-admin-section="settings">
-              <span aria-hidden="true">C</span>
+              <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="settings" aria-hidden="true"></span>
               Configuracion
             </button>
           </nav>
 
-          <button class="admin-logout" id="adminLogoutBtn" type="button">Cerrar sesion</button>
+          <button class="admin-logout" id="adminLogoutBtn" type="button">
+            <span class="btn-icon" data-javy-icon="log-out" aria-hidden="true"></span>
+            Cerrar sesion
+          </button>
         </aside>
 
         <section class="admin-main">
@@ -79,8 +83,14 @@
             </div>
             <div class="admin-topbar__actions">
               <input id="adminQuickSearch" type="search" placeholder="Buscar producto" aria-label="Buscar producto" />
-              <a class="admin-view-site" href="index.html">Ver web</a>
-              <button class="admin-primary" id="adminNewProductBtn" type="button">Agregar producto</button>
+              <a class="admin-view-site" href="index.html">
+                <span class="btn-icon" data-javy-icon="external-link" aria-hidden="true"></span>
+                Ver web
+              </a>
+              <button class="admin-primary" id="adminNewProductBtn" type="button">
+                <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>
+                Agregar producto
+              </button>
             </div>
           </header>
 
@@ -104,9 +114,18 @@
                   </div>
                 </div>
                 <div class="admin-actions-grid">
-                  <button type="button" id="adminSeedBtn">Migrar productos locales</button>
-                  <button type="button" data-admin-section-jump="home">Ordenar inicio</button>
-                  <button type="button" data-admin-section-jump="products">Gestionar catalogo</button>
+                  <button type="button" id="adminSeedBtn">
+                    <span class="btn-icon" data-javy-icon="upload" aria-hidden="true"></span>
+                    Migrar productos locales
+                  </button>
+                  <button type="button" data-admin-section-jump="home">
+                    <span class="btn-icon" data-javy-icon="arrow-up" aria-hidden="true"></span>
+                    Ordenar inicio
+                  </button>
+                  <button type="button" data-admin-section-jump="products">
+                    <span class="btn-icon" data-javy-icon="package" aria-hidden="true"></span>
+                    Gestionar catalogo
+                  </button>
                 </div>
                 <p class="admin-help-text">La migracion evita duplicados usando <code>legacy_id</code>.</p>
               </div>
@@ -145,7 +164,10 @@
               <div class="admin-product-cards" id="adminProductCards"></div>
               <div class="admin-empty" id="adminProductsEmpty" hidden>No hay productos con esos filtros.</div>
               <div class="admin-load-more">
-                <button type="button" id="adminLoadMoreBtn" hidden>Ver mas productos</button>
+                <button type="button" id="adminLoadMoreBtn" hidden>
+                  <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>
+                  Ver mas productos
+                </button>
               </div>
             </div>
           </section>
@@ -184,7 +206,10 @@
                 </div>
               </div>
               <div class="admin-sticky-actions">
-                <button class="admin-primary" id="adminSaveHomeBtn" type="button">Guardar inicio</button>
+                <button class="admin-primary" id="adminSaveHomeBtn" type="button">
+                  <span class="btn-icon" data-javy-icon="save" aria-hidden="true"></span>
+                  Guardar inicio
+                </button>
               </div>
             </div>
           </section>
@@ -328,10 +353,16 @@
         </div>
 
         <div class="admin-drawer__actions">
-          <button type="button" class="admin-danger" id="adminDeleteProductBtn" hidden>Eliminar</button>
+          <button type="button" class="admin-danger" id="adminDeleteProductBtn" hidden>
+            <span class="btn-icon" data-javy-icon="trash" aria-hidden="true"></span>
+            Eliminar
+          </button>
           <span class="admin-form-message" id="adminProductFormMessage" aria-live="polite"></span>
           <button type="button" class="admin-secondary" data-close-product-drawer>Cancelar</button>
-          <button class="admin-primary" type="submit">Guardar producto</button>
+          <button class="admin-primary" type="submit">
+            <span class="btn-icon" data-javy-icon="save" aria-hidden="true"></span>
+            Guardar producto
+          </button>
         </div>
       </form>
     </section>

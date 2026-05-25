@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iniciar sesión | Javy Supplements</title>
+    <link rel="icon" href="img/icons/logo.png" type="image/x-icon" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/pages/login.css?v=silent-session" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="js/supabase-config.js" defer></script>
+    <script src="js/auth.js?v=session-state" defer></script>
+    <script src="js/icons.js?v=icons" defer></script>
+    <script src="js/login.js?v=silent-session" defer></script>
+  </head>
+  <body class="login-page">
+    <main class="login-shell">
+      <section class="login-card" aria-labelledby="loginTitle">
+        <a class="login-logo" href="index.html" aria-label="Volver al inicio">
+          <img src="img/icons/logo.png" alt="Javy Supplements" />
+        </a>
+
+        <div class="login-heading">
+          <h1 id="loginTitle">Iniciar sesión</h1>
+          <p>Acceso exclusivo para administración.</p>
+        </div>
+
+        <section class="login-active" id="loginActiveSession" hidden aria-live="polite">
+          <p class="login-active__message">Ya tienes una sesión administrativa activa.</p>
+          <div class="login-active__actions">
+            <a class="login-submit login-submit--link" href="admin.html">
+              <span class="btn-icon" data-javy-icon="layout-dashboard" aria-hidden="true"></span>
+              Ir al panel
+            </a>
+            <button class="login-secondary" id="loginSignOut" type="button">
+              <span class="btn-icon" data-javy-icon="log-out" aria-hidden="true"></span>
+              <span data-signout-text>Cerrar sesión</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="login-form-wrap" id="loginFormWrap">
+          <p class="login-error" id="loginError" hidden aria-live="polite"></p>
+
+          <form class="login-form" id="loginForm" novalidate>
+            <label for="loginEmail">
+              Correo electrónico
+              <input id="loginEmail" name="email" type="email" autocomplete="email" required />
+              <small id="loginEmailError"></small>
+            </label>
+
+            <label for="loginPassword">
+              Contraseña
+              <input id="loginPassword" name="password" type="password" autocomplete="current-password" required />
+              <small id="loginPasswordError"></small>
+            </label>
+
+            <button class="login-submit" id="loginSubmit" type="submit">
+              <span class="btn-icon" data-javy-icon="log-in" aria-hidden="true"></span>
+              <span data-login-text>Iniciar sesión</span>
+              <span class="login-spinner" aria-hidden="true"></span>
+            </button>
+          </form>
+        </section>
+
+        <a class="login-back" href="index.html">
+          <span class="btn-icon" data-javy-icon="arrow-left" aria-hidden="true"></span>
+          Volver al inicio
+        </a>
+      </section>
+    </main>
+  </body>
+</html>

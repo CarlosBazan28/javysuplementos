@@ -72,6 +72,10 @@
       .replace(/'/g, "&#039;");
   }
 
+  function icon(name, className = "btn-icon") {
+    return window.javyIcons?.get?.(name, className) || "";
+  }
+
   function normalizeText(value = "") {
     return value.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
@@ -145,8 +149,8 @@
 
     const session = data?.session;
     if (!session?.user?.id) {
-      setGate("No hay sesion activa. Te llevo al inicio para iniciar sesion.", true);
-      window.setTimeout(() => { window.location.href = "index.html"; }, 1200);
+      setGate("No hay sesión activa. Te llevo al inicio de sesión.", true);
+      window.setTimeout(() => { window.location.href = "login.html"; }, 900);
       return false;
     }
 
@@ -157,8 +161,8 @@
 
     if (!profile) {
       await supabaseClient.auth.signOut();
-      setGate("Este usuario no tiene permisos de administrador.", true);
-      window.setTimeout(() => { window.location.href = "index.html"; }, 1600);
+      setGate("El acceso es exclusivo para administración.", true);
+      window.setTimeout(() => { window.location.href = "login.html"; }, 1300);
       return false;
     }
 
@@ -270,7 +274,7 @@
           <strong>${escapeHTML(product.name)}</strong>
           <small>${escapeHTML(product.brand || product.category || "Producto")}</small>
         </div>
-        <button class="admin-chip-btn" type="button" data-edit-product="${product.id}">Editar</button>
+        <button class="admin-chip-btn" type="button" data-edit-product="${product.id}">${icon("pencil")}Editar</button>
       </article>
     `).join("") : `<p class="admin-help-text">Aun no hay productos en Supabase.</p>`;
   }
@@ -286,9 +290,10 @@
   function productActions(product) {
     return `
       <div class="admin-row-actions">
-        <button class="admin-chip-btn" type="button" data-edit-product="${product.id}">Editar</button>
-        <button class="admin-chip-btn" type="button" data-manage-variants="${product.id}">Sabores</button>
+        <button class="admin-chip-btn" type="button" data-edit-product="${product.id}">${icon("pencil")}Editar</button>
+        <button class="admin-chip-btn" type="button" data-manage-variants="${product.id}">${icon("tags")}Sabores</button>
         <button class="admin-chip-btn" type="button" data-toggle-available="${product.id}">
+          ${icon(product.available === false ? "power" : "pause")}
           ${product.available === false ? "Activar" : "Pausar"}
         </button>
       </div>
@@ -378,7 +383,7 @@
         <input id="variantPresentationNew" placeholder="Presentacion" />
         <input id="variantPriceNew" type="number" min="0" step="0.01" placeholder="Precio" />
         <input id="variantStockNew" type="number" min="0" step="1" placeholder="Stock" />
-        <button class="admin-primary" type="button" id="addVariantBtn">Agregar</button>
+        <button class="admin-primary" type="button" id="addVariantBtn">${icon("plus")}Agregar</button>
       </div>
       <div class="admin-variant-list">
         ${flavors.length ? flavors.map((flavor) => `
@@ -392,8 +397,8 @@
                 <input type="checkbox" ${flavor.available !== false ? "checked" : ""} data-flavor-available />
                 Disponible
               </label>
-              <button class="admin-chip-btn" type="button" data-save-flavor>Guardar</button>
-              <button class="admin-chip-btn" type="button" data-delete-flavor>Eliminar</button>
+              <button class="admin-chip-btn" type="button" data-save-flavor>${icon("save")}Guardar</button>
+              <button class="admin-chip-btn" type="button" data-delete-flavor>${icon("trash")}Eliminar</button>
             </div>
           </article>
         `).join("") : `<p class="admin-help-text">Este producto no tiene sabores o variantes.</p>`}
@@ -417,9 +422,9 @@
           <h4>${index + 1}. ${escapeHTML(product.name)}</h4>
           <p>${escapeHTML(product.brand || product.category || "Producto")} - ${formatPrice(product.price)}</p>
           <div class="admin-home-actions">
-            <button class="admin-chip-btn" type="button" data-home-up="${product.id}" ${index === 0 ? "disabled" : ""}>Subir</button>
-            <button class="admin-chip-btn" type="button" data-home-down="${product.id}" ${index === selected.length - 1 ? "disabled" : ""}>Bajar</button>
-            <button class="admin-chip-btn" type="button" data-home-remove="${product.id}">Quitar</button>
+            <button class="admin-chip-btn" type="button" data-home-up="${product.id}" ${index === 0 ? "disabled" : ""}>${icon("arrow-up")}Subir</button>
+            <button class="admin-chip-btn" type="button" data-home-down="${product.id}" ${index === selected.length - 1 ? "disabled" : ""}>${icon("arrow-down")}Bajar</button>
+            <button class="admin-chip-btn" type="button" data-home-remove="${product.id}">${icon("trash")}Quitar</button>
           </div>
         </div>
       </article>
@@ -431,7 +436,7 @@
         <div>
           <h4>${escapeHTML(product.name)}</h4>
           <p>${escapeHTML(product.category || "Otros")} - ${formatPrice(product.price)}</p>
-          <button class="admin-chip-btn" type="button" data-home-add="${product.id}" ${state.homeIds.length >= 8 ? "disabled" : ""}>Agregar</button>
+          <button class="admin-chip-btn" type="button" data-home-add="${product.id}" ${state.homeIds.length >= 8 ? "disabled" : ""}>${icon("plus")}Agregar</button>
         </div>
       </article>
     `).join("") : `<p class="admin-help-text">Todos los productos visibles ya estan seleccionados.</p>`;
