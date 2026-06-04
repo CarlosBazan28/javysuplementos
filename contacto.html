@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contacto | Javy Supplements</title>
+    <link rel="icon" href="img/icons/logo.png" type="image/x-icon" />
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/components/nav.css?v=admin-auth">
+    <link rel="stylesheet" href="css/components/auth.css?v=session-state">
+    <link rel="stylesheet" href="css/components/cart.css">
+    <link rel="stylesheet" href="css/components/footer.css">
+    <link rel="stylesheet" href="css/pages/contacto.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap"
+      rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="js/supabase-config.js" defer></script>
+    <script src="js/whatsapp-config.js" defer></script>
+    <script src="js/auth.js?v=session-state" defer></script>
+    <script src="js/icons.js?v=icons" defer></script>
+    <script src="js/cart.js" defer></script>
+    <script src="js/contacto.js" defer></script>
+    <script src="js/include-nav.js?v=admin-auth" defer></script>
+  </head>
+  <body>
+    <div id="site-header"></div>
+
+    <main class="contact-page">
+      <section class="contact-hero">
+        <p class="contact-hero__eyebrow">Cotizaciones y asesorias</p>
+        <h1 class="contact-hero__title">Cont&aacute;ctanos</h1>
+        <p class="contact-hero__text">
+          Escr&iacute;benos para consultar precios, disponibilidad, recomendaciones o cotizar tus suplementos favoritos.
+        </p>
+      </section>
+
+      <section class="contact-layout" aria-label="Formulario y datos de contacto">
+        <form class="contact-form" id="contactQuoteForm" novalidate>
+          <div class="contact-form__header">
+            <h2>Solicita tu cotizaci&oacute;n</h2>
+            <p>Completa los datos y te responderemos por WhatsApp con disponibilidad, precio final y opciones de entrega.</p>
+          </div>
+
+          <label class="contact-field" for="contactName">
+            Nombre completo
+            <input id="contactName" name="name" type="text" autocomplete="name" required />
+            <small id="contactNameError"></small>
+          </label>
+
+          <label class="contact-field" for="contactEmail">
+            Correo electr&oacute;nico
+            <input id="contactEmail" name="email" type="email" autocomplete="email" required />
+            <small id="contactEmailError"></small>
+          </label>
+
+          <label class="contact-field" for="contactPhone">
+            Tel&eacute;fono
+            <input id="contactPhone" name="phone" type="tel" autocomplete="tel" required />
+            <small id="contactPhoneError"></small>
+          </label>
+
+          <label class="contact-field" for="contactProduct">
+            Producto de inter&eacute;s
+            <input id="contactProduct" name="product" type="text" autocomplete="off" required />
+            <small id="contactProductError"></small>
+          </label>
+
+          <label class="contact-field" for="contactMessage">
+            Mensaje adicional
+            <textarea id="contactMessage" name="message" rows="5" placeholder="Ej: quiero saber sabores disponibles, entrega a domicilio o recomendaciones"></textarea>
+            <small id="contactMessageError"></small>
+          </label>
+
+          <p class="contact-form__notice" id="contactFormNotice" hidden aria-live="polite"></p>
+
+          <button class="contact-form__submit" id="contactSubmit" type="submit">
+            Solicitar cotizaci&oacute;n
+          </button>
+        </form>
+
+        <aside class="contact-info" aria-label="Datos de contacto">
+          <div class="contact-info__block">
+            <h2>Datos de contacto</h2>
+            <ul class="contact-info__list">
+              <li>
+                <span>WhatsApp</span>
+                <a href="https://wa.me/50763932305" target="_blank" rel="noopener">+507 63932305</a>
+              </li>
+              <li>
+                <span>Correo</span>
+                <a href="mailto:correodejavito@pboom.com">correodejavito@pboom.com</a>
+              </li>
+              <li>
+                <span>Direcci&oacute;n</span>
+                <strong>San Miguelito, Panam&aacute;</strong>
+              </li>
+              <li>
+                <span>Horario</span>
+                <strong>Lunes a s&aacute;bado: 8:00 am - 8:00 pm</strong>
+              </li>
+            </ul>
+          </div>
+
+          <div class="contact-info__block">
+            <h2>Redes sociales</h2>
+            <div class="contact-social">
+              <a href="https://instagram.com/javy.supplements" target="_blank" rel="noopener">Instagram</a>
+              <a href="https://tiktok.com/@javysuplementos" target="_blank" rel="noopener">TikTok</a>
+              <a href="https://facebook.com/javysuplementos" target="_blank" rel="noopener">Facebook</a>
+            </div>
+          </div>
+
+          <button class="contact-whatsapp" id="contactWhatsappBtn" type="button">
+            <img src="img/icons/whatsapp.png" alt="" />
+            Cotizar por WhatsApp
+          </button>
+        </aside>
+      </section>
+
+      <section class="contact-map-section" aria-labelledby="contactMapTitle">
+        <div class="contact-map-section__header">
+          <p class="contact-hero__eyebrow">Ubicacion</p>
+          <h2 id="contactMapTitle">Encu&eacute;ntranos</h2>
+        </div>
+
+        <div class="contact-map">
+          <!-- Reemplazar este iframe por el mapa real de Google Maps cuando este disponible. -->
+          <iframe
+            title="Mapa de ubicacion de Javy Supplements"
+            src="https://www.google.com/maps?q=San%20Miguelito%2C%20Panama&output=embed"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen>
+          </iframe>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__glow"></div>
+      <div class="footer__inner">
+        <div class="footer__grid">
+          <div class="footer__brand">
+            <h2 class="footer__logo">Javy Supplements</h2>
+            <p class="footer__text">
+              Tu salud y bienestar son nuestra prioridad.
+              Productos originales, informacion de calidad y acompanamiento real en tu proceso.
+            </p>
+            <p class="footer__micro">
+              Productos 100% originales &middot; Asesoria personalizada &middot; Resultados reales
+            </p>
+          </div>
+          <div class="footer__block">
+            <h3 class="footer__title">Navegacion</h3>
+            <ul class="footer__list">
+              <li><a href="index.html">Inicio</a></li>
+              <li><a href="supplements-page.html">Productos</a></li>
+              <li><a href="testimonios.html">Testimonios</a></li>
+              <li><a href="contacto.html">Contacto / WhatsApp</a></li>
+            </ul>
+          </div>
+          <div class="footer__block">
+            <h3 class="footer__title">Contacto</h3>
+            <ul class="footer__list footer__list--contact">
+              <li>San Miguelito, Panam&aacute;</li>
+              <li><a href="https://wa.me/+50763932305" target="_blank" rel="noopener">+507 63932305</a></li>
+              <li><a href="mailto:correodejavito@pboom.com">correodejavito@pboom.com</a></li>
+              <li>Lunes a s&aacute;bado: 8:00 am - 8:00 pm</li>
+            </ul>
+            <a class="footer__cta" href="https://wa.me/+50763932305?text=Hola%20Javy%2C%20necesito%20asesor%C3%ADa%20sobre%20suplementos" target="_blank" rel="noopener">
+              Hablar con un asesor
+            </a>
+          </div>
+          <div class="footer__block">
+            <h3 class="footer__title">Redes</h3>
+            <p class="footer__text">Siguenos para mas tips, guias y resultados reales.</p>
+            <div class="footer__social">
+              <a href="https://instagram.com/javy.supplements" target="_blank" rel="noopener">Instagram</a>
+              <a href="https://tiktok.com/@javysuplementos" target="_blank" rel="noopener">TikTok</a>
+              <a href="https://facebook.com/javysuplementos" target="_blank" rel="noopener">Facebook</a>
+            </div>
+          </div>
+        </div>
+        <div class="footer__bottom">
+          <p>&copy; 2024 Javy Supplements - Todos los derechos reservados.</p>
+          <p class="footer__dev">Sitio desarrollado por Bazan Dev.</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
