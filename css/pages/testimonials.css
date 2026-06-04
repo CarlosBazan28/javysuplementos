@@ -315,6 +315,14 @@
   font-size: 1.02rem;
 }
 
+.story-card__disclaimer {
+  border: 1px solid rgba(90, 180, 233, 0.18);
+  border-radius: 12px;
+  background: rgba(90, 180, 233, 0.07);
+  padding: 10px 12px;
+  font-size: 0.86rem;
+}
+
 .story-metrics {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
