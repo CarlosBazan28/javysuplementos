@@ -17,7 +17,8 @@
 .featured-story,
 .stories-section,
 .testimonial-guide,
-.consent-section {
+.consent-section,
+.testimonials-cta {
   width: min(1180px, calc(100% - 32px));
   margin-inline: auto;
 }
@@ -28,6 +29,11 @@
   align-items: center;
   gap: clamp(24px, 5vw, 64px);
   padding: clamp(42px, 7vw, 82px) 0 clamp(30px, 5vw, 56px);
+}
+
+.testimonials-hero--simple {
+  grid-template-columns: 1fr;
+  padding-bottom: clamp(18px, 4vw, 34px);
 }
 
 .testimonials-hero__content {
@@ -63,6 +69,7 @@
 .section-heading p,
 .story-card p,
 .consent-section p,
+.testimonials-cta p,
 .guide-grid p,
 .trust-strip p,
 .proof-summary p {
@@ -76,7 +83,8 @@
 }
 
 .testimonials-hero__actions,
-.consent-section {
+.consent-section,
+.testimonials-cta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -206,7 +214,8 @@
 .trust-strip article,
 .story-card,
 .guide-grid article,
-.consent-section {
+.consent-section,
+.testimonials-cta {
   border: 1px solid rgba(255, 255, 255, 0.09);
   background: rgba(17, 25, 37, 0.72);
   box-shadow: 0 18px 46px rgba(0, 0, 0, 0.28);
@@ -233,7 +242,8 @@
 .featured-story,
 .stories-section,
 .testimonial-guide,
-.consent-section {
+.consent-section,
+.testimonials-cta {
   margin-top: clamp(52px, 7vw, 86px);
 }
 
@@ -251,7 +261,8 @@
 }
 
 .section-heading h2,
-.consent-section h2 {
+.consent-section h2,
+.testimonials-cta h2 {
   margin: 0;
   color: #fff;
   font-size: clamp(1.75rem, 3.5vw, 3rem);
@@ -315,6 +326,12 @@
   font-size: 1.02rem;
 }
 
+.story-card__type {
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 850;
+}
+
 .story-card__disclaimer {
   border: 1px solid rgba(90, 180, 233, 0.18);
   border-radius: 12px;
@@ -358,6 +375,10 @@
   align-items: stretch;
 }
 
+.stories-section--main {
+  margin-top: clamp(20px, 5vw, 44px);
+}
+
 .stories-grid .story-card {
   height: 100%;
 }
@@ -379,6 +400,32 @@
   color: #dff5ff;
   font-size: 0.76rem;
   font-weight: 900;
+}
+
+.story-avatar {
+  width: 68px;
+  height: 68px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(90, 180, 233, 0.24);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.2), transparent 30%),
+    linear-gradient(135deg, rgba(0, 200, 83, 0.22), rgba(0, 207, 255, 0.16));
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 950;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+}
+
+.story-avatar--product {
+  color: #031015;
+  background: linear-gradient(135deg, #00c853, #00a7e1);
+}
+
+.story-card--quote,
+.story-card--product {
+  align-content: start;
 }
 
 .guide-grid {
@@ -419,10 +466,18 @@
   border-radius: 18px;
 }
 
-.consent-section > div {
+.consent-section > div,
+.testimonials-cta > div {
   max-width: 740px;
   display: grid;
   gap: 10px;
+}
+
+.testimonials-cta {
+  justify-content: space-between;
+  gap: 22px;
+  padding: clamp(20px, 4vw, 34px);
+  border-radius: 18px;
 }
 
 @media (max-width: 980px) {
@@ -451,7 +506,8 @@
   .featured-story,
   .stories-section,
   .testimonial-guide,
-  .consent-section {
+  .consent-section,
+  .testimonials-cta {
     width: min(100% - 24px, 680px);
   }
 
@@ -467,7 +523,8 @@
   }
 
   .testimonials-hero__actions,
-  .consent-section {
+  .consent-section,
+  .testimonials-cta {
     align-items: stretch;
   }
 
@@ -490,7 +547,8 @@
   .featured-story,
   .stories-section,
   .testimonial-guide,
-  .consent-section {
+  .consent-section,
+  .testimonials-cta {
     width: min(100% - 18px, 440px);
   }
 
