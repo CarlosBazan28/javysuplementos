@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Catálogo de suplementos | Javy Supplements</title>
-    <link rel="icon" href="img/icons/logo.png" type="image/x-icon" />
+    <link rel="icon" href="img/icons/logo-16x16.png" type="image/png" />
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/tokens.css">
     <link rel="stylesheet" href="css/components/nav.css?v=admin-auth">
@@ -52,12 +52,7 @@
         <form class="search catalog-search" role="search" id="searchForm">
           <label class="search__label" for="searchInput">Buscar</label>
 
-          <span class="search__icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M21 21l-4.3-4.3m1.8-5.2a7 7 0 11-14 0 7 7 0 0114 0z"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </span>
+          <span class="search__icon" data-javy-icon="search" aria-hidden="true"></span>
 
           <input
             id="searchInput"
@@ -74,7 +69,7 @@
             aria-label="Limpiar búsqueda"
             hidden
           >
-            x
+            <span class="btn-icon" data-javy-icon="x" aria-hidden="true"></span>
           </button>
 
           <button type="submit" class="search__submit">Buscar</button>
@@ -101,7 +96,7 @@
 
     <button class="catalog-floating-quote" id="catalogFloatingQuote" type="button" hidden>
       <span class="catalog-floating-quote__icon" aria-hidden="true">
-        <img src="img/icons/whatsapp.png" alt="" />
+        <span class="btn-icon" data-javy-icon="message-circle" aria-hidden="true"></span>
       </span>
       <span class="catalog-floating-quote__text">
         <strong>Cotiza con Javy</strong>
@@ -112,9 +107,7 @@
 
     <button class="catalog-scroll-top" id="catalogScrollTop" type="button" aria-label="Volver arriba" hidden>
       <span class="catalog-scroll-top__mark" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <path d="M12 19V5m0 0-6 6m6-6 6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        <span class="btn-icon" data-javy-icon="arrow-up" aria-hidden="true"></span>
       </span>
       <span class="catalog-scroll-top__label">Arriba</span>
     </button>

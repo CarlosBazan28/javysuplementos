@@ -185,7 +185,9 @@
 
 .contact-info__list li {
   display: grid;
-  gap: 3px;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -200,6 +202,22 @@
   font-size: 0.78rem;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.contact-info__icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(90, 180, 233, 0.22);
+  border-radius: 12px;
+  background: rgba(90, 180, 233, 0.08);
+  color: var(--Cyan);
+}
+
+.contact-info__icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .contact-info__list a,
@@ -223,6 +241,9 @@
 }
 
 .contact-social a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.05);
@@ -236,7 +257,7 @@
   color: #eafff0;
 }
 
-.contact-whatsapp img {
+.contact-whatsapp .btn-icon {
   width: 22px;
   height: 22px;
 }

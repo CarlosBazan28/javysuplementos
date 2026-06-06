@@ -193,6 +193,13 @@ body.admin-dashboard-page {
   text-align: left;
 }
 
+.admin-nav__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .admin-nav__item:hover,
 .admin-nav__item:focus-visible,
 .admin-nav__item.is-active {
@@ -829,20 +836,10 @@ button:disabled,
   cursor: pointer;
 }
 
-.admin-icon-btn span {
-  position: absolute;
-  width: 18px;
-  height: 2px;
-  border-radius: 999px;
-  background: #fff;
-}
-
-.admin-icon-btn span:first-child {
-  transform: rotate(45deg);
-}
-
-.admin-icon-btn span:last-child {
-  transform: rotate(-45deg);
+.admin-icon-btn .btn-icon {
+  width: 20px;
+  height: 20px;
+  color: #fff;
 }
 
 .admin-form-message {
@@ -957,9 +954,12 @@ button:disabled,
   }
 
   .admin-nav__item {
+    display: grid;
+    grid-template-rows: 24px auto;
     min-height: 56px;
-    justify-content: center;
-    gap: 4px;
+    justify-items: center;
+    align-content: center;
+    gap: 5px;
     border-radius: 14px;
     font-size: 0.68rem;
     line-height: 1.1;
@@ -970,6 +970,10 @@ button:disabled,
   .admin-nav__icon {
     width: 24px;
     height: 24px;
+  }
+
+  .admin-nav__text {
+    max-width: 100%;
   }
 
   .admin-main {
