@@ -68,6 +68,7 @@
   const navToggle = document.getElementById("navToggle");
   const navMenu = document.getElementById("navMenu");
   const siteHeader = host.querySelector(".site-header");
+  const navToggleIcon = navToggle?.querySelector("[data-javy-icon]");
 
   const updateHeaderState = () => {
     siteHeader?.classList.toggle("is-scrolled", window.scrollY > 10);
@@ -90,19 +91,23 @@
   updateHeaderState();
   window.addEventListener("scroll", updateHeaderState, { passive: true });
 
+  const setNavToggleState = (isOpen) => {
+    navToggle?.setAttribute("aria-expanded", String(isOpen));
+    navToggle?.classList.toggle("is-open", isOpen);
+    navMenu?.classList.toggle("is-open", isOpen);
+    navToggleIcon?.setAttribute("data-javy-icon", isOpen ? "x" : "menu");
+    window.javyIcons?.enhance?.(navToggle || document);
+  };
+
   navToggle?.addEventListener("click", () => {
     const isOpen = navToggle.getAttribute("aria-expanded") === "true";
-    navToggle.setAttribute("aria-expanded", String(!isOpen));
-    navToggle.classList.toggle("is-open", !isOpen);
-    navMenu?.classList.toggle("is-open", !isOpen);
+    setNavToggleState(!isOpen);
   });
 
   navMenu?.addEventListener("click", (event) => {
     if (!(event.target instanceof HTMLAnchorElement)) return;
 
-    navToggle?.setAttribute("aria-expanded", "false");
-    navToggle?.classList.remove("is-open");
-    navMenu.classList.remove("is-open");
+    setNavToggleState(false);
   });
 
   window.navigateWithTransition = (url) => {

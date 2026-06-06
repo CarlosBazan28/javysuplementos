@@ -373,7 +373,9 @@ function createConsultationPanel() {
         <p class="consultation-panel__eyebrow">WhatsApp con Javy</p>
         <h2>Mi cotizacion</h2>
       </div>
-      <button class="consultation-panel__close" type="button" aria-label="Cerrar cotizacion">x</button>
+      <button class="consultation-panel__close" type="button" aria-label="Cerrar cotizacion">
+        <span class="btn-icon" data-javy-icon="x" aria-hidden="true"></span>
+      </button>
     </div>
 
     <p class="consultation-empty" id="consultationEmpty">Aun no agregaste productos a la cotizacion.</p>
@@ -398,6 +400,7 @@ function createConsultationPanel() {
 
   document.body.appendChild(overlay);
   document.body.appendChild(panel);
+  window.javyIcons?.enhance?.(panel);
 
   overlay.addEventListener("click", closePanel);
   panel.querySelector(".consultation-panel__close")?.addEventListener("click", closePanel);
