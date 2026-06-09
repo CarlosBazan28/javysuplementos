@@ -253,6 +253,7 @@ body.admin-dashboard-page {
 
 .admin-topbar input,
 .admin-filters select,
+.admin-filters input,
 .admin-panel select,
 .admin-drawer input,
 .admin-drawer select,
@@ -282,6 +283,7 @@ body.admin-dashboard-page {
 
 .admin-topbar input:focus-visible,
 .admin-filters select:focus-visible,
+.admin-filters input:focus-visible,
 .admin-panel select:focus-visible,
 .admin-drawer input:focus-visible,
 .admin-drawer select:focus-visible,
@@ -375,8 +377,23 @@ button:disabled,
 }
 
 .admin-stat {
+  appearance: none;
+  color: inherit;
   min-height: 104px;
+  text-align: left;
   padding: 14px;
+}
+
+button.admin-stat {
+  cursor: pointer;
+}
+
+button.admin-stat:hover,
+button.admin-stat:focus-visible {
+  border-color: rgba(90, 180, 233, 0.45);
+  box-shadow: 0 0 0 3px rgba(90, 180, 233, 0.1), 0 12px 30px rgba(0, 0, 0, 0.28);
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .admin-stat span {
@@ -445,16 +462,92 @@ button:disabled,
   flex-wrap: wrap;
 }
 
-.admin-filters {
+.admin-products-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
   justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
 }
 
-.admin-filters select {
-  width: auto;
-  min-width: 155px;
+.admin-results-count {
+  margin: 0;
+  color: var(--admin-muted);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.admin-filter-toggle {
+  min-height: 42px;
+  position: relative;
+}
+
+.admin-filter-count {
+  display: inline-grid;
+  min-width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--admin-green);
+  color: #07101a;
+  font-size: 0.72rem;
+  font-weight: 950;
+  padding: 0 6px;
+}
+
+.admin-filter-backdrop {
+  display: none;
+}
+
+.admin-filter-panel {
+  border: 1px solid var(--admin-line);
+  border-radius: 16px;
+  background: rgba(10, 15, 22, 0.96);
+  margin-bottom: 14px;
+  padding: 14px;
+}
+
+.admin-filter-panel__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.admin-filter-panel__head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.admin-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.admin-filters label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.admin-filters label span {
+  color: var(--admin-muted);
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.admin-filters select,
+.admin-filters input {
+  width: 100%;
+}
+
+.admin-filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .admin-recent,
@@ -493,6 +586,22 @@ button:disabled,
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.05);
   object-fit: contain;
+}
+
+.admin-product-image-cell {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+
+.admin-image-warning {
+  display: inline-flex;
+  border-radius: 999px;
+  background: rgba(255, 209, 102, 0.14);
+  color: #ffe0a3;
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 3px 7px;
 }
 
 .admin-recent strong,
@@ -567,6 +676,12 @@ button:disabled,
   color: #ffc1ce;
 }
 
+.admin-status-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .admin-row-actions,
 .admin-card-actions,
 .admin-home-actions,
@@ -615,6 +730,26 @@ button:disabled,
   flex-wrap: wrap;
   gap: 6px;
   margin: 9px 0;
+}
+
+.admin-mobile-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-card-main-action {
+  width: 100%;
+}
+
+.admin-card-secondary-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.admin-card-secondary-actions .admin-chip-btn {
+  min-width: 0;
+  padding-inline: 8px;
 }
 
 .admin-empty {
@@ -1044,19 +1179,47 @@ button:disabled,
     display: grid;
   }
 
-  .admin-filters {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(150px, 1fr);
+  .admin-products-toolbar {
     width: 100%;
-    justify-content: start;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    -webkit-overflow-scrolling: touch;
+    justify-content: stretch;
   }
 
-  .admin-filters select {
+  .admin-products-toolbar > * {
     width: 100%;
+  }
+
+  .admin-filter-backdrop.is-open {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: block;
+    background: rgba(0, 0, 0, 0.58);
+  }
+
+  .admin-filter-panel {
+    position: fixed;
+    top: 56px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 130;
+    height: auto;
+    overflow: auto;
+    border-radius: 18px 18px 0 0;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    margin: 0;
+    padding: 16px;
+  }
+
+  .admin-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-filter-actions {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
   .admin-variant-toolbar,
