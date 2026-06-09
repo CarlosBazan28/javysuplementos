@@ -15,6 +15,9 @@
       category: "all",
       availability: "all",
       home: "all",
+      review: "all",
+      minPrice: "",
+      maxPrice: "",
       sort: "recent",
     },
   };
@@ -42,7 +45,18 @@
       categoryFilter: $("#adminCategoryFilter"),
       availabilityFilter: $("#adminAvailabilityFilter"),
       homeFilter: $("#adminHomeFilter"),
+      reviewFilter: $("#adminReviewFilter"),
+      minPriceFilter: $("#adminMinPriceFilter"),
+      maxPriceFilter: $("#adminMaxPriceFilter"),
       sortFilter: $("#adminSortFilter"),
+      filterToggle: $("#adminFilterToggle"),
+      filterPanel: $("#adminFilterPanel"),
+      filterBackdrop: $("#adminFilterBackdrop"),
+      filterApply: $("#adminFilterApply"),
+      filterClear: $("#adminFilterClear"),
+      filterClose: $("#adminFilterClose"),
+      filterCount: $("#adminFilterCount"),
+      productResultCount: $("#adminProductResultCount"),
       tableWrap: $("#adminProductTableWrap"),
       cardWrap: $("#adminProductCards"),
       productsEmpty: $("#adminProductsEmpty"),
@@ -108,6 +122,73 @@
 
   function hasProductPrice(product) {
     return Number(product.price || 0) > 0;
+  }
+
+  function hasProductFlavors(product) {
+    return Boolean(product.flavors?.length);
+  }
+
+  function isFeaturedProduct(product) {
+    return Boolean(product.featured || product.is_featured);
+  }
+
+  function getProductPrice(product) {
+    return Number(product.price || 0);
+  }
+
+  function getActiveFilterCount() {
+    return [
+      state.filters.category !== "all",
+      state.filters.availability !== "all",
+      state.filters.home !== "all",
+      state.filters.review !== "all",
+      state.filters.minPrice !== "",
+      state.filters.maxPrice !== "",
+      state.filters.sort !== "recent",
+    ].filter(Boolean).length;
+  }
+
+  function syncFilterControls() {
+    if (els.categoryFilter) els.categoryFilter.value = state.filters.category;
+    if (els.availabilityFilter) els.availabilityFilter.value = state.filters.availability;
+    if (els.homeFilter) els.homeFilter.value = state.filters.home;
+    if (els.reviewFilter) els.reviewFilter.value = state.filters.review;
+    if (els.minPriceFilter) els.minPriceFilter.value = state.filters.minPrice;
+    if (els.maxPriceFilter) els.maxPriceFilter.value = state.filters.maxPrice;
+    if (els.sortFilter) els.sortFilter.value = state.filters.sort;
+  }
+
+  function updateFilterCount() {
+    if (!els.filterCount) return;
+    const count = getActiveFilterCount();
+    els.filterCount.hidden = count === 0;
+    els.filterCount.textContent = count;
+  }
+
+  function setFilterPanelOpen(isOpen) {
+    if (!els.filterPanel || !els.filterToggle) return;
+    els.filterPanel.hidden = !isOpen;
+    els.filterBackdrop.hidden = !isOpen;
+    els.filterPanel.classList.toggle("is-open", isOpen);
+    els.filterBackdrop.classList.toggle("is-open", isOpen);
+    els.filterToggle.setAttribute("aria-expanded", String(isOpen));
+    if (isOpen) els.filterPanel.scrollTop = 0;
+  }
+
+  function resetProductFilters() {
+    state.filters = {
+      ...state.filters,
+      category: "all",
+      availability: "all",
+      home: "all",
+      review: "all",
+      minPrice: "",
+      maxPrice: "",
+      sort: "recent",
+    };
+    state.visibleCount = PAGE_SIZE;
+    syncFilterControls();
+    renderProducts();
   }
 
   function setGate(message, isError = false) {
@@ -203,7 +284,7 @@
 
     if (els.categoryFilter) {
       els.categoryFilter.innerHTML = options.join("");
-      els.categoryFilter.value = state.filters.category;
+      syncFilterControls();
     }
 
     const categorySelect = els.productForm?.elements.category;
@@ -217,6 +298,8 @@
 
   function getFilteredProducts() {
     const query = normalizeText(state.filters.query);
+    const minPrice = state.filters.minPrice === "" ? null : Number(state.filters.minPrice);
+    const maxPrice = state.filters.maxPrice === "" ? null : Number(state.filters.maxPrice);
     let products = state.products.filter((product) => {
       const searchText = normalizeText([
         product.name,
@@ -237,13 +320,24 @@
         state.filters.home === "all" ||
         (state.filters.home === "home" && state.homeIds.includes(product.id)) ||
         (state.filters.home === "not-home" && !state.homeIds.includes(product.id));
+      const reviewMatch =
+        state.filters.review === "all" ||
+        (state.filters.review === "missing-image" && !hasProductImage(product)) ||
+        (state.filters.review === "missing-flavors" && !hasProductFlavors(product)) ||
+        (state.filters.review === "unavailable" && product.available === false) ||
+        (state.filters.review === "empty-price" && !hasProductPrice(product)) ||
+        (state.filters.review === "featured" && isFeaturedProduct(product));
+      const price = getProductPrice(product);
+      const minPriceMatch = minPrice == null || (hasProductPrice(product) && price >= minPrice);
+      const maxPriceMatch = maxPrice == null || (hasProductPrice(product) && price <= maxPrice);
 
-      return (!query || searchText.includes(query)) && categoryMatch && availabilityMatch && homeMatch;
+      return (!query || searchText.includes(query)) && categoryMatch && availabilityMatch && homeMatch && reviewMatch && minPriceMatch && maxPriceMatch;
     });
 
     products = products.sort((a, b) => {
       if (state.filters.sort === "name") return a.name.localeCompare(b.name, "es");
-      if (state.filters.sort === "price") return Number(a.price || 0) - Number(b.price || 0);
+      if (state.filters.sort === "price-asc") return getProductPrice(a) - getProductPrice(b);
+      if (state.filters.sort === "price-desc") return getProductPrice(b) - getProductPrice(a);
       if (state.filters.sort === "availability") return Number(b.available !== false) - Number(a.available !== false);
       return new Date(b.updated_at || b.created_at || 0) - new Date(a.updated_at || a.created_at || 0);
     });
@@ -258,27 +352,31 @@
     const home = state.homeIds.length;
     const flavors = state.products.reduce((sum, product) => sum + (product.flavors?.length || 0), 0);
     const withoutImage = state.products.filter((product) => !hasProductImage(product)).length;
-    const withoutFlavors = state.products.filter((product) => !product.flavors?.length).length;
+    const withoutFlavors = state.products.filter((product) => !hasProductFlavors(product)).length;
     const emptyPrice = state.products.filter((product) => !hasProductPrice(product)).length;
-    const featured = state.products.filter((product) => product.featured).length;
+    const featured = state.products.filter((product) => isFeaturedProduct(product)).length;
 
     els.stats.innerHTML = [
       ["Total productos", total, "Catalogo"],
       ["Disponibles", available, "Activos"],
-      ["No disponibles", unavailable, "Stock"],
+      ["No disponibles", unavailable, "Stock", "bad", "unavailable"],
       ["Inicio", home, "Home"],
       ["Sabores", flavors, "Variantes"],
-      ["Sin imagen", withoutImage, "Revisar", "warn"],
-      ["Sin sabores", withoutFlavors, "Revisar", "warn"],
-      ["Precio vacio", emptyPrice, "Revisar", "bad"],
-      ["Destacados", featured, "Actuales", "ok"],
-    ].map(([label, value, note, tone]) => `
-      <article class="admin-stat${tone ? ` admin-stat--${tone}` : ""}">
+      ["Sin imagen", withoutImage, "Revisar", "warn", "missing-image"],
+      ["Sin sabores", withoutFlavors, "Revisar", "warn", "missing-flavors"],
+      ["Precio vacio", emptyPrice, "Revisar", "bad", "empty-price"],
+      ["Destacados", featured, "Actuales", "ok", "featured"],
+    ].map(([label, value, note, tone, review]) => {
+      const tag = review ? "button" : "article";
+      const attrs = review ? ` type="button" data-products-review="${review}"` : "";
+      return `
+      <${tag} class="admin-stat${tone ? ` admin-stat--${tone}` : ""}"${attrs}>
         <span>${label}</span>
         <strong>${value}</strong>
         <small>${note}</small>
-      </article>
-    `).join("");
+      </${tag}>
+    `;
+    }).join("");
 
     const recent = [...state.products]
       .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
@@ -298,10 +396,18 @@
 
   function productStatus(product) {
     if (product.available === false) return `<span class="admin-status admin-status--bad">No disponible</span>`;
-    if (product.flavors?.length && getAvailableFlavorCount(product) === 0) {
+    if (!hasProductPrice(product)) return `<span class="admin-status admin-status--bad">Precio vacio</span>`;
+    if (!hasProductFlavors(product) || getAvailableFlavorCount(product) === 0) {
       return `<span class="admin-status admin-status--warn">Sin sabores</span>`;
     }
     return `<span class="admin-status admin-status--ok">Disponible</span>`;
+  }
+
+  function productReviewBadges(product) {
+    return [
+      !hasProductImage(product) ? `<span class="admin-status admin-status--warn">Sin imagen</span>` : "",
+      isFeaturedProduct(product) ? `<span class="admin-status admin-status--ok">Destacado</span>` : "",
+    ].filter(Boolean).join("");
   }
 
   function productActions(product) {
@@ -317,10 +423,29 @@
     `;
   }
 
+  function productMobileActions(product) {
+    return `
+      <div class="admin-mobile-actions">
+        <button class="admin-chip-btn admin-card-main-action" type="button" data-edit-product="${product.id}">${icon("pencil")}Editar</button>
+        <div class="admin-card-secondary-actions">
+          <button class="admin-chip-btn" type="button" data-manage-variants="${product.id}">${icon("tags")}Sabores</button>
+          <button class="admin-chip-btn" type="button" data-toggle-available="${product.id}">
+            ${icon(product.available === false ? "power" : "pause")}
+            ${product.available === false ? "Activar" : "Pausar"}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   function renderProducts() {
     const filtered = getFilteredProducts();
     const visible = filtered.slice(0, state.visibleCount);
 
+    updateFilterCount();
+    if (els.productResultCount) {
+      els.productResultCount.textContent = `Mostrando ${visible.length} de ${filtered.length} productos`;
+    }
     els.productsEmpty.hidden = Boolean(filtered.length);
     els.loadMoreBtn.hidden = filtered.length <= state.visibleCount;
 
@@ -341,7 +466,12 @@
         <tbody>
           ${visible.map((product) => `
             <tr>
-              <td><img src="${escapeHTML(productImage(product))}" alt="" /></td>
+              <td>
+                <div class="admin-product-image-cell">
+                  <img src="${escapeHTML(productImage(product))}" alt="" />
+                  ${!hasProductImage(product) ? '<span class="admin-image-warning">Sin imagen</span>' : ""}
+                </div>
+              </td>
               <td>
                 <div class="admin-product-name">
                   <strong>${escapeHTML(product.name)}</strong>
@@ -350,7 +480,7 @@
               </td>
               <td>${escapeHTML(product.category || "Otros")}</td>
               <td>${formatPrice(product.price)}</td>
-              <td>${productStatus(product)}</td>
+              <td><div class="admin-status-stack">${productStatus(product)}${productReviewBadges(product)}</div></td>
               <td><small>${getAvailableFlavorCount(product)} disponibles de ${(product.flavors || []).length}</small></td>
               <td>${state.homeIds.includes(product.id) ? '<span class="admin-status admin-status--ok">Si</span>' : '<span class="admin-status admin-status--warn">No</span>'}</td>
               <td>${productActions(product)}</td>
@@ -368,10 +498,11 @@
           <p>${formatPrice(product.price)} - ${escapeHTML(product.category || "Otros")}</p>
           <div class="admin-card-meta">
             ${productStatus(product)}
+            ${productReviewBadges(product)}
             <span class="admin-status admin-status--warn">${getAvailableFlavorCount(product)} de ${(product.flavors || []).length} sabores</span>
             ${state.homeIds.includes(product.id) ? '<span class="admin-status admin-status--ok">Inicio</span>' : ""}
           </div>
-          <div class="admin-card-actions">${productActions(product)}</div>
+          <div class="admin-card-actions">${productMobileActions(product)}</div>
         </div>
       </article>
     `).join("");
@@ -489,6 +620,8 @@
       const sections = (item.dataset.showSections || "").split(",").map((value) => value.trim());
       item.hidden = !sections.includes(section);
     });
+
+    if (section !== "products") setFilterPanelOpen(false);
   }
 
   function getProductById(id) {
@@ -815,27 +948,30 @@
       renderProducts();
     });
 
-    els.categoryFilter.addEventListener("change", () => {
-      state.filters.category = els.categoryFilter.value;
-      state.visibleCount = PAGE_SIZE;
-      renderProducts();
-    });
+    const bindProductFilter = (element, filterName, resetPage = true) => {
+      const eventName = element?.tagName === "INPUT" ? "input" : "change";
+      element?.addEventListener(eventName, () => {
+        state.filters[filterName] = element.value;
+        if (resetPage) state.visibleCount = PAGE_SIZE;
+        renderProducts();
+      });
+    };
 
-    els.availabilityFilter.addEventListener("change", () => {
-      state.filters.availability = els.availabilityFilter.value;
-      state.visibleCount = PAGE_SIZE;
-      renderProducts();
-    });
+    bindProductFilter(els.categoryFilter, "category");
+    bindProductFilter(els.availabilityFilter, "availability");
+    bindProductFilter(els.homeFilter, "home");
+    bindProductFilter(els.reviewFilter, "review");
+    bindProductFilter(els.minPriceFilter, "minPrice");
+    bindProductFilter(els.maxPriceFilter, "maxPrice");
+    bindProductFilter(els.sortFilter, "sort", false);
 
-    els.homeFilter.addEventListener("change", () => {
-      state.filters.home = els.homeFilter.value;
-      state.visibleCount = PAGE_SIZE;
-      renderProducts();
-    });
-
-    els.sortFilter.addEventListener("change", () => {
-      state.filters.sort = els.sortFilter.value;
-      renderProducts();
+    els.filterToggle?.addEventListener("click", () => setFilterPanelOpen(els.filterPanel.hidden));
+    els.filterClose?.addEventListener("click", () => setFilterPanelOpen(false));
+    els.filterBackdrop?.addEventListener("click", () => setFilterPanelOpen(false));
+    els.filterApply?.addEventListener("click", () => setFilterPanelOpen(false));
+    els.filterClear?.addEventListener("click", resetProductFilters);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") setFilterPanelOpen(false);
     });
 
     els.loadMoreBtn.addEventListener("click", () => {
@@ -870,6 +1006,16 @@
     });
 
     document.addEventListener("click", async (event) => {
+      const dashboardReview = event.target.closest("[data-products-review]");
+      if (dashboardReview) {
+        state.filters.review = dashboardReview.dataset.productsReview;
+        state.visibleCount = PAGE_SIZE;
+        syncFilterControls();
+        setSection("products");
+        renderProducts();
+        return;
+      }
+
       const editButton = event.target.closest("[data-edit-product]");
       if (editButton) {
         openProductDrawer(editButton.dataset.editProduct);

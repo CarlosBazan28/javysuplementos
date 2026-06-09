@@ -110,24 +110,78 @@
                   <p class="admin-kicker">Catalogo</p>
                   <h2>Productos</h2>
                 </div>
+                <div class="admin-products-toolbar">
+                  <p class="admin-results-count" id="adminProductResultCount">Mostrando productos</p>
+                  <button class="admin-secondary admin-filter-toggle" id="adminFilterToggle" type="button" aria-expanded="false" aria-controls="adminFilterPanel">
+                    <span class="btn-icon" data-javy-icon="settings" aria-hidden="true"></span>
+                    Filtros
+                    <span class="admin-filter-count" id="adminFilterCount" hidden>0</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="admin-filter-backdrop" id="adminFilterBackdrop" hidden></div>
+              <div class="admin-filter-panel" id="adminFilterPanel" hidden>
+                <div class="admin-filter-panel__head">
+                  <h3>Filtros de productos</h3>
+                  <button class="admin-chip-btn" id="adminFilterClose" type="button" aria-label="Cerrar filtros">
+                    <span class="btn-icon" data-javy-icon="x" aria-hidden="true"></span>
+                  </button>
+                </div>
                 <div class="admin-filters">
-                  <select id="adminCategoryFilter" aria-label="Filtrar por categoria"></select>
-                  <select id="adminAvailabilityFilter" aria-label="Filtrar por disponibilidad">
-                    <option value="all">Todos</option>
-                    <option value="available">Disponibles</option>
-                    <option value="unavailable">No disponibles</option>
-                  </select>
-                  <select id="adminHomeFilter" aria-label="Filtrar por inicio">
-                    <option value="all">Inicio: todos</option>
-                    <option value="home">En inicio</option>
-                    <option value="not-home">Fuera del inicio</option>
-                  </select>
-                  <select id="adminSortFilter" aria-label="Ordenar productos">
-                    <option value="recent">Mas recientes</option>
-                    <option value="name">Nombre</option>
-                    <option value="price">Precio</option>
-                    <option value="availability">Disponibilidad</option>
-                  </select>
+                  <label>
+                    <span>Categoria</span>
+                    <select id="adminCategoryFilter" aria-label="Filtrar por categoria"></select>
+                  </label>
+                  <label>
+                    <span>Disponibilidad</span>
+                    <select id="adminAvailabilityFilter" aria-label="Filtrar por disponibilidad">
+                      <option value="all">Todos</option>
+                      <option value="available">Disponibles</option>
+                      <option value="unavailable">No disponibles</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Inicio</span>
+                    <select id="adminHomeFilter" aria-label="Filtrar por inicio">
+                      <option value="all">Inicio: todos</option>
+                      <option value="home">En inicio</option>
+                      <option value="not-home">Fuera del inicio</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Revision</span>
+                    <select id="adminReviewFilter" aria-label="Filtrar por revision">
+                      <option value="all">Todos</option>
+                      <option value="missing-image">Sin imagen</option>
+                      <option value="missing-flavors">Sin sabores</option>
+                      <option value="unavailable">No disponibles</option>
+                      <option value="empty-price">Precio vacio</option>
+                      <option value="featured">Destacados</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Precio minimo</span>
+                    <input id="adminMinPriceFilter" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ej. 10" aria-label="Precio minimo" />
+                  </label>
+                  <label>
+                    <span>Precio maximo</span>
+                    <input id="adminMaxPriceFilter" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ej. 80" aria-label="Precio maximo" />
+                  </label>
+                  <label>
+                    <span>Orden</span>
+                    <select id="adminSortFilter" aria-label="Ordenar productos">
+                      <option value="recent">Mas recientes</option>
+                      <option value="name">Nombre</option>
+                      <option value="price-asc">Precio: menor a mayor</option>
+                      <option value="price-desc">Precio: mayor a menor</option>
+                      <option value="availability">Disponibilidad</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="admin-filter-actions">
+                  <button class="admin-secondary" id="adminFilterClear" type="button">Limpiar filtros</button>
+                  <button class="admin-primary" id="adminFilterApply" type="button">Aplicar filtros</button>
                 </div>
               </div>
 
