@@ -27,6 +27,11 @@ body.admin-dashboard-page {
   font-family: "Figtree", system-ui, sans-serif;
 }
 
+body.admin-dashboard-page.admin-filter-open {
+  overflow: hidden;
+  width: 100%;
+}
+
 .admin-dashboard-page [hidden] {
   display: none !important;
 }
@@ -1091,6 +1096,13 @@ button.admin-stat:focus-visible {
 }
 
 @media (max-width: 860px) {
+  body.admin-dashboard-page.admin-filter-open {
+    position: fixed;
+    right: 0;
+    left: 0;
+    overscroll-behavior: none;
+  }
+
   .admin-dashboard {
     grid-template-columns: 1fr;
     padding-bottom: 78px;
@@ -1194,23 +1206,36 @@ button.admin-stat:focus-visible {
     z-index: 120;
     display: block;
     background: rgba(0, 0, 0, 0.58);
+    touch-action: none;
   }
 
   .admin-filter-panel {
     position: fixed;
-    top: 56px;
+    top: auto;
     right: 0;
     bottom: 0;
     left: 0;
     z-index: 130;
-    height: auto;
-    overflow: auto;
+    max-height: min(85dvh, 720px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     border-radius: 18px 18px 0 0;
     border-right: 0;
     border-bottom: 0;
     border-left: 0;
     margin: 0;
+    padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.45);
+  }
+
+  .admin-filter-panel__head {
+    position: sticky;
+    top: -16px;
+    z-index: 1;
+    background: rgba(10, 15, 22, 0.98);
+    margin: -16px -16px 12px;
     padding: 16px;
+    border-bottom: 1px solid var(--admin-line);
   }
 
   .admin-filters {
@@ -1218,8 +1243,14 @@ button.admin-stat:focus-visible {
   }
 
   .admin-filter-actions {
+    position: sticky;
+    bottom: calc(-16px - env(safe-area-inset-bottom, 0px));
     display: grid;
     grid-template-columns: 1fr;
+    background: rgba(10, 15, 22, 0.98);
+    margin: 12px -16px calc(-16px - env(safe-area-inset-bottom, 0px));
+    padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--admin-line);
   }
 
   .admin-variant-toolbar,

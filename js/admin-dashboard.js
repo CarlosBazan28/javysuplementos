@@ -10,6 +10,8 @@
     variantProductId: null,
     homeIds: [],
     visibleCount: PAGE_SIZE,
+    filterScrollY: 0,
+    filterScrollLocked: false,
     filters: {
       query: "",
       category: "all",
@@ -185,12 +187,41 @@
 
   function setFilterPanelOpen(isOpen) {
     if (!els.filterPanel || !els.filterToggle) return;
+    const wasOpen = els.filterToggle.getAttribute("aria-expanded") === "true";
+    if (isOpen === wasOpen) return;
+
+    if (isOpen && window.matchMedia("(max-width: 860px)").matches) {
+      state.filterScrollY = window.scrollY || window.pageYOffset || 0;
+      document.body.style.top = `-${state.filterScrollY}px`;
+      document.body.classList.add("admin-filter-open");
+      state.filterScrollLocked = true;
+    } else if (!isOpen && state.filterScrollLocked) {
+      document.body.classList.remove("admin-filter-open");
+      document.body.style.top = "";
+      window.scrollTo(0, state.filterScrollY);
+      state.filterScrollLocked = false;
+    }
+
     els.filterPanel.hidden = !isOpen;
     els.filterBackdrop.hidden = !isOpen;
     els.filterPanel.classList.toggle("is-open", isOpen);
     els.filterBackdrop.classList.toggle("is-open", isOpen);
     els.filterToggle.setAttribute("aria-expanded", String(isOpen));
-    if (isOpen) els.filterPanel.scrollTop = 0;
+    els.filterPanel.setAttribute("aria-hidden", String(!isOpen));
+    if (isOpen) {
+      els.filterPanel.scrollTop = 0;
+      els.filterPanel.focus({ preventScroll: true });
+    } else {
+      els.filterToggle.focus({ preventScroll: true });
+    }
+  }
+
+  function unlockFilterScrollIfNeeded() {
+    if (!state.filterScrollLocked || window.matchMedia("(max-width: 860px)").matches) return;
+    document.body.classList.remove("admin-filter-open");
+    document.body.style.top = "";
+    window.scrollTo(0, state.filterScrollY);
+    state.filterScrollLocked = false;
   }
 
   function resetProductFilters() {
@@ -1011,6 +1042,7 @@
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") setFilterPanelOpen(false);
     });
+    window.addEventListener("resize", unlockFilterScrollIfNeeded);
 
     els.loadMoreBtn.addEventListener("click", () => {
       state.visibleCount += PAGE_SIZE;
