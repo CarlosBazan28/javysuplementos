@@ -7,7 +7,7 @@
     <link rel="icon" href="img/icons/logo-16x16.png" type="image/png" />
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/tokens.css" />
-    <link rel="stylesheet" href="css/admin-dashboard.css?v=admin-auth" />
+    <link rel="stylesheet" href="css/admin-dashboard.css?v=admin-filter-modal" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -22,7 +22,7 @@
     <script src="js/db.js?v=admin-auth" defer></script>
     <script src="js/auth.js?v=session-state" defer></script>
     <script src="js/icons.js?v=icons" defer></script>
-    <script src="js/admin-dashboard.js?v=session-state" defer></script>
+    <script src="js/admin-dashboard.js?v=admin-filter-modal" defer></script>
   </head>
   <body class="admin-dashboard-page">
     <main class="admin-app" id="adminApp">
@@ -120,66 +120,6 @@
                 </div>
               </div>
 
-              <div class="admin-filter-backdrop" id="adminFilterBackdrop" hidden></div>
-              <div class="admin-filter-panel" id="adminFilterPanel" role="dialog" aria-modal="true" aria-labelledby="adminFilterTitle" tabindex="-1" hidden>
-                <div class="admin-filter-panel__head">
-                  <h3 id="adminFilterTitle">Filtros de productos</h3>
-                  <button class="admin-chip-btn" id="adminFilterClose" type="button" aria-label="Cerrar filtros">
-                    <span class="btn-icon" data-javy-icon="x" aria-hidden="true"></span>
-                  </button>
-                </div>
-                <div class="admin-filters">
-                  <label>
-                    <span>Categoria</span>
-                    <select id="adminCategoryFilter" aria-label="Filtrar por categoria"></select>
-                  </label>
-                  <label>
-                    <span>Disponibilidad</span>
-                    <select id="adminAvailabilityFilter" aria-label="Filtrar por disponibilidad">
-                      <option value="all">Todos</option>
-                      <option value="available">Disponibles</option>
-                      <option value="unavailable">No disponibles</option>
-                    </select>
-                  </label>
-                  <label>
-                    <span>Inicio</span>
-                    <select id="adminHomeFilter" aria-label="Filtrar por inicio">
-                      <option value="all">Inicio: todos</option>
-                      <option value="home">En inicio</option>
-                      <option value="not-home">Fuera del inicio</option>
-                    </select>
-                  </label>
-                  <label>
-                    <span>Revision</span>
-                    <select id="adminReviewFilter" aria-label="Filtrar por revision">
-                      <option value="all">Todos</option>
-                      <option value="missing-image">Sin imagen</option>
-                      <option value="no-flavor">Sin sabor</option>
-                      <option value="missing-flavors">Faltan sabores</option>
-                      <option value="inactive-flavors">Sin sabores activos</option>
-                      <option value="flavor-review">Revisar tipo de sabor</option>
-                      <option value="unavailable">No disponibles</option>
-                      <option value="empty-price">Precio vacio</option>
-                      <option value="featured">Destacados</option>
-                    </select>
-                  </label>
-                  <label>
-                    <span>Orden</span>
-                    <select id="adminSortFilter" aria-label="Ordenar productos">
-                      <option value="recent">Mas recientes</option>
-                      <option value="name">Nombre</option>
-                      <option value="price-asc">Precio bajo a alto</option>
-                      <option value="price-desc">Precio alto a bajo</option>
-                      <option value="availability">Disponibilidad</option>
-                    </select>
-                  </label>
-                </div>
-                <div class="admin-filter-actions">
-                  <button class="admin-secondary" id="adminFilterClear" type="button">Limpiar filtros</button>
-                  <button class="admin-primary" id="adminFilterApply" type="button">Aplicar filtros</button>
-                </div>
-              </div>
-
               <div class="admin-table-wrap" id="adminProductTableWrap"></div>
               <div class="admin-product-cards" id="adminProductCards"></div>
               <div class="admin-empty" id="adminProductsEmpty" hidden>No hay productos con esos filtros.</div>
@@ -261,6 +201,66 @@
         </section>
       </section>
     </main>
+
+    <div class="admin-filter-backdrop" id="adminFilterBackdrop" hidden></div>
+    <div class="admin-filter-panel" id="adminFilterPanel" role="dialog" aria-modal="true" aria-labelledby="adminFilterTitle" tabindex="-1" hidden>
+      <div class="admin-filter-panel__head">
+        <h3 id="adminFilterTitle">Filtros de productos</h3>
+        <button class="admin-chip-btn" id="adminFilterClose" type="button" aria-label="Cerrar filtros">
+          <span class="btn-icon" data-javy-icon="x" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="admin-filters">
+        <label>
+          <span>Categoria</span>
+          <select id="adminCategoryFilter" aria-label="Filtrar por categoria"></select>
+        </label>
+        <label>
+          <span>Disponibilidad</span>
+          <select id="adminAvailabilityFilter" aria-label="Filtrar por disponibilidad">
+            <option value="all">Todos</option>
+            <option value="available">Disponibles</option>
+            <option value="unavailable">No disponibles</option>
+          </select>
+        </label>
+        <label>
+          <span>Inicio</span>
+          <select id="adminHomeFilter" aria-label="Filtrar por inicio">
+            <option value="all">Inicio: todos</option>
+            <option value="home">En inicio</option>
+            <option value="not-home">Fuera del inicio</option>
+          </select>
+        </label>
+        <label>
+          <span>Revision</span>
+          <select id="adminReviewFilter" aria-label="Filtrar por revision">
+            <option value="all">Todos</option>
+            <option value="missing-image">Sin imagen</option>
+            <option value="no-flavor">Sin sabor</option>
+            <option value="missing-flavors">Faltan sabores</option>
+            <option value="inactive-flavors">Sin sabores activos</option>
+            <option value="flavor-review">Revisar tipo de sabor</option>
+            <option value="unavailable">No disponibles</option>
+            <option value="empty-price">Precio vacio</option>
+            <option value="featured">Destacados</option>
+          </select>
+        </label>
+        <label>
+          <span>Orden</span>
+          <select id="adminSortFilter" aria-label="Ordenar productos">
+            <option value="recent">Mas recientes</option>
+            <option value="name">Nombre</option>
+            <option value="price-asc">Precio bajo a alto</option>
+            <option value="price-desc">Precio alto a bajo</option>
+            <option value="availability">Disponibilidad</option>
+          </select>
+        </label>
+      </div>
+      <div class="admin-filter-actions">
+        <button class="admin-secondary" id="adminFilterClear" type="button">Limpiar filtros</button>
+        <button class="admin-primary" id="adminFilterApply" type="button">Aplicar filtros</button>
+      </div>
+    </div>
 
     <section class="admin-drawer" id="productDrawer" hidden aria-hidden="true">
       <div class="admin-drawer__backdrop" data-close-product-drawer></div>

@@ -73,6 +73,17 @@
       formMessage: $("#adminProductFormMessage"),
       toastRegion: $("#adminToastRegion"),
     });
+    ensureFilterPortal();
+  }
+
+  function ensureFilterPortal() {
+    if (!els.filterPanel || !els.filterBackdrop) return;
+    if (els.filterBackdrop.parentElement !== document.body) {
+      document.body.appendChild(els.filterBackdrop);
+    }
+    if (els.filterPanel.parentElement !== document.body) {
+      document.body.appendChild(els.filterPanel);
+    }
   }
 
   function escapeHTML(value = "") {
@@ -186,7 +197,8 @@
   }
 
   function setFilterPanelOpen(isOpen) {
-    if (!els.filterPanel || !els.filterToggle) return;
+    ensureFilterPortal();
+    if (!els.filterPanel || !els.filterToggle || !els.filterBackdrop) return;
     const wasOpen = els.filterToggle.getAttribute("aria-expanded") === "true";
     if (isOpen === wasOpen) return;
 
