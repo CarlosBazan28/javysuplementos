@@ -1097,9 +1097,6 @@ button.admin-stat:focus-visible {
 
 @media (max-width: 860px) {
   body.admin-dashboard-page.admin-filter-open {
-    position: fixed;
-    right: 0;
-    left: 0;
     overscroll-behavior: none;
   }
 
