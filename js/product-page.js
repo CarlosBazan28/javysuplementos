@@ -16,6 +16,10 @@ function productCanBeQuoted(product) {
   return product.flavors.some((flavor) => flavor.available !== false);
 }
 
+function isNoFlavorProduct(product) {
+  return product?.flavor_mode === "no_flavor";
+}
+
 function getSelectedFlavor(product) {
   const select = document.getElementById("prod-flavor-select");
   if (!select || !product.flavors?.length) return { flavor: "", flavor_id: "" };
@@ -34,7 +38,7 @@ function renderFlavorField(product) {
   if (!flavorsEl) return;
 
   if (!product.flavors?.length) {
-    flavorsEl.textContent = "No aplica / consultar";
+    flavorsEl.textContent = isNoFlavorProduct(product) ? "Sin sabor" : "No aplica / consultar";
     return;
   }
 

@@ -154,27 +154,22 @@
                     <select id="adminReviewFilter" aria-label="Filtrar por revision">
                       <option value="all">Todos</option>
                       <option value="missing-image">Sin imagen</option>
-                      <option value="missing-flavors">Sin sabores</option>
+                      <option value="no-flavor">Sin sabor</option>
+                      <option value="missing-flavors">Faltan sabores</option>
+                      <option value="inactive-flavors">Sin sabores activos</option>
+                      <option value="flavor-review">Revisar tipo de sabor</option>
                       <option value="unavailable">No disponibles</option>
                       <option value="empty-price">Precio vacio</option>
                       <option value="featured">Destacados</option>
                     </select>
                   </label>
                   <label>
-                    <span>Precio minimo</span>
-                    <input id="adminMinPriceFilter" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ej. 10" aria-label="Precio minimo" />
-                  </label>
-                  <label>
-                    <span>Precio maximo</span>
-                    <input id="adminMaxPriceFilter" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ej. 80" aria-label="Precio maximo" />
-                  </label>
-                  <label>
                     <span>Orden</span>
                     <select id="adminSortFilter" aria-label="Ordenar productos">
                       <option value="recent">Mas recientes</option>
                       <option value="name">Nombre</option>
-                      <option value="price-asc">Precio: menor a mayor</option>
-                      <option value="price-desc">Precio: mayor a menor</option>
+                      <option value="price-asc">Precio bajo a alto</option>
+                      <option value="price-desc">Precio alto a bajo</option>
                       <option value="availability">Disponibilidad</option>
                     </select>
                   </label>
@@ -366,6 +361,14 @@
               <label>
                 Objetivos separados por coma
                 <input name="goals" placeholder="Ganar masa muscular, Recuperacion" />
+              </label>
+              <label>
+                Tipo de sabor
+                <select name="flavor_mode">
+                  <option value="needs_review">Pendiente por revisar</option>
+                  <option value="has_flavors">Tiene sabores</option>
+                  <option value="no_flavor">Sin sabor</option>
+                </select>
               </label>
               <div class="admin-switch-row admin-form-grid__wide">
                 <label><input name="is_available" type="checkbox" checked /> Disponible</label>

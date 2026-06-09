@@ -32,6 +32,7 @@ create table if not exists public.products (
   is_featured boolean default false,
   show_on_home boolean default false,
   home_order integer,
+  flavor_mode text default 'needs_review',
   tags text[] default '{}',
   goals text[] default '{}',
   legacy_id text,
@@ -70,6 +71,7 @@ alter table public.products add column if not exists featured boolean default fa
 alter table public.products add column if not exists is_featured boolean default false;
 alter table public.products add column if not exists show_on_home boolean default false;
 alter table public.products add column if not exists home_order integer;
+alter table public.products add column if not exists flavor_mode text default 'needs_review';
 alter table public.products add column if not exists tags text[] default '{}';
 alter table public.products add column if not exists goals text[] default '{}';
 alter table public.products add column if not exists legacy_id text;
@@ -100,6 +102,7 @@ update public.products set is_active = coalesce(is_active, is_available, availab
 update public.products set featured = coalesce(featured, is_featured, show_on_home, false) where featured is null;
 update public.products set is_featured = coalesce(is_featured, featured, show_on_home, false) where is_featured is null;
 update public.products set show_on_home = coalesce(show_on_home, featured, false) where show_on_home is null;
+update public.products set flavor_mode = 'needs_review' where flavor_mode is null or flavor_mode not in ('has_flavors', 'no_flavor', 'needs_review');
 update public.products set tags = coalesce(tags, '{}') where tags is null;
 update public.products set goals = coalesce(goals, '{}') where goals is null;
 update public.products
@@ -134,6 +137,8 @@ alter table public.products alter column is_available set default true;
 alter table public.products alter column featured set default false;
 alter table public.products alter column is_featured set default false;
 alter table public.products alter column show_on_home set default false;
+alter table public.products alter column flavor_mode set default 'needs_review';
+alter table public.products alter column flavor_mode set not null;
 alter table public.products alter column tags set default '{}';
 alter table public.products alter column goals set default '{}';
 alter table public.products alter column created_at set default now();
@@ -163,6 +168,16 @@ begin
       and conrelid = 'public.products'::regclass
   ) then
     alter table public.products add constraint products_legacy_id_key unique (legacy_id);
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'products_flavor_mode_check'
+      and conrelid = 'public.products'::regclass
+  ) then
+    alter table public.products
+      add constraint products_flavor_mode_check
+      check (flavor_mode in ('has_flavors', 'no_flavor', 'needs_review'));
   end if;
 end;
 $$;
