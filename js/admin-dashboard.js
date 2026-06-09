@@ -16,8 +16,6 @@
       availability: "all",
       home: "all",
       review: "all",
-      minPrice: "",
-      maxPrice: "",
       sort: "recent",
     },
   };
@@ -46,8 +44,6 @@
       availabilityFilter: $("#adminAvailabilityFilter"),
       homeFilter: $("#adminHomeFilter"),
       reviewFilter: $("#adminReviewFilter"),
-      minPriceFilter: $("#adminMinPriceFilter"),
-      maxPriceFilter: $("#adminMaxPriceFilter"),
       sortFilter: $("#adminSortFilter"),
       filterToggle: $("#adminFilterToggle"),
       filterPanel: $("#adminFilterPanel"),
@@ -128,6 +124,32 @@
     return Boolean(product.flavors?.length);
   }
 
+  function getFlavorMode(product) {
+    return ["has_flavors", "no_flavor", "needs_review"].includes(product?.flavor_mode)
+      ? product.flavor_mode
+      : "needs_review";
+  }
+
+  function isNoFlavorProduct(product) {
+    return getFlavorMode(product) === "no_flavor";
+  }
+
+  function requiresFlavors(product) {
+    return getFlavorMode(product) === "has_flavors";
+  }
+
+  function needsFlavorReview(product) {
+    return getFlavorMode(product) === "needs_review";
+  }
+
+  function hasInactiveFlavorsOnly(product) {
+    return requiresFlavors(product) && hasProductFlavors(product) && getAvailableFlavorCount(product) === 0;
+  }
+
+  function isMissingRequiredFlavors(product) {
+    return requiresFlavors(product) && !hasProductFlavors(product);
+  }
+
   function isFeaturedProduct(product) {
     return Boolean(product.featured || product.is_featured);
   }
@@ -142,8 +164,6 @@
       state.filters.availability !== "all",
       state.filters.home !== "all",
       state.filters.review !== "all",
-      state.filters.minPrice !== "",
-      state.filters.maxPrice !== "",
       state.filters.sort !== "recent",
     ].filter(Boolean).length;
   }
@@ -153,8 +173,6 @@
     if (els.availabilityFilter) els.availabilityFilter.value = state.filters.availability;
     if (els.homeFilter) els.homeFilter.value = state.filters.home;
     if (els.reviewFilter) els.reviewFilter.value = state.filters.review;
-    if (els.minPriceFilter) els.minPriceFilter.value = state.filters.minPrice;
-    if (els.maxPriceFilter) els.maxPriceFilter.value = state.filters.maxPrice;
     if (els.sortFilter) els.sortFilter.value = state.filters.sort;
   }
 
@@ -182,8 +200,6 @@
       availability: "all",
       home: "all",
       review: "all",
-      minPrice: "",
-      maxPrice: "",
       sort: "recent",
     };
     state.visibleCount = PAGE_SIZE;
@@ -298,8 +314,6 @@
 
   function getFilteredProducts() {
     const query = normalizeText(state.filters.query);
-    const minPrice = state.filters.minPrice === "" ? null : Number(state.filters.minPrice);
-    const maxPrice = state.filters.maxPrice === "" ? null : Number(state.filters.maxPrice);
     let products = state.products.filter((product) => {
       const searchText = normalizeText([
         product.name,
@@ -323,15 +337,15 @@
       const reviewMatch =
         state.filters.review === "all" ||
         (state.filters.review === "missing-image" && !hasProductImage(product)) ||
-        (state.filters.review === "missing-flavors" && !hasProductFlavors(product)) ||
+        (state.filters.review === "no-flavor" && isNoFlavorProduct(product)) ||
+        (state.filters.review === "missing-flavors" && isMissingRequiredFlavors(product)) ||
+        (state.filters.review === "inactive-flavors" && hasInactiveFlavorsOnly(product)) ||
+        (state.filters.review === "flavor-review" && needsFlavorReview(product)) ||
         (state.filters.review === "unavailable" && product.available === false) ||
         (state.filters.review === "empty-price" && !hasProductPrice(product)) ||
         (state.filters.review === "featured" && isFeaturedProduct(product));
-      const price = getProductPrice(product);
-      const minPriceMatch = minPrice == null || (hasProductPrice(product) && price >= minPrice);
-      const maxPriceMatch = maxPrice == null || (hasProductPrice(product) && price <= maxPrice);
 
-      return (!query || searchText.includes(query)) && categoryMatch && availabilityMatch && homeMatch && reviewMatch && minPriceMatch && maxPriceMatch;
+      return (!query || searchText.includes(query)) && categoryMatch && availabilityMatch && homeMatch && reviewMatch;
     });
 
     products = products.sort((a, b) => {
@@ -352,7 +366,10 @@
     const home = state.homeIds.length;
     const flavors = state.products.reduce((sum, product) => sum + (product.flavors?.length || 0), 0);
     const withoutImage = state.products.filter((product) => !hasProductImage(product)).length;
-    const withoutFlavors = state.products.filter((product) => !hasProductFlavors(product)).length;
+    const noFlavor = state.products.filter(isNoFlavorProduct).length;
+    const missingFlavors = state.products.filter(isMissingRequiredFlavors).length;
+    const inactiveFlavors = state.products.filter(hasInactiveFlavorsOnly).length;
+    const flavorReview = state.products.filter(needsFlavorReview).length;
     const emptyPrice = state.products.filter((product) => !hasProductPrice(product)).length;
     const featured = state.products.filter((product) => isFeaturedProduct(product)).length;
 
@@ -363,7 +380,10 @@
       ["Inicio", home, "Home"],
       ["Sabores", flavors, "Variantes"],
       ["Sin imagen", withoutImage, "Revisar", "warn", "missing-image"],
-      ["Sin sabores", withoutFlavors, "Revisar", "warn", "missing-flavors"],
+      ["Sin sabor", noFlavor, "Correctos", "ok", "no-flavor"],
+      ["Faltan sabores", missingFlavors, "Revisar", "warn", "missing-flavors"],
+      ["Sin sabores activos", inactiveFlavors, "Revisar", "warn", "inactive-flavors"],
+      ["Revisar tipo de sabor", flavorReview, "Clasificar", "warn", "flavor-review"],
       ["Precio vacio", emptyPrice, "Revisar", "bad", "empty-price"],
       ["Destacados", featured, "Actuales", "ok", "featured"],
     ].map(([label, value, note, tone, review]) => {
@@ -397,10 +417,27 @@
   function productStatus(product) {
     if (product.available === false) return `<span class="admin-status admin-status--bad">No disponible</span>`;
     if (!hasProductPrice(product)) return `<span class="admin-status admin-status--bad">Precio vacio</span>`;
-    if (!hasProductFlavors(product) || getAvailableFlavorCount(product) === 0) {
-      return `<span class="admin-status admin-status--warn">Sin sabores</span>`;
-    }
+    if (needsFlavorReview(product)) return `<span class="admin-status admin-status--warn">Revisar tipo de sabor</span>`;
+    if (isNoFlavorProduct(product)) return `<span class="admin-status admin-status--ok">Sin sabor</span>`;
+    if (isMissingRequiredFlavors(product)) return `<span class="admin-status admin-status--warn">Faltan sabores</span>`;
+    if (hasInactiveFlavorsOnly(product)) return `<span class="admin-status admin-status--warn">Sin sabores activos</span>`;
     return `<span class="admin-status admin-status--ok">Disponible</span>`;
+  }
+
+  function flavorSummaryText(product) {
+    const total = (product.flavors || []).length;
+    const available = getAvailableFlavorCount(product);
+
+    if (isNoFlavorProduct(product)) return "Sin sabor";
+    if (needsFlavorReview(product)) return "Pendiente por clasificar";
+    if (isMissingRequiredFlavors(product)) return "Faltan sabores";
+    if (hasInactiveFlavorsOnly(product)) return `0 de ${total} sabores activos`;
+    return `${available} de ${total} sabores`;
+  }
+
+  function flavorSummaryBadge(product) {
+    if (!requiresFlavors(product) || isMissingRequiredFlavors(product) || hasInactiveFlavorsOnly(product)) return "";
+    return `<span class="admin-status admin-status--ok">${flavorSummaryText(product)}</span>`;
   }
 
   function productReviewBadges(product) {
@@ -481,7 +518,7 @@
               <td>${escapeHTML(product.category || "Otros")}</td>
               <td>${formatPrice(product.price)}</td>
               <td><div class="admin-status-stack">${productStatus(product)}${productReviewBadges(product)}</div></td>
-              <td><small>${getAvailableFlavorCount(product)} disponibles de ${(product.flavors || []).length}</small></td>
+              <td><small>${flavorSummaryText(product)}</small></td>
               <td>${state.homeIds.includes(product.id) ? '<span class="admin-status admin-status--ok">Si</span>' : '<span class="admin-status admin-status--warn">No</span>'}</td>
               <td>${productActions(product)}</td>
             </tr>
@@ -499,7 +536,7 @@
           <div class="admin-card-meta">
             ${productStatus(product)}
             ${productReviewBadges(product)}
-            <span class="admin-status admin-status--warn">${getAvailableFlavorCount(product)} de ${(product.flavors || []).length} sabores</span>
+            ${flavorSummaryBadge(product)}
             ${state.homeIds.includes(product.id) ? '<span class="admin-status admin-status--ok">Inicio</span>' : ""}
           </div>
           <div class="admin-card-actions">${productMobileActions(product)}</div>
@@ -700,6 +737,7 @@
       form.elements.home_order.value = product.home_order || "";
       form.elements.tags.value = listToInput(product.tags);
       form.elements.goals.value = listToInput(product.goals);
+      form.elements.flavor_mode.value = getFlavorMode(product);
       form.elements.is_available.checked = product.available !== false;
       form.elements.is_featured.checked = Boolean(product.featured);
       form.elements.show_on_home.checked = state.homeIds.includes(product.id) || Boolean(product.show_on_home);
@@ -707,6 +745,7 @@
       form.elements.is_available.checked = true;
       form.elements.is_featured.checked = false;
       form.elements.show_on_home.checked = false;
+      form.elements.flavor_mode.value = "needs_review";
     }
 
     els.drawer.hidden = false;
@@ -736,6 +775,7 @@
       home_order: form.elements.home_order.value,
       tags: parseList(form.elements.tags.value),
       goals: parseList(form.elements.goals.value),
+      flavor_mode: form.elements.flavor_mode.value,
       is_available: form.elements.is_available.checked,
       available: form.elements.is_available.checked,
       is_featured: form.elements.is_featured.checked,
@@ -961,8 +1001,6 @@
     bindProductFilter(els.availabilityFilter, "availability");
     bindProductFilter(els.homeFilter, "home");
     bindProductFilter(els.reviewFilter, "review");
-    bindProductFilter(els.minPriceFilter, "minPrice");
-    bindProductFilter(els.maxPriceFilter, "maxPrice");
     bindProductFilter(els.sortFilter, "sort", false);
 
     els.filterToggle?.addEventListener("click", () => setFilterPanelOpen(els.filterPanel.hidden));

@@ -30,6 +30,7 @@ const PRODUCT_BASE_SELECT = `
   is_featured,
   available,
   featured,
+  flavor_mode,
   tags,
   goals,
   legacy_id,
@@ -180,6 +181,11 @@ function normalizeFlavor(flavor, index = 0) {
   };
 }
 
+function normalizeFlavorMode(value, flavors = []) {
+  if (["has_flavors", "no_flavor", "needs_review"].includes(value)) return value;
+  return flavors.length ? "has_flavors" : "needs_review";
+}
+
 function normalizeProductFromDb(product) {
   const flavors = (product.product_flavors || product.flavors || product.sabores || [])
     .map(normalizeFlavor)
@@ -194,6 +200,7 @@ function normalizeProductFromDb(product) {
     : remoteImage || localImage || DB_PLACEHOLDER_IMAGE;
   const available = product.is_available ?? product.available ?? product.is_active ?? product.disponible ?? true;
   const featured = product.is_featured ?? product.featured ?? product.destacado ?? false;
+  const flavorMode = normalizeFlavorMode(product.flavor_mode || product.flavorMode, flavors);
   const showOnHome = product.show_on_home ?? product.en_inicio ?? featured ?? false;
   const homeOrder = product.home_order == null || product.home_order === "" ? null : Number(product.home_order);
   const goals = asArray(product.goals || product.objetivos);
@@ -228,6 +235,7 @@ function normalizeProductFromDb(product) {
     is_available: available,
     featured,
     is_featured: featured,
+    flavor_mode: flavorMode,
     show_on_home: showOnHome,
     home_order: homeOrder,
     label: product.label || product.tag_visual || "",
@@ -247,6 +255,7 @@ function normalizeProductFromDb(product) {
     imagenPendiente: image === DB_PLACEHOLDER_IMAGE,
     disponible: available,
     destacado: featured,
+    modoSabor: flavorMode,
     enInicio: showOnHome,
     sabores: flavors.map((flavor) => flavor.name),
     objetivos: goals,
@@ -327,6 +336,7 @@ function mapProductToDb(productData = {}) {
   const description = descriptionLines.join("\n") || null;
   const available = productData.is_available ?? productData.available ?? true;
   const featured = productData.is_featured ?? productData.featured ?? false;
+  const flavorMode = normalizeFlavorMode(productData.flavor_mode || productData.flavorMode);
   const showOnHome = productData.show_on_home ?? productData.featured ?? false;
   const homeOrder = productData.home_order === "" || productData.home_order == null ? null : Number(productData.home_order);
   const label = productData.label?.trim() || null;
@@ -368,6 +378,7 @@ function mapProductToDb(productData = {}) {
     is_available: available,
     featured,
     is_featured: featured,
+    flavor_mode: flavorMode,
     show_on_home: Boolean(showOnHome),
     home_order: homeOrder,
     label,

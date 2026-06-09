@@ -109,6 +109,10 @@ function productCanBeQuoted(product) {
   return product.flavors.some((flavor) => flavor.available !== false);
 }
 
+function isNoFlavorProduct(product) {
+  return product?.flavor_mode === "no_flavor";
+}
+
 function renderFlavorOptions(product) {
   const flavors = product.flavors || [];
   const label = flavors.length === 1 ? "Sabor" : "Sabores";
@@ -116,11 +120,12 @@ function renderFlavorOptions(product) {
   const enabled = productCanBeQuoted(product);
 
   if (!flavors.length) {
+    const flavorLabel = isNoFlavorProduct(product) ? "Sin sabor" : "No aplica / consultar";
     return `
       <div class="product-card__flavors" aria-label="Sabores disponibles">
         <label class="product-card__flavor-label" for="${selectId}">Sabor</label>
         <select class="product-card__flavor-select" id="${selectId}" disabled>
-          <option>No aplica / consultar</option>
+          <option>${flavorLabel}</option>
         </select>
       </div>
     `;
