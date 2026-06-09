@@ -192,12 +192,10 @@
 
     if (isOpen && window.matchMedia("(max-width: 860px)").matches) {
       state.filterScrollY = window.scrollY || window.pageYOffset || 0;
-      document.body.style.top = `-${state.filterScrollY}px`;
       document.body.classList.add("admin-filter-open");
       state.filterScrollLocked = true;
     } else if (!isOpen && state.filterScrollLocked) {
       document.body.classList.remove("admin-filter-open");
-      document.body.style.top = "";
       window.scrollTo(0, state.filterScrollY);
       state.filterScrollLocked = false;
     }
@@ -219,7 +217,6 @@
   function unlockFilterScrollIfNeeded() {
     if (!state.filterScrollLocked || window.matchMedia("(max-width: 860px)").matches) return;
     document.body.classList.remove("admin-filter-open");
-    document.body.style.top = "";
     window.scrollTo(0, state.filterScrollY);
     state.filterScrollLocked = false;
   }
