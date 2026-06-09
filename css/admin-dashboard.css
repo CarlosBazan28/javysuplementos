@@ -247,6 +247,10 @@ body.admin-dashboard-page {
   justify-content: flex-end;
 }
 
+.admin-topbar__actions:empty {
+  display: none;
+}
+
 .admin-topbar input,
 .admin-filters select,
 .admin-panel select,
@@ -353,7 +357,7 @@ button:disabled,
 
 .admin-stats {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
   margin-bottom: 14px;
 }
@@ -371,8 +375,8 @@ button:disabled,
 }
 
 .admin-stat {
-  min-height: 118px;
-  padding: 16px;
+  min-height: 104px;
+  padding: 14px;
 }
 
 .admin-stat span {
@@ -395,13 +399,37 @@ button:disabled,
   font-weight: 800;
 }
 
+.admin-stat--ok {
+  border-color: rgba(8, 224, 99, 0.24);
+}
+
+.admin-stat--warn {
+  border-color: rgba(255, 209, 102, 0.24);
+}
+
+.admin-stat--bad {
+  border-color: rgba(255, 79, 118, 0.28);
+}
+
+.admin-stat--ok small {
+  color: #93f8bd;
+}
+
+.admin-stat--warn small {
+  color: #ffe0a3;
+}
+
+.admin-stat--bad small {
+  color: #ffc1ce;
+}
+
 .admin-panel {
   padding: 16px;
 }
 
 .admin-panel--split {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+  grid-template-columns: 1fr;
   gap: 16px;
 }
 
@@ -445,6 +473,14 @@ button:disabled,
   border-radius: 13px;
   background: rgba(255, 255, 255, 0.04);
   padding: 9px;
+}
+
+#section-dashboard .admin-panel {
+  padding: 14px;
+}
+
+#section-dashboard .admin-panel__head {
+  margin-bottom: 12px;
 }
 
 .admin-recent img,
@@ -910,10 +946,9 @@ button:disabled,
 
 @media (max-width: 1180px) {
   .admin-stats {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 
-  .admin-panel--split,
   .admin-home-layout,
   .admin-settings-grid {
     grid-template-columns: 1fr;
@@ -1043,12 +1078,38 @@ button:disabled,
 
 @media (max-width: 560px) {
   .admin-stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .admin-panel,
   .admin-stat {
     border-radius: 14px;
+  }
+
+  .admin-stat {
+    min-height: 96px;
+    padding: 12px;
+  }
+
+  .admin-stat span {
+    font-size: 0.72rem;
+  }
+
+  .admin-stat strong {
+    font-size: 1.55rem;
+  }
+
+  .admin-stat small {
+    font-size: 0.74rem;
+  }
+
+  .admin-recent article {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  .admin-recent article .admin-chip-btn {
+    grid-column: 1 / -1;
+    width: 100%;
   }
 
   .admin-panel__head {

@@ -78,16 +78,11 @@
         <section class="admin-main">
           <header class="admin-topbar">
             <div>
-              <p class="admin-kicker">Catalogo conectado a Supabase</p>
               <h1 id="adminSectionTitle">Dashboard</h1>
             </div>
             <div class="admin-topbar__actions">
-              <input id="adminQuickSearch" type="search" placeholder="Buscar producto" aria-label="Buscar producto" />
-              <a class="admin-view-site" href="index.html">
-                <span class="btn-icon" data-javy-icon="external-link" aria-hidden="true"></span>
-                Ver web
-              </a>
-              <button class="admin-primary" id="adminNewProductBtn" type="button">
+              <input class="admin-context-action" id="adminQuickSearch" type="search" placeholder="Buscar producto" aria-label="Buscar producto" data-show-sections="products" />
+              <button class="admin-primary admin-context-action" id="adminNewProductBtn" type="button" data-show-sections="products">
                 <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>
                 Agregar producto
               </button>
@@ -100,34 +95,10 @@
               <div>
                 <div class="admin-panel__head">
                   <div>
-                    <p class="admin-kicker">Actividad</p>
-                    <h2>Ultimos productos editados</h2>
+                    <h2>Ultimos 6 agregados</h2>
                   </div>
                 </div>
                 <div class="admin-recent" id="adminRecentProducts"></div>
-              </div>
-              <div>
-                <div class="admin-panel__head">
-                  <div>
-                    <p class="admin-kicker">Acciones rapidas</p>
-                    <h2>Mantenimiento</h2>
-                  </div>
-                </div>
-                <div class="admin-actions-grid">
-                  <button type="button" id="adminSeedBtn">
-                    <span class="btn-icon" data-javy-icon="upload" aria-hidden="true"></span>
-                    Migrar productos locales
-                  </button>
-                  <button type="button" data-admin-section-jump="home">
-                    <span class="btn-icon" data-javy-icon="arrow-up" aria-hidden="true"></span>
-                    Ordenar inicio
-                  </button>
-                  <button type="button" data-admin-section-jump="products">
-                    <span class="btn-icon" data-javy-icon="package" aria-hidden="true"></span>
-                    Gestionar catalogo
-                  </button>
-                </div>
-                <p class="admin-help-text">La migracion evita duplicados usando <code>legacy_id</code>.</p>
               </div>
             </div>
           </section>

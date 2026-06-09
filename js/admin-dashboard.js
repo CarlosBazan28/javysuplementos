@@ -32,6 +32,7 @@
       dashboard: $("#adminDashboard"),
       sectionTitle: $("#adminSectionTitle"),
       navItems: document.querySelectorAll("[data-admin-section]"),
+      contextActions: document.querySelectorAll("[data-show-sections]"),
       quickSearch: $("#adminQuickSearch"),
       newProductBtn: $("#adminNewProductBtn"),
       logoutBtn: $("#adminLogoutBtn"),
@@ -99,6 +100,14 @@
 
   function getAvailableFlavorCount(product) {
     return (product.flavors || []).filter((flavor) => flavor.available !== false).length;
+  }
+
+  function hasProductImage(product) {
+    return Boolean(productImage(product)) && productImage(product) !== PLACEHOLDER_IMAGE;
+  }
+
+  function hasProductPrice(product) {
+    return Number(product.price || 0) > 0;
   }
 
   function setGate(message, isError = false) {
@@ -248,15 +257,23 @@
     const unavailable = total - available;
     const home = state.homeIds.length;
     const flavors = state.products.reduce((sum, product) => sum + (product.flavors?.length || 0), 0);
+    const withoutImage = state.products.filter((product) => !hasProductImage(product)).length;
+    const withoutFlavors = state.products.filter((product) => !product.flavors?.length).length;
+    const emptyPrice = state.products.filter((product) => !hasProductPrice(product)).length;
+    const featured = state.products.filter((product) => product.featured).length;
 
     els.stats.innerHTML = [
-      ["Total productos", total, "Catalogo completo"],
-      ["Disponibles", available, "Listos para cotizar"],
-      ["No disponibles", unavailable, "Revisar stock"],
-      ["Inicio", home, "Seleccionados"],
-      ["Sabores", flavors, "Variantes registradas"],
-    ].map(([label, value, note]) => `
-      <article class="admin-stat">
+      ["Total productos", total, "Catalogo"],
+      ["Disponibles", available, "Activos"],
+      ["No disponibles", unavailable, "Stock"],
+      ["Inicio", home, "Home"],
+      ["Sabores", flavors, "Variantes"],
+      ["Sin imagen", withoutImage, "Revisar", "warn"],
+      ["Sin sabores", withoutFlavors, "Revisar", "warn"],
+      ["Precio vacio", emptyPrice, "Revisar", "bad"],
+      ["Destacados", featured, "Actuales", "ok"],
+    ].map(([label, value, note, tone]) => `
+      <article class="admin-stat${tone ? ` admin-stat--${tone}` : ""}">
         <span>${label}</span>
         <strong>${value}</strong>
         <small>${note}</small>
@@ -264,7 +281,7 @@
     `).join("");
 
     const recent = [...state.products]
-      .sort((a, b) => new Date(b.updated_at || b.created_at || 0) - new Date(a.updated_at || a.created_at || 0))
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
       .slice(0, 6);
 
     els.recent.innerHTML = recent.length ? recent.map((product) => `
@@ -466,6 +483,11 @@
     });
     els.navItems.forEach((button) => {
       button.classList.toggle("is-active", button.dataset.adminSection === section);
+    });
+
+    els.contextActions.forEach((item) => {
+      const sections = (item.dataset.showSections || "").split(",").map((value) => value.trim());
+      item.hidden = !sections.includes(section);
     });
   }
 
@@ -787,7 +809,7 @@
       button.addEventListener("click", () => setSection(button.dataset.adminSectionJump));
     });
 
-    els.quickSearch.addEventListener("input", () => {
+    els.quickSearch?.addEventListener("input", () => {
       state.filters.query = els.quickSearch.value;
       state.visibleCount = PAGE_SIZE;
       renderProducts();
@@ -821,10 +843,10 @@
       renderProducts();
     });
 
-    els.newProductBtn.addEventListener("click", () => openProductDrawer());
+    els.newProductBtn?.addEventListener("click", () => openProductDrawer());
     els.productForm.addEventListener("submit", handleProductSubmit);
     els.deleteProductBtn.addEventListener("click", deleteSelectedProduct);
-    els.seedBtn.addEventListener("click", seedProducts);
+    els.seedBtn?.addEventListener("click", seedProducts);
     els.saveHomeBtn.addEventListener("click", saveHomeProducts);
 
     document.querySelectorAll("[data-close-product-drawer]").forEach((item) => {
