@@ -8,6 +8,7 @@
     currentSection: "dashboard",
     selectedProductId: null,
     variantProductId: null,
+    variantQuery: "",
     homeIds: [],
     visibleCount: PAGE_SIZE,
     filterScrollY: 0,
@@ -60,6 +61,7 @@
       productsEmpty: $("#adminProductsEmpty"),
       loadMoreBtn: $("#adminLoadMoreBtn"),
       variantProductSelect: $("#variantProductSelect"),
+      variantProductSearch: $("#variantProductSearch"),
       variantManager: $("#variantManager"),
       homeCounter: $("#adminHomeCounter"),
       homeList: $("#adminHomeList"),
@@ -169,6 +171,34 @@
 
   function getProductPrice(product) {
     return Number(product.price || 0);
+  }
+
+  function getFlavorModeLabel(mode) {
+    return {
+      has_flavors: "Tiene sabores",
+      no_flavor: "Sin sabor",
+      needs_review: "Pendiente",
+    }[mode] || "Pendiente";
+  }
+
+  function getFlavorModeStatusClass(mode) {
+    if (mode === "has_flavors" || mode === "no_flavor") return "admin-status--ok";
+    return "admin-status--warn";
+  }
+
+  function getVariantProducts() {
+    const query = normalizeText(state.variantQuery);
+    if (!query) return state.products;
+    return state.products.filter((product) => {
+      const searchText = normalizeText([
+        product.name,
+        product.brand,
+        product.category,
+        product.presentation,
+        product.flavors?.map((flavor) => flavor.name).join(" "),
+      ].join(" "));
+      return searchText.includes(query);
+    });
   }
 
   function getActiveFilterCount() {
@@ -586,37 +616,110 @@
   }
 
   function renderVariantSelect() {
-    els.variantProductSelect.innerHTML = state.products.map((product) => `
-      <option value="${product.id}">${escapeHTML(product.name)}</option>
-    `).join("");
+    const products = getVariantProducts();
+    els.variantProductSelect.innerHTML = products.length
+      ? products.map((product) => `
+        <option value="${product.id}">${escapeHTML(product.name)}</option>
+      `).join("")
+      : `<option value="">Sin resultados</option>`;
 
-    if (state.variantProductId) els.variantProductSelect.value = state.variantProductId;
+    if (state.variantProductId && products.some((product) => product.id === state.variantProductId)) {
+      els.variantProductSelect.value = state.variantProductId;
+    } else if (products.length) {
+      state.variantProductId = products[0].id;
+      els.variantProductSelect.value = state.variantProductId;
+    } else {
+      state.variantProductId = null;
+    }
   }
 
   function renderVariants() {
     renderVariantSelect();
     const product = state.products.find((item) => item.id === state.variantProductId);
     if (!product) {
-      els.variantManager.innerHTML = `<p class="admin-help-text">Selecciona un producto para manejar sabores.</p>`;
+      els.variantManager.innerHTML = `<div class="admin-empty">No hay productos con esa busqueda.</div>`;
       return;
     }
 
     const flavors = product.flavors || [];
+    const availableFlavors = getAvailableFlavorCount(product);
+    const flavorMode = getFlavorMode(product);
+    const isNoFlavor = isNoFlavorProduct(product);
+    const needsReviewWithFlavors = needsFlavorReview(product) && flavors.length > 0;
+    const missingRequiredFlavors = isMissingRequiredFlavors(product);
+
     els.variantManager.innerHTML = `
-      <div class="admin-variant-toolbar">
-        <input id="variantNameNew" placeholder="Ej: Chocolate" />
-        <input id="variantPresentationNew" placeholder="Presentacion" />
-        <input id="variantPriceNew" type="number" min="0" step="0.01" placeholder="Precio" />
-        <input id="variantStockNew" type="number" min="0" step="1" placeholder="Stock" />
-        <button class="admin-primary" type="button" id="addVariantBtn">${icon("plus")}Agregar</button>
+      <article class="admin-variant-product">
+        <img src="${escapeHTML(productImage(product))}" alt="" />
+        <div>
+          <div class="admin-variant-product__head">
+            <div>
+              <h3>${escapeHTML(product.name)}</h3>
+              <p>${escapeHTML(product.brand || product.category || "Producto")} - ${formatPrice(product.price)}</p>
+            </div>
+            <span class="admin-status ${getFlavorModeStatusClass(flavorMode)}">${getFlavorModeLabel(flavorMode)}</span>
+          </div>
+          <div class="admin-card-meta">
+            ${productStatus(product)}
+            <span class="admin-status">${availableFlavors} de ${flavors.length} sabores activos</span>
+            <span class="admin-status">${escapeHTML(product.category || "Sin categoria")}</span>
+          </div>
+        </div>
+      </article>
+
+      <div class="admin-variant-mode" role="group" aria-label="Tipo de sabor del producto">
+        ${["has_flavors", "no_flavor", "needs_review"].map((mode) => `
+          <button class="admin-chip-btn ${flavorMode === mode ? "is-active" : ""}" type="button" data-flavor-mode="${mode}">
+            ${getFlavorModeLabel(mode)}
+          </button>
+        `).join("")}
       </div>
+
+      ${needsReviewWithFlavors ? `
+        <div class="admin-inline-alert admin-inline-alert--warn">
+          Este producto ya tiene sabores. Clasificalo como "Tiene sabores" para cerrar la revision.
+        </div>
+      ` : ""}
+
+      ${missingRequiredFlavors ? `
+        <div class="admin-inline-alert admin-inline-alert--warn">
+          Este producto esta marcado como "Tiene sabores", pero aun no tiene sabores registrados.
+        </div>
+      ` : ""}
+
+      ${isNoFlavor ? `
+        <div class="admin-inline-alert">
+          Este producto esta marcado como sin sabor. Cambia el tipo a "Tiene sabores" si necesitas agregar variantes.
+        </div>
+      ` : `
+        <div class="admin-variant-toolbar" aria-label="Agregar nuevo sabor">
+          <input id="variantNameNew" placeholder="Ej: Chocolate" aria-label="Nombre del nuevo sabor" />
+          <input id="variantPresentationNew" placeholder="Presentacion" aria-label="Presentacion del nuevo sabor" />
+          <input id="variantPriceNew" type="number" min="0" step="0.01" placeholder="Precio" aria-label="Precio del nuevo sabor" />
+          <input id="variantStockNew" type="number" min="0" step="1" placeholder="Stock" aria-label="Stock del nuevo sabor" />
+          <button class="admin-primary" type="button" id="addVariantBtn">${icon("plus")}Agregar</button>
+        </div>
+      `}
+
       <div class="admin-variant-list">
         ${flavors.length ? flavors.map((flavor) => `
           <article class="admin-variant-row" data-flavor-id="${flavor.id}">
-            <input value="${escapeHTML(flavor.name)}" data-flavor-name aria-label="Nombre del sabor" />
-            <input value="${escapeHTML(flavor.presentation || "")}" data-flavor-presentation aria-label="Presentacion del sabor" />
-            <input value="${flavor.price ?? ""}" type="number" min="0" step="0.01" data-flavor-price aria-label="Precio del sabor" />
-            <input value="${flavor.stock ?? ""}" type="number" min="0" step="1" data-flavor-stock aria-label="Stock del sabor" />
+            <label>
+              <span>Nombre</span>
+              <input value="${escapeHTML(flavor.name)}" data-flavor-name aria-label="Nombre del sabor" />
+            </label>
+            <label>
+              <span>Presentacion</span>
+              <input value="${escapeHTML(flavor.presentation || "")}" data-flavor-presentation aria-label="Presentacion del sabor" />
+            </label>
+            <label>
+              <span>Precio</span>
+              <input value="${flavor.price ?? ""}" type="number" min="0" step="0.01" data-flavor-price aria-label="Precio del sabor" />
+            </label>
+            <label>
+              <span>Stock</span>
+              <input value="${flavor.stock ?? ""}" type="number" min="0" step="1" data-flavor-stock aria-label="Stock del sabor" />
+            </label>
             <div class="admin-variant-actions">
               <label class="admin-toggle">
                 <input type="checkbox" ${flavor.available !== false ? "checked" : ""} data-flavor-available />
@@ -626,7 +729,7 @@
               <button class="admin-chip-btn" type="button" data-delete-flavor>${icon("trash")}Eliminar</button>
             </div>
           </article>
-        `).join("") : `<p class="admin-help-text">Este producto no tiene sabores o variantes.</p>`}
+        `).join("") : `<div class="admin-empty">Este producto no tiene sabores registrados.</div>`}
       </div>
     `;
   }
@@ -965,6 +1068,27 @@
     }
   }
 
+  async function updateVariantFlavorMode(mode) {
+    const product = getProductById(state.variantProductId);
+    if (!product || getFlavorMode(product) === mode) return;
+
+    try {
+      await window.catalogDb.updateProduct(product.id, {
+        ...product,
+        flavor_mode: mode,
+        image_url: product.image_url || product.image,
+        is_available: product.available !== false,
+        available: product.available !== false,
+        is_featured: Boolean(product.featured),
+        featured: Boolean(product.featured),
+        show_on_home: state.homeIds.includes(product.id) || Boolean(product.show_on_home),
+      });
+      await refreshAfterMutation(`Tipo de sabor actualizado: ${getFlavorModeLabel(mode)}.`);
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  }
+
   function moveHomeProduct(productId, direction) {
     const index = state.homeIds.indexOf(productId);
     const nextIndex = index + direction;
@@ -1155,6 +1279,12 @@
         return;
       }
 
+      const flavorModeButton = event.target.closest("[data-flavor-mode]");
+      if (flavorModeButton) {
+        await updateVariantFlavorMode(flavorModeButton.dataset.flavorMode);
+        return;
+      }
+
       const flavorRow = event.target.closest("[data-flavor-id]");
       if (flavorRow && event.target.closest("[data-save-flavor]")) {
         try {
@@ -1180,6 +1310,11 @@
 
     els.variantProductSelect.addEventListener("change", () => {
       state.variantProductId = els.variantProductSelect.value;
+      renderVariants();
+    });
+
+    els.variantProductSearch?.addEventListener("input", () => {
+      state.variantQuery = els.variantProductSearch.value;
       renderVariants();
     });
   }

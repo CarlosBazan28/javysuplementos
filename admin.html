@@ -7,7 +7,7 @@
     <link rel="icon" href="img/icons/logo-16x16.png" type="image/png" />
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/tokens.css" />
-    <link rel="stylesheet" href="css/admin-dashboard.css?v=admin-filter-modal" />
+    <link rel="stylesheet" href="css/admin-dashboard.css?v=admin-variants" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -22,7 +22,7 @@
     <script src="js/db.js?v=admin-auth" defer></script>
     <script src="js/auth.js?v=session-state" defer></script>
     <script src="js/icons.js?v=icons" defer></script>
-    <script src="js/admin-dashboard.js?v=admin-filter-modal" defer></script>
+    <script src="js/admin-dashboard.js?v=admin-variants" defer></script>
   </head>
   <body class="admin-dashboard-page">
     <main class="admin-app" id="adminApp">
@@ -138,8 +138,12 @@
                 <div>
                   <p class="admin-kicker">Sabores y variantes</p>
                   <h2>Gestion rapida por producto</h2>
+                  <p class="admin-help-text">Gestiona sabores, disponibilidad, precio y stock por producto.</p>
                 </div>
-                <select id="variantProductSelect" aria-label="Seleccionar producto"></select>
+                <div class="admin-variant-picker">
+                  <input id="variantProductSearch" type="search" placeholder="Buscar producto, marca o categoria" aria-label="Buscar producto para sabores" />
+                  <select id="variantProductSelect" aria-label="Seleccionar producto"></select>
+                </div>
               </div>
               <div id="variantManager"></div>
             </div>
