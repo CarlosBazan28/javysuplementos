@@ -70,7 +70,18 @@ async function initProductPage() {
     return;
   }
 
-  document.title = `Javy Supplements - ${product.name}`;
+  document.title = `${product.name} | Javy Suplementos`;
+
+  const pageUrl = window.location.href;
+  const setMeta = (sel, val) => { const el = document.querySelector(sel); if (el) el.setAttribute("content", val); };
+  setMeta('meta[property="og:title"]', `${product.name} | Javy Suplementos`);
+  setMeta('meta[property="og:description"]', product.description || `${product.name} — Cotizá ahora por WhatsApp con Javy Suplementos.`);
+  setMeta('meta[property="og:image"]', product.image || "https://carlosbazan28.github.io/javysuplementos/img/images/javi.webp");
+  setMeta('meta[property="og:url"]', pageUrl);
+  setMeta('meta[name="twitter:title"]', `${product.name} | Javy Suplementos`);
+  setMeta('meta[name="twitter:description"]', product.description || `${product.name} — Cotizá ahora por WhatsApp con Javy Suplementos.`);
+  setMeta('meta[name="twitter:image"]', product.image || "https://carlosbazan28.github.io/javysuplementos/img/images/javi.webp");
+  setMeta('meta[name="description"]', product.description || `${product.name} — Mirá el precio y cotizá por WhatsApp.`);
 
   const imgEl = document.getElementById("prod-image");
   const titleEl = document.getElementById("prod-title");
