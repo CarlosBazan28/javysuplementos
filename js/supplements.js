@@ -119,8 +119,7 @@ function renderFlavorOptions(product) {
   const enabled = productCanBeQuoted(product);
 
   if (!flavors.length) {
-    if (isNoFlavorProduct(product)) return "";
-    return `<p class="product-card__disclaimer" style="margin-top:2px">Sabor único — consultar disponibilidad</p>`;
+    return `<div class="product-card__flavors"></div>`;
   }
 
   const availableCount = flavors.filter((f) => f.available !== false).length;
@@ -215,10 +214,9 @@ function renderProductCard(product) {
     <div class="product-card__actions product-card__actions--catalog">
       ${canQuote
         ? '<button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>'
-        : '<button class="product-card__btn product-card__btn--quote" style="grid-column:1/-1" type="button">Consultar disponibilidad</button>'
+        : '<button class="product-card__btn product-card__btn--quote" type="button">Consultar disponibilidad</button>'
       }
-      ${canQuote ? '<button class="product-card__btn product-card__btn--quote" type="button">Cotizar solo este</button>' : ""}
-      <button class="product-card__btn product-card__btn--info" type="button">Ver detalles</button>
+      <button class="product-card__btn product-card__btn--info" type="button">Ver producto</button>
     </div>
   `;
 
