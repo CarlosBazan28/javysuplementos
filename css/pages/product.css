@@ -35,7 +35,7 @@
 }
 
 .pdp__breadcrumb a:hover {
-  color: #5ab4e9;
+  color: var(--accent);
 }
 
 .pdp__breadcrumb-sep {
@@ -148,7 +148,7 @@
   margin: 2px 0 4px;
   font-size: clamp(1.5rem, 2.4vw, 1.9rem);
   font-weight: 800;
-  color: #5ab4e9;
+  color: var(--accent);
   text-shadow: 0 0 10px rgba(1, 145, 198, 0.45);
 }
 
@@ -163,7 +163,7 @@
   white-space: nowrap;
   background: rgba(0, 230, 118, 0.14);
   border: 1px solid rgba(0, 230, 118, 0.35);
-  color: #00e676;
+  color: var(--cta);
 }
 
 .pdp__status.is-unavailable {
@@ -233,7 +233,7 @@
   min-height: 44px;
   border: 1px solid rgba(90, 180, 233, 0.28);
   border-radius: 10px;
-  background: #101724;
+  background: var(--footer-surface-soft);
   color: #e9f6ff;
   cursor: pointer;
   font: inherit;
@@ -264,7 +264,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #101724;
+  background: var(--footer-surface-soft);
   border: 1px solid rgba(90, 180, 233, 0.28);
   border-radius: 10px;
   padding: 4px;
@@ -296,7 +296,7 @@
 }
 
 .pdp__qty-btn--plus {
-  color: #00e676;
+  color: var(--cta);
 }
 
 .pdp__qty-value {
@@ -328,14 +328,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #00c853 0%, #00e676 100%);
+  background: linear-gradient(135deg, var(--cta-strong) 0%, var(--cta) 100%);
   color: #04140a;
   box-shadow: 0 6px 18px rgba(0, 200, 83, 0.3);
   transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
 }
 
 .pdp__cta:hover {
-  background: linear-gradient(135deg, #00e676 0%, #69f0ae 100%);
+  background: linear-gradient(135deg, var(--cta) 0%, #69f0ae 100%);
   box-shadow: 0 8px 24px rgba(0, 200, 83, 0.4);
 }
 
@@ -415,7 +415,7 @@
 }
 
 .pdp__tab:focus-visible {
-  outline: 2px solid #5ab4e9;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -473,7 +473,7 @@
 
 /* When panel open: minus sign + green */
 .pdp__panel.is-active .pdp__acc-icon::before {
-  background: #00e676;
+  background: var(--cta);
 }
 
 .pdp__panel.is-active .pdp__acc-icon::after {
@@ -508,7 +508,7 @@
   border-radius: 12px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.03);
-  border-left: 3px solid #00e676;
+  border-left: 3px solid var(--cta);
   font-size: 0.9rem;
   color: var(--text);
 }
@@ -561,7 +561,7 @@
 }
 
 .pdp__bar-price {
-  color: #5ab4e9;
+  color: var(--accent);
 }
 
 .pdp__bar-ready {

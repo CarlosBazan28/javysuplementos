@@ -23,6 +23,9 @@
   --brand: rgba(1, 145, 198); /* tu azul */
   --neon: #00cfff; /* azul neón para glow */
   --hot: #ff2e63; /* acento cálido pequeño (badges/hover) */
+  --accent: #5ab4e9; /* cyan de acento (precio, links de marca) */
+  --cta: #00e676; /* verde de llamada a la acción (botones agregar) */
+  --cta-strong: #00c853; /* verde CTA en hover/activo */
 
   /* Sombras/blur */
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
