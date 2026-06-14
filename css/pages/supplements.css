@@ -407,7 +407,7 @@
 
 @media (max-width: 620px) {
   .catalog-page {
-    width: min(100% - 20px, 1180px);
+    width: min(100% - 12px, 1180px);
     padding-top: 8px;
   }
 
@@ -428,7 +428,7 @@
 
   .catalog-grid {
     grid-template-columns: repeat(auto-fit, minmax(min(136px, 100%), 180px));
-    gap: 10px;
+    gap: 8px;
     justify-content: center;
   }
 

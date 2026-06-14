@@ -96,6 +96,10 @@ function wireQuantityStepper(card) {
 }
 
 function getCardQuantity(card) {
+  if (window.matchMedia("(max-width: 767px)").matches) {
+    const select = card.querySelector("[data-qty-select]");
+    if (select) return Math.max(1, parseInt(select.value, 10) || 1);
+  }
   return Math.max(1, parseInt(card.querySelector("[data-qty-value]")?.textContent, 10) || 1);
 }
 
@@ -155,6 +159,9 @@ function renderFeaturedProducts(productos) {
             <span class="product-card__qty-value" data-qty-value aria-live="polite">1</span>
             <button type="button" class="product-card__qty-btn product-card__qty-btn--plus" data-qty-inc aria-label="Aumentar">+</button>
           </div>
+          <select class="product-card__qty-select" data-qty-select aria-label="Cantidad">
+            ${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}
+          </select>
         </div>
       </div>
 

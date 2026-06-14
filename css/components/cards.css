@@ -311,6 +311,27 @@
   color: #e9f6ff;
 }
 
+/* Selector de cantidad para mobile: oculto en desktop (se usa el stepper) */
+.product-card__qty-select {
+  display: none;
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid rgba(90,180,233,0.28);
+  border-radius: 4px;
+  background: var(--footer-surface-soft);
+  color: #e9f6ff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 0 26px 0 10px;
+}
+
+.product-card__qty-select:focus-visible {
+  outline: 2px solid rgba(1,145,198,0.7);
+  outline-offset: 2px;
+}
+
 .product-card__actions {
   display: grid;
   grid-template-columns: 1fr;
@@ -386,15 +407,15 @@
 @media (max-width: 767px) {
   .top-products__list {
     grid-template-columns: repeat(auto-fit, minmax(min(136px, 100%), 180px));
-    gap: 10px;
-    width: calc(100% - 20px);
+    gap: 8px;
+    width: calc(100% - 12px);
     justify-content: center;
   }
 
   .product-card {
-    gap: 9px;
-    padding: 10px;
-    border-radius: 12px;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 4px;
   }
 
   .product-card:hover {
@@ -413,7 +434,7 @@
   }
 
   .product-card__media {
-    border-radius: 10px;
+    border-radius: 4px;
     padding: 4px;
   }
 
@@ -467,7 +488,7 @@
 
   .product-card__flavor-select {
     min-height: 34px;
-    border-radius: 9px;
+    border-radius: 4px;
     font-size: 0.68rem;
     padding-left: 8px;
   }
@@ -476,14 +497,15 @@
     font-size: 0.6rem;
   }
 
-  .product-card__qty-btn {
-    width: 44px;
-    height: 44px;
-    font-size: 1rem;
+  /* Mobile: stepper fuera, lista desplegable de cantidad dentro */
+  .product-card__stepper {
+    display: none;
   }
 
-  .product-card__qty-value {
-    min-width: 20px;
+  .product-card__qty-select {
+    display: block;
+    min-height: 34px;
+    font-size: 0.72rem;
   }
 
   .product-card__actions {
@@ -496,7 +518,7 @@
     width: 100%;
     min-height: 40px;
     padding: 0 6px;
-    border-radius: 9px;
+    border-radius: 4px;
     font-size: 0.72rem;
   }
 }
