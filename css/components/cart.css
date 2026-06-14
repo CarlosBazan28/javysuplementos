@@ -194,6 +194,38 @@
   min-height: 92px;
 }
 
+.consultation-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(90, 180, 233, 0.28);
+  border-radius: 12px;
+  background: #101724;
+}
+
+.consultation-total span {
+  color: #a9b4c6;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.consultation-total strong {
+  color: var(--accent);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.consultation-form__hint {
+  margin: 2px 0 0;
+  color: #ffb300;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
 .consultation-panel__actions {
   display: grid;
   grid-template-columns: auto 1fr;

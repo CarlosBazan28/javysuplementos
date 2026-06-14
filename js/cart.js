@@ -158,6 +158,14 @@ function renderConsultationPanel() {
   sendBtn.disabled = items.length === 0;
   clearBtn.disabled = items.length === 0;
 
+  const totalEl = document.getElementById("consultationTotal");
+  const totalValueEl = document.getElementById("consultationTotalValue");
+  if (totalEl && totalValueEl) {
+    const { total } = computeQuoteTotals(items);
+    totalValueEl.textContent = formatPrice(total);
+    totalEl.hidden = items.length === 0 || total <= 0;
+  }
+
   items.forEach((item, index) => {
     const row = document.createElement("li");
     row.className = "consultation-item";
@@ -236,36 +244,138 @@ function getPanelFieldValue(id) {
   return document.getElementById(id)?.value?.trim() || "";
 }
 
+const QUOTE_METHODS = {
+  retiro: {
+    title: "Retiro en Tienda",
+    fields: [
+      { id: "quoteName", label: "Nombre de quien retira", type: "text", placeholder: "Nombre y apellido", autocomplete: "name", required: true },
+      { id: "quotePhone", label: "Telefono", type: "tel", placeholder: "Ej: 6000-0000", autocomplete: "tel", required: true },
+    ],
+  },
+  ferguson: {
+    title: "Transporte Ferguson",
+    fields: [
+      { id: "quoteName", label: "Nombre del destinatario", type: "text", placeholder: "Nombre y apellido", autocomplete: "name", required: true },
+      { id: "quotePhone", label: "Telefono", type: "tel", placeholder: "Ej: 6000-0000", autocomplete: "tel", required: true },
+      { id: "quoteDestino", label: "Destino / sucursal Ferguson", type: "text", placeholder: "Ej: David, Chiriqui", required: true },
+      { id: "quoteCedula", label: "Cedula", type: "text", placeholder: "Ej: 8-888-8888", required: true },
+    ],
+  },
+  domicilio: {
+    title: "Domicilio",
+    fields: [
+      { id: "quoteName", label: "Nombre", type: "text", placeholder: "Nombre y apellido", autocomplete: "name", required: true },
+      { id: "quotePhone", label: "Telefono", type: "tel", placeholder: "Ej: 6000-0000", autocomplete: "tel", required: true },
+      { id: "quoteDireccion", label: "Direccion / zona", type: "text", placeholder: "Ej: San Miguelito, calle principal...", autocomplete: "street-address", required: true },
+      { id: "quoteHora", label: "Hora preferida (opcional)", type: "text", placeholder: "Ej: despues de las 5 pm", required: false },
+    ],
+  },
+};
+
+function getQuoteMethod() {
+  return document.getElementById("quoteMethod")?.value || "retiro";
+}
+
+function renderQuoteFields(method) {
+  const container = document.getElementById("quoteFields");
+  if (!container) return;
+
+  const config = QUOTE_METHODS[method] || QUOTE_METHODS.retiro;
+  container.innerHTML = config.fields.map((field) => `
+    <label for="${field.id}">${escapeHTML(field.label)}</label>
+    <input id="${field.id}" type="${field.type}" placeholder="${escapeHTML(field.placeholder || "")}"${field.autocomplete ? ` autocomplete="${field.autocomplete}"` : ""}${field.required ? " required" : ""} />
+  `).join("");
+}
+
+function getMissingQuoteFields() {
+  const config = QUOTE_METHODS[getQuoteMethod()] || QUOTE_METHODS.retiro;
+  return config.fields
+    .filter((field) => field.required && !getPanelFieldValue(field.id))
+    .map((field) => field.label);
+}
+
+function showQuoteHint(text) {
+  const hint = document.getElementById("quoteHint");
+  if (!hint) return;
+  hint.textContent = text || "";
+  hint.hidden = !text;
+}
+
+function computeQuoteTotals(items) {
+  const lineTotals = items
+    .filter((item) => Number(item.price) > 0)
+    .map((item) => Number(item.price) * Number(item.quantity || 1));
+  const total = lineTotals.reduce((sum, value) => sum + value, 0);
+  const hasUnpriced = items.some((item) => !(Number(item.price) > 0));
+  return { lineTotals, total, hasUnpriced };
+}
+
+function buildProductLine(item) {
+  const name = `${item.name}${getDisplayPresentation(item)}`;
+  const flavorText = item.flavor ? ` | Sabor: ${item.flavor}` : "";
+  const qty = Number(item.quantity || 1);
+  const qtyText = qty > 1 ? ` (x${qty})` : "";
+  const priceText = Number(item.price) > 0
+    ? `  $${(Number(item.price) * qty).toFixed(2)}`
+    : "  Consultar";
+  return `${name}${flavorText}${qtyText}${priceText}`;
+}
+
 function buildConsultationMessage() {
   const items = getConsultation();
-  const customerName = getPanelFieldValue("quoteCustomerName");
-  const customerZone = getPanelFieldValue("quoteCustomerZone");
-  const comment = getPanelFieldValue("quoteComment");
+  const method = getQuoteMethod();
+  const config = QUOTE_METHODS[method] || QUOTE_METHODS.retiro;
 
-  const lines = items.map((item) => {
-    const flavorText = item.flavor ? ` | Sabor: ${item.flavor}` : "";
-    const priceText = item.price > 0 ? ` | Precio aprox: $${Number(item.price).toFixed(2)}` : "";
-    return `- ${item.name}${getDisplayPresentation(item)}${flavorText} | Cantidad: ${item.quantity}${priceText}`;
-  });
+  const dataLines = [];
+  const name = getPanelFieldValue("quoteName");
+  const phone = getPanelFieldValue("quotePhone");
+  if (name) dataLines.push(name);
+  if (phone) dataLines.push(phone);
+  if (method === "ferguson") {
+    const destino = getPanelFieldValue("quoteDestino");
+    const cedula = getPanelFieldValue("quoteCedula");
+    if (destino) dataLines.push(`Destino: ${destino}`);
+    if (cedula) dataLines.push(`Cedula: ${cedula}`);
+  } else if (method === "domicilio") {
+    const direccion = getPanelFieldValue("quoteDireccion");
+    const hora = getPanelFieldValue("quoteHora");
+    if (direccion) dataLines.push(`Direccion: ${direccion}`);
+    if (hora) dataLines.push(`Hora: ${hora}`);
+  }
 
-  return [
-    "Hola Javy, quiero hacer una cotizacion.",
-    "",
-    "Productos:",
-    ...(lines.length ? lines : ["- Quiero cotizar suplementos disponibles."]),
-    "",
-    "Datos:",
-    `Nombre: ${customerName || ""}`,
-    `Zona: ${customerZone || ""}`,
-    "",
-    "Comentario:",
-    comment || "",
-    "",
-    "Quiero saber disponibilidad, precio final y opciones de entrega.",
-  ].join("\n");
+  const productLines = items.length
+    ? items.map(buildProductLine)
+    : ["- Quiero cotizar suplementos disponibles."];
+
+  const { lineTotals, total, hasUnpriced } = computeQuoteTotals(items);
+
+  const lines = [config.title, ""];
+  if (dataLines.length) lines.push(...dataLines, "");
+  lines.push(...productLines, "");
+
+  if (lineTotals.length) {
+    const sumExpr = lineTotals.map((value) => value.toFixed(2)).join(" + ");
+    lines.push(`${sumExpr} = ${total.toFixed(2)}`, "");
+    lines.push(`Total a pagar: ${formatPrice(total)}`);
+  }
+  if (hasUnpriced) lines.push("* Productos con precio por confirmar.");
+
+  return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
 function openWhatsApp() {
+  if (!getConsultation().length) {
+    showQuoteHint("Agrega al menos un producto a la cotizacion.");
+    return;
+  }
+
+  const missing = getMissingQuoteFields();
+  if (missing.length) {
+    showQuoteHint(`Completa: ${missing.join(", ")}.`);
+    return;
+  }
+
+  showQuoteHint("");
   const message = buildConsultationMessage();
   if (typeof openJavyWhatsapp === "function") {
     openJavyWhatsapp(message);
@@ -381,15 +491,22 @@ function createConsultationPanel() {
     <p class="consultation-empty" id="consultationEmpty">Aun no agregaste productos a la cotizacion.</p>
     <ul class="consultation-list" id="consultationList"></ul>
 
+    <div class="consultation-total" id="consultationTotal" hidden>
+      <span>Total estimado</span>
+      <strong id="consultationTotalValue">$0.00</strong>
+    </div>
+
     <div class="consultation-form">
-      <label for="quoteCustomerName">Nombre</label>
-      <input id="quoteCustomerName" type="text" placeholder="Tu nombre" autocomplete="name" />
+      <label for="quoteMethod">Metodo de entrega</label>
+      <select id="quoteMethod">
+        <option value="retiro">Retiro en Tienda</option>
+        <option value="ferguson">Transporte Ferguson</option>
+        <option value="domicilio">Domicilio</option>
+      </select>
 
-      <label for="quoteCustomerZone">Zona</label>
-      <input id="quoteCustomerZone" type="text" placeholder="Ej: San Miguelito, Condado, Brisas" autocomplete="address-level2" />
+      <div id="quoteFields"></div>
 
-      <label for="quoteComment">Comentario</label>
-      <textarea id="quoteComment" rows="4" placeholder="Ej: quiero entrega a domicilio despues de las 5 pm"></textarea>
+      <p class="consultation-form__hint" id="quoteHint" hidden></p>
     </div>
 
     <div class="consultation-panel__actions">
@@ -402,10 +519,16 @@ function createConsultationPanel() {
   document.body.appendChild(panel);
   window.javyIcons?.enhance?.(panel);
 
+  renderQuoteFields(getQuoteMethod());
+
   overlay.addEventListener("click", closePanel);
   panel.querySelector(".consultation-panel__close")?.addEventListener("click", closePanel);
   panel.querySelector("#consultationClear")?.addEventListener("click", clearConsultation);
   panel.querySelector("#consultationSend")?.addEventListener("click", openWhatsApp);
+  panel.querySelector("#quoteMethod")?.addEventListener("change", (event) => {
+    renderQuoteFields(event.target.value);
+    showQuoteHint("");
+  });
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closePanel();
