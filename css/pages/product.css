@@ -704,7 +704,9 @@
   }
 
   .pdp__media {
-    align-self: stretch;
+    align-self: start;
+    position: sticky;
+    top: 24px;
   }
 
   .pdp__media-caption {
