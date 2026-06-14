@@ -39,30 +39,28 @@ function isNoFlavorProduct(product) {
 
 function renderFlavorOptions(product) {
   const flavors = product.flavors || [];
-  const label = flavors.length === 1 ? "Sabor" : "Sabores";
   const selectId = `home-flavor-${slugify(product.id)}`;
   const enabled = productCanBeQuoted(product);
 
   if (!flavors.length) {
-    const flavorLabel = isNoFlavorProduct(product) ? "Sin sabor" : "No aplica / consultar";
-    return `
-      <div class="product-card__flavors" aria-label="Sabores disponibles">
-        <label class="product-card__flavor-label" for="${selectId}">Sabor</label>
-        <select class="product-card__flavor-select" id="${selectId}" disabled>
-          <option>${flavorLabel}</option>
-        </select>
-      </div>
-    `;
+    if (isNoFlavorProduct(product)) return "";
+    return `<p class="product-card__disclaimer" style="margin-top:2px">Sabor único — consultar disponibilidad</p>`;
   }
+
+  const availableCount = flavors.filter((f) => f.available !== false).length;
+  const label = flavors.length === 1 ? "Sabor" : "Sabores";
 
   return `
     <div class="product-card__flavors" aria-label="${label} disponibles">
-      <label class="product-card__flavor-label" for="${selectId}">${label}</label>
+      <label class="product-card__flavor-label" for="${selectId}">
+        ${label}
+        <span class="product-card__flavor-count">${availableCount} disponibles</span>
+      </label>
       <select class="product-card__flavor-select" id="${selectId}" data-flavor-select ${enabled ? "" : "disabled"}>
-        <option value="">Elegir sabor (${flavors.length})</option>
+        <option value="">Elegir sabor</option>
         ${flavors.map((flavor) => `
           <option value="${escapeHTML(flavor.id)}" ${flavor.available === false ? "disabled" : ""}>
-            ${escapeHTML(flavor.name)}${flavor.available === false ? " - No disponible" : ""}
+            ${escapeHTML(flavor.name)}${flavor.available === false ? " — No disponible" : ""}
           </option>
         `).join("")}
       </select>
@@ -134,8 +132,11 @@ function renderFeaturedProducts(productos) {
       </div>
 
       <div class="product-card__actions product-card__actions--catalog">
-        ${canQuote ? '<button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotizacion</button>' : ""}
-        ${canQuote ? '<button class="product-card__btn product-card__btn--quote" type="button">Cotizar este producto</button>' : '<button class="product-card__btn product-card__btn--quote" type="button">Consultar disponibilidad</button>'}
+        ${canQuote
+          ? '<button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>'
+          : '<button class="product-card__btn product-card__btn--quote" style="grid-column:1/-1" type="button">Consultar disponibilidad</button>'
+        }
+        ${canQuote ? '<button class="product-card__btn product-card__btn--quote" type="button">Cotizar solo este</button>' : ""}
         <button class="product-card__btn product-card__btn--info" type="button">Ver detalles</button>
       </div>
     `;
