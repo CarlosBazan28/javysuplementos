@@ -121,8 +121,8 @@ function renderFlavorOptions(product) {
   if (!flavors.length) {
     return `
       <div class="product-card__flavors">
-        <label class="product-card__flavor-label">Sabor</label>
-        <select class="product-card__flavor-select" data-flavor-select disabled>
+        <label class="product-card__flavor-label" for="${selectId}">Sabor</label>
+        <select class="product-card__flavor-select" id="${selectId}" data-flavor-select disabled>
           <option>Sin sabor</option>
         </select>
       </div>
