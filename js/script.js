@@ -43,18 +43,21 @@ function renderFlavorOptions(product) {
   const enabled = productCanBeQuoted(product);
 
   if (!flavors.length) {
-    return `<div class="product-card__flavors"></div>`;
+    return `
+      <div class="product-card__flavors">
+        <label class="product-card__flavor-label">Sabor</label>
+        <select class="product-card__flavor-select" data-flavor-select disabled>
+          <option>Sin sabor</option>
+        </select>
+      </div>
+    `;
   }
 
-  const availableCount = flavors.filter((f) => f.available !== false).length;
   const label = flavors.length === 1 ? "Sabor" : "Sabores";
 
   return `
     <div class="product-card__flavors" aria-label="${label} disponibles">
-      <label class="product-card__flavor-label" for="${selectId}">
-        ${label}
-        <span class="product-card__flavor-count">${availableCount} disponibles</span>
-      </label>
+      <label class="product-card__flavor-label" for="${selectId}">${label}</label>
       <select class="product-card__flavor-select" id="${selectId}" data-flavor-select ${enabled ? "" : "disabled"}>
         <option value="">Elegir sabor</option>
         ${flavors.map((flavor) => `
@@ -79,6 +82,21 @@ function getSelectedFlavor(card, product, shouldRequire = true) {
   const flavor = product.flavors.find((item) => item.id === select.value);
   if (!flavor || flavor.available === false) return null;
   return { flavor: flavor.name, flavor_id: flavor.id };
+}
+
+function wireQuantityStepper(card) {
+  const valueEl = card.querySelector("[data-qty-value]");
+  if (!valueEl) return;
+  card.querySelector("[data-qty-dec]")?.addEventListener("click", () => {
+    valueEl.textContent = Math.max(1, (parseInt(valueEl.textContent, 10) || 1) - 1);
+  });
+  card.querySelector("[data-qty-inc]")?.addEventListener("click", () => {
+    valueEl.textContent = Math.min(99, (parseInt(valueEl.textContent, 10) || 1) + 1);
+  });
+}
+
+function getCardQuantity(card) {
+  return Math.max(1, parseInt(card.querySelector("[data-qty-value]")?.textContent, 10) || 1);
 }
 
 function showAddedState(button) {
@@ -119,15 +137,25 @@ function renderFeaturedProducts(productos) {
 
       <div class="product-card__info">
         <div class="product-card__meta">
-          <span>${escapeHTML(product.brand || "Marca en revision")}</span>
-          <span class="${canQuote ? "is-available" : "is-unavailable"}">
+          <span class="product-card__brand">${escapeHTML(product.brand || "Marca en revision")}</span>
+          <span class="product-card__status ${canQuote ? "is-available" : "is-unavailable"}">
             ${canQuote ? "Disponible" : "Consultar stock"}
           </span>
         </div>
         <h3 class="product-card__name">${escapeHTML(product.name)}</h3>
-        <p class="product-card__price">$ ${formatPrice(product.price)}</p>
+        <div class="product-card__price-row">
+          <span class="product-card__price">$${formatPrice(product.price)}</span>
+          ${product.presentation ? `<span class="product-card__pres">${escapeHTML(product.presentation)}</span>` : ""}
+        </div>
         ${renderFlavorOptions(product)}
-        <p class="product-card__disclaimer">${escapeHTML(product.presentation || "Cotizacion por WhatsApp")}</p>
+        <div class="product-card__qty">
+          <span class="product-card__qty-label">Cantidad</span>
+          <div class="product-card__stepper" role="group" aria-label="Cantidad">
+            <button type="button" class="product-card__qty-btn" data-qty-dec aria-label="Disminuir">−</button>
+            <span class="product-card__qty-value" data-qty-value aria-live="polite">1</span>
+            <button type="button" class="product-card__qty-btn product-card__qty-btn--plus" data-qty-inc aria-label="Aumentar">+</button>
+          </div>
+        </div>
       </div>
 
       <div class="product-card__actions product-card__actions--catalog">
@@ -135,9 +163,11 @@ function renderFeaturedProducts(productos) {
           ? '<button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>'
           : '<button class="product-card__btn product-card__btn--quote" type="button">Consultar disponibilidad</button>'
         }
-        <button class="product-card__btn product-card__btn--info" type="button">Ver producto</button>
+        <button class="product-card__btn product-card__btn--info" type="button">Ver detalles</button>
       </div>
     `;
+
+    wireQuantityStepper(card);
 
     const btnConsulta = card.querySelector(".product-card__btn--buy");
     btnConsulta?.addEventListener("click", () => {
@@ -148,7 +178,8 @@ function renderFeaturedProducts(productos) {
         return;
       }
 
-      window.consultation?.addItem?.(product, selectedFlavor || {});
+      const quantity = getCardQuantity(card);
+      window.consultation?.addItem?.(product, { ...(selectedFlavor || {}), quantity });
       showAddedState(btnConsulta);
     });
 
