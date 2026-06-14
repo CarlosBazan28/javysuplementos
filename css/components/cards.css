@@ -214,19 +214,6 @@
   text-transform: uppercase;
 }
 
-.product-card__flavor-count {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: rgba(1,145,198,0.15);
-  border: 1px solid rgba(1,145,198,0.3);
-  color: var(--accent);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0;
-}
-
 .product-card__flavor-select {
   width: 100%;
   min-width: 0;

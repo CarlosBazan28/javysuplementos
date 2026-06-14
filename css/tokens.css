@@ -2,7 +2,7 @@
   --bg: #000;
   --surface: rgba(24, 24, 24, 0.7);
   --blanco: #fff;
-  --Cyan: rgba(1, 145, 198);
+  --Cyan: rgb(1 145 198);
   --grisClaro: #b3b3b3;
   /* Base negra en capas */
   --bg-0: #050709; /* body/background absoluto (negro realista) */
@@ -20,7 +20,7 @@
   --muted: #a9b4c6;
 
   /* Marca / acentos */
-  --brand: rgba(1, 145, 198); /* tu azul */
+  --brand: rgb(1 145 198); /* tu azul */
   --neon: #00cfff; /* azul neón para glow */
   --hot: #ff2e63; /* acento cálido pequeño (badges/hover) */
   --accent: #5ab4e9; /* cyan de acento (precio, links de marca) */

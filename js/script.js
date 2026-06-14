@@ -171,10 +171,11 @@ function renderFeaturedProducts(productos) {
 
     const btnConsulta = card.querySelector(".product-card__btn--buy");
     btnConsulta?.addEventListener("click", () => {
+      const originalText = btnConsulta.textContent;
       const selectedFlavor = getSelectedFlavor(card, product);
       if (product.flavors?.length && !selectedFlavor) {
         btnConsulta.textContent = "Elige sabor";
-        window.setTimeout(() => { btnConsulta.textContent = "Agregar a cotizacion"; }, 1200);
+        window.setTimeout(() => { btnConsulta.textContent = originalText; }, 1200);
         return;
       }
 
@@ -183,14 +184,10 @@ function renderFeaturedProducts(productos) {
       showAddedState(btnConsulta);
     });
 
+    // El botón "Consultar disponibilidad" solo se renderiza cuando !canQuote
     const btnQuote = card.querySelector(".product-card__btn--quote");
     btnQuote?.addEventListener("click", () => {
-      const selectedFlavor = canQuote ? getSelectedFlavor(card, product, false) : {};
-      if (canQuote) {
-        window.consultation?.quoteSingleProduct?.(product, selectedFlavor || {});
-      } else {
-        window.consultation?.askAvailability?.(product, selectedFlavor || {});
-      }
+      window.consultation?.askAvailability?.(product, {});
     });
 
     const btnInfo = card.querySelector(".product-card__btn--info");

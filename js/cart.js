@@ -273,7 +273,7 @@ function openWhatsApp() {
   }
 
   const encodedMessage = encodeURIComponent(message);
-  window.open(`https://wa.me/50763932305?text=${encodedMessage}`, "_blank");
+  window.open(`https://wa.me/${JAVY_WHATSAPP_NUMBER}?text=${encodedMessage}`, "_blank");
 }
 
 function quoteSingleProduct(product, options = {}) {

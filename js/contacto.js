@@ -101,7 +101,7 @@
       return;
     }
 
-    window.open(`https://wa.me/50763932305?text=${encodeURIComponent(message)}`, "_blank");
+    window.open(`https://wa.me/${JAVY_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank");
   }
 
   form.addEventListener("submit", (event) => {

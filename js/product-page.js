@@ -187,7 +187,6 @@ async function initProductPage() {
 
   // Acciones
   const addCtas = Array.from(document.querySelectorAll("[data-add-cta]"));
-  const availabilityCtas = Array.from(document.querySelectorAll("[data-availability-cta]"));
 
   if (canQuote) {
     addCtas.forEach((btn) => {
@@ -211,7 +210,6 @@ async function initProductPage() {
         }, 1400);
       });
     });
-    availabilityCtas.forEach((btn) => { btn.hidden = true; });
   } else {
     addCtas.forEach((btn) => {
       btn.textContent = "Consultar disponibilidad";
@@ -220,7 +218,6 @@ async function initProductPage() {
         window.consultation?.askAvailability?.(product);
       });
     });
-    availabilityCtas.forEach((btn) => { btn.hidden = true; });
   }
 
   // Contenido informativo
@@ -244,17 +241,17 @@ function renderNotFound() {
 }
 
 function crearBeneficios(items = []) {
-  if (!items.length) return "<p class=\"pdp__benefit\">Informacion no disponible.</p>";
+  if (!items.length) return "<p>Información no disponible.</p>";
   return items.map((text) => `<div class="pdp__benefit">${escapeHTML(text)}</div>`).join("");
 }
 
 function crearLista(items = []) {
-  if (!items.length) return "<p>Informacion no disponible.</p>";
+  if (!items.length) return "<p>Información no disponible.</p>";
   return `<ul>${items.map((text) => `<li>${escapeHTML(text)}</li>`).join("")}</ul>`;
 }
 
 function crearParrafos(lines = []) {
-  if (!lines.length) return "<p>Informacion no disponible.</p>";
+  if (!lines.length) return "<p>Información no disponible.</p>";
   return lines.map((text) => `<p>${escapeHTML(text)}</p>`).join("");
 }
 
