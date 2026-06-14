@@ -264,11 +264,11 @@ const QUOTE_METHODS = {
         placeholder: "Selecciona la sucursal",
         required: true,
         options: [
-          { group: "Panama Oeste", items: ["Chorrera", "Arraijan"] },
-          { group: "Colon / Darien", items: ["Colon", "Darien"] },
-          { group: "Panama", items: ["Calle 50", "San Pedro", "J. Arosemena", "Vista Hermosa", "24 de Diciembre"] },
-          { group: "Provincias Centrales", items: ["Penonome", "Aguadulce", "Chitre", "Las Tablas", "Santiago"] },
-          { group: "Chiriqui", items: ["David", "Boquete", "Concepcion", "Volcan", "Puerto Armuelles"] },
+          { group: "Panamá Oeste", items: ["Chorrera", "Arraiján"] },
+          { group: "Colón / Darién", items: ["Colón", "Darién"] },
+          { group: "Panamá", items: ["Calle 50", "San Pedro", "J. Arosemena", "Vista Hermosa", "24 de Diciembre"] },
+          { group: "Provincias Centrales", items: ["Penonomé", "Aguadulce", "Chitré", "Las Tablas", "Santiago"] },
+          { group: "Chiriquí", items: ["David", "Boquete", "Concepción", "Volcán", "Puerto Armuelles"] },
         ],
       },
       { id: "quoteCedula", label: "Cedula", type: "text", placeholder: "Ej: 8-888-8888", required: true },
@@ -305,15 +305,15 @@ function renderQuoteFields(method) {
         return `<optgroup label="${escapeHTML(opt.group)}">${optionsHtml}</optgroup>`;
       }).join("");
 
-      return `${labelHtml}
+      return `<div class="consultation-field">${labelHtml}
         <select id="${field.id}"${field.required ? " required" : ""}>
           <option value="">${escapeHTML(field.placeholder || "Selecciona una opcion")}</option>
           ${groupsHtml}
-        </select>`;
+        </select></div>`;
     }
 
-    return `${labelHtml}
-      <input id="${field.id}" type="${field.type}" placeholder="${escapeHTML(field.placeholder || "")}"${field.autocomplete ? ` autocomplete="${field.autocomplete}"` : ""}${field.required ? " required" : ""} />`;
+    return `<div class="consultation-field">${labelHtml}
+      <input id="${field.id}" type="${field.type}" placeholder="${escapeHTML(field.placeholder || "")}"${field.autocomplete ? ` autocomplete="${field.autocomplete}"` : ""}${field.required ? " required" : ""} /></div>`;
   }).join("");
 }
 
@@ -527,12 +527,14 @@ function createConsultationPanel() {
     </div>
 
     <div class="consultation-form">
-      <label for="quoteMethod">Metodo de entrega</label>
-      <select id="quoteMethod">
-        <option value="retiro">Retiro en Tienda</option>
-        <option value="ferguson">Transporte Ferguson</option>
-        <option value="domicilio">Domicilio</option>
-      </select>
+      <div class="consultation-field">
+        <label for="quoteMethod">Metodo de entrega</label>
+        <select id="quoteMethod">
+          <option value="retiro">Retiro en Tienda</option>
+          <option value="ferguson">Transporte Ferguson</option>
+          <option value="domicilio">Domicilio</option>
+        </select>
+      </div>
 
       <div id="quoteFields"></div>
 

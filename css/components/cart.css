@@ -167,8 +167,18 @@
 
 .consultation-form {
   display: grid;
-  gap: 8px;
+  gap: 16px;
   margin-top: auto;
+}
+
+#quoteFields {
+  display: grid;
+  gap: 14px;
+}
+
+.consultation-field {
+  display: grid;
+  gap: 7px;
 }
 
 .consultation-form label {
