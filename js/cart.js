@@ -257,7 +257,20 @@ const QUOTE_METHODS = {
     fields: [
       { id: "quoteName", label: "Nombre del destinatario", type: "text", placeholder: "Nombre y apellido", autocomplete: "name", required: true },
       { id: "quotePhone", label: "Telefono", type: "tel", placeholder: "Ej: 6000-0000", autocomplete: "tel", required: true },
-      { id: "quoteDestino", label: "Destino / sucursal Ferguson", type: "text", placeholder: "Ej: David, Chiriqui", required: true },
+      {
+        id: "quoteDestino",
+        label: "Destino / sucursal Ferguson",
+        type: "select",
+        placeholder: "Selecciona la sucursal",
+        required: true,
+        options: [
+          { group: "Panama Oeste", items: ["Chorrera", "Arraijan"] },
+          { group: "Colon / Darien", items: ["Colon", "Darien"] },
+          { group: "Panama", items: ["Calle 50", "San Pedro", "J. Arosemena", "Vista Hermosa", "24 de Diciembre"] },
+          { group: "Provincias Centrales", items: ["Penonome", "Aguadulce", "Chitre", "Las Tablas", "Santiago"] },
+          { group: "Chiriqui", items: ["David", "Boquete", "Concepcion", "Volcan", "Puerto Armuelles"] },
+        ],
+      },
       { id: "quoteCedula", label: "Cedula", type: "text", placeholder: "Ej: 8-888-8888", required: true },
     ],
   },
@@ -281,10 +294,27 @@ function renderQuoteFields(method) {
   if (!container) return;
 
   const config = QUOTE_METHODS[method] || QUOTE_METHODS.retiro;
-  container.innerHTML = config.fields.map((field) => `
-    <label for="${field.id}">${escapeHTML(field.label)}</label>
-    <input id="${field.id}" type="${field.type}" placeholder="${escapeHTML(field.placeholder || "")}"${field.autocomplete ? ` autocomplete="${field.autocomplete}"` : ""}${field.required ? " required" : ""} />
-  `).join("");
+  container.innerHTML = config.fields.map((field) => {
+    const labelHtml = `<label for="${field.id}">${escapeHTML(field.label)}</label>`;
+
+    if (field.type === "select") {
+      const groupsHtml = (field.options || []).map((opt) => {
+        const optionsHtml = opt.items
+          .map((item) => `<option value="${escapeHTML(item)}">${escapeHTML(item)}</option>`)
+          .join("");
+        return `<optgroup label="${escapeHTML(opt.group)}">${optionsHtml}</optgroup>`;
+      }).join("");
+
+      return `${labelHtml}
+        <select id="${field.id}"${field.required ? " required" : ""}>
+          <option value="">${escapeHTML(field.placeholder || "Selecciona una opcion")}</option>
+          ${groupsHtml}
+        </select>`;
+    }
+
+    return `${labelHtml}
+      <input id="${field.id}" type="${field.type}" placeholder="${escapeHTML(field.placeholder || "")}"${field.autocomplete ? ` autocomplete="${field.autocomplete}"` : ""}${field.required ? " required" : ""} />`;
+  }).join("");
 }
 
 function getMissingQuoteFields() {
