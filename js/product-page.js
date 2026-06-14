@@ -100,16 +100,30 @@ async function initProductPage() {
 
   document.title = `${product.name} | Javy Suplementos`;
 
-  const pageUrl = window.location.href;
+  // URLs de SEO siempre al dominio de producción (GitHub Pages), nunca al preview de Vercel
+  const SITE_BASE = "https://carlosbazan28.github.io/javysuplementos/";
+  const DEFAULT_IMAGE = SITE_BASE + "img/images/javi.webp";
+  const toAbsoluteUrl = (path) => {
+    if (!path) return DEFAULT_IMAGE;
+    if (/^https?:\/\//i.test(path)) return path;
+    return SITE_BASE + String(path).replace(/^\/+/, "");
+  };
+
+  const pageUrl = `${SITE_BASE}product-page.html?id=${encodeURIComponent(productId)}`;
+  const imageUrl = toAbsoluteUrl(product.image);
   const setMeta = (sel, val) => { const el = document.querySelector(sel); if (el) el.setAttribute("content", val); };
   setMeta('meta[property="og:title"]', `${product.name} | Javy Suplementos`);
   setMeta('meta[property="og:description"]', product.description || `${product.name} — Cotizá ahora por WhatsApp con Javy Suplementos.`);
-  setMeta('meta[property="og:image"]', product.image || "https://carlosbazan28.github.io/javysuplementos/img/images/javi.webp");
+  setMeta('meta[property="og:image"]', imageUrl);
   setMeta('meta[property="og:url"]', pageUrl);
   setMeta('meta[name="twitter:title"]', `${product.name} | Javy Suplementos`);
   setMeta('meta[name="twitter:description"]', product.description || `${product.name} — Cotizá ahora por WhatsApp con Javy Suplementos.`);
-  setMeta('meta[name="twitter:image"]', product.image || "https://carlosbazan28.github.io/javysuplementos/img/images/javi.webp");
+  setMeta('meta[name="twitter:image"]', imageUrl);
   setMeta('meta[name="description"]', product.description || `${product.name} — Mirá el precio y cotizá por WhatsApp.`);
+
+  // canonical dinámico por producto (mismo dominio de producción + ?id=)
+  const canonicalEl = document.querySelector('link[rel="canonical"]');
+  if (canonicalEl) canonicalEl.setAttribute("href", pageUrl);
 
   const canQuote = productCanBeQuoted(product);
   const category = product.category || "Producto";
@@ -117,7 +131,8 @@ async function initProductPage() {
   const priceText = product.price > 0 ? `$${product.price.toFixed(2)}` : "Consultar precio";
 
   const imgEl = document.getElementById("prod-image");
-  imgEl.src = product.image;
+  imgEl.src = product.image || "img/images/javi.webp";
+  imgEl.onerror = () => { imgEl.onerror = null; imgEl.src = "img/images/javi.webp"; };
   imgEl.alt = product.name;
 
   document.getElementById("prod-title").textContent = product.name;
