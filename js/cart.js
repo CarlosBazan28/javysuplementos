@@ -314,11 +314,11 @@ function buildProductLine(item) {
   const name = `${item.name}${getDisplayPresentation(item)}`;
   const flavorText = item.flavor ? ` | Sabor: ${item.flavor}` : "";
   const qty = Number(item.quantity || 1);
-  const qtyText = qty > 1 ? ` (x${qty})` : "";
+  const qtyText = qty > 1 ? `(x${qty}) ` : "";
   const priceText = Number(item.price) > 0
     ? `  $${(Number(item.price) * qty).toFixed(2)}`
     : "  Consultar";
-  return `${name}${flavorText}${qtyText}${priceText}`;
+  return `${qtyText}${name}${flavorText}${priceText}`;
 }
 
 function buildConsultationMessage() {
