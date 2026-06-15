@@ -117,6 +117,16 @@
     }, 170);
   };
 
+  // Al restaurar desde el bfcache (gesto de "atrás"), el body conserva
+  // page-transition-out (opacity 0) y el script no se re-ejecuta -> pantalla negra.
+  // Reponemos la visibilidad cuando la página viene del cache.
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+      document.body.classList.remove("page-transition-out");
+      document.body.classList.add("page-transition-in");
+    }
+  });
+
   document.addEventListener("click", (event) => {
     const link = event.target.closest?.("a[href]");
     if (!link) return;
