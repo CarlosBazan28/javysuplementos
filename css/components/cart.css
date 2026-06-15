@@ -18,7 +18,8 @@
   top: 0;
   right: 0;
   z-index: 1000;
-  width: min(420px, 100%);
+  width: min(440px, 100%);
+  height: 100vh;
   height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -50,7 +51,7 @@
 }
 
 .consultation-panel__eyebrow {
-  color: var(--Cyan);
+  color: var(--accent);
   font-size: 0.75rem;
   font-weight: 800;
   margin-bottom: 4px;
@@ -79,6 +80,37 @@
   height: 20px;
 }
 
+.consultation-panel__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.consultation-panel__products,
+.consultation-panel__checkout {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* el scroll de productos lo lleva la lista; el de checkout, la sección */
+.consultation-panel__checkout {
+  overflow-y: auto;
+}
+
+.consultation-section__title {
+  margin: 0;
+  color: #a9b4c6;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .consultation-empty {
   color: #a9b4c6;
   border: 1px dashed rgba(255,255,255,0.16);
@@ -96,7 +128,10 @@
   margin: 0;
   padding: 0;
   list-style: none;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  align-content: start;
 }
 
 .consultation-item {
@@ -168,7 +203,6 @@
 .consultation-form {
   display: grid;
   gap: 16px;
-  margin-top: auto;
 }
 
 #quoteFields {
@@ -209,7 +243,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-top: 12px;
   padding: 12px 14px;
   border: 1px solid rgba(90, 180, 233, 0.28);
   border-radius: 12px;
@@ -236,14 +269,14 @@
   font-weight: 700;
 }
 
-.consultation-panel__actions {
-  display: grid;
-  grid-template-columns: auto 1fr;
+.consultation-panel__footer {
+  display: flex;
   gap: 10px;
+  flex-shrink: 0;
 }
 
-.consultation-panel__clear,
-.consultation-panel__send {
+.consultation-panel__footer button {
+  flex: 1;
   border: 0;
   border-radius: 12px;
   cursor: pointer;
@@ -251,20 +284,42 @@
   padding: 12px 14px;
 }
 
-.consultation-panel__clear {
+.consultation-panel__clear,
+.consultation-nav__back {
+  flex: 0 0 auto;
   background: rgba(255,255,255,0.08);
   color: #fff;
 }
 
-.consultation-panel__send {
-  background: #00c853;
+.consultation-panel__send,
+.consultation-nav__next {
+  background: var(--cta);
   color: #06120a;
 }
 
-.consultation-panel__clear:disabled,
-.consultation-panel__send:disabled {
+.consultation-panel__send:hover:not(:disabled),
+.consultation-nav__next:hover:not(:disabled) {
+  background: var(--cta-strong);
+}
+
+.consultation-panel__footer button:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+/* Stepper mobile: una etapa a la vez (solo en pantallas chicas) */
+@media (max-width: 767px) {
+  .consultation-panel[data-step="products"] .consultation-panel__checkout,
+  .consultation-panel[data-step="products"] .consultation-nav__back,
+  .consultation-panel[data-step="products"] .consultation-panel__send {
+    display: none;
+  }
+
+  .consultation-panel[data-step="form"] .consultation-panel__products,
+  .consultation-panel[data-step="form"] .consultation-panel__clear,
+  .consultation-panel[data-step="form"] .consultation-nav__next {
+    display: none;
+  }
 }
 
 .consultation-panel button:focus-visible,
@@ -275,6 +330,35 @@
   outline-offset: 2px;
 }
 
+/* Desktop: drawer ancho con 2 columnas (productos | formulario) */
+@media (min-width: 768px) {
+  .consultation-panel {
+    width: min(880px, 100%);
+  }
+
+  .consultation-panel__body {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    grid-template-rows: minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  .consultation-panel[data-step] .consultation-panel__products,
+  .consultation-panel[data-step] .consultation-panel__checkout {
+    display: flex;
+  }
+
+  .consultation-panel__checkout {
+    border-left: 1px solid rgba(255,255,255,0.08);
+    padding-left: 22px;
+  }
+
+  .consultation-panel[data-step] .consultation-nav__back,
+  .consultation-panel[data-step] .consultation-nav__next {
+    display: none;
+  }
+}
+
 @media (max-width: 520px) {
   .consultation-panel {
     width: 100%;
@@ -282,15 +366,17 @@
     border-left: 0;
   }
 
-  .consultation-panel__actions {
-    grid-template-columns: 1fr;
-  }
-
   .consultation-item {
     grid-template-columns: 48px minmax(0, 1fr);
   }
 
+  .consultation-item__img {
+    width: 48px;
+    height: 48px;
+  }
+
   .consultation-item__remove {
     grid-column: 1 / -1;
+    min-height: 40px;
   }
 }

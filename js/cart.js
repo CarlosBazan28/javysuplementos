@@ -150,6 +150,7 @@ function renderConsultationPanel() {
   const empty = document.getElementById("consultationEmpty");
   const sendBtn = document.getElementById("consultationSend");
   const clearBtn = document.getElementById("consultationClear");
+  const nextBtn = document.getElementById("consultationNext");
   if (!panel || !list || !empty || !sendBtn || !clearBtn) return;
 
   const items = getConsultation();
@@ -157,6 +158,7 @@ function renderConsultationPanel() {
   empty.hidden = items.length > 0;
   sendBtn.disabled = items.length === 0;
   clearBtn.disabled = items.length === 0;
+  if (nextBtn) nextBtn.disabled = items.length === 0;
 
   const totalEl = document.getElementById("consultationTotal");
   const totalValueEl = document.getElementById("consultationTotalValue");
@@ -468,11 +470,25 @@ function unlockConsultationScroll() {
   window.scrollTo(0, targetY);
 }
 
+function goToStep(step) {
+  const panel = document.getElementById("consultationPanel");
+  if (!panel) return;
+
+  panel.dataset.step = step;
+  showQuoteHint("");
+
+  // mover el foco al inicio de la nueva etapa (a11y: el usuario percibe el avance)
+  const focusId = step === "form" ? "quoteMethod" : "consultationNext";
+  const target = document.getElementById(focusId);
+  if (target && !target.disabled) target.focus({ preventScroll: true });
+}
+
 function openPanel() {
   const panel = document.getElementById("consultationPanel");
   const overlay = document.getElementById("consultationOverlay");
   if (!panel || !overlay) return openWhatsApp();
 
+  panel.dataset.step = "products";
   renderConsultationPanel();
   overlay.hidden = false;
   panel.setAttribute("aria-hidden", "false");
@@ -507,6 +523,7 @@ function createConsultationPanel() {
   panel.setAttribute("aria-modal", "true");
   panel.setAttribute("aria-label", "Cotizacion por WhatsApp");
   panel.setAttribute("aria-hidden", "true");
+  panel.dataset.step = "products";
   panel.innerHTML = `
     <div class="consultation-panel__header">
       <div>
@@ -518,32 +535,41 @@ function createConsultationPanel() {
       </button>
     </div>
 
-    <p class="consultation-empty" id="consultationEmpty">Aun no agregaste productos a la cotizacion.</p>
-    <ul class="consultation-list" id="consultationList"></ul>
+    <div class="consultation-panel__body">
+      <section class="consultation-panel__products" aria-label="Productos de la cotizacion">
+        <h3 class="consultation-section__title">Productos</h3>
+        <p class="consultation-empty" id="consultationEmpty">Aun no agregaste productos a la cotizacion.</p>
+        <ul class="consultation-list" id="consultationList"></ul>
+        <div class="consultation-total" id="consultationTotal" hidden>
+          <span>Total estimado</span>
+          <strong id="consultationTotalValue">$0.00</strong>
+        </div>
+      </section>
 
-    <div class="consultation-total" id="consultationTotal" hidden>
-      <span>Total estimado</span>
-      <strong id="consultationTotalValue">$0.00</strong>
+      <section class="consultation-panel__checkout" aria-label="Datos de envio">
+        <h3 class="consultation-section__title">Datos de envio</h3>
+        <div class="consultation-form">
+          <div class="consultation-field">
+            <label for="quoteMethod">Metodo de entrega</label>
+            <select id="quoteMethod">
+              <option value="retiro">Retiro en Tienda</option>
+              <option value="ferguson">Transporte Ferguson</option>
+              <option value="domicilio">Domicilio</option>
+            </select>
+          </div>
+
+          <div id="quoteFields"></div>
+
+          <p class="consultation-form__hint" id="quoteHint" hidden></p>
+        </div>
+      </section>
     </div>
 
-    <div class="consultation-form">
-      <div class="consultation-field">
-        <label for="quoteMethod">Metodo de entrega</label>
-        <select id="quoteMethod">
-          <option value="retiro">Retiro en Tienda</option>
-          <option value="ferguson">Transporte Ferguson</option>
-          <option value="domicilio">Domicilio</option>
-        </select>
-      </div>
-
-      <div id="quoteFields"></div>
-
-      <p class="consultation-form__hint" id="quoteHint" hidden></p>
-    </div>
-
-    <div class="consultation-panel__actions">
+    <div class="consultation-panel__footer">
+      <button class="consultation-nav__back" id="consultationBack" type="button">‹ Volver</button>
       <button class="consultation-panel__clear" id="consultationClear" type="button">Vaciar</button>
-      <button class="consultation-panel__send" id="consultationSend" type="button">Enviar cotizacion por WhatsApp</button>
+      <button class="consultation-nav__next" id="consultationNext" type="button">Continuar ›</button>
+      <button class="consultation-panel__send" id="consultationSend" type="button">Enviar por WhatsApp</button>
     </div>
   `;
 
@@ -557,6 +583,8 @@ function createConsultationPanel() {
   panel.querySelector(".consultation-panel__close")?.addEventListener("click", closePanel);
   panel.querySelector("#consultationClear")?.addEventListener("click", clearConsultation);
   panel.querySelector("#consultationSend")?.addEventListener("click", openWhatsApp);
+  panel.querySelector("#consultationNext")?.addEventListener("click", () => goToStep("form"));
+  panel.querySelector("#consultationBack")?.addEventListener("click", () => goToStep("products"));
   panel.querySelector("#quoteMethod")?.addEventListener("change", (event) => {
     renderQuoteFields(event.target.value);
     showQuoteHint("");
