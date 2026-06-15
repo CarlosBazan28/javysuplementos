@@ -148,7 +148,6 @@ async function initProductPage() {
 
   document.getElementById("prod-brand").textContent = product.brand || "Por confirmar";
   document.getElementById("prod-category").textContent = category;
-  document.getElementById("prod-status").textContent = canQuote ? "Disponible para cotizar" : "Consultar disponibilidad";
 
   document.querySelectorAll("[data-status-pill]").forEach((pill) => {
     pill.textContent = canQuote ? "Disponible" : "Consultar stock";

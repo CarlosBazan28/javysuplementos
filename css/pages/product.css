@@ -18,7 +18,7 @@
 /* ---------- Header (breadcrumb / heading / mobile head) ---------- */
 
 .pdp__breadcrumb {
-  display: none;
+  display: flex;
   align-items: center;
   gap: 8px;
   font-size: 0.72rem;
@@ -40,26 +40,6 @@
 
 .pdp__breadcrumb-sep {
   opacity: 0.6;
-}
-
-.pdp__heading {
-  margin: 0 0 18px;
-  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
-  font-weight: 700;
-  color: var(--text);
-}
-
-.pdp__mobilehead {
-  display: none;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.pdp__mobilehead-title {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--text);
 }
 
 /* ---------- Layout grid ---------- */
@@ -100,14 +80,6 @@
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.55));
-}
-
-.pdp__media-caption {
-  display: none;
-  margin-top: 14px;
-  font-size: 0.8rem;
-  color: var(--muted);
-  text-align: center;
 }
 
 /* ---------- Info card ---------- */
@@ -176,7 +148,7 @@
 
 .pdp__data {
   display: none;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin: 4px 0;
 }
@@ -585,20 +557,12 @@
 }
 
 /* ===========================================================================
-   MOBILE (< 768) — sticky bottom bar, accordion, mobile head
+   MOBILE (< 768) — sticky bottom bar, accordion
    =========================================================================== */
 
 @media (max-width: 767px) {
   .pdp {
     padding-bottom: calc(96px + env(safe-area-inset-bottom)); /* espacio para barra fija + home indicator */
-  }
-
-  .pdp__heading {
-    display: none;
-  }
-
-  .pdp__mobilehead {
-    display: flex;
   }
 
   .pdp__hide-mobile {
@@ -692,10 +656,6 @@
    =========================================================================== */
 
 @media (min-width: 1024px) {
-  .pdp__breadcrumb {
-    display: flex;
-  }
-
   .pdp__layout {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
     grid-template-areas:
@@ -708,10 +668,6 @@
     align-self: start;
     position: sticky;
     top: 24px;
-  }
-
-  .pdp__media-caption {
-    display: block;
   }
 
   .pdp__data {
