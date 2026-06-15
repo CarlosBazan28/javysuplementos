@@ -5,11 +5,6 @@
   box-sizing: border-box;
 }
 
-.archivo-black-regular {
-  font-family: "Archivo Black", sans-serif;
-  font-weight: 400;
-  font-style: normal;
-}
 
 :root {
   --bg: #000;
@@ -53,7 +48,7 @@
 }
 
 body {
-  font-family: "Figtree", sans-serif;
+  font-family: "Roboto", system-ui, sans-serif;
   background-color: var(--bg);
   color: var(--txt);
 }
@@ -68,14 +63,14 @@ body {
   gap: 20px;
   height: auto;
   padding: 30px;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 1.2rem;
 }
 
 .title p {
   width: 80%;
   color: var(--grisClaro);
-  font-weight: 100;
+  font-weight: 400;
 }
 
 /* -------- Container -------- */
@@ -133,7 +128,7 @@ body {
   border-radius: 10px;
   padding: 10px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -215,7 +210,7 @@ body {
   color: var(--blanco);
   font-size: clamp(1.9rem, 4vw, 3.35rem);
   line-height: 1.02;
-  font-weight: 950;
+  font-weight: 900;
   letter-spacing: 0;
 }
 
@@ -240,7 +235,7 @@ body {
   color: #e9eef7;
   background: rgba(90, 180, 233, 0.1);
   font-size: 0.92rem;
-  font-weight: 900;
+  font-weight: 700;
   text-decoration: none;
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.16s ease;
 }
@@ -312,7 +307,7 @@ body {
 
 .reel-card .instagram-media a {
   color: #5ab4e9;
-  font-weight: 800;
+  font-weight: 500;
 }
 
 @media (max-width: 1080px) {
@@ -393,7 +388,7 @@ body {
   .footer__logo {
     margin: 0 0 10px 0;
     font-size: 1.4rem;
-    font-weight: 800;
+    font-weight: 500;
     letter-spacing: 0.03em;
   }
 
@@ -451,7 +446,7 @@ body {
     padding: 0.6rem 1rem;
     border-radius: 999px;
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 500;
     border: 1px solid rgba(90,180,233,0.8);
     color: #ffffff;
     background: radial-gradient(circle at 0% 0%,
@@ -580,7 +575,7 @@ body {
   margin: 0;
   font-size: clamp(2.35rem, 6vw, 5.6rem);
   line-height: 0.96;
-  font-weight: 950;
+  font-weight: 900;
   letter-spacing: 0;
 }
 
@@ -589,7 +584,7 @@ body {
   margin-top: clamp(16px, 2.4vw, 24px);
   color: rgba(233, 238, 247, 0.86);
   font-size: clamp(1rem, 1.55vw, 1.22rem);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.55;
 }
 

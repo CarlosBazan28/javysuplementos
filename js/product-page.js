@@ -230,11 +230,11 @@ async function initProductPage() {
 
 function renderNotFound() {
   document.body.innerHTML = `
-    <main style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#050709;color:#fff;font-family:system-ui;padding:1.5rem;text-align:center;">
+    <main style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#050709;color:#fff;font-family:'Roboto',system-ui,sans-serif;padding:1.5rem;text-align:center;">
       <div>
         <h1 style="margin-bottom:0.75rem;">Producto no encontrado</h1>
         <p style="margin-bottom:1rem;color:#A9B4C6;">Verifica el enlace o vuelve al catalogo.</p>
-        <a href="supplements-page.html" style="color:#5AB4E9;text-decoration:none;font-weight:600;">Volver al catalogo</a>
+        <a href="supplements-page.html" style="color:#5AB4E9;text-decoration:none;font-weight:500;">Volver al catalogo</a>
       </div>
     </main>
   `;
