@@ -36,7 +36,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap"
       rel="stylesheet">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
@@ -69,32 +69,32 @@
 
           <label class="contact-field" for="contactName">
             Nombre completo
-            <input id="contactName" name="name" type="text" autocomplete="name" required />
-            <small id="contactNameError"></small>
+            <input id="contactName" name="name" type="text" autocomplete="name" aria-describedby="contactNameError" required />
+            <small id="contactNameError" role="alert"></small>
           </label>
 
           <label class="contact-field" for="contactEmail">
             Correo electr&oacute;nico
-            <input id="contactEmail" name="email" type="email" autocomplete="email" required />
-            <small id="contactEmailError"></small>
+            <input id="contactEmail" name="email" type="email" autocomplete="email" aria-describedby="contactEmailError" required />
+            <small id="contactEmailError" role="alert"></small>
           </label>
 
           <label class="contact-field" for="contactPhone">
             Tel&eacute;fono
-            <input id="contactPhone" name="phone" type="tel" autocomplete="tel" required />
-            <small id="contactPhoneError"></small>
+            <input id="contactPhone" name="phone" type="tel" autocomplete="tel" aria-describedby="contactPhoneError" required />
+            <small id="contactPhoneError" role="alert"></small>
           </label>
 
           <label class="contact-field" for="contactProduct">
             Producto de inter&eacute;s
-            <input id="contactProduct" name="product" type="text" autocomplete="off" required />
-            <small id="contactProductError"></small>
+            <input id="contactProduct" name="product" type="text" autocomplete="off" aria-describedby="contactProductError" required />
+            <small id="contactProductError" role="alert"></small>
           </label>
 
           <label class="contact-field" for="contactMessage">
             Mensaje adicional
-            <textarea id="contactMessage" name="message" rows="5" placeholder="Ej: quiero saber sabores disponibles, entrega a domicilio o recomendaciones"></textarea>
-            <small id="contactMessageError"></small>
+            <textarea id="contactMessage" name="message" rows="5" aria-describedby="contactMessageError" placeholder="Ej: quiero saber sabores disponibles, entrega a domicilio o recomendaciones"></textarea>
+            <small id="contactMessageError" role="alert"></small>
           </label>
 
           <p class="contact-form__notice" id="contactFormNotice" hidden aria-live="polite"></p>
@@ -139,18 +139,18 @@
             </ul>
           </div>
 
-          <div class="contact-info__block">
-            <h2>Redes sociales</h2>
+          <div class="contact-info__block contact-info__block--social">
+            <h2>S&iacute;guenos</h2>
             <div class="contact-social">
-              <a href="https://instagram.com/javy.supplements" target="_blank" rel="noopener">
+              <a class="contact-social__link contact-social__link--instagram" href="https://instagram.com/javy.supplements" target="_blank" rel="noopener">
                 <span class="btn-icon" data-javy-icon="instagram" aria-hidden="true"></span>
                 Instagram
               </a>
-              <a href="https://tiktok.com/@javysuplementos" target="_blank" rel="noopener">
+              <a class="contact-social__link contact-social__link--tiktok" href="https://tiktok.com/@javysuplementos" target="_blank" rel="noopener">
                 <span class="btn-icon" data-javy-icon="tiktok" aria-hidden="true"></span>
                 TikTok
               </a>
-              <a href="https://facebook.com/javysuplementos" target="_blank" rel="noopener">
+              <a class="contact-social__link contact-social__link--facebook" href="https://facebook.com/javysuplementos" target="_blank" rel="noopener">
                 <span class="btn-icon" data-javy-icon="facebook" aria-hidden="true"></span>
                 Facebook
               </a>
@@ -159,7 +159,7 @@
 
           <button class="contact-whatsapp" id="contactWhatsappBtn" type="button">
             <span class="btn-icon" data-javy-icon="message-circle" aria-hidden="true"></span>
-            Cotizar por WhatsApp
+            Cotizar sin formulario
           </button>
         </aside>
       </section>
