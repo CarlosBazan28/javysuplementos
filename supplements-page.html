@@ -93,9 +93,18 @@
         <div class="catalog-filters" id="catalogFilters" aria-label="Filtrar por categoría"></div>
       </section>
 
-      <section class="catalog-results" aria-live="polite">
+      <section class="catalog-results">
         <div class="catalog-results__bar">
-          <p class="catalog-results__count" id="catalogCount"></p>
+          <p class="catalog-results__count" id="catalogCount" aria-live="polite"></p>
+          <label class="catalog-sort">
+            <span class="catalog-sort__label">Ordenar</span>
+            <select class="catalog-sort__select" id="catalogSort" aria-label="Ordenar productos">
+              <option value="recomendados">Recomendados</option>
+              <option value="precio-asc">Precio: menor a mayor</option>
+              <option value="precio-desc">Precio: mayor a menor</option>
+              <option value="nombre">Nombre: A-Z</option>
+            </select>
+          </label>
         </div>
 
         <div class="catalog-grid" id="supplementsList"></div>

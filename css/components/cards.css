@@ -85,6 +85,21 @@
   filter: drop-shadow(0 10px 18px rgba(0,0,0,0.55));
 }
 
+/* Enlaces reales a la página de producto (SEO + UX) */
+.product-card__media-link {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.product-card__name-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.product-card__name-link:hover {
+  color: var(--accent);
+}
+
 .product-card__info{
   width: 100%;
   display: flex;
@@ -113,6 +128,32 @@
   animation: card-skeleton 1.4s ease-in-out infinite;
   background: rgba(255,255,255,0.06);
 }
+
+/* Skeleton de carga del catálogo */
+.product-card--skeleton {
+  pointer-events: none;
+}
+
+.skeleton-box,
+.skeleton-line {
+  background: rgba(255,255,255,0.06);
+  border-radius: 8px;
+  animation: card-skeleton 1.4s ease-in-out infinite;
+}
+
+.skeleton-box {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.skeleton-line {
+  height: 12px;
+}
+
+.skeleton-line--sm { width: 45%; }
+.skeleton-line--lg { width: 85%; height: 16px; }
+.skeleton-line--price { width: 55%; height: 22px; margin-top: 4px; }
+.skeleton-line--btn { width: 100%; height: 40px; border-radius: 10px; margin-top: 6px; }
 
 .product-card__meta {
   display: flex;
@@ -375,6 +416,8 @@
   background: transparent;
   color: #fff;
   border: 1px solid rgba(255,255,255,0.18);
+  font-weight: 600;
+  text-decoration: none;
 }
 
 .product-card__btn--info:hover{
@@ -384,7 +427,7 @@
 .product-card__btn--buy {
   background: linear-gradient(135deg, var(--cta-strong) 0%, var(--cta) 100%);
   color: #000;
-  font-weight: 500;
+  font-weight: 700;
   letter-spacing: 0.01em;
   box-shadow: 0 4px 14px rgba(0,200,83,0.3);
 }
@@ -415,7 +458,7 @@
   .product-card {
     gap: 8px;
     padding: 8px;
-    border-radius: 4px;
+    border-radius: 10px;
   }
 
   .product-card:hover {
@@ -434,7 +477,7 @@
   }
 
   .product-card__media {
-    border-radius: 4px;
+    border-radius: 10px;
     padding: 4px;
   }
 
@@ -488,7 +531,7 @@
 
   .product-card__flavor-select {
     min-height: 34px;
-    border-radius: 4px;
+    border-radius: 10px;
     font-size: 0.68rem;
     padding-left: 8px;
   }
@@ -518,7 +561,7 @@
     width: 100%;
     min-height: 40px;
     padding: 0 6px;
-    border-radius: 4px;
+    border-radius: 10px;
     font-size: 0.72rem;
   }
 }

@@ -3,6 +3,7 @@ let products = [];
 const catalogState = {
   query: "",
   category: "todos",
+  sort: "recomendados",
 };
 
 const searchForm = document.getElementById("searchForm");
@@ -13,10 +14,29 @@ const catalogCount = document.getElementById("catalogCount");
 const catalogEmpty = document.getElementById("catalogEmpty");
 const emptyAdvisorBtn = document.getElementById("emptyAdvisorBtn");
 const catalogFilters = document.getElementById("catalogFilters");
+const catalogToolsHint = document.querySelector(".catalog-tools__hint");
+const catalogSort = document.getElementById("catalogSort");
 const catalogFloatingQuote = document.getElementById("catalogFloatingQuote");
 const catalogScrollTop = document.getElementById("catalogScrollTop");
 let lastCatalogScrollY = window.scrollY || 0;
 let scrollTopIsVisible = false;
+
+// URLs de producción (GitHub Pages) para SEO/JSON-LD, nunca el preview de Vercel
+const SITE_BASE = "https://carlosbazan28.github.io/javysuplementos/";
+
+function debounce(fn, wait = 160) {
+  let timer = null;
+  return (...args) => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => fn(...args), wait);
+  };
+}
+
+function toAbsoluteUrl(path) {
+  if (!path) return `${SITE_BASE}img/images/javi.webp`;
+  if (/^https?:\/\//i.test(path)) return path;
+  return SITE_BASE + String(path).replace(/^\/+/, "");
+}
 
 function normalizeText(value = "") {
   return value
@@ -30,19 +50,6 @@ function slugify(value = "") {
   return normalizeText(value)
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
-}
-
-function productLabel(product, key) {
-  return product[key] || product[{
-    name: "nombre",
-    brand: "marca",
-    category: "categoria",
-    price: "precio",
-    presentation: "presentacion",
-    image: "imagen",
-    available: "disponible",
-    featured: "destacado",
-  }[key]];
 }
 
 function getProductCategory(product) {
@@ -79,12 +86,36 @@ function getSearchText(product) {
 function getFilteredProducts() {
   const query = normalizeText(catalogState.query.trim());
 
-  return products.filter((product) => {
+  const filtered = products.filter((product) => {
     const categoryMatch = productMatchesCategory(product);
     const queryMatch = !query || getSearchText(product).includes(query);
 
     return categoryMatch && queryMatch;
   });
+
+  return sortProducts(filtered);
+}
+
+function sortProducts(list) {
+  const sorted = [...list];
+  const price = (p) => Number(p.price ?? p.precio ?? 0);
+
+  switch (catalogState.sort) {
+    case "precio-asc":
+      return sorted.sort((a, b) => price(a) - price(b));
+    case "precio-desc":
+      return sorted.sort((a, b) => price(b) - price(a));
+    case "nombre":
+      return sorted.sort((a, b) => (a.name || "").localeCompare(b.name || "", "es"));
+    case "recomendados":
+    default:
+      // Destacados primero, manteniendo el orden original dentro de cada grupo
+      return sorted.sort((a, b) => {
+        const fa = a.featured || a.destacado ? 1 : 0;
+        const fb = b.featured || b.destacado ? 1 : 0;
+        return fb - fa;
+      });
+  }
 }
 
 function formatPrice(price) {
@@ -191,34 +222,48 @@ function getCategoryFilters() {
     .filter((category, index, list) => list.indexOf(category) === index)
     .sort((a, b) => a.localeCompare(b, "es"));
 
+  const featuredCount = products.filter((p) => p.featured || p.destacado).length;
+
   return [
-    { label: "Todos", value: "todos" },
-    { label: "Destacados", value: "destacados" },
-    ...categories.map((category) => ({ label: category, value: slugify(category) })),
-  ];
+    { label: "Todos", value: "todos", count: products.length },
+    { label: "Destacados", value: "destacados", count: featuredCount },
+    ...categories.map((category) => ({
+      label: category,
+      value: slugify(category),
+      count: products.filter((p) => getProductCategory(p) === slugify(category)).length,
+    })),
+  ]
+    // Si una categoría/destacados quedan sin productos, no mostrar el chip vacío
+    .filter((filter) => filter.value === "todos" || filter.count > 0);
 }
 
 function renderFilters() {
   if (!catalogFilters) return;
 
-  catalogFilters.innerHTML = getCategoryFilters().map((filter) => `
-    <button class="catalog-filter${filter.value === catalogState.category ? " is-active" : ""}" type="button" data-category="${filter.value}">
-      ${escapeHTML(filter.label)}
+  catalogFilters.innerHTML = getCategoryFilters().map((filter) => {
+    const isActive = filter.value === catalogState.category;
+    return `
+    <button class="catalog-filter${isActive ? " is-active" : ""}" type="button" data-category="${filter.value}" aria-pressed="${isActive}">
+      ${escapeHTML(filter.label)}<span class="catalog-filter__count">${filter.count}</span>
     </button>
-  `).join("");
+  `;
+  }).join("");
+
+  updateFilterHint();
 }
 
 function renderProductCard(product) {
   const canQuote = productCanBeQuoted(product);
+  const detailUrl = `product-page.html?id=${encodeURIComponent(product.id)}`;
   const card = document.createElement("article");
   card.className = `product-card${product.imagenPendiente ? " product-card--image-pending" : ""}`;
 
   card.innerHTML = `
     ${product.featured ? '<span class="product-card__badge">Destacado</span>' : ""}
 
-    <div class="product-card__media">
-      <img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.name)}" class="product-card__img" loading="lazy" />
-    </div>
+    <a class="product-card__media product-card__media-link" href="${detailUrl}" aria-label="Ver ${escapeHTML(product.name)}">
+      <img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.name)}" class="product-card__img" loading="lazy" decoding="async" />
+    </a>
 
     <div class="product-card__info">
       <div class="product-card__meta">
@@ -227,7 +272,9 @@ function renderProductCard(product) {
           ${canQuote ? "Disponible" : "Consultar stock"}
         </span>
       </div>
-      <h3 class="product-card__name">${escapeHTML(product.name)}</h3>
+      <h3 class="product-card__name">
+        <a class="product-card__name-link" href="${detailUrl}">${escapeHTML(product.name)}</a>
+      </h3>
       <div class="product-card__price-row">
         <span class="product-card__price">$${formatPrice(product.price)}</span>
         ${product.presentation ? `<span class="product-card__pres">${escapeHTML(product.presentation)}</span>` : ""}
@@ -251,7 +298,7 @@ function renderProductCard(product) {
         ? '<button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>'
         : '<button class="product-card__btn product-card__btn--quote" type="button">Consultar disponibilidad</button>'
       }
-      <button class="product-card__btn product-card__btn--info" type="button">Ver detalles</button>
+      <a class="product-card__btn product-card__btn--info" href="${detailUrl}">Ver detalles</a>
     </div>
   `;
 
@@ -259,7 +306,6 @@ function renderProductCard(product) {
 
   const addBtn = card.querySelector(".product-card__btn--buy");
   const quoteBtn = card.querySelector(".product-card__btn--quote");
-  const detailsBtn = card.querySelector(".product-card__btn--info");
 
   addBtn?.addEventListener("click", () => {
     const originalText = addBtn.textContent;
@@ -274,6 +320,7 @@ function renderProductCard(product) {
     window.consultation?.addItem?.(product, { ...(selectedFlavor || {}), quantity });
     addBtn.textContent = "Agregado";
     addBtn.disabled = true;
+    updateFloatingQuoteVisibility();
 
     window.setTimeout(() => {
       addBtn.textContent = originalText;
@@ -286,14 +333,8 @@ function renderProductCard(product) {
     window.consultation?.askAvailability?.(product, {});
   });
 
-  detailsBtn.addEventListener("click", () => {
-    const url = `product-page.html?id=${encodeURIComponent(product.id)}`;
-    if (window.navigateWithTransition) {
-      window.navigateWithTransition(url);
-      return;
-    }
-    window.location.href = url;
-  });
+  // "Ver detalles" y la imagen/nombre son <a href> reales; la transición la aplica
+  // el handler global de include-nav.js.
 
   return card;
 }
@@ -315,21 +356,105 @@ function renderCatalog() {
 
 function renderLoading() {
   if (!supplementsList || !catalogCount) return;
-  catalogCount.textContent = "Cargando catalogo...";
-  supplementsList.innerHTML = `<p class="catalog-empty">Estamos preparando los productos.</p>`;
+  catalogCount.textContent = "Cargando catálogo…";
+  supplementsList.innerHTML = Array.from({ length: 8 }, () => `
+    <article class="product-card product-card--skeleton" aria-hidden="true">
+      <div class="product-card__media skeleton-box"></div>
+      <div class="product-card__info">
+        <div class="skeleton-line skeleton-line--sm"></div>
+        <div class="skeleton-line skeleton-line--lg"></div>
+        <div class="skeleton-line skeleton-line--price"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line skeleton-line--btn"></div>
+      </div>
+    </article>
+  `).join("");
+}
+
+function injectStructuredData() {
+  if (!products.length) return;
+
+  const itemListElement = products.map((product, index) => {
+    const offers = Number(product.price) > 0
+      ? {
+          "@type": "Offer",
+          price: Number(product.price).toFixed(2),
+          priceCurrency: "USD",
+          availability: productCanBeQuoted(product)
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
+          url: `${SITE_BASE}product-page.html?id=${encodeURIComponent(product.id)}`,
+        }
+      : undefined;
+
+    const item = {
+      "@type": "Product",
+      name: product.name,
+      image: toAbsoluteUrl(product.image),
+      url: `${SITE_BASE}product-page.html?id=${encodeURIComponent(product.id)}`,
+    };
+    if (product.brand) item.brand = { "@type": "Brand", name: product.brand };
+    if (offers) item.offers = offers;
+
+    return { "@type": "ListItem", position: index + 1, item };
+  });
+
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Catálogo de suplementos | Javy Suplementos",
+    itemListElement,
+  };
+
+  let script = document.getElementById("catalog-jsonld");
+  if (!script) {
+    script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = "catalog-jsonld";
+    document.head.appendChild(script);
+  }
+  script.textContent = JSON.stringify(data);
+}
+
+function commitState() {
+  renderCatalog();
+  writeStateToURL();
+}
+
+const debouncedCommit = debounce(commitState, 160);
+
+function writeStateToURL() {
+  const params = new URLSearchParams();
+  if (catalogState.query.trim()) params.set("q", catalogState.query.trim());
+  if (catalogState.category && catalogState.category !== "todos") params.set("cat", catalogState.category);
+  if (catalogState.sort && catalogState.sort !== "recomendados") params.set("sort", catalogState.sort);
+
+  const qs = params.toString();
+  history.replaceState(null, "", qs ? `${location.pathname}?${qs}` : location.pathname);
+}
+
+function readStateFromURL() {
+  const params = new URLSearchParams(location.search);
+  catalogState.query = params.get("q") || "";
+  catalogState.category = params.get("cat") || "todos";
+  catalogState.sort = params.get("sort") || "recomendados";
+
+  if (searchInput) searchInput.value = catalogState.query;
+  if (searchClear) searchClear.hidden = !catalogState.query;
+  if (catalogSort) catalogSort.value = catalogState.sort;
 }
 
 searchForm?.addEventListener("submit", (event) => {
   event.preventDefault();
   catalogState.query = searchInput.value;
   searchClear.hidden = !catalogState.query;
-  renderCatalog();
+  commitState();
 });
 
 searchInput?.addEventListener("input", () => {
   catalogState.query = searchInput.value;
   searchClear.hidden = !catalogState.query;
-  renderCatalog();
+  debouncedCommit();
 });
 
 searchClear?.addEventListener("click", () => {
@@ -337,17 +462,24 @@ searchClear?.addEventListener("click", () => {
   catalogState.query = "";
   searchClear.hidden = true;
   searchInput.focus();
-  renderCatalog();
+  commitState();
+});
+
+catalogSort?.addEventListener("change", () => {
+  catalogState.sort = catalogSort.value;
+  commitState();
 });
 
 function selectCategory(button) {
   catalogState.category = button.dataset.category || "todos";
 
   document.querySelectorAll(".catalog-filter").forEach((item) => {
-    item.classList.toggle("is-active", item === button);
+    const isActive = item === button;
+    item.classList.toggle("is-active", isActive);
+    item.setAttribute("aria-pressed", String(isActive));
   });
 
-  renderCatalog();
+  commitState();
 }
 
 catalogFilters?.addEventListener("click", (event) => {
@@ -364,10 +496,21 @@ emptyAdvisorBtn?.addEventListener("click", () => {
 function updateFloatingQuoteVisibility() {
   if (!catalogFloatingQuote) return;
 
-  const shouldShow = window.scrollY > 260;
+  const hasItems = (window.consultation?.getCount?.() || 0) > 0;
+  const shouldShow = window.scrollY > 260 || hasItems;
   catalogFloatingQuote.hidden = !shouldShow;
   catalogFloatingQuote.classList.toggle("is-visible", shouldShow);
 }
+
+function updateFilterHint() {
+  if (!catalogFilters) return;
+
+  const overflowing = catalogFilters.scrollWidth > catalogFilters.clientWidth + 4;
+  catalogFilters.classList.toggle("has-overflow", overflowing);
+  if (catalogToolsHint) catalogToolsHint.hidden = !overflowing;
+}
+
+window.addEventListener("resize", updateFilterHint, { passive: true });
 
 function updateScrollTopVisibility() {
   if (!catalogScrollTop) return;
@@ -481,8 +624,11 @@ async function initCatalog() {
   updateScrollTopVisibility();
 
   products = await window.catalogDb.getProductsWithFlavors();
+  readStateFromURL();
   renderFilters();
   renderCatalog();
+  injectStructuredData();
+  updateFloatingQuoteVisibility();
 }
 
 initCatalog();
