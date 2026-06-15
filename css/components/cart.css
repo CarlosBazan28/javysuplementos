@@ -100,6 +100,11 @@
 /* el scroll de productos lo lleva la lista; el de checkout, la sección */
 .consultation-panel__checkout {
   overflow-y: auto;
+  scroll-behavior: smooth;
+  scroll-padding-bottom: 16px;
+  /* espacio para que el outline del focus (2px + 2px offset) no se corte */
+  padding: 4px;
+  margin: -4px;
 }
 
 .consultation-section__title {
@@ -353,6 +358,7 @@
   .consultation-panel__checkout {
     border-left: 1px solid rgba(255,255,255,0.08);
     padding-left: 22px;
+    margin-left: 0;
   }
 
   .consultation-panel[data-step] .consultation-nav__back,

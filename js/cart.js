@@ -594,6 +594,14 @@ function createConsultationPanel() {
     if (event.key === "Escape") closePanel();
   });
 
+  // En mobile el teclado virtual reduce el viewport y puede tapar inputs;
+  // al enfocar, scrolleamos el input para que quede visible.
+  panel.querySelector(".consultation-panel__checkout")?.addEventListener("focusin", (event) => {
+    if (event.target.matches("input, select, textarea")) {
+      setTimeout(() => event.target.scrollIntoView({ behavior: "smooth", block: "nearest" }), 350);
+    }
+  });
+
   renderConsultationPanel();
 }
 
