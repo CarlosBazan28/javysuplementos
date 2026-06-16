@@ -303,6 +303,30 @@ function clearConsultation() {
   renderConsultationPanel();
 }
 
+// Confirmación antes de vaciar: evita borrar toda la cotización por accidente.
+function isClearConfirmOpen() {
+  const confirm = document.getElementById("consultationConfirm");
+  return !!confirm && !confirm.hidden;
+}
+
+function showClearConfirm() {
+  const confirm = document.getElementById("consultationConfirm");
+  if (!confirm) return clearConsultation();
+  if (!getConsultation().length) return;
+  confirm.hidden = false;
+  document.getElementById("consultationConfirmCancel")?.focus({ preventScroll: true });
+}
+
+function hideClearConfirm(refocus = true) {
+  const confirm = document.getElementById("consultationConfirm");
+  if (!confirm) return;
+  confirm.hidden = true;
+  if (refocus) {
+    const clearBtn = document.getElementById("consultationClear");
+    if (clearBtn && !clearBtn.disabled) clearBtn.focus({ preventScroll: true });
+  }
+}
+
 function getPanelFieldValue(id) {
   return document.getElementById(id)?.value?.trim() || "";
 }
@@ -563,6 +587,7 @@ function closePanel() {
   const overlay = document.getElementById("consultationOverlay");
   if (!panel || !overlay) return;
 
+  hideClearConfirm(false);
   panel.classList.remove("is-open");
   panel.setAttribute("aria-hidden", "true");
   overlay.hidden = true;
@@ -626,6 +651,17 @@ function createConsultationPanel() {
       </section>
     </div>
 
+    <div class="consultation-confirm" id="consultationConfirm" role="alertdialog" aria-modal="true" aria-labelledby="consultationConfirmTitle" hidden>
+      <div class="consultation-confirm__card">
+        <p class="consultation-confirm__title" id="consultationConfirmTitle">¿Vaciar toda la cotización?</p>
+        <p class="consultation-confirm__text">Se quitarán todos los productos. Esta acción no se puede deshacer.</p>
+        <div class="consultation-confirm__actions">
+          <button class="consultation-confirm__cancel" id="consultationConfirmCancel" type="button">Cancelar</button>
+          <button class="consultation-confirm__accept" id="consultationConfirmAccept" type="button">Sí, vaciar</button>
+        </div>
+      </div>
+    </div>
+
     <div class="consultation-panel__footer">
       <button class="consultation-nav__back" id="consultationBack" type="button">‹ Volver</button>
       <button class="consultation-panel__clear" id="consultationClear" type="button">Vaciar</button>
@@ -642,7 +678,17 @@ function createConsultationPanel() {
 
   overlay.addEventListener("click", closePanel);
   panel.querySelector(".consultation-panel__close")?.addEventListener("click", closePanel);
-  panel.querySelector("#consultationClear")?.addEventListener("click", clearConsultation);
+  panel.querySelector("#consultationClear")?.addEventListener("click", showClearConfirm);
+  panel.querySelector("#consultationConfirmCancel")?.addEventListener("click", () => hideClearConfirm());
+  panel.querySelector("#consultationConfirmAccept")?.addEventListener("click", () => {
+    clearConsultation();
+    hideClearConfirm(false);
+    panel.querySelector(".consultation-panel__close")?.focus({ preventScroll: true });
+  });
+  panel.querySelector("#consultationConfirm")?.addEventListener("click", (event) => {
+    // clic en el fondo (fuera de la tarjeta) = cancelar
+    if (event.target === event.currentTarget) hideClearConfirm();
+  });
   panel.querySelector("#consultationSend")?.addEventListener("click", openWhatsApp);
   panel.querySelector("#consultationNext")?.addEventListener("click", () => goToStep("form"));
   panel.querySelector("#consultationBack")?.addEventListener("click", () => goToStep("products"));
@@ -652,7 +698,10 @@ function createConsultationPanel() {
   });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closePanel();
+    if (event.key !== "Escape") return;
+    // Esc cierra primero el aviso de vaciar; si no, cierra el panel.
+    if (isClearConfirmOpen()) hideClearConfirm();
+    else closePanel();
   });
 
   // En mobile el teclado virtual reduce el viewport y puede tapar inputs;
