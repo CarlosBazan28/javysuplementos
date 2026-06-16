@@ -27,6 +27,14 @@ function hasItem(productId, flavor = "") {
   ));
 }
 
+// Nombres de sabor de este producto que ya están en la cotización (para la nota).
+function getAddedFlavors(productId) {
+  if (!productId) return [];
+  return getConsultation()
+    .filter((item) => item.product_id === productId && item.flavor)
+    .map((item) => item.flavor);
+}
+
 let toastTimerId = null;
 function showToast(message) {
   let toast = document.getElementById("javyToast");
@@ -662,6 +670,7 @@ window.consultation = {
   addItem,
   removeItem,
   hasItem,
+  getAddedFlavors,
   toast: showToast,
   clear: clearConsultation,
   buildMessage: buildConsultationMessage,

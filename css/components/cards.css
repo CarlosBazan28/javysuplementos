@@ -373,6 +373,17 @@
   outline-offset: 2px;
 }
 
+.product-card__added-note {
+  margin: 6px 0 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--cta);
+  opacity: 0.92;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .product-card__actions {
   display: grid;
   grid-template-columns: 1fr;

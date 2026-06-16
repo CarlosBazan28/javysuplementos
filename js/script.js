@@ -109,14 +109,41 @@ function setAddButtonState(button, added) {
   button.textContent = added ? "✓ En cotización" : "Agregar a cotización";
 }
 
-// Sincroniza el botón de una card con el estado real de la cotización
-// (según el sabor seleccionado, si el producto tiene sabores).
+// Sincroniza la card con el estado real de la cotización: botón según el sabor
+// seleccionado, nota con los sabores ya agregados y ✓ en la lista de sabores.
 function syncAddButton(card, product) {
   const button = card.querySelector(".product-card__btn--buy");
   if (!button) return;
+
   const selected = getSelectedFlavor(card, product, false);
   const flavorName = selected ? selected.flavor : "";
   setAddButtonState(button, !!window.consultation?.hasItem?.(product.id, flavorName));
+
+  // Nota: "En tu cotización: Chocolate, Vainilla"
+  const note = card.querySelector("[data-added-note]");
+  if (note) {
+    const added = window.consultation?.getAddedFlavors?.(product.id) || [];
+    if (added.length) {
+      note.textContent = `En tu cotización: ${added.join(", ")}`;
+      note.hidden = false;
+    } else {
+      note.textContent = "";
+      note.hidden = true;
+    }
+  }
+
+  // ✓ en los sabores ya agregados.
+  const select = card.querySelector("[data-flavor-select]");
+  if (select && product.flavors?.length) {
+    Array.from(select.options).forEach((opt) => {
+      if (!opt.value) return; // placeholder
+      const f = product.flavors.find((item) => item.id === opt.value);
+      if (!f) return;
+      const unavailable = f.available === false ? " — No disponible" : "";
+      const inCart = window.consultation?.hasItem?.(product.id, f.name) ? " ✓" : "";
+      opt.textContent = `${f.name}${unavailable}${inCart}`;
+    });
+  }
 }
 
 function syncAllAddButtons() {
@@ -183,6 +210,7 @@ function renderFeaturedProducts(productos) {
             ${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}
           </select>
         </div>
+        <p class="product-card__added-note" data-added-note hidden></p>
       </div>
 
       <div class="product-card__actions product-card__actions--catalog">
@@ -208,13 +236,13 @@ function renderFeaturedProducts(productos) {
 
       const flavorName = selectedFlavor?.flavor || "";
       if (window.consultation?.hasItem?.(product.id, flavorName)) {
-        window.consultation?.toast?.("Ya está en tu cotización");
+        window.consultation?.toast?.(flavorName ? "Ese sabor ya está en tu cotización" : "Ya está en tu cotización");
         return;
       }
 
       const quantity = getCardQuantity(card);
       window.consultation?.addItem?.(product, { ...(selectedFlavor || {}), quantity });
-      setAddButtonState(btnConsulta, true);
+      syncAddButton(card, product);
     });
 
     // El estado del botón depende del sabor elegido: re-sincroniza al cambiarlo.

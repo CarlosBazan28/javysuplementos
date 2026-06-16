@@ -193,7 +193,7 @@ async function initProductPage() {
   const addCtas = Array.from(document.querySelectorAll("[data-add-cta]"));
 
   if (canQuote) {
-    // Estado persistente: refleja si el producto (con el sabor elegido) ya está en la cotización.
+    // Estado por sabor + nota con sabores agregados + ✓ en la lista de sabores.
     const syncPdpButtons = () => {
       const selected = getSelectedFlavor(product, false);
       const flavorName = selected ? selected.flavor : "";
@@ -202,6 +202,32 @@ async function initProductPage() {
         btn.classList.toggle("is-added", added);
         btn.textContent = added ? "✓ En cotización" : "Agregar a cotización";
       });
+
+      // Nota: "En tu cotización: Chocolate, Vainilla"
+      const note = document.querySelector("[data-added-note]");
+      if (note) {
+        const addedFlavors = window.consultation?.getAddedFlavors?.(product.id) || [];
+        if (addedFlavors.length) {
+          note.textContent = `En tu cotización: ${addedFlavors.join(", ")}`;
+          note.hidden = false;
+        } else {
+          note.textContent = "";
+          note.hidden = true;
+        }
+      }
+
+      // ✓ en los sabores ya agregados.
+      const select = document.getElementById("prod-flavor-select");
+      if (select && product.flavors?.length) {
+        Array.from(select.options).forEach((opt) => {
+          if (!opt.value) return; // placeholder
+          const f = product.flavors.find((item) => item.id === opt.value);
+          if (!f) return;
+          const unavailable = f.available === false ? " - No disponible" : "";
+          const inCart = window.consultation?.hasItem?.(product.id, f.name) ? " ✓" : "";
+          opt.textContent = `${f.name}${unavailable}${inCart}`;
+        });
+      }
     };
 
     addCtas.forEach((btn) => {
@@ -216,7 +242,7 @@ async function initProductPage() {
 
         const flavorName = selectedFlavor?.flavor || "";
         if (window.consultation?.hasItem?.(product.id, flavorName)) {
-          window.consultation?.toast?.("Ya está en tu cotización");
+          window.consultation?.toast?.(flavorName ? "Ese sabor ya está en tu cotización" : "Ya está en tu cotización");
           return;
         }
 

@@ -287,6 +287,13 @@
 
 /* ---------- Hint ---------- */
 
+.pdp__added-note {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--cta);
+}
+
 .pdp__hint {
   margin: 0;
   font-size: 0.82rem;
