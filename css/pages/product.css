@@ -278,6 +278,13 @@
   color: #e9f6ff;
 }
 
+/* Cantidad como lista: en desktop se usa el stepper; en mobile esta lista
+   (hereda altura/estilo de .pdp__select para quedar a juego con Sabores). */
+.pdp__qty-select {
+  display: none;
+  min-width: 84px;
+}
+
 /* ---------- Hint ---------- */
 
 .pdp__hint {
@@ -576,6 +583,15 @@
 @media (max-width: 767px) {
   .pdp {
     padding-bottom: calc(96px + env(safe-area-inset-bottom)); /* espacio para barra fija + home indicator */
+  }
+
+  /* Mobile: cantidad como lista desplegable, a juego con el select de sabores */
+  .pdp__stepper {
+    display: none;
+  }
+
+  .pdp__qty-select {
+    display: block;
   }
 
   .pdp__hide-mobile {

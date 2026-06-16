@@ -80,6 +80,10 @@ function wireQuantityStepper(onChange) {
 }
 
 function getQuantity() {
+  if (window.matchMedia("(max-width: 767px)").matches) {
+    const select = document.querySelector("[data-qty-select]");
+    if (select) return Math.max(1, parseInt(select.value, 10) || 1);
+  }
   return Math.max(1, parseInt(document.querySelector("[data-qty-value]")?.textContent, 10) || 1);
 }
 
@@ -178,6 +182,7 @@ async function initProductPage() {
   };
 
   wireQuantityStepper(updateBarSub);
+  document.querySelector("[data-qty-select]")?.addEventListener("change", updateBarSub);
   document.getElementById("prod-flavor-select")?.addEventListener("change", () => {
     document.getElementById("prod-flavor-select")?.classList.remove("needs-selection");
     updateBarSub();
