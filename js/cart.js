@@ -213,28 +213,35 @@ function renderConsultationPanel() {
   }
 
   items.forEach((item, index) => {
+    const unit = Number(item.price);
+    const qty = Number(item.quantity || 1);
+    const presentation = getDisplayPresentation(item).trim();
+    const priceLine = unit > 0
+      ? (qty > 1
+          ? `${formatPrice(unit)} c/u · <strong>${formatPrice(unit * qty)}</strong>`
+          : formatPrice(unit))
+      : "Consultar";
+
     const row = document.createElement("li");
     row.className = "consultation-item";
     row.innerHTML = `
       <img src="${escapeHTML(item.image)}" alt="${escapeHTML(item.name)}" class="consultation-item__img" />
       <div class="consultation-item__info">
-        <strong>${escapeHTML(item.name)}</strong>
-        <span>${escapeHTML(item.brand || "Producto")} · ${escapeHTML(item.category || "Categoria por confirmar")}</span>
-        <span>${escapeHTML(item.presentation || "Presentacion por confirmar")} · ${formatPrice(item.price)}</span>
-        ${item.flavor ? `<span>Sabor: ${escapeHTML(item.flavor)}</span>` : ""}
-        <label class="consultation-item__quantity">
-          Cantidad
-          <select class="consultation-item__qty-select" data-quote-quantity="${index}" aria-label="Cantidad">
-            ${Array.from({ length: Math.max(12, item.quantity) }, (_, i) => {
-              const value = i + 1;
-              return `<option value="${value}"${value === item.quantity ? " selected" : ""}>${value}</option>`;
-            }).join("")}
-          </select>
-          <input class="consultation-item__qty-input" type="number" min="1" step="1" value="${item.quantity}" data-quote-quantity="${index}" />
-        </label>
+        <strong class="consultation-item__name">${escapeHTML(item.name)}</strong>
+        <span class="consultation-item__meta">${escapeHTML(item.brand || "Producto")} · ${escapeHTML(item.category || "Categoria por confirmar")}</span>
+        <span class="consultation-item__price">${presentation ? escapeHTML(presentation) + " · " : ""}${priceLine}</span>
+        ${item.flavor ? `<span class="consultation-item__flavor">${escapeHTML(item.flavor)}</span>` : ""}
+        <div class="consultation-item__quantity">
+          <span class="consultation-item__quantity-label">Cantidad</span>
+          <div class="consultation-item__stepper" role="group" aria-label="Cantidad de ${escapeHTML(item.name)}">
+            <button class="consultation-item__step" type="button" data-quote-step="-1" aria-label="Quitar uno"${qty <= 1 ? " disabled" : ""}>&minus;</button>
+            <span class="consultation-item__qty" aria-live="polite">${qty}</span>
+            <button class="consultation-item__step" type="button" data-quote-step="1" aria-label="Agregar uno">+</button>
+          </div>
+        </div>
       </div>
       <button class="consultation-item__remove" type="button" aria-label="Quitar ${escapeHTML(item.name)}">
-        Quitar
+        <span class="btn-icon" data-javy-icon="trash"></span>
       </button>
     `;
 
@@ -242,14 +249,16 @@ function renderConsultationPanel() {
       removeItem(index);
     });
 
-    row.querySelectorAll("[data-quote-quantity]").forEach((control) => {
-      control.addEventListener("change", (event) => {
-        updateQuantity(index, event.target.value);
+    row.querySelectorAll("[data-quote-step]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        updateQuantity(index, qty + Number(btn.dataset.quoteStep));
       });
     });
 
     list.appendChild(row);
   });
+
+  window.javyIcons?.enhance?.(list);
 }
 
 function addItem(productOrId, options = {}) {
