@@ -13,6 +13,42 @@ function readStorage(key) {
 
 function saveConsultation(items) {
   localStorage.setItem(CONSULTATION_KEY, JSON.stringify(items));
+  // Punto único por donde pasan add/remove/updateQuantity/clear: avisamos a la UI
+  // (cards, detalle) para que sincronicen el estado de sus botones.
+  document.dispatchEvent(new CustomEvent("consultation:change", { detail: { items } }));
+}
+
+// ¿Este producto (con este sabor) ya está en la cotización?
+// La identidad coincide con la de addItem(): product_id + flavor (nombre).
+function hasItem(productId, flavor = "") {
+  if (!productId) return false;
+  return getConsultation().some((item) => (
+    item.product_id === productId && (item.flavor || "") === (flavor || "")
+  ));
+}
+
+let toastTimerId = null;
+function showToast(message) {
+  let toast = document.getElementById("javyToast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "javyToast";
+    toast.className = "javy-toast";
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
+    document.body.appendChild(toast);
+  }
+
+  toast.textContent = String(message || "");
+  // Reinicia la animación si ya estaba visible.
+  toast.classList.remove("is-visible");
+  void toast.offsetWidth;
+  toast.classList.add("is-visible");
+
+  window.clearTimeout(toastTimerId);
+  toastTimerId = window.setTimeout(() => {
+    toast.classList.remove("is-visible");
+  }, 2200);
 }
 
 function getLegacyProductSnapshot(id) {
@@ -180,7 +216,13 @@ function renderConsultationPanel() {
         ${item.flavor ? `<span>Sabor: ${escapeHTML(item.flavor)}</span>` : ""}
         <label class="consultation-item__quantity">
           Cantidad
-          <input type="number" min="1" step="1" value="${item.quantity}" data-quote-quantity="${index}" />
+          <select class="consultation-item__qty-select" data-quote-quantity="${index}" aria-label="Cantidad">
+            ${Array.from({ length: Math.max(12, item.quantity) }, (_, i) => {
+              const value = i + 1;
+              return `<option value="${value}"${value === item.quantity ? " selected" : ""}>${value}</option>`;
+            }).join("")}
+          </select>
+          <input class="consultation-item__qty-input" type="number" min="1" step="1" value="${item.quantity}" data-quote-quantity="${index}" />
         </label>
       </div>
       <button class="consultation-item__remove" type="button" aria-label="Quitar ${escapeHTML(item.name)}">
@@ -192,8 +234,10 @@ function renderConsultationPanel() {
       removeItem(index);
     });
 
-    row.querySelector("[data-quote-quantity]")?.addEventListener("change", (event) => {
-      updateQuantity(index, event.target.value);
+    row.querySelectorAll("[data-quote-quantity]").forEach((control) => {
+      control.addEventListener("change", (event) => {
+        updateQuantity(index, event.target.value);
+      });
     });
 
     list.appendChild(row);
@@ -617,6 +661,8 @@ window.consultation = {
   updateBadge: updateConsultationBadge,
   addItem,
   removeItem,
+  hasItem,
+  toast: showToast,
   clear: clearConsultation,
   buildMessage: buildConsultationMessage,
   openWhatsApp,

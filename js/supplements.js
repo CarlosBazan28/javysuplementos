@@ -207,6 +207,36 @@ function wireQuantityStepper(card) {
   });
 }
 
+function setAddButtonState(button, added) {
+  if (!button) return;
+  button.classList.toggle("is-added", added);
+  button.textContent = added ? "✓ En cotización" : "Agregar a cotización";
+}
+
+// Sincroniza el botón de una card con el estado real de la cotización
+// (según el sabor seleccionado, si el producto tiene sabores).
+function syncAddButton(card, product) {
+  const button = card.querySelector(".product-card__btn--buy");
+  if (!button) return;
+  const selected = getSelectedFlavor(card, product, false);
+  const flavorName = selected ? selected.flavor : "";
+  setAddButtonState(button, !!window.consultation?.hasItem?.(product.id, flavorName));
+}
+
+function syncAllAddButtons() {
+  document.querySelectorAll(".product-card").forEach((card) => {
+    if (card._javyProduct) syncAddButton(card, card._javyProduct);
+  });
+}
+
+let consultationSyncBound = false;
+function bindConsultationSync() {
+  if (consultationSyncBound) return;
+  consultationSyncBound = true;
+  // Un único listener por página evita fugas al re-filtrar el catálogo.
+  document.addEventListener("consultation:change", syncAllAddButtons);
+}
+
 function getCardQuantity(card) {
   if (window.matchMedia("(max-width: 767px)").matches) {
     const select = card.querySelector("[data-qty-select]");
@@ -303,30 +333,36 @@ function renderProductCard(product) {
   `;
 
   wireQuantityStepper(card);
+  card._javyProduct = product;
 
   const addBtn = card.querySelector(".product-card__btn--buy");
   const quoteBtn = card.querySelector(".product-card__btn--quote");
 
   addBtn?.addEventListener("click", () => {
-    const originalText = addBtn.textContent;
     const selectedFlavor = getSelectedFlavor(card, product);
     if (product.flavors?.length && !selectedFlavor) {
       addBtn.textContent = "Elige sabor";
-      window.setTimeout(() => { addBtn.textContent = originalText; }, 1200);
+      window.setTimeout(() => { syncAddButton(card, product); }, 1200);
+      return;
+    }
+
+    const flavorName = selectedFlavor?.flavor || "";
+    if (window.consultation?.hasItem?.(product.id, flavorName)) {
+      window.consultation?.toast?.("Ya está en tu cotización");
       return;
     }
 
     const quantity = getCardQuantity(card);
     window.consultation?.addItem?.(product, { ...(selectedFlavor || {}), quantity });
-    addBtn.textContent = "Agregado";
-    addBtn.disabled = true;
+    setAddButtonState(addBtn, true);
     updateFloatingQuoteVisibility();
-
-    window.setTimeout(() => {
-      addBtn.textContent = originalText;
-      addBtn.disabled = false;
-    }, 1200);
   });
+
+  // El estado del botón depende del sabor elegido: re-sincroniza al cambiarlo.
+  card.querySelector("[data-flavor-select]")?.addEventListener("change", () => {
+    syncAddButton(card, product);
+  });
+  syncAddButton(card, product);
 
   // El botón "Consultar disponibilidad" solo se renderiza cuando !canQuote
   quoteBtn?.addEventListener("click", () => {
@@ -344,6 +380,7 @@ function renderCatalog() {
 
   const results = getFilteredProducts();
   supplementsList.innerHTML = "";
+  bindConsultationSync();
 
   results.forEach((product) => {
     supplementsList.appendChild(renderProductCard(product));

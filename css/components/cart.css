@@ -185,7 +185,9 @@
   font-weight: 500;
 }
 
-.consultation-item__quantity input {
+/* Cantidad: por defecto (mobile) lista desplegable; el input numérico se muestra en desktop */
+.consultation-item__qty-input {
+  display: none;
   width: 64px;
   min-height: 34px;
   border: 1px solid rgba(255,255,255,0.12);
@@ -194,6 +196,25 @@
   color: #fff;
   font: inherit;
   padding: 0 8px;
+}
+
+.consultation-item__qty-select {
+  display: inline-block;
+  min-height: 34px;
+  min-width: 64px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  background: #101724;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+  padding: 0 26px 0 10px;
+}
+
+.consultation-item__qty-input:focus-visible,
+.consultation-item__qty-select:focus-visible {
+  outline: 2px solid rgba(1,145,198,0.7);
+  outline-offset: 2px;
 }
 
 .consultation-item__remove {
@@ -343,6 +364,15 @@
     width: min(880px, 100%);
   }
 
+  /* En desktop la cantidad se edita textualmente (input numérico) */
+  .consultation-item__qty-select {
+    display: none;
+  }
+
+  .consultation-item__qty-input {
+    display: inline-block;
+  }
+
   .consultation-panel__body {
     display: grid;
     grid-template-columns: 1.05fr 0.95fr;
@@ -386,5 +416,39 @@
   .consultation-item__remove {
     grid-column: 1 / -1;
     min-height: 40px;
+  }
+}
+
+/* Toast: aviso breve (p. ej. "Ya está en tu cotización") */
+.javy-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translate(-50%, 16px);
+  z-index: 1200;
+  max-width: min(90vw, 360px);
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: rgba(16, 23, 36, 0.96);
+  border: 1px solid rgba(0, 230, 118, 0.45);
+  color: #e9f6ff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.javy-toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .javy-toast {
+    transition: opacity 0.15s ease;
+    transform: translate(-50%, 0);
   }
 }

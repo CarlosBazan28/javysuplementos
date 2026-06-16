@@ -311,6 +311,19 @@
   box-shadow: 0 8px 24px rgba(0, 200, 83, 0.4);
 }
 
+/* Estado persistente cuando el producto ya está en la cotización */
+.pdp__cta.is-added {
+  background: transparent;
+  color: var(--cta);
+  border: 1px solid var(--cta);
+  box-shadow: none;
+}
+
+.pdp__cta.is-added:hover {
+  background: rgba(0, 230, 118, 0.1);
+  box-shadow: none;
+}
+
 .pdp__cta:active {
   transform: translateY(1px);
 }

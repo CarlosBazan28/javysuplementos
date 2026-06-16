@@ -103,15 +103,34 @@ function getCardQuantity(card) {
   return Math.max(1, parseInt(card.querySelector("[data-qty-value]")?.textContent, 10) || 1);
 }
 
-function showAddedState(button) {
-  const originalText = button.textContent;
-  button.textContent = "Agregado";
-  button.disabled = true;
+function setAddButtonState(button, added) {
+  if (!button) return;
+  button.classList.toggle("is-added", added);
+  button.textContent = added ? "✓ En cotización" : "Agregar a cotización";
+}
 
-  window.setTimeout(() => {
-    button.textContent = originalText;
-    button.disabled = false;
-  }, 1200);
+// Sincroniza el botón de una card con el estado real de la cotización
+// (según el sabor seleccionado, si el producto tiene sabores).
+function syncAddButton(card, product) {
+  const button = card.querySelector(".product-card__btn--buy");
+  if (!button) return;
+  const selected = getSelectedFlavor(card, product, false);
+  const flavorName = selected ? selected.flavor : "";
+  setAddButtonState(button, !!window.consultation?.hasItem?.(product.id, flavorName));
+}
+
+function syncAllAddButtons() {
+  document.querySelectorAll(".product-card").forEach((card) => {
+    if (card._javyProduct) syncAddButton(card, card._javyProduct);
+  });
+}
+
+let consultationSyncBound = false;
+function bindConsultationSync() {
+  if (consultationSyncBound) return;
+  consultationSyncBound = true;
+  // Un único listener por página evita fugas al re-renderizar la lista.
+  document.addEventListener("consultation:change", syncAllAddButtons);
 }
 
 function renderFeaturedProducts(productos) {
@@ -127,6 +146,7 @@ function renderFeaturedProducts(productos) {
   }
 
   lista.innerHTML = "";
+  bindConsultationSync();
 
   productos.forEach((product) => {
     const canQuote = productCanBeQuoted(product);
@@ -175,21 +195,33 @@ function renderFeaturedProducts(productos) {
     `;
 
     wireQuantityStepper(card);
+    card._javyProduct = product;
 
     const btnConsulta = card.querySelector(".product-card__btn--buy");
     btnConsulta?.addEventListener("click", () => {
-      const originalText = btnConsulta.textContent;
       const selectedFlavor = getSelectedFlavor(card, product);
       if (product.flavors?.length && !selectedFlavor) {
         btnConsulta.textContent = "Elige sabor";
-        window.setTimeout(() => { btnConsulta.textContent = originalText; }, 1200);
+        window.setTimeout(() => { syncAddButton(card, product); }, 1200);
+        return;
+      }
+
+      const flavorName = selectedFlavor?.flavor || "";
+      if (window.consultation?.hasItem?.(product.id, flavorName)) {
+        window.consultation?.toast?.("Ya está en tu cotización");
         return;
       }
 
       const quantity = getCardQuantity(card);
       window.consultation?.addItem?.(product, { ...(selectedFlavor || {}), quantity });
-      showAddedState(btnConsulta);
+      setAddButtonState(btnConsulta, true);
     });
+
+    // El estado del botón depende del sabor elegido: re-sincroniza al cambiarlo.
+    card.querySelector("[data-flavor-select]")?.addEventListener("change", () => {
+      syncAddButton(card, product);
+    });
+    syncAddButton(card, product);
 
     // El botón "Consultar disponibilidad" solo se renderiza cuando !canQuote
     const btnQuote = card.querySelector(".product-card__btn--quote");

@@ -188,27 +188,43 @@ async function initProductPage() {
   const addCtas = Array.from(document.querySelectorAll("[data-add-cta]"));
 
   if (canQuote) {
+    // Estado persistente: refleja si el producto (con el sabor elegido) ya está en la cotización.
+    const syncPdpButtons = () => {
+      const selected = getSelectedFlavor(product, false);
+      const flavorName = selected ? selected.flavor : "";
+      const added = !!window.consultation?.hasItem?.(product.id, flavorName);
+      addCtas.forEach((btn) => {
+        btn.classList.toggle("is-added", added);
+        btn.textContent = added ? "✓ En cotización" : "Agregar a cotización";
+      });
+    };
+
     addCtas.forEach((btn) => {
       btn.hidden = false;
-      const original = btn.textContent;
       btn.addEventListener("click", () => {
         const selectedFlavor = getSelectedFlavor(product);
         if (product.flavors?.length && !selectedFlavor) {
           btn.textContent = "Elige un sabor";
-          window.setTimeout(() => { btn.textContent = original; }, 1200);
+          window.setTimeout(syncPdpButtons, 1200);
+          return;
+        }
+
+        const flavorName = selectedFlavor?.flavor || "";
+        if (window.consultation?.hasItem?.(product.id, flavorName)) {
+          window.consultation?.toast?.("Ya está en tu cotización");
           return;
         }
 
         const quantity = getQuantity();
         window.consultation?.addItem?.(product, { ...(selectedFlavor || {}), quantity });
-        btn.textContent = "Agregado a cotización";
-        btn.disabled = true;
-        window.setTimeout(() => {
-          btn.textContent = original;
-          btn.disabled = false;
-        }, 1400);
+        syncPdpButtons();
       });
     });
+
+    // El estado depende del sabor elegido y de cambios hechos desde el panel.
+    document.getElementById("prod-flavor-select")?.addEventListener("change", syncPdpButtons);
+    document.addEventListener("consultation:change", syncPdpButtons);
+    syncPdpButtons();
   } else {
     addCtas.forEach((btn) => {
       btn.textContent = "Consultar disponibilidad";
