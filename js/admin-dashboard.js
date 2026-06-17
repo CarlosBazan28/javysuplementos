@@ -777,7 +777,10 @@
       form.elements.description_long.value = product.description_long || product.description || "";
       form.elements.price.value = product.price || "";
       form.elements.old_price.value = product.old_price || "";
-      form.elements.image_url.value = product.image_url === PLACEHOLDER_IMAGE ? "" : product.image_url || "";
+      // Imagen CRUDA de la BD (no la resuelta con fallback local), para no
+      // sobreescribir la URL real al guardar sin tocar la imagen.
+      const storedImage = product.stored_image_url ?? product.image_url;
+      form.elements.image_url.value = storedImage === PLACEHOLDER_IMAGE ? "" : storedImage || "";
       form.elements.label.value = product.label || "";
       form.elements.home_order.value = product.home_order || "";
       form.elements.tags.value = listToInput(product.tags);
@@ -895,11 +898,8 @@
     if (!product) return;
 
     try {
-      await window.catalogDb.updateProduct(productId, {
-        ...product,
-        is_available: product.available === false,
-        available: product.available === false,
-      });
+      // Update parcial de solo disponibilidad: no reescribe imagen/slug/precio.
+      await window.catalogDb.setProductAvailability(productId, product.available === false);
       await refreshAfterMutation("Disponibilidad actualizada.");
     } catch (error) {
       showToast(error.message, "error");
@@ -1058,32 +1058,32 @@
     });
     window.addEventListener("resize", unlockFilterScrollIfNeeded);
 
-    els.loadMoreBtn.addEventListener("click", () => {
+    els.loadMoreBtn?.addEventListener("click", () => {
       state.visibleCount += PAGE_SIZE;
       renderProducts();
     });
 
     els.newProductBtn?.addEventListener("click", () => openProductDrawer());
-    els.productForm.addEventListener("submit", handleProductSubmit);
-    els.deleteProductBtn.addEventListener("click", deleteSelectedProduct);
+    els.productForm?.addEventListener("submit", handleProductSubmit);
+    els.deleteProductBtn?.addEventListener("click", deleteSelectedProduct);
     els.seedBtn?.addEventListener("click", seedProducts);
-    els.saveHomeBtn.addEventListener("click", saveHomeProducts);
+    els.saveHomeBtn?.addEventListener("click", saveHomeProducts);
 
     document.querySelectorAll("[data-close-product-drawer]").forEach((item) => {
       item.addEventListener("click", closeProductDrawer);
     });
 
-    els.productForm.elements.image_url.addEventListener("input", () => {
+    els.productForm?.elements.image_url.addEventListener("input", () => {
       els.imagePreview.src = els.productForm.elements.image_url.value || PLACEHOLDER_IMAGE;
     });
 
-    els.productForm.elements.image_file.addEventListener("change", () => {
+    els.productForm?.elements.image_file.addEventListener("change", () => {
       const file = els.productForm.elements.image_file.files?.[0];
       if (!file) return;
       els.imagePreview.src = URL.createObjectURL(file);
     });
 
-    els.logoutBtn.addEventListener("click", async () => {
+    els.logoutBtn?.addEventListener("click", async () => {
       await supabaseClient.auth.signOut();
       showToast("Sesion cerrada correctamente.");
       window.setTimeout(() => { window.location.href = "index.html"; }, 500);
@@ -1183,7 +1183,7 @@
       }
     });
 
-    els.variantProductSelect.addEventListener("change", () => {
+    els.variantProductSelect?.addEventListener("change", () => {
       state.variantProductId = els.variantProductSelect.value;
       renderVariants();
     });

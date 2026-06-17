@@ -228,6 +228,9 @@ function normalizeProductFromDb(product) {
     presentation,
     image,
     image_url: image,
+    // Imagen tal cual está guardada en la BD, sin el fallback a imagen local.
+    // El admin debe editar/persistir ESTO, no el `image` resuelto para mostrar.
+    stored_image_url: remoteImage,
     description: descriptionText,
     description_short: descriptionShort,
     description_long: descriptionText,
@@ -588,6 +591,28 @@ async function updateProduct(id, productData) {
   return normalizeProductFromDb(data);
 }
 
+// Update parcial: toca SOLO las columnas de disponibilidad. No pasa por
+// mapProductToDb, así que no reescribe imagen, slug ni precio_centavos.
+async function setProductAvailability(id, available) {
+  ensureSupabaseForWrite();
+  const isAvailable = Boolean(available);
+  const { data, error } = await supabaseClient
+    .from("products")
+    .update({
+      available: isAvailable,
+      is_available: isAvailable,
+      is_active: isAvailable,
+      tag: isAvailable ? "Disponible" : "Consultar stock",
+    })
+    .eq("id", id)
+    .select(PRODUCT_BASE_SELECT)
+    .single();
+
+  if (error) throw error;
+  productsCache = null;
+  return normalizeProductFromDb(data);
+}
+
 async function deleteProduct(id) {
   ensureSupabaseForWrite();
   const { error } = await supabaseClient.from("products").delete().eq("id", id);
@@ -727,6 +752,7 @@ window.catalogDb = {
   uploadProductImage,
   createProduct,
   updateProduct,
+  setProductAvailability,
   deleteProduct,
   createFlavor,
   updateFlavor,
