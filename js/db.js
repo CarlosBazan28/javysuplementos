@@ -54,6 +54,7 @@ const PRODUCT_SELECT = `
 
 const DB_PLACEHOLDER_IMAGE = "img/products/product-placeholder.svg";
 const PRODUCT_IMAGE_BUCKET = "product-images";
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 const DEFAULT_CATEGORIES = [
   { name: "Proteinas", slug: "proteinas", sort_order: 1 },
@@ -543,6 +544,15 @@ async function uploadProductImage(file) {
   ensureSupabaseForWrite();
   if (!file) return "";
 
+  // Validar antes de subir: el bucket es público y la extensión del nombre
+  // es falsificable, así que comprobamos el tipo MIME real y el tamaño.
+  if (!file.type || !file.type.startsWith("image/")) {
+    throw new Error("El archivo debe ser una imagen (JPG, PNG o WebP).");
+  }
+  if (file.size > MAX_IMAGE_BYTES) {
+    throw new Error("La imagen supera el límite de 5 MB. Optimízala antes de subirla.");
+  }
+
   const extension = file.name.split(".").pop()?.toLowerCase() || "webp";
   const safeName = createSlug(file.name.replace(/\.[^.]+$/, "")) || "producto";
   const path = `${Date.now()}-${safeName}.${extension}`;
@@ -558,6 +568,22 @@ async function uploadProductImage(file) {
 
   const { data } = supabaseClient.storage.from(PRODUCT_IMAGE_BUCKET).getPublicUrl(path);
   return data?.publicUrl || "";
+}
+
+// Borra del bucket una imagen recién subida cuya URL pública conocemos.
+// Se usa para limpiar huérfanas cuando el guardado del producto falla
+// después de haber subido la imagen. Best-effort: no propaga errores.
+async function removeProductImage(publicUrl) {
+  if (!publicUrl) return;
+  const marker = `/${PRODUCT_IMAGE_BUCKET}/`;
+  const idx = publicUrl.indexOf(marker);
+  if (idx === -1) return; // no es una URL de nuestro bucket (p.ej. imagen externa)
+  const path = decodeURIComponent(publicUrl.slice(idx + marker.length));
+  try {
+    await supabaseClient.storage.from(PRODUCT_IMAGE_BUCKET).remove([path]);
+  } catch (_) {
+    // Silencioso: limpiar la huérfana es secundario al error original.
+  }
 }
 
 async function createProduct(productData) {
@@ -750,6 +776,7 @@ window.catalogDb = {
   getHomeProducts,
   updateHomeProducts,
   uploadProductImage,
+  removeProductImage,
   createProduct,
   updateProduct,
   setProductAvailability,

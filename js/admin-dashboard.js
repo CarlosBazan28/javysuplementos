@@ -7,6 +7,7 @@
     categories: [],
     currentSection: "dashboard",
     selectedProductId: null,
+    imageObjectUrl: null,
     variantProductId: null,
     homeIds: [],
     visibleCount: PAGE_SIZE,
@@ -801,10 +802,18 @@
     form.elements.name.focus();
   }
 
+  function releaseImageObjectUrl() {
+    if (state.imageObjectUrl) {
+      URL.revokeObjectURL(state.imageObjectUrl);
+      state.imageObjectUrl = null;
+    }
+  }
+
   function closeProductDrawer() {
     els.drawer.hidden = true;
     els.drawer.setAttribute("aria-hidden", "true");
     state.selectedProductId = null;
+    releaseImageObjectUrl();
   }
 
   function collectProductFormData() {
@@ -849,12 +858,16 @@
       return;
     }
 
+    // URL de una imagen subida en ESTE envío; si la mutación falla después,
+    // la borramos para no dejar basura huérfana en el bucket.
+    let uploadedImageUrl = "";
     try {
       setButtonLoading(submitBtn, true);
       setFormMessage("Guardando producto...");
 
       if (imageFile) {
-        productData.image_url = await window.catalogDb.uploadProductImage(imageFile);
+        uploadedImageUrl = await window.catalogDb.uploadProductImage(imageFile);
+        productData.image_url = uploadedImageUrl;
       }
 
       if (state.selectedProductId) {
@@ -867,6 +880,9 @@
       await refreshAfterMutation("Producto guardado correctamente.");
       closeProductDrawer();
     } catch (error) {
+      if (uploadedImageUrl) {
+        await window.catalogDb.removeProductImage(uploadedImageUrl);
+      }
       setFormMessage(error.message, true);
       showToast("Error al guardar el producto.", "error");
     } finally {
@@ -1080,7 +1096,10 @@
     els.productForm?.elements.image_file.addEventListener("change", () => {
       const file = els.productForm.elements.image_file.files?.[0];
       if (!file) return;
-      els.imagePreview.src = URL.createObjectURL(file);
+      // Revocar el object URL anterior antes de crear el siguiente (evita fuga).
+      releaseImageObjectUrl();
+      state.imageObjectUrl = URL.createObjectURL(file);
+      els.imagePreview.src = state.imageObjectUrl;
     });
 
     els.logoutBtn?.addEventListener("click", async () => {
