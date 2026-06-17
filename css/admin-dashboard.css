@@ -6,8 +6,8 @@
   --admin-line-strong: rgba(255, 255, 255, 0.15);
   --admin-text: #e9eef7;
   --admin-muted: #a9b4c6;
-  --admin-blue: #5ab4e9;
-  --admin-green: #08e063;
+  --admin-blue: var(--accent); /* tokens.css → #5ab4e9 */
+  --admin-green: var(--cta); /* tokens.css → verde de marca #00e676 */
   --admin-red: #ff4f76;
   --admin-warning: #ffd166;
   --admin-shadow: 0 20px 55px rgba(0, 0, 0, 0.48);
@@ -483,7 +483,7 @@ button.admin-stat:focus-visible {
 }
 
 .admin-filter-toggle {
-  min-height: 42px;
+  min-height: 44px;
   position: relative;
 }
 
@@ -1119,6 +1119,18 @@ button.admin-stat:focus-visible {
   .admin-dashboard {
     grid-template-columns: 1fr;
     padding-bottom: 78px;
+  }
+
+  /* La tab-bar inferior (~72px) tapaba estos: súbelos por encima. */
+  .admin-toast-region {
+    right: 14px;
+    left: 14px;
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+  }
+
+  .admin-sticky-actions {
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
   }
 
   .admin-sidebar {

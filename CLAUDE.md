@@ -26,7 +26,7 @@ por **WhatsApp**. El cierre de venta es manual, por chat.
   tokens.css          variables CSS de marca (--brand, --neon, etc.)
   styles.css          global + hero
   base.css            reset
-  admin-dashboard.css, admin.css
+  admin-dashboard.css
 /js                   lógica de cliente (ver abajo)
 /img                  /products, /images, /icons, /testimonials (preferir .webp)
 /supabase/schema.sql  esquema de la base de datos

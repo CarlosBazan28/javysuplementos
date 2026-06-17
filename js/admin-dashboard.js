@@ -269,13 +269,18 @@
 
   function setButtonLoading(button, isLoading, loadingText = "Guardando...") {
     if (!button) return;
+    // Solo cambia el texto del label, nunca el botón completo: así el icono
+    // (un <span class="btn-icon"> hermano) sobrevive al estado de carga.
+    const target = button.querySelector(".btn-label") || button;
     if (isLoading) {
-      button.dataset.originalText = button.textContent;
-      button.textContent = loadingText;
+      button.dataset.originalText = target.textContent;
+      target.textContent = loadingText;
       button.disabled = true;
       return;
     }
-    button.textContent = button.dataset.originalText || button.textContent;
+    if (button.dataset.originalText != null) {
+      target.textContent = button.dataset.originalText;
+    }
     button.disabled = false;
     delete button.dataset.originalText;
   }
