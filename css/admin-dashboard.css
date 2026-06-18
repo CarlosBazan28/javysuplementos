@@ -1649,6 +1649,76 @@ button.admin-stat:focus-visible {
   color: var(--admin-muted);
 }
 
+/* ===== Modal de confirmacion ===== */
+.admin-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.admin-confirm__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 4, 7, 0.7);
+  backdrop-filter: blur(2px);
+}
+
+.admin-confirm__panel {
+  position: relative;
+  width: min(420px, 100%);
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--admin-line-strong);
+  background: var(--admin-panel);
+  box-shadow: var(--admin-shadow);
+  animation: adminPanelIn 0.16s ease both;
+}
+
+.admin-confirm__panel h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.admin-confirm__panel p {
+  margin: 0;
+  color: var(--admin-muted);
+  line-height: 1.5;
+}
+
+.admin-confirm__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.admin-confirm__actions button {
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+/* ===== Validacion del formulario ===== */
+.admin-form-note {
+  margin: 0 0 4px;
+  font-size: 0.82rem;
+  color: var(--admin-muted);
+}
+
+.admin-req {
+  color: var(--admin-red);
+  font-weight: 700;
+}
+
+.admin-price-hint {
+  color: var(--admin-green);
+  font-weight: 700;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

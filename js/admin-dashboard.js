@@ -311,6 +311,51 @@
     window.setTimeout(() => toast.remove(), 4200);
   }
 
+  // Modal de confirmación accesible (reemplaza window.confirm). Devuelve Promise<boolean>.
+  function confirmDialog({ title, message, confirmText = "Confirmar", cancelText = "Cancelar", danger = false }) {
+    return new Promise((resolve) => {
+      const lastFocused = document.activeElement;
+      const overlay = document.createElement("div");
+      overlay.className = "admin-confirm";
+      overlay.innerHTML = `
+        <div class="admin-confirm__backdrop" data-confirm-cancel></div>
+        <div class="admin-confirm__panel" role="dialog" aria-modal="true" aria-labelledby="adminConfirmTitle">
+          <h3 id="adminConfirmTitle">${escapeHTML(title)}</h3>
+          <p>${escapeHTML(message)}</p>
+          <div class="admin-confirm__actions">
+            <button type="button" class="admin-secondary" data-confirm-cancel>${escapeHTML(cancelText)}</button>
+            <button type="button" class="${danger ? "admin-danger" : "admin-primary"}" data-confirm-ok>${escapeHTML(confirmText)}</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+
+      const okBtn = overlay.querySelector("[data-confirm-ok]");
+      const cancelBtn = overlay.querySelector("button[data-confirm-cancel]");
+      okBtn.focus({ preventScroll: true });
+
+      function close(result) {
+        overlay.remove();
+        document.removeEventListener("keydown", onKey, true);
+        lastFocused?.focus?.({ preventScroll: true });
+        resolve(result);
+      }
+      function onKey(event) {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          close(false);
+        } else if (event.key === "Tab") {
+          event.preventDefault(); // trap simple entre los dos botones
+          (document.activeElement === okBtn ? cancelBtn : okBtn).focus();
+        }
+      }
+      overlay.addEventListener("click", (event) => {
+        if (event.target.closest("[data-confirm-ok]")) close(true);
+        else if (event.target.closest("[data-confirm-cancel]")) close(false);
+      });
+      document.addEventListener("keydown", onKey, true);
+    });
+  }
+
   function setFormMessage(message = "", isError = false) {
     if (!els.formMessage) return;
     els.formMessage.textContent = message;
@@ -868,6 +913,20 @@
     return state.products.find((product) => product.id === id);
   }
 
+  function updateDiscountHint() {
+    const hint = els.productForm?.querySelector("[data-price-hint]");
+    if (!hint) return;
+    const price = Number(els.productForm.elements.price.value);
+    const oldPrice = Number(els.productForm.elements.old_price.value);
+    if (price > 0 && oldPrice > price) {
+      hint.hidden = false;
+      hint.textContent = `Oferta: -${Math.round((1 - price / oldPrice) * 100)}% de descuento`;
+    } else {
+      hint.hidden = true;
+      hint.textContent = "";
+    }
+  }
+
   function clearFieldErrors() {
     els.productForm.querySelectorAll("[data-field-error]").forEach((item) => {
       item.textContent = "";
@@ -915,6 +974,7 @@
   }
 
   function openProductDrawer(productId = null) {
+    state.lastFocused = document.activeElement;
     state.selectedProductId = productId;
     const product = productId ? getProductById(productId) : null;
     const form = els.productForm;
@@ -954,6 +1014,7 @@
       form.elements.flavor_mode.value = "needs_review";
     }
 
+    updateDiscountHint();
     els.drawer.hidden = false;
     els.drawer.setAttribute("aria-hidden", "false");
     form.elements.name.focus();
@@ -971,6 +1032,32 @@
     els.drawer.setAttribute("aria-hidden", "true");
     state.selectedProductId = null;
     releaseImageObjectUrl();
+    // Restaurar el foco a quien abrió el drawer (a11y).
+    state.lastFocused?.focus?.({ preventScroll: true });
+    state.lastFocused = null;
+  }
+
+  // Atrapa el foco dentro del drawer y cierra con Escape (patrón del panel de cotización).
+  function handleDrawerKeydown(event) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeProductDrawer();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusables = Array.from(
+      els.drawer.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')
+    ).filter((el) => el.offsetParent !== null);
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 
   function collectProductFormData() {
@@ -1051,7 +1138,12 @@
     const product = getProductById(state.selectedProductId);
     if (!product) return;
 
-    const ok = window.confirm(`Eliminar ${product.name}? Tambien se eliminaran sus sabores.`);
+    const ok = await confirmDialog({
+      title: "Eliminar producto",
+      message: `Se eliminará "${product.name}" y todos sus sabores. Esta acción no se puede deshacer.`,
+      confirmText: "Eliminar",
+      danger: true,
+    });
     if (!ok) return;
 
     try {
@@ -1242,7 +1334,11 @@
   }
 
   async function seedProducts() {
-    const ok = window.confirm("Migrar productos locales a Supabase? Se evitaran duplicados usando legacy_id.");
+    const ok = await confirmDialog({
+      title: "Migrar productos locales",
+      message: "Se migrarán los productos locales a Supabase, evitando duplicados por legacy_id.",
+      confirmText: "Migrar",
+    });
     if (!ok) return;
 
     try {
@@ -1314,9 +1410,14 @@
       item.addEventListener("click", closeProductDrawer);
     });
 
+    els.drawer?.addEventListener("keydown", handleDrawerKeydown);
+
     els.productForm?.elements.image_url.addEventListener("input", () => {
       els.imagePreview.src = els.productForm.elements.image_url.value || PLACEHOLDER_IMAGE;
     });
+
+    els.productForm?.elements.price.addEventListener("input", updateDiscountHint);
+    els.productForm?.elements.old_price.addEventListener("input", updateDiscountHint);
 
     els.productForm?.elements.image_file.addEventListener("change", () => {
       const file = els.productForm.elements.image_file.files?.[0];
@@ -1440,7 +1541,12 @@
       }
 
       if (flavorRow && event.target.closest("[data-delete-flavor]")) {
-        const ok = window.confirm("Eliminar este sabor?");
+        const ok = await confirmDialog({
+          title: "Eliminar sabor",
+          message: "Se eliminará este sabor del producto.",
+          confirmText: "Eliminar",
+          danger: true,
+        });
         if (!ok) return;
         try {
           await window.catalogDb.deleteFlavor(flavorRow.dataset.flavorId);

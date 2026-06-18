@@ -298,7 +298,7 @@
       </div>
     </div>
 
-    <section class="admin-drawer" id="productDrawer" hidden aria-hidden="true">
+    <section class="admin-drawer" id="productDrawer" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="productDrawerTitle">
       <div class="admin-drawer__backdrop" data-close-product-drawer></div>
       <form class="admin-drawer__panel" id="adminProductForm" novalidate>
         <div class="admin-drawer__head">
@@ -312,11 +312,12 @@
         </div>
 
         <div class="admin-form-scroll">
+          <p class="admin-form-note">Los campos con <span class="admin-req">*</span> son obligatorios.</p>
           <details class="admin-form-group" open>
             <summary>Informacion basica</summary>
             <div class="admin-form-grid">
               <label>
-                Nombre del producto
+                Nombre del producto <span class="admin-req" aria-hidden="true">*</span>
                 <input name="name" placeholder="Ej: Whey Protein Gold Standard" required />
                 <small data-field-error="name"></small>
               </label>
@@ -325,7 +326,7 @@
                 <input name="brand" placeholder="Ej: Optimum Nutrition" />
               </label>
               <label>
-                Categoria
+                Categoria <span class="admin-req" aria-hidden="true">*</span>
                 <select name="category" required></select>
                 <small data-field-error="category"></small>
               </label>
@@ -348,7 +349,7 @@
             <summary>Precio y oferta</summary>
             <div class="admin-form-grid">
               <label>
-                Precio actual
+                Precio actual <span class="admin-req" aria-hidden="true">*</span>
                 <input name="price" type="number" min="0" step="0.01" placeholder="Ej: 45.00" required />
                 <small data-field-error="price"></small>
               </label>
@@ -356,6 +357,7 @@
                 Precio anterior
                 <input name="old_price" type="number" min="0" step="0.01" placeholder="Ej: 55.00" />
                 <small data-field-error="old_price"></small>
+                <small class="admin-price-hint" data-price-hint hidden></small>
               </label>
             </div>
           </details>
