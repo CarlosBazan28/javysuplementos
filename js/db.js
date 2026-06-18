@@ -702,9 +702,6 @@ async function createFlavor(productId, flavorData) {
     .insert({
       product_id: productId,
       name: flavorData.name?.trim(),
-      presentation: flavorData.presentation?.trim() || null,
-      price: flavorData.price === "" || flavorData.price == null ? null : Number(flavorData.price),
-      stock: flavorData.stock === "" || flavorData.stock == null ? null : Number(flavorData.stock),
       available: flavorData.is_available ?? flavorData.available ?? true,
       is_available: flavorData.is_available ?? flavorData.available ?? true,
     })
@@ -722,9 +719,6 @@ async function updateFlavor(id, flavorData) {
     .from("product_flavors")
     .update({
       name: flavorData.name?.trim(),
-      presentation: flavorData.presentation?.trim() || null,
-      price: flavorData.price === "" || flavorData.price == null ? null : Number(flavorData.price),
-      stock: flavorData.stock === "" || flavorData.stock == null ? null : Number(flavorData.stock),
       available: flavorData.is_available ?? flavorData.available ?? true,
       is_available: flavorData.is_available ?? flavorData.available ?? true,
     })

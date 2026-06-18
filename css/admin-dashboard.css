@@ -847,7 +847,7 @@ button.admin-stat:focus-visible {
 
 .admin-variant-toolbar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(100px, 140px) minmax(90px, 120px) minmax(90px, 120px) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
   margin-bottom: 12px;
 }
@@ -859,7 +859,7 @@ button.admin-stat:focus-visible {
 
 .admin-variant-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(110px, 140px) minmax(90px, 120px) minmax(80px, 100px) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
   padding: 10px;
@@ -1058,14 +1058,8 @@ button.admin-stat:focus-visible {
   padding: 0 16px 12px;
 }
 
-.admin-drawer-flavors .admin-variant-toolbar,
 .admin-drawer-flavors .admin-variant-row {
-  grid-template-columns: 1fr 1fr;
-}
-
-.admin-drawer-flavors .admin-variant-toolbar > button,
-.admin-drawer-flavors .admin-variant-actions {
-  grid-column: 1 / -1;
+  grid-template-columns: 1fr;
 }
 
 .admin-switch-row {

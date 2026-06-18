@@ -382,11 +382,8 @@
                   </button>
                 </div>
                 <small class="admin-image-filename" data-image-filename hidden></small>
-                <label>
-                  URL de imagen (opcional)
-                  <input name="image_url" placeholder="https://... o img/products/producto.webp" />
-                </label>
-                <small>Si subes un archivo, se guarda en Supabase Storage (máx 5 MB).</small>
+                <input type="hidden" name="image_url" />
+                <small>Sube un archivo de imagen (JPG, PNG o WebP, máx 5 MB). Se guarda en Supabase Storage.</small>
               </div>
             </div>
           </details>

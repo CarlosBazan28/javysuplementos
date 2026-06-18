@@ -806,10 +806,7 @@
   function flavorRowMarkup(flavor) {
     return `
       <article class="admin-variant-row" data-flavor-id="${flavor.id}">
-        <input value="${escapeHTML(flavor.name)}" data-flavor-name aria-label="Nombre del sabor" />
-        <input value="${escapeHTML(flavor.presentation || "")}" data-flavor-presentation aria-label="Presentacion del sabor" />
-        <input value="${flavor.price ?? ""}" type="number" min="0" step="0.01" data-flavor-price aria-label="Precio del sabor" />
-        <input value="${flavor.stock ?? ""}" type="number" min="0" step="1" data-flavor-stock aria-label="Stock del sabor" />
+        <input value="${escapeHTML(flavor.name)}" data-flavor-name aria-label="Nombre del sabor" placeholder="Nombre del sabor" />
         <div class="admin-variant-actions">
           <label class="admin-toggle">
             <input type="checkbox" ${flavor.available !== false ? "checked" : ""} data-flavor-available />
@@ -824,10 +821,7 @@
   function flavorToolbarMarkup(idPrefix, addBtnId) {
     return `
       <div class="admin-variant-toolbar">
-        <input id="${idPrefix}NameNew" placeholder="Ej: Chocolate" />
-        <input id="${idPrefix}PresentationNew" placeholder="Presentacion" />
-        <input id="${idPrefix}PriceNew" type="number" min="0" step="0.01" placeholder="Precio" />
-        <input id="${idPrefix}StockNew" type="number" min="0" step="1" placeholder="Stock" />
+        <input id="${idPrefix}NameNew" placeholder="Ej: Chocolate" aria-label="Nombre del sabor nuevo" />
         <button class="admin-primary" type="button" id="${addBtnId}">${icon("plus")}Agregar</button>
       </div>`;
   }
@@ -1095,7 +1089,14 @@
     clearBtn.hidden = !(file || hasUrl);
   }
 
-  function clearProductImage() {
+  async function clearProductImage() {
+    const ok = await confirmDialog({
+      title: "Quitar imagen",
+      message: "Se quitará la imagen de este producto. El cambio se aplica al guardar.",
+      confirmText: "Quitar",
+      danger: true,
+    });
+    if (!ok) return;
     const form = els.productForm;
     form.elements.image_file.value = "";
     form.elements.image_url.value = "";
@@ -1361,9 +1362,6 @@
 
   async function saveFlavor(flavorId, row) {
     const name = row.querySelector("[data-flavor-name]").value.trim();
-    const presentation = row.querySelector("[data-flavor-presentation]").value.trim();
-    const price = row.querySelector("[data-flavor-price]").value;
-    const stock = row.querySelector("[data-flavor-stock]").value;
     const available = row.querySelector("[data-flavor-available]").checked;
     const product = getProductById(state.variantProductId);
 
@@ -1383,9 +1381,6 @@
 
     await window.catalogDb.updateFlavor(flavorId, {
       name,
-      presentation,
-      price,
-      stock,
       available,
       is_available: available,
     });
@@ -1412,9 +1407,6 @@
     try {
       await window.catalogDb.createFlavor(product.id, {
         name,
-        presentation: $(`#${idPrefix}PresentationNew`)?.value || "",
-        price: $(`#${idPrefix}PriceNew`)?.value || "",
-        stock: $(`#${idPrefix}StockNew`)?.value || "",
         available: true,
         is_available: true,
       });
@@ -1533,11 +1525,6 @@
     });
 
     els.drawer?.addEventListener("keydown", handleDrawerKeydown);
-
-    els.productForm?.elements.image_url.addEventListener("input", () => {
-      els.imagePreview.src = els.productForm.elements.image_url.value || PLACEHOLDER_IMAGE;
-      updateImageState();
-    });
 
     els.productForm?.elements.price.addEventListener("input", updateDiscountHint);
     els.productForm?.elements.old_price.addEventListener("input", updateDiscountHint);
