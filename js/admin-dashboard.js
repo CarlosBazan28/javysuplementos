@@ -42,6 +42,12 @@
       logoutBtn: $("#adminLogoutBtn"),
       stats: $("#adminStats"),
       recent: $("#adminRecentProducts"),
+      opsAgotados: $("#adminOpsAgotados"),
+      opsAgotadosCount: $("#adminOpsAgotadosCount"),
+      opsOfertas: $("#adminOpsOfertas"),
+      opsOfertasCount: $("#adminOpsOfertasCount"),
+      opsStale: $("#adminOpsStale"),
+      opsStaleCount: $("#adminOpsStaleCount"),
       seedBtn: $("#adminSeedBtn"),
       categoryFilter: $("#adminCategoryFilter"),
       availabilityFilter: $("#adminAvailabilityFilter"),
@@ -170,6 +176,49 @@
 
   function getProductPrice(product) {
     return Number(product.price || 0);
+  }
+
+  function isAgotado(product) {
+    return product?.available === false;
+  }
+
+  function hasActiveOffer(product) {
+    const price = Number(product?.price || 0);
+    const oldPrice = Number(product?.old_price || 0);
+    return price > 0 && oldPrice > price;
+  }
+
+  function getDiscountPercent(product) {
+    if (!hasActiveOffer(product)) return 0;
+    return Math.round((1 - Number(product.price) / Number(product.old_price)) * 100);
+  }
+
+  function daysSince(dateValue) {
+    if (!dateValue) return 0;
+    const then = new Date(dateValue).getTime();
+    if (Number.isNaN(then)) return 0;
+    return Math.floor((Date.now() - then) / 86400000);
+  }
+
+  // Sabores agotados de productos que en sí están disponibles (caso típico:
+  // el producto se vende, pero a un sabor puntual se le acabó el stock).
+  function getAgotadoFlavorEntries() {
+    const entries = [];
+    state.products.forEach((product) => {
+      if (isAgotado(product)) return;
+      (product.flavors || []).forEach((flavor) => {
+        if (flavor.available === false) entries.push({ product, flavor });
+      });
+    });
+    return entries;
+  }
+
+  function findFlavorById(flavorId) {
+    for (const product of state.products) {
+      const flavor = (product.flavors || []).find((item) => item.id === flavorId);
+      if (flavor) return flavor;
+    }
+    return null;
   }
 
   function getActiveFilterCount() {
@@ -422,7 +471,7 @@
     els.stats.innerHTML = [
       ["Total productos", total, "Catalogo"],
       ["Disponibles", available, "Activos"],
-      ["No disponibles", unavailable, "Stock", "bad", "unavailable"],
+      ["Agotados", unavailable, "Reactivar", "bad", "unavailable"],
       ["Inicio", home, "Home"],
       ["Sabores", flavors, "Variantes"],
       ["Sin imagen", withoutImage, "Revisar", "warn", "missing-image"],
@@ -458,6 +507,83 @@
         <button class="admin-chip-btn" type="button" data-edit-product="${product.id}">${icon("pencil")}Editar</button>
       </article>
     `).join("") : `<p class="admin-help-text">Aun no hay productos en Supabase.</p>`;
+
+    renderOpsCenter();
+  }
+
+  function opsCountBadge(el, count) {
+    if (!el) return;
+    el.hidden = count === 0;
+    el.textContent = count;
+  }
+
+  // OJO: `subtitle` se inserta como HTML (admite <strong>/<s>), así que el caller
+  // DEBE pre-escapar cualquier texto que venga de la BD. `title` e `image` sí se
+  // escapan aquí dentro.
+  function opsItem({ image, title, subtitle, action }) {
+    return `
+      <article class="admin-ops__item">
+        <img src="${escapeHTML(image)}" alt="" />
+        <div class="admin-ops__info">
+          <strong>${escapeHTML(title)}</strong>
+          <small>${subtitle}</small>
+        </div>
+        ${action}
+      </article>
+    `;
+  }
+
+  function renderOpsCenter() {
+    // Agotados: productos completos + sabores puntuales agotados.
+    const agotadoProducts = state.products.filter(isAgotado);
+    const agotadoFlavors = getAgotadoFlavorEntries();
+    const agotadoTotal = agotadoProducts.length + agotadoFlavors.length;
+    opsCountBadge(els.opsAgotadosCount, agotadoTotal);
+
+    if (els.opsAgotados) {
+      const productRows = agotadoProducts.map((product) => opsItem({
+        image: productImage(product),
+        title: product.name,
+        subtitle: escapeHTML(product.brand || product.category || "Producto"),
+        action: availabilityToggle(product),
+      }));
+      const flavorRows = agotadoFlavors.map(({ product, flavor }) => opsItem({
+        image: productImage(product),
+        title: product.name,
+        subtitle: `Sabor agotado: <strong>${escapeHTML(flavor.name)}</strong>`,
+        action: flavorToggle(flavor),
+      }));
+      els.opsAgotados.innerHTML = agotadoTotal
+        ? [...productRows, ...flavorRows].join("")
+        : `<p class="admin-ops__empty">Todo disponible. Nada agotado por ahora.</p>`;
+    }
+
+    // Ofertas activas: old_price > price.
+    const offers = state.products.filter(hasActiveOffer);
+    opsCountBadge(els.opsOfertasCount, offers.length);
+    if (els.opsOfertas) {
+      els.opsOfertas.innerHTML = offers.length ? offers.map((product) => opsItem({
+        image: productImage(product),
+        title: product.name,
+        subtitle: `<s>${formatPrice(product.old_price)}</s> ${formatPrice(product.price)} <span class="admin-ops__discount">-${getDiscountPercent(product)}%</span>`,
+        action: `<button class="admin-chip-btn" type="button" data-remove-offer="${product.id}">${icon("x")}Quitar oferta</button>`,
+      })).join("") : `<p class="admin-ops__empty">No hay ofertas activas.</p>`;
+    }
+
+    // Agotado hace mucho: agotados con updated_at viejo (>= 21 dias).
+    const STALE_DAYS = 21;
+    const stale = state.products
+      .filter((product) => isAgotado(product) && daysSince(product.updated_at) >= STALE_DAYS)
+      .sort((a, b) => daysSince(b.updated_at) - daysSince(a.updated_at));
+    opsCountBadge(els.opsStaleCount, stale.length);
+    if (els.opsStale) {
+      els.opsStale.innerHTML = stale.length ? stale.map((product) => opsItem({
+        image: productImage(product),
+        title: product.name,
+        subtitle: `Agotado, sin cambios hace ${daysSince(product.updated_at)} dias`,
+        action: availabilityToggle(product),
+      })).join("") : `<p class="admin-ops__empty">Nada pendiente de reabastecer.</p>`;
+    }
   }
 
   function productStatus(product) {
@@ -496,12 +622,9 @@
   function productActions(product) {
     return `
       <div class="admin-row-actions">
+        ${availabilityToggle(product)}
         <button class="admin-chip-btn" type="button" data-edit-product="${product.id}">${icon("pencil")}Editar</button>
         <button class="admin-chip-btn" type="button" data-manage-variants="${product.id}">${icon("tags")}Sabores</button>
-        <button class="admin-chip-btn" type="button" data-toggle-available="${product.id}">
-          ${icon(product.available === false ? "power" : "pause")}
-          ${product.available === false ? "Activar" : "Pausar"}
-        </button>
       </div>
     `;
   }
@@ -509,16 +632,49 @@
   function productMobileActions(product) {
     return `
       <div class="admin-mobile-actions">
+        ${availabilityToggle(product)}
         <button class="admin-chip-btn admin-card-main-action" type="button" data-edit-product="${product.id}">${icon("pencil")}Editar</button>
         <div class="admin-card-secondary-actions">
           <button class="admin-chip-btn" type="button" data-manage-variants="${product.id}">${icon("tags")}Sabores</button>
-          <button class="admin-chip-btn" type="button" data-toggle-available="${product.id}">
-            ${icon(product.available === false ? "power" : "pause")}
-            ${product.available === false ? "Activar" : "Pausar"}
-          </button>
         </div>
       </div>
     `;
+  }
+
+  // Switch deslizante reutilizable para disponibilidad (producto o sabor).
+  // Un solo control sistematico en tabla, cards y centro de operaciones.
+  function availabilitySwitch({ on, attr, id, onLabel = "Disponible", offLabel = "Agotado" }) {
+    return `
+      <button type="button" role="switch" aria-checked="${on}" ${attr}="${id}"
+        class="admin-switch${on ? " is-on" : ""}" aria-label="${on ? onLabel : offLabel}">
+        <span class="admin-switch__track"><span class="admin-switch__thumb"></span></span>
+        <span class="admin-switch__label">${on ? onLabel : offLabel}</span>
+      </button>
+    `;
+  }
+
+  function availabilityToggle(product) {
+    return availabilitySwitch({ on: product.available !== false, attr: "data-toggle-available", id: product.id });
+  }
+
+  function flavorToggle(flavor) {
+    return availabilitySwitch({ on: flavor.available !== false, attr: "data-toggle-flavor", id: flavor.id });
+  }
+
+  function priceCell(product) {
+    return `<button class="admin-price-edit" type="button" data-edit-price="${product.id}" title="Editar precio rapido">
+      <span class="admin-price-edit__value">${formatPrice(product.price)}</span>${icon("pencil", "admin-price-edit__icon")}
+    </button>`;
+  }
+
+  function flavorCell(product) {
+    const flavors = product.flavors || [];
+    if (!flavors.length) return `<small>${escapeHTML(flavorSummaryText(product))}</small>`;
+    const chips = flavors.map((flavor) => `
+      <button type="button" class="admin-flavor-chip${flavor.available === false ? " is-off" : ""}" data-toggle-flavor="${flavor.id}" aria-pressed="${flavor.available !== false}" title="${flavor.available === false ? "Agotado" : "Disponible"} - clic para cambiar">
+        ${escapeHTML(flavor.name)}
+      </button>`).join("");
+    return `<div class="admin-flavor-chips">${chips}</div>`;
   }
 
   function renderProducts() {
@@ -562,9 +718,9 @@
                 </div>
               </td>
               <td>${escapeHTML(product.category || "Otros")}</td>
-              <td>${formatPrice(product.price)}</td>
+              <td>${priceCell(product)}</td>
               <td><div class="admin-status-stack">${productStatus(product)}${productReviewBadges(product)}</div></td>
-              <td><small>${flavorSummaryText(product)}</small></td>
+              <td>${flavorCell(product)}</td>
               <td>${state.homeIds.includes(product.id) ? '<span class="admin-status admin-status--ok">Si</span>' : '<span class="admin-status admin-status--warn">No</span>'}</td>
               <td>${productActions(product)}</td>
             </tr>
@@ -578,13 +734,14 @@
         <img src="${escapeHTML(productImage(product))}" alt="" />
         <div>
           <h3>${escapeHTML(product.name)}</h3>
-          <p>${formatPrice(product.price)} - ${escapeHTML(product.category || "Otros")}</p>
+          <p class="admin-card-price-row">${priceCell(product)} <span class="admin-card-cat">${escapeHTML(product.category || "Otros")}</span></p>
           <div class="admin-card-meta">
             ${productStatus(product)}
             ${productReviewBadges(product)}
             ${flavorSummaryBadge(product)}
             ${state.homeIds.includes(product.id) ? '<span class="admin-status admin-status--ok">Inicio</span>' : ""}
           </div>
+          ${(product.flavors || []).length ? `<div class="admin-flavor-chips">${(product.flavors || []).map((flavor) => `<button type="button" class="admin-flavor-chip${flavor.available === false ? " is-off" : ""}" data-toggle-flavor="${flavor.id}" aria-pressed="${flavor.available !== false}" title="${flavor.available === false ? "Agotado" : "Disponible"} - clic para cambiar">${escapeHTML(flavor.name)}</button>`).join("")}</div>` : ""}
           <div class="admin-card-actions">${productMobileActions(product)}</div>
         </div>
       </article>
@@ -922,6 +1079,74 @@
     }
   }
 
+  async function toggleFlavorAvailability(flavorId) {
+    const flavor = findFlavorById(flavorId);
+    if (!flavor) return;
+    try {
+      // Update parcial: solo cambia la disponibilidad del sabor.
+      await window.catalogDb.setFlavorAvailability(flavorId, flavor.available === false);
+      await refreshAfterMutation("Disponibilidad del sabor actualizada.");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  }
+
+  async function removeProductOffer(productId) {
+    const product = getProductById(productId);
+    if (!product) return;
+    try {
+      // Update parcial de precio: mantiene el precio actual y limpia old_price.
+      await window.catalogDb.setProductPricing(productId, { price: product.price, oldPrice: null });
+      await refreshAfterMutation("Oferta retirada.");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  }
+
+  // Campo inline: el precio se vuelve un input del mismo alto de la fila, con un
+  // solo boton de guardar. Sin capa flotante, no se puede romper por scroll/posicion.
+  function startPriceEdit(productId, button) {
+    const product = getProductById(productId);
+    if (!product || !button) return;
+
+    const editor = document.createElement("span");
+    editor.className = "admin-price-editor";
+    editor.innerHTML = `
+      <input type="number" min="0" step="0.01" value="${product.price ?? ""}" data-price-input aria-label="Nuevo precio" />
+      <button type="button" class="admin-price-save" data-save-price="${productId}" aria-label="Guardar precio">${icon("save", "")}</button>
+    `;
+    button.replaceWith(editor);
+
+    const input = editor.querySelector("[data-price-input]");
+    input.focus();
+    input.select();
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        savePriceEdit(productId, editor);
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        renderProducts();
+      }
+    });
+  }
+
+  async function savePriceEdit(productId, editor) {
+    const input = editor?.querySelector("[data-price-input]");
+    const value = input?.value;
+    if (value === "" || value == null || !Number.isFinite(Number(value)) || Number(value) < 0) {
+      showToast("Escribe un precio valido (0 o mayor).", "error");
+      input?.focus();
+      return;
+    }
+    try {
+      await window.catalogDb.setProductPricing(productId, { price: value });
+      await refreshAfterMutation("Precio actualizado.");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  }
+
   async function saveFlavor(flavorId, row) {
     const name = row.querySelector("[data-flavor-name]").value.trim();
     const presentation = row.querySelector("[data-flavor-presentation]").value.trim();
@@ -1136,6 +1361,30 @@
       const toggleButton = event.target.closest("[data-toggle-available]");
       if (toggleButton) {
         await toggleProductAvailability(toggleButton.dataset.toggleAvailable);
+        return;
+      }
+
+      const toggleFlavorBtn = event.target.closest("[data-toggle-flavor]");
+      if (toggleFlavorBtn) {
+        await toggleFlavorAvailability(toggleFlavorBtn.dataset.toggleFlavor);
+        return;
+      }
+
+      const removeOffer = event.target.closest("[data-remove-offer]");
+      if (removeOffer) {
+        await removeProductOffer(removeOffer.dataset.removeOffer);
+        return;
+      }
+
+      const editPrice = event.target.closest("[data-edit-price]");
+      if (editPrice) {
+        startPriceEdit(editPrice.dataset.editPrice, editPrice);
+        return;
+      }
+
+      const savePrice = event.target.closest("[data-save-price]");
+      if (savePrice) {
+        await savePriceEdit(savePrice.dataset.savePrice, savePrice.closest(".admin-price-editor"));
         return;
       }
 

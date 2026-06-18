@@ -92,6 +92,41 @@
 
           <section class="admin-section is-active" id="section-dashboard" data-section-panel="dashboard">
             <div class="admin-stats" id="adminStats"></div>
+            <div class="admin-ops">
+              <div class="admin-panel admin-ops__panel admin-ops__panel--alert">
+                <div class="admin-panel__head">
+                  <div>
+                    <p class="admin-kicker">Inventario</p>
+                    <h2>Agotados</h2>
+                    <p class="admin-help-text">Lo que se acabó, listo para reactivar cuando vuelva.</p>
+                  </div>
+                  <span class="admin-ops__count" id="adminOpsAgotadosCount" hidden></span>
+                </div>
+                <div class="admin-ops__list" id="adminOpsAgotados"></div>
+              </div>
+              <div class="admin-panel admin-ops__panel">
+                <div class="admin-panel__head">
+                  <div>
+                    <p class="admin-kicker">Promociones</p>
+                    <h2>Ofertas activas</h2>
+                    <p class="admin-help-text">Productos con precio anterior tachado.</p>
+                  </div>
+                  <span class="admin-ops__count" id="adminOpsOfertasCount" hidden></span>
+                </div>
+                <div class="admin-ops__list" id="adminOpsOfertas"></div>
+              </div>
+              <div class="admin-panel admin-ops__panel">
+                <div class="admin-panel__head">
+                  <div>
+                    <p class="admin-kicker">Reabastecer</p>
+                    <h2>Agotado hace mucho</h2>
+                    <p class="admin-help-text">Agotados sin cambios hace semanas: revisar si reponer o descatalogar.</p>
+                  </div>
+                  <span class="admin-ops__count" id="adminOpsStaleCount" hidden></span>
+                </div>
+                <div class="admin-ops__list" id="adminOpsStale"></div>
+              </div>
+            </div>
             <div class="admin-panel admin-panel--split">
               <div>
                 <div class="admin-panel__head">

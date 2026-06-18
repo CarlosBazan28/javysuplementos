@@ -1359,6 +1359,296 @@ button.admin-stat:focus-visible {
   }
 }
 
+/* ===== Centro de operaciones (dashboard) ===== */
+.admin-ops {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-ops__panel--alert {
+  border-color: rgba(255, 79, 118, 0.32);
+  box-shadow: inset 0 0 0 1px rgba(255, 79, 118, 0.08);
+}
+
+.admin-ops__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(255, 79, 118, 0.16);
+  color: #ffd7df;
+  font-weight: 800;
+  font-size: 0.82rem;
+}
+
+.admin-ops__panel:not(.admin-ops__panel--alert) .admin-ops__count {
+  background: rgba(90, 180, 233, 0.16);
+  color: #d2ecff;
+}
+
+.admin-ops__list {
+  display: grid;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.admin-ops__item {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--admin-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 8px;
+}
+
+.admin-ops__item img {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.admin-ops__info {
+  min-width: 0;
+}
+
+.admin-ops__info strong {
+  display: block;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-ops__info small {
+  display: block;
+  color: var(--admin-muted);
+  font-size: 0.78rem;
+}
+
+.admin-ops__discount {
+  color: var(--admin-green);
+  font-weight: 800;
+}
+
+.admin-ops__empty {
+  color: var(--admin-muted);
+  font-size: 0.85rem;
+  padding: 8px 2px;
+}
+
+.admin-chip-btn--ok {
+  background: rgba(0, 230, 118, 0.13);
+  color: #b8ffd9;
+  border-color: rgba(0, 230, 118, 0.28);
+  white-space: nowrap;
+}
+
+/* ===== Switch de disponibilidad (sistematico) ===== */
+.admin-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  background: transparent;
+  border: 0;
+  padding: 4px 4px;
+  cursor: pointer;
+  font: inherit;
+  white-space: nowrap;
+}
+
+.admin-switch__track {
+  position: relative;
+  flex-shrink: 0;
+  width: 40px;
+  height: 23px;
+  border-radius: 999px;
+  background: rgba(255, 79, 118, 0.28);
+  border: 1px solid rgba(255, 79, 118, 0.45);
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.admin-switch__thumb {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #fff;
+  transform: translateY(-50%);
+  transition: transform 0.18s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.admin-switch.is-on .admin-switch__track {
+  background: rgba(0, 230, 118, 0.32);
+  border-color: rgba(0, 230, 118, 0.5);
+}
+
+.admin-switch.is-on .admin-switch__thumb {
+  transform: translateY(-50%) translateX(17px);
+}
+
+.admin-switch__label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #ffb3c2;
+}
+
+.admin-switch.is-on .admin-switch__label {
+  color: #b8ffd9;
+}
+
+.admin-switch:hover .admin-switch__track {
+  filter: brightness(1.12);
+}
+
+.admin-switch:focus-visible {
+  outline: 2px solid var(--admin-blue);
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+/* ===== Edicion rapida de precio ===== */
+.admin-price-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  background: transparent;
+  border: 1px dashed transparent;
+  border-radius: 9px;
+  color: var(--admin-text);
+  padding: 3px 7px;
+  cursor: pointer;
+  font: inherit;
+}
+
+/* La columna Precio reserva ancho para que el editor inline no reflowee la tabla. */
+.admin-table th:nth-child(4),
+.admin-table td:nth-child(4) {
+  min-width: 140px;
+}
+
+@media (max-width: 860px) {
+  .admin-switch {
+    min-height: 44px;
+  }
+
+  .admin-flavor-chip {
+    min-height: 40px;
+    padding-block: 8px;
+  }
+}
+
+.admin-price-edit:hover {
+  border-color: var(--admin-line-strong);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.admin-price-edit__icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0.55;
+}
+
+/* ===== Edicion de precio inline (mismo alto de fila) ===== */
+.admin-price-editor {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-price-editor input {
+  width: 84px;
+  height: 36px;
+  padding: 0 8px;
+  margin: 0;
+}
+
+.admin-price-save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid rgba(0, 230, 118, 0.4);
+  border-radius: 10px;
+  background: rgba(0, 230, 118, 0.16);
+  color: #b8ffd9;
+  cursor: pointer;
+}
+
+.admin-price-save svg {
+  width: 17px;
+  height: 17px;
+}
+
+.admin-price-save:hover {
+  background: rgba(0, 230, 118, 0.26);
+}
+
+/* ===== Chips de sabor con toggle rapido ===== */
+.admin-flavor-cell {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-flavor-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.admin-flavor-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border: 1px solid rgba(0, 230, 118, 0.3);
+  background: rgba(0, 230, 118, 0.12);
+  color: #c5ffe1;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-flavor-chip.is-off {
+  border-color: rgba(255, 79, 118, 0.34);
+  background: rgba(255, 79, 118, 0.13);
+  color: #ffd0db;
+  text-decoration: line-through;
+}
+
+.admin-flavor-chip:hover {
+  transform: translateY(-1px);
+}
+
+.admin-card-price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-card-cat {
+  color: var(--admin-muted);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

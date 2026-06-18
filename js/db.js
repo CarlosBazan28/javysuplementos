@@ -639,6 +639,55 @@ async function setProductAvailability(id, available) {
   return normalizeProductFromDb(data);
 }
 
+// Update parcial de precio: toca SOLO las columnas de precio. No pasa por
+// mapProductToDb, así que no reescribe imagen, slug ni disponibilidad.
+// `oldPrice` undefined = no tocar la oferta; null o "" = quitar la oferta.
+async function setProductPricing(id, { price, oldPrice } = {}) {
+  ensureSupabaseForWrite();
+  const numericPrice = price === "" || price == null ? null : Number(price);
+  if (numericPrice != null && !Number.isFinite(numericPrice)) {
+    throw new Error("El precio no es un número válido.");
+  }
+  const payload = {
+    price: numericPrice,
+    precio_centavos: numericPrice == null ? 0 : Math.round(numericPrice * 100),
+  };
+  if (oldPrice !== undefined) {
+    const numericOld = oldPrice === "" || oldPrice == null ? null : Number(oldPrice);
+    if (numericOld != null && !Number.isFinite(numericOld)) {
+      throw new Error("El precio anterior no es un número válido.");
+    }
+    payload.old_price = numericOld;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("products")
+    .update(payload)
+    .eq("id", id)
+    .select(PRODUCT_BASE_SELECT)
+    .single();
+
+  if (error) throw error;
+  productsCache = null;
+  return normalizeProductFromDb(data);
+}
+
+// Update parcial de disponibilidad de un sabor: no reescribe nombre/precio/stock.
+async function setFlavorAvailability(id, available) {
+  ensureSupabaseForWrite();
+  const isAvailable = Boolean(available);
+  const { data, error } = await supabaseClient
+    .from("product_flavors")
+    .update({ available: isAvailable, is_available: isAvailable })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  productsCache = null;
+  return normalizeFlavor(data);
+}
+
 async function deleteProduct(id) {
   ensureSupabaseForWrite();
   const { error } = await supabaseClient.from("products").delete().eq("id", id);
@@ -780,6 +829,8 @@ window.catalogDb = {
   createProduct,
   updateProduct,
   setProductAvailability,
+  setProductPricing,
+  setFlavorAvailability,
   deleteProduct,
   createFlavor,
   updateFlavor,
