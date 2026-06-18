@@ -1004,6 +1004,70 @@ button.admin-stat:focus-visible {
   object-fit: contain;
 }
 
+.admin-image-preview-wrap {
+  position: relative;
+}
+
+.admin-image-state {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--admin-muted);
+  backdrop-filter: blur(4px);
+}
+
+.admin-image-state[data-tone="new"] {
+  background: rgba(0, 230, 118, 0.22);
+  color: #c5ffe1;
+}
+
+.admin-image-state[data-tone="current"] {
+  background: rgba(90, 180, 233, 0.22);
+  color: #d2ecff;
+}
+
+.admin-image-controls {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.admin-image-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-image-buttons button {
+  min-height: 40px;
+}
+
+.admin-image-filename {
+  color: var(--admin-muted);
+  word-break: break-all;
+}
+
+/* ===== Sabores dentro del drawer (layout compacto a 2 columnas) ===== */
+.admin-drawer-flavors {
+  padding: 0 16px 12px;
+}
+
+.admin-drawer-flavors .admin-variant-toolbar,
+.admin-drawer-flavors .admin-variant-row {
+  grid-template-columns: 1fr 1fr;
+}
+
+.admin-drawer-flavors .admin-variant-toolbar > button,
+.admin-drawer-flavors .admin-variant-actions {
+  grid-column: 1 / -1;
+}
+
 .admin-switch-row {
   display: flex;
   flex-wrap: wrap;
