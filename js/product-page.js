@@ -129,6 +129,11 @@ async function initProductPage() {
   const category = product.category || "Producto";
   const presentation = product.presentation || "";
   const priceText = product.price > 0 ? `$${product.price.toFixed(2)}` : "Consultar precio";
+  const offerActive = product.price > 0 && product.old_price && Number(product.old_price) > Number(product.price);
+  const offerDiscount = offerActive ? Math.round((1 - product.price / product.old_price) * 100) : 0;
+  const priceHTML = offerActive
+    ? `<span class="pdp__price-now">${priceText}</span> <span class="pdp__price-old">$${Number(product.old_price).toFixed(2)}</span> <span class="pdp__discount">-${offerDiscount}%</span>`
+    : priceText;
 
   const imgEl = document.getElementById("prod-image");
   imgEl.src = product.image || "img/images/javi.webp";
@@ -138,10 +143,10 @@ async function initProductPage() {
   document.getElementById("prod-title").textContent = product.name;
   document.getElementById("prod-subtitle").textContent =
     presentation ? `${category} · ${presentation}` : (product.subtitulo || category);
-  document.getElementById("prod-price").textContent = priceText;
+  document.getElementById("prod-price").innerHTML = priceHTML;
 
   const barPriceEl = document.getElementById("pdp-bar-price");
-  if (barPriceEl) barPriceEl.textContent = priceText;
+  if (barPriceEl) barPriceEl.innerHTML = priceHTML;
 
   const breadcrumbCat = document.getElementById("pdp-breadcrumb-cat");
   if (breadcrumbCat) breadcrumbCat.textContent = category;

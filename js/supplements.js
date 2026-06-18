@@ -123,6 +123,17 @@ function formatPrice(price) {
   return value > 0 ? value.toFixed(2) : "Consultar";
 }
 
+function hasOffer(product) {
+  const price = Number(product?.price || 0);
+  const oldPrice = Number(product?.old_price || 0);
+  return price > 0 && oldPrice > price;
+}
+
+function discountPercent(product) {
+  if (!hasOffer(product)) return 0;
+  return Math.round((1 - Number(product.price) / Number(product.old_price)) * 100);
+}
+
 function escapeHTML(value = "") {
   return value
     .toString()
@@ -333,7 +344,10 @@ function renderProductCard(product) {
         <a class="product-card__name-link" href="${detailUrl}">${escapeHTML(product.name)}</a>
       </h3>
       <div class="product-card__price-row">
-        <span class="product-card__price">$${formatPrice(product.price)}</span>
+        <span class="product-card__price-group">
+          <span class="product-card__price">$${formatPrice(product.price)}</span>
+          ${hasOffer(product) ? `<span class="product-card__price-old">$${formatPrice(product.old_price)}</span><span class="product-card__discount">-${discountPercent(product)}%</span>` : ""}
+        </span>
         ${product.presentation ? `<span class="product-card__pres">${escapeHTML(product.presentation)}</span>` : ""}
       </div>
       ${renderFlavorOptions(product)}

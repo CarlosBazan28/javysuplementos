@@ -122,6 +122,30 @@
   font-weight: 500;
   color: var(--accent);
   text-shadow: 0 0 10px rgba(1, 145, 198, 0.45);
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+
+.pdp__price-old {
+  font-size: 0.6em;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 255, 255, 0.45);
+  text-shadow: none;
+}
+
+.pdp__discount {
+  font-size: 0.5em;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--cta, #00e676);
+  color: #06140c;
+  text-shadow: none;
+  align-self: center;
 }
 
 /* ---------- Status pill ---------- */
