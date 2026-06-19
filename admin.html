@@ -64,6 +64,10 @@
               <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="home" aria-hidden="true"></span>
               <span class="admin-nav__text">Inicio</span>
             </button>
+            <button class="admin-nav__item" type="button" data-admin-section="categories">
+              <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="tags" aria-hidden="true"></span>
+              <span class="admin-nav__text">Categorías</span>
+            </button>
             <button class="admin-nav__item" type="button" data-admin-section="settings">
               <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="settings" aria-hidden="true"></span>
               <span class="admin-nav__text">Ajustes</span>
@@ -210,6 +214,23 @@
             </div>
           </section>
 
+          <section class="admin-section" id="section-categories" data-section-panel="categories">
+            <div class="admin-panel">
+              <div class="admin-panel__head admin-panel__head--wrap">
+                <div>
+                  <p class="admin-kicker">Catalogo</p>
+                  <h2>Categorías</h2>
+                  <p class="admin-help-text">Familias y sus tipos. Reordena con las flechas; oculta sin borrar.</p>
+                </div>
+                <button class="admin-primary" type="button" data-cat-add-family>
+                  <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>
+                  Nueva familia
+                </button>
+              </div>
+              <div id="adminCategoryManager"></div>
+            </div>
+          </section>
+
           <section class="admin-section" id="section-settings" data-section-panel="settings">
             <div class="admin-panel">
               <div class="admin-panel__head">
@@ -325,11 +346,29 @@
                 Marca
                 <input name="brand" placeholder="Ej: Optimum Nutrition" />
               </label>
-              <label>
-                Categoria <span class="admin-req" aria-hidden="true">*</span>
-                <select name="category" required></select>
+              <div class="admin-form-grid__wide admin-cascade">
+                <div class="admin-cascade__field">
+                  <label for="productFamily">Familia <span class="admin-req" aria-hidden="true">*</span></label>
+                  <div class="admin-cascade__row">
+                    <select name="family" id="productFamily"></select>
+                    <button type="button" class="admin-chip-btn" data-new-family>
+                      <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>Nueva
+                    </button>
+                  </div>
+                </div>
+                <div class="admin-cascade__field">
+                  <label for="productType">Tipo</label>
+                  <div class="admin-cascade__row">
+                    <select name="type" id="productType"></select>
+                    <button type="button" class="admin-chip-btn" data-new-type>
+                      <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>Nuevo
+                    </button>
+                  </div>
+                </div>
                 <small data-field-error="category"></small>
-              </label>
+                <input type="hidden" name="category" />
+                <input type="hidden" name="category_id" />
+              </div>
               <label>
                 Presentacion
                 <input name="presentation" placeholder="Ej: 5 lb, 30 servicios" />

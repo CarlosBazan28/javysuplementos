@@ -5,6 +5,7 @@
   const state = {
     products: [],
     categories: [],
+    allCategories: [],
     currentSection: "dashboard",
     selectedProductId: null,
     imageObjectUrl: null,
@@ -69,6 +70,7 @@
       variantProductSelect: $("#variantProductSelect"),
       variantManager: $("#variantManager"),
       homeCounter: $("#adminHomeCounter"),
+      categoryManager: $("#adminCategoryManager"),
       homeList: $("#adminHomeList"),
       homePool: $("#adminHomePool"),
       saveHomeBtn: $("#adminSaveHomeBtn"),
@@ -358,6 +360,74 @@
     });
   }
 
+  // Modal con un input de texto. Devuelve Promise<string|null>.
+  function promptDialog({ title, label = "Nombre", placeholder = "", confirmText = "Crear" }) {
+    return new Promise((resolve) => {
+      const lastFocused = document.activeElement;
+      const overlay = document.createElement("div");
+      overlay.className = "admin-confirm";
+      overlay.innerHTML = `
+        <div class="admin-confirm__backdrop" data-confirm-cancel></div>
+        <div class="admin-confirm__panel" role="dialog" aria-modal="true" aria-labelledby="adminPromptTitle">
+          <h3 id="adminPromptTitle">${escapeHTML(title)}</h3>
+          <label class="admin-prompt__label">${escapeHTML(label)}
+            <input type="text" data-prompt-input placeholder="${escapeHTML(placeholder)}" />
+          </label>
+          <div class="admin-confirm__actions">
+            <button type="button" class="admin-secondary" data-confirm-cancel>Cancelar</button>
+            <button type="button" class="admin-primary" data-confirm-ok>${escapeHTML(confirmText)}</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      const input = overlay.querySelector("[data-prompt-input]");
+      input.focus();
+
+      function close(result) {
+        overlay.remove();
+        document.removeEventListener("keydown", onKey, true);
+        lastFocused?.focus?.({ preventScroll: true });
+        resolve(result);
+      }
+      function submit() {
+        const value = input.value.trim();
+        if (!value) { input.focus(); return; }
+        close(value);
+      }
+      function onKey(event) {
+        if (event.key === "Escape") { event.preventDefault(); close(null); }
+        else if (event.key === "Enter") { event.preventDefault(); submit(); }
+      }
+      overlay.addEventListener("click", (event) => {
+        if (event.target.closest("[data-confirm-ok]")) submit();
+        else if (event.target.closest("[data-confirm-cancel]")) close(null);
+      });
+      document.addEventListener("keydown", onKey, true);
+    });
+  }
+
+  async function createCategoryInline(parentId) {
+    const name = await promptDialog({
+      title: parentId ? "Nuevo tipo" : "Nueva familia",
+      label: parentId ? "Nombre del tipo" : "Nombre de la familia",
+      confirmText: "Crear",
+    });
+    if (!name) return;
+    try {
+      const created = await window.catalogDb.createCategory({ name, parentId: parentId || null, sortOrder: nextCategorySort(parentId) });
+      await reloadCategories();
+      if (parentId) {
+        els.productForm.elements.family.value = parentId;
+        renderTypeOptions(parentId, created.id);
+      } else {
+        els.productForm.elements.family.value = created.id;
+        renderTypeOptions(created.id, "");
+      }
+      showToast("Categoría creada.");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  }
+
   function setFormMessage(message = "", isError = false) {
     if (!els.formMessage) return;
     els.formMessage.textContent = message;
@@ -421,6 +491,11 @@
 
   async function loadData() {
     state.categories = await window.catalogDb.getCategories();
+    try {
+      state.allCategories = await window.catalogDb.getAllCategories();
+    } catch (error) {
+      state.allCategories = state.categories;
+    }
     state.products = await window.catalogDb.getProductsWithFlavors({ cache: false, fallback: false });
     state.homeIds = state.products
       .filter((product) => product.show_on_home)
@@ -434,23 +509,222 @@
     if (!state.variantProductId && state.products.length) state.variantProductId = state.products[0].id;
   }
 
-  function renderCategoryOptions() {
-    const options = [
-      `<option value="all">Todas las categorias</option>`,
-      ...state.categories.map((category) => `<option value="${escapeHTML(category.name)}">${escapeHTML(category.name)}</option>`),
-    ];
+  // Jerarquía de categorías: familia = sin parent_id; tipo = hijo de una familia.
+  function getFamilies() {
+    return state.categories.filter((category) => !category.parent_id);
+  }
+  function getTypesOf(familyId) {
+    return state.categories.filter((category) => category.parent_id === familyId);
+  }
+  function getCategoryById(id) {
+    return id ? state.categories.find((category) => category.id === id) : null;
+  }
 
+  function renderCategoryOptions() {
+    // Filtro de productos del admin: por TEXTO real de las categorías presentes
+    // (robusto antes y después de la migración).
+    const presentCats = [...new Set(state.products.map((p) => p.category).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, "es"));
     if (els.categoryFilter) {
-      els.categoryFilter.innerHTML = options.join("");
+      els.categoryFilter.innerHTML = [
+        `<option value="all">Todas las categorias</option>`,
+        ...presentCats.map((name) => `<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`),
+      ].join("");
       syncFilterControls();
     }
 
-    const categorySelect = els.productForm?.elements.category;
-    if (categorySelect) {
-      categorySelect.innerHTML = [
-        `<option value="">Selecciona categoria</option>`,
-        ...state.categories.map((category) => `<option value="${escapeHTML(category.name)}">${escapeHTML(category.name)}</option>`),
+    // Select de FAMILIA en el drawer (el de TIPO se llena según la familia elegida).
+    const familySelect = els.productForm?.elements.family;
+    if (familySelect) {
+      const current = familySelect.value;
+      familySelect.innerHTML = [
+        `<option value="">Selecciona familia</option>`,
+        ...getFamilies().map((fam) => `<option value="${fam.id}">${escapeHTML(fam.name)}</option>`),
       ].join("");
+      if (current) familySelect.value = current;
+    }
+  }
+
+  function renderTypeOptions(familyId, selectedTypeId = "") {
+    const typeSelect = els.productForm?.elements.type;
+    if (!typeSelect) return;
+    const types = familyId ? getTypesOf(familyId) : [];
+    typeSelect.innerHTML = [
+      `<option value="">General (toda la familia)</option>`,
+      ...types.map((t) => `<option value="${t.id}"${t.id === selectedTypeId ? " selected" : ""}>${escapeHTML(t.name)}</option>`),
+    ].join("");
+    typeSelect.disabled = !familyId;
+  }
+
+  // Posiciona los selects familia/tipo a partir del category_id del producto.
+  function setCategoryCascade(product) {
+    const familySelect = els.productForm?.elements.family;
+    if (!familySelect) return;
+    const cat = product ? getCategoryById(product.category_id) : null;
+    if (cat && cat.parent_id) {
+      familySelect.value = cat.parent_id;
+      renderTypeOptions(cat.parent_id, cat.id);
+    } else if (cat) {
+      familySelect.value = cat.id;
+      renderTypeOptions(cat.id, "");
+    } else {
+      familySelect.value = "";
+      renderTypeOptions(null);
+    }
+  }
+
+  // ===== Gestión de categorías (pantalla dedicada) =====
+  async function reloadCategories() {
+    state.categories = await window.catalogDb.getCategories();
+    try {
+      state.allCategories = await window.catalogDb.getAllCategories();
+    } catch (error) {
+      state.allCategories = state.categories;
+    }
+    renderCategoryOptions();
+    renderCategoryManager();
+  }
+
+  function categorySortList(list) {
+    return [...list].sort((a, b) => (a.sort_order ?? 99) - (b.sort_order ?? 99) || a.name.localeCompare(b.name, "es"));
+  }
+
+  function categoryActionsMarkup(cat, index, total) {
+    return `
+      <div class="admin-cat-actions">
+        <button class="admin-chip-btn" type="button" data-cat-up="${cat.id}" ${index === 0 ? "disabled" : ""} aria-label="Subir">${icon("arrow-up", "")}</button>
+        <button class="admin-chip-btn" type="button" data-cat-down="${cat.id}" ${index === total - 1 ? "disabled" : ""} aria-label="Bajar">${icon("arrow-down", "")}</button>
+        <button class="admin-chip-btn" type="button" data-cat-rename="${cat.id}" aria-label="Renombrar">${icon("pencil", "")}</button>
+        <button class="admin-chip-btn" type="button" data-cat-toggle="${cat.id}">${cat.is_active === false ? "Activar" : "Ocultar"}</button>
+        <button class="admin-chip-btn" type="button" data-cat-delete="${cat.id}" aria-label="Eliminar">${icon("trash", "")}</button>
+      </div>`;
+  }
+
+  function renderCategoryManager() {
+    if (!els.categoryManager) return;
+    const cats = state.allCategories?.length ? state.allCategories : state.categories;
+    const families = categorySortList(cats.filter((c) => !c.parent_id));
+    if (!families.length) {
+      els.categoryManager.innerHTML = `<p class="admin-help-text">No hay categorías todavía. Crea la primera familia.</p>`;
+      return;
+    }
+    els.categoryManager.innerHTML = families.map((fam, fi) => {
+      const types = categorySortList(cats.filter((c) => c.parent_id === fam.id));
+      return `
+      <article class="admin-cat-family${fam.is_active === false ? " is-off" : ""}">
+        <div class="admin-cat-row admin-cat-row--family">
+          <strong>${escapeHTML(fam.name)}${fam.is_active === false ? " (oculta)" : ""}</strong>
+          <div class="admin-cat-actions">
+            <button class="admin-chip-btn" type="button" data-cat-up="${fam.id}" ${fi === 0 ? "disabled" : ""} aria-label="Subir">${icon("arrow-up", "")}</button>
+            <button class="admin-chip-btn" type="button" data-cat-down="${fam.id}" ${fi === families.length - 1 ? "disabled" : ""} aria-label="Bajar">${icon("arrow-down", "")}</button>
+            <button class="admin-chip-btn" type="button" data-cat-add-type="${fam.id}">${icon("plus")}Tipo</button>
+            <button class="admin-chip-btn" type="button" data-cat-rename="${fam.id}">${icon("pencil")}Renombrar</button>
+            <button class="admin-chip-btn" type="button" data-cat-toggle="${fam.id}">${fam.is_active === false ? "Activar" : "Ocultar"}</button>
+            <button class="admin-chip-btn" type="button" data-cat-delete="${fam.id}" aria-label="Eliminar familia">${icon("trash", "")}</button>
+          </div>
+        </div>
+        <div class="admin-cat-types">
+          ${types.length ? types.map((t, ti) => `
+            <div class="admin-cat-row admin-cat-type${t.is_active === false ? " is-off" : ""}">
+              <span>${escapeHTML(t.name)}${t.is_active === false ? " (oculto)" : ""}</span>
+              ${categoryActionsMarkup(t, ti, types.length)}
+            </div>`).join("") : `<p class="admin-help-text admin-cat-empty">Sin tipos.</p>`}
+        </div>
+      </article>`;
+    }).join("");
+  }
+
+  function nextCategorySort(parentId) {
+    const siblings = (state.allCategories || []).filter((c) => (c.parent_id || null) === (parentId || null));
+    return siblings.reduce((max, c) => Math.max(max, c.sort_order ?? 0), 0) + 1;
+  }
+
+  async function createCategoryFromManager(parentId) {
+    const name = await promptDialog({
+      title: parentId ? "Nuevo tipo" : "Nueva familia",
+      label: parentId ? "Nombre del tipo" : "Nombre de la familia",
+      confirmText: "Crear",
+    });
+    if (!name) return;
+    try {
+      await window.catalogDb.createCategory({ name, parentId: parentId || null, sortOrder: nextCategorySort(parentId) });
+      await reloadCategories();
+      showToast("Categoría creada.");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  }
+
+  async function renameCategoryEntry(id) {
+    const name = await promptDialog({ title: "Renombrar categoría", label: "Nuevo nombre", confirmText: "Guardar" });
+    if (!name) return;
+    try {
+      await window.catalogDb.updateCategory(id, { name });
+      await reloadCategories();
+      showToast("Categoría actualizada.");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  }
+
+  async function toggleCategoryActive(id) {
+    const cat = (state.allCategories || []).find((c) => c.id === id);
+    if (!cat) return;
+    try {
+      await window.catalogDb.updateCategory(id, { is_active: cat.is_active === false });
+      await reloadCategories();
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  }
+
+  async function deleteCategoryEntry(id) {
+    const cats = state.allCategories || [];
+    const cat = cats.find((c) => c.id === id);
+    if (!cat) return;
+    if (cats.some((c) => c.parent_id === id)) {
+      showToast("Primero elimina o mueve los tipos de esta familia.", "error");
+      return;
+    }
+    try {
+      const count = await window.catalogDb.getCategoryProductCount(id, []);
+      if (count > 0) {
+        showToast(`No se puede borrar: ${count} producto(s) la usan. Reasígnalos primero.`, "error");
+        return;
+      }
+      const ok = await confirmDialog({
+        title: "Eliminar categoría",
+        message: `Se eliminará "${cat.name}". Esta acción no se puede deshacer.`,
+        confirmText: "Eliminar",
+        danger: true,
+      });
+      if (!ok) return;
+      await window.catalogDb.deleteCategory(id);
+      await reloadCategories();
+      showToast("Categoría eliminada.");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  }
+
+  async function moveCategoryEntry(id, direction) {
+    const cats = state.allCategories || [];
+    const cat = cats.find((c) => c.id === id);
+    if (!cat) return;
+    const siblings = categorySortList(cats.filter((c) => (c.parent_id || null) === (cat.parent_id || null)));
+    const index = siblings.findIndex((c) => c.id === id);
+    const swapWith = siblings[index + direction];
+    if (!swapWith) return;
+    try {
+      const a = cat.sort_order ?? index;
+      const b = swapWith.sort_order ?? (index + direction);
+      // Si empatan, separa para que el reordenamiento tenga efecto.
+      const newA = a === b ? (direction < 0 ? b - 1 : b + 1) : b;
+      await window.catalogDb.updateCategory(cat.id, { sort_order: newA });
+      await window.catalogDb.updateCategory(swapWith.id, { sort_order: a });
+      await reloadCategories();
+    } catch (error) {
+      showToast(error.message, "error");
     }
   }
 
@@ -903,6 +1177,7 @@
     renderVariants();
     renderDrawerFlavors();
     renderHomeProducts();
+    renderCategoryManager();
   }
 
   function setSection(section) {
@@ -912,6 +1187,7 @@
       products: "Productos",
       variants: "Sabores y variantes",
       home: "Productos del inicio",
+      categories: "Categorías",
       settings: "Configuracion",
     };
 
@@ -972,8 +1248,8 @@
       isValid = false;
     }
 
-    if (!data.category?.trim()) {
-      setFieldError("category", "Debes seleccionar una categoria.");
+    if (!data.category_id) {
+      setFieldError("category", "Debes seleccionar una familia (y un tipo si aplica).");
       isValid = false;
     }
 
@@ -1015,7 +1291,6 @@
     if (product) {
       form.elements.name.value = product.name || "";
       form.elements.brand.value = product.brand || "";
-      form.elements.category.value = product.category || "";
       form.elements.presentation.value = product.presentation || "";
       form.elements.description_short.value = product.description_short || "";
       form.elements.description_long.value = product.description_long || product.description || "";
@@ -1040,6 +1315,7 @@
       form.elements.flavor_mode.value = "needs_review";
     }
 
+    setCategoryCascade(product);
     updateDiscountHint();
     updateImageState();
     renderDrawerFlavors();
@@ -1124,7 +1400,6 @@
     const form = els.productForm;
     form.elements.name.value = `${source.name || "Producto"} (copia)`;
     form.elements.brand.value = source.brand || "";
-    form.elements.category.value = source.category || "";
     form.elements.presentation.value = source.presentation || "";
     form.elements.description_short.value = source.description_short || "";
     form.elements.description_long.value = source.description_long || source.description || "";
@@ -1143,6 +1418,7 @@
 
     els.drawerTitle.textContent = "Duplicar producto";
     els.imagePreview.src = form.elements.image_url.value || PLACEHOLDER_IMAGE;
+    setCategoryCascade(source);
     updateDiscountHint();
     updateImageState();
     form.elements.name.focus();
@@ -1174,10 +1450,16 @@
 
   function collectProductFormData() {
     const form = els.productForm;
+    // category_id = tipo elegido, o la familia si no hay tipo. category (texto) = su nombre.
+    const familyId = form.elements.family.value;
+    const typeId = form.elements.type.value;
+    const categoryId = typeId || familyId || null;
+    const categoryName = getCategoryById(categoryId)?.name || "";
     return {
       name: form.elements.name.value.trim(),
       brand: form.elements.brand.value.trim(),
-      category: form.elements.category.value,
+      category: categoryName,
+      category_id: categoryId,
       price: form.elements.price.value,
       old_price: form.elements.old_price.value,
       presentation: form.elements.presentation.value.trim(),
@@ -1517,6 +1799,7 @@
     els.productForm?.addEventListener("submit", handleProductSubmit);
     els.deleteProductBtn?.addEventListener("click", deleteSelectedProduct);
     els.duplicateProductBtn?.addEventListener("click", duplicateProduct);
+    document.querySelector("[data-cat-add-family]")?.addEventListener("click", () => createCategoryFromManager(null));
     els.seedBtn?.addEventListener("click", seedProducts);
     els.saveHomeBtn?.addEventListener("click", saveHomeProducts);
 
@@ -1533,6 +1816,19 @@
       els.productForm.elements.image_file.click();
     });
     els.productForm?.querySelector("[data-clear-image]")?.addEventListener("click", clearProductImage);
+
+    els.productForm?.elements.family.addEventListener("change", () => {
+      renderTypeOptions(els.productForm.elements.family.value);
+    });
+    els.productForm?.querySelector("[data-new-family]")?.addEventListener("click", () => createCategoryInline(null));
+    els.productForm?.querySelector("[data-new-type]")?.addEventListener("click", () => {
+      const familyId = els.productForm.elements.family.value;
+      if (!familyId) {
+        showToast("Primero elige una familia.", "error");
+        return;
+      }
+      createCategoryInline(familyId);
+    });
 
     els.productForm?.elements.image_file.addEventListener("change", () => {
       const file = els.productForm.elements.image_file.files?.[0];
@@ -1650,6 +1946,19 @@
         await addFlavorFromInputs("drawerFlavor", state.selectedProductId);
         return;
       }
+
+      const catAddType = event.target.closest("[data-cat-add-type]");
+      if (catAddType) { await createCategoryFromManager(catAddType.dataset.catAddType); return; }
+      const catRename = event.target.closest("[data-cat-rename]");
+      if (catRename) { await renameCategoryEntry(catRename.dataset.catRename); return; }
+      const catToggle = event.target.closest("[data-cat-toggle]");
+      if (catToggle) { await toggleCategoryActive(catToggle.dataset.catToggle); return; }
+      const catDelete = event.target.closest("[data-cat-delete]");
+      if (catDelete) { await deleteCategoryEntry(catDelete.dataset.catDelete); return; }
+      const catUp = event.target.closest("[data-cat-up]");
+      if (catUp) { await moveCategoryEntry(catUp.dataset.catUp, -1); return; }
+      const catDown = event.target.closest("[data-cat-down]");
+      if (catDown) { await moveCategoryEntry(catDown.dataset.catDown, 1); return; }
 
       const flavorRow = event.target.closest("[data-flavor-id]");
       if (flavorRow && event.target.closest("[data-save-flavor]")) {

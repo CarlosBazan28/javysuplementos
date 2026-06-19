@@ -1777,6 +1777,101 @@ button.admin-stat:focus-visible {
   font-weight: 700;
 }
 
+/* ===== Cascade Familia → Tipo (drawer) ===== */
+.admin-cascade {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-cascade__field {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-cascade__field > label {
+  font-weight: 600;
+  color: var(--admin-text);
+  font-size: 0.9rem;
+}
+
+.admin-cascade__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-cascade__row select {
+  width: 100%;
+}
+
+/* ===== Gestión de categorías ===== */
+.admin-cat-family {
+  border: 1px solid var(--admin-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.admin-cat-family.is-off {
+  opacity: 0.55;
+}
+
+.admin-cat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-cat-row--family strong {
+  font-size: 1.02rem;
+}
+
+.admin-cat-types {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  padding-left: 12px;
+  border-left: 2px solid var(--admin-line);
+}
+
+.admin-cat-type {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+
+.admin-cat-type.is-off {
+  opacity: 0.55;
+}
+
+.admin-cat-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.admin-cat-empty {
+  margin: 0;
+  padding-left: 2px;
+}
+
+.admin-prompt__label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--admin-muted);
+}
+
+.admin-prompt__label input {
+  width: 100%;
+  height: 42px;
+  padding: 0 10px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -16,6 +16,7 @@ const PRODUCT_BASE_SELECT = `
   name,
   brand,
   category,
+  category_id,
   price,
   presentation,
   image_url,
@@ -224,6 +225,7 @@ function normalizeProductFromDb(product) {
     name,
     brand,
     category,
+    category_id: product.category_id ?? null,
     price,
     old_price: product.old_price == null || product.old_price === "" ? null : Number(product.old_price),
     presentation,
@@ -354,7 +356,7 @@ function mapProductToDb(productData = {}) {
     "Usar como complemento de una alimentacion y entrenamiento adecuados.",
   ]);
 
-  return {
+  const payload = {
     slug: getProductSlug(productData),
     nombre: name,
     subtitulo: subtitle,
@@ -390,6 +392,14 @@ function mapProductToDb(productData = {}) {
     goals: asArray(productData.goals),
     legacy_id: productData.legacy_id?.trim() || null,
   };
+
+  // Sólo tocar category_id si el form lo manda; así editar un producto no borra
+  // la categoría mapeada por la migración mientras el selector aún no existe.
+  if (productData.category_id !== undefined) {
+    payload.category_id = productData.category_id || null;
+  }
+
+  return payload;
 }
 
 function ensureSupabaseForWrite() {
@@ -454,7 +464,7 @@ async function getCategories() {
     try {
       const { data, error } = await supabaseClient
         .from("categories")
-        .select("id, name, slug, sort_order, is_active")
+        .select("id, name, slug, sort_order, is_active, parent_id")
         .eq("is_active", true)
         .order("sort_order", { ascending: true })
         .order("name", { ascending: true });
@@ -467,6 +477,85 @@ async function getCategories() {
   }
 
   return DEFAULT_CATEGORIES;
+}
+
+// Todas las categorías (incluidas inactivas) para la gestión del admin.
+async function getAllCategories() {
+  ensureSupabaseForWrite();
+  const { data, error } = await supabaseClient
+    .from("categories")
+    .select("id, name, slug, sort_order, is_active, parent_id")
+    .order("sort_order", { ascending: true })
+    .order("name", { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+function categorySlugify(value = "") {
+  return value
+    .toString()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+async function createCategory({ name, parentId = null, sortOrder = 100 }) {
+  ensureSupabaseForWrite();
+  const trimmed = name?.trim();
+  if (!trimmed) throw new Error("El nombre de la categoría es obligatorio.");
+  // Slug único: fam- para familias, tipo- para tipos, + base del nombre.
+  const base = categorySlugify(trimmed) || "categoria";
+  const slug = `${parentId ? "tipo" : "fam"}-${base}-${Date.now().toString(36)}`;
+
+  const { data, error } = await supabaseClient
+    .from("categories")
+    .insert({ name: trimmed, slug, parent_id: parentId, sort_order: sortOrder, is_active: true })
+    .select("id, name, slug, sort_order, is_active, parent_id")
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+async function updateCategory(id, changes = {}) {
+  ensureSupabaseForWrite();
+  const payload = {};
+  if (changes.name !== undefined) payload.name = changes.name?.trim();
+  if (changes.sort_order !== undefined) payload.sort_order = Number(changes.sort_order);
+  if (changes.is_active !== undefined) payload.is_active = Boolean(changes.is_active);
+  if (changes.parent_id !== undefined) payload.parent_id = changes.parent_id;
+
+  const { data, error } = await supabaseClient
+    .from("categories")
+    .update(payload)
+    .eq("id", id)
+    .select("id, name, slug, sort_order, is_active, parent_id")
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Cuántos productos usan una categoría (o cualquiera de sus tipos hijos).
+async function getCategoryProductCount(categoryId, childIds = []) {
+  ensureSupabaseForWrite();
+  const ids = [categoryId, ...childIds];
+  const { count, error } = await supabaseClient
+    .from("products")
+    .select("id", { count: "exact", head: true })
+    .in("category_id", ids);
+
+  if (error) throw error;
+  return count || 0;
+}
+
+async function deleteCategory(id) {
+  ensureSupabaseForWrite();
+  const { error } = await supabaseClient.from("categories").delete().eq("id", id);
+  if (error) throw error;
 }
 
 async function getAdminProfile(userId) {
@@ -815,6 +904,11 @@ window.catalogDb = {
   getProductsWithFlavors,
   getProductById,
   getCategories,
+  getAllCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  getCategoryProductCount,
   getAdminProfile,
   getHomeProducts,
   updateHomeProducts,
