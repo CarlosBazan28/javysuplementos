@@ -6,6 +6,10 @@
     products: [],
     categories: [],
     allCategories: [],
+    combos: [],
+    comboItems: [],
+    selectedComboId: null,
+    comboImageObjectUrl: null,
     currentSection: "dashboard",
     selectedProductId: null,
     imageObjectUrl: null,
@@ -77,6 +81,15 @@
       drawer: $("#productDrawer"),
       productForm: $("#adminProductForm"),
       drawerFlavors: $("#drawerFlavors"),
+      combosList: $("#adminCombosList"),
+      newComboBtn: $("#adminNewComboBtn"),
+      comboDrawer: $("#comboDrawer"),
+      comboForm: $("#adminComboForm"),
+      comboDrawerTitle: $("#comboDrawerTitle"),
+      comboImagePreview: $("#comboImagePreview"),
+      comboItemsList: $("#comboItemsList"),
+      comboFormMessage: $("#adminComboFormMessage"),
+      deleteComboBtn: $("#adminDeleteComboBtn"),
       drawerTitle: $("#productDrawerTitle"),
       imagePreview: $("#productImagePreview"),
       deleteProductBtn: $("#adminDeleteProductBtn"),
@@ -495,6 +508,11 @@
       state.allCategories = await window.catalogDb.getAllCategories();
     } catch (error) {
       state.allCategories = state.categories;
+    }
+    try {
+      state.combos = await window.catalogDb.getCombos();
+    } catch (error) {
+      state.combos = [];
     }
     state.products = await window.catalogDb.getProductsWithFlavors({ cache: false, fallback: false });
     state.homeIds = state.products
@@ -1170,6 +1188,305 @@
     `).join("") : `<p class="admin-help-text">Todos los productos visibles ya estan seleccionados.</p>`;
   }
 
+  // ===== Combos (admin) =====
+  function getComboById(id) {
+    return state.combos.find((combo) => combo.id === id);
+  }
+
+  function renderCombos() {
+    if (!els.combosList) return;
+    if (!state.combos.length) {
+      els.combosList.innerHTML = `<p class="admin-help-text">Aún no hay combos. Crea el primero con "Nuevo combo".</p>`;
+      return;
+    }
+    els.combosList.innerHTML = state.combos.map((combo) => `
+      <article class="admin-combo-card${combo.is_active ? "" : " is-off"}">
+        <img src="${escapeHTML(combo.image)}" alt="" />
+        <div class="admin-combo-card__info">
+          <strong>${escapeHTML(combo.name)}</strong>
+          <small>${combo.items.length} producto(s) · ${formatPrice(combo.price)}${combo.show_on_home ? " · En inicio" : ""}</small>
+        </div>
+        <div class="admin-combo-card__actions">
+          ${availabilitySwitch({ on: combo.is_active, attr: "data-toggle-combo", id: combo.id, onLabel: "Activo", offLabel: "Inactivo" })}
+          <button class="admin-chip-btn" type="button" data-edit-combo="${combo.id}">${icon("pencil")}Editar</button>
+        </div>
+      </article>
+    `).join("");
+  }
+
+  function renderComboProductSelect() {
+    const select = $("#comboProductSelect");
+    if (!select) return;
+    select.innerHTML = state.products
+      .slice()
+      .sort((a, b) => (a.name || "").localeCompare(b.name || "", "es"))
+      .map((p) => `<option value="${p.id}">${escapeHTML(p.name)}</option>`)
+      .join("");
+    renderComboFlavorSelect(select.value);
+  }
+
+  function renderComboFlavorSelect(productId) {
+    const select = $("#comboFlavorSelect");
+    if (!select) return;
+    const product = getProductById(productId);
+    const flavors = product?.flavors || [];
+    select.innerHTML = [
+      `<option value="">Sin sabor específico</option>`,
+      ...flavors.map((f) => `<option value="${f.id}">${escapeHTML(f.name)}</option>`),
+    ].join("");
+    select.disabled = !flavors.length;
+  }
+
+  function renderComboItems() {
+    if (!els.comboItemsList) return;
+    if (!state.comboItems.length) {
+      els.comboItemsList.innerHTML = `<p class="admin-help-text">Agrega productos al combo arriba.</p>`;
+      return;
+    }
+    els.comboItemsList.innerHTML = state.comboItems.map((item, index) => `
+      <div class="admin-combo-item">
+        <span>${item.quantity} × ${escapeHTML(item.product_name)}${item.flavor_name ? ` <em>(${escapeHTML(item.flavor_name)})</em>` : ""}</span>
+        <button class="admin-chip-btn" type="button" data-remove-combo-item="${index}" aria-label="Quitar">${icon("trash", "")}</button>
+      </div>
+    `).join("");
+  }
+
+  function addComboItem() {
+    const productId = $("#comboProductSelect")?.value;
+    const flavorId = $("#comboFlavorSelect")?.value || null;
+    const qty = Math.max(1, parseInt($("#comboQtyInput")?.value, 10) || 1);
+    const product = getProductById(productId);
+    if (!product) {
+      showToast("Selecciona un producto.", "error");
+      return;
+    }
+    const flavor = (product.flavors || []).find((f) => f.id === flavorId);
+    state.comboItems.push({
+      product_id: productId,
+      flavor_id: flavorId,
+      quantity: qty,
+      product_name: product.name,
+      flavor_name: flavor?.name || null,
+    });
+    renderComboItems();
+  }
+
+  function removeComboItem(index) {
+    state.comboItems.splice(Number(index), 1);
+    renderComboItems();
+  }
+
+  function updateComboPriceHint() {
+    const hint = els.comboForm?.querySelector("[data-combo-price-hint]");
+    if (!hint) return;
+    const price = Number(els.comboForm.elements.price.value);
+    const oldPrice = Number(els.comboForm.elements.old_price.value);
+    if (price > 0 && oldPrice > price) {
+      hint.hidden = false;
+      hint.textContent = `Ahorro: -${Math.round((1 - price / oldPrice) * 100)}%`;
+    } else {
+      hint.hidden = true;
+      hint.textContent = "";
+    }
+  }
+
+  function updateComboImageState() {
+    const form = els.comboForm;
+    if (!form) return;
+    const stateEl = form.querySelector("[data-combo-image-state]");
+    const clearBtn = form.querySelector("[data-combo-clear-image]");
+    const pickLabel = form.querySelector("[data-combo-pick-label]");
+    const file = form.elements.image_file.files?.[0];
+    const url = form.elements.image_url.value.trim();
+    const hasUrl = url && url !== PLACEHOLDER_IMAGE;
+    if (file) {
+      stateEl.textContent = "Nueva imagen"; stateEl.dataset.tone = "new"; pickLabel.textContent = "Cambiar imagen";
+    } else if (hasUrl) {
+      stateEl.textContent = "Imagen actual"; stateEl.dataset.tone = "current"; pickLabel.textContent = "Cambiar imagen";
+    } else {
+      stateEl.textContent = "Sin imagen"; stateEl.dataset.tone = "empty"; pickLabel.textContent = "Subir imagen";
+    }
+    clearBtn.hidden = !(file || hasUrl);
+  }
+
+  function releaseComboImageObjectUrl() {
+    if (state.comboImageObjectUrl) {
+      URL.revokeObjectURL(state.comboImageObjectUrl);
+      state.comboImageObjectUrl = null;
+    }
+  }
+
+  async function clearComboImage() {
+    const ok = await confirmDialog({
+      title: "Quitar imagen",
+      message: "Se quitará la imagen del combo. El cambio se aplica al guardar.",
+      confirmText: "Quitar",
+      danger: true,
+    });
+    if (!ok) return;
+    const form = els.comboForm;
+    form.elements.image_file.value = "";
+    form.elements.image_url.value = "";
+    releaseComboImageObjectUrl();
+    els.comboImagePreview.src = PLACEHOLDER_IMAGE;
+    updateComboImageState();
+  }
+
+  function clearComboErrors() {
+    els.comboForm.querySelectorAll("[data-field-error]").forEach((el) => {
+      el.textContent = "";
+      el.classList.remove("is-error");
+    });
+  }
+  function setComboError(name, message) {
+    const target = els.comboForm.querySelector(`[data-field-error="${name}"]`);
+    if (target) { target.textContent = message; target.classList.add("is-error"); }
+  }
+  function setComboFormMessage(message = "", isError = false) {
+    if (!els.comboFormMessage) return;
+    els.comboFormMessage.textContent = message;
+    els.comboFormMessage.classList.toggle("is-error", Boolean(isError));
+  }
+
+  function openComboDrawer(comboId = null) {
+    state.comboLastFocused = document.activeElement;
+    state.selectedComboId = comboId;
+    const combo = comboId ? getComboById(comboId) : null;
+    const form = els.comboForm;
+    releaseComboImageObjectUrl();
+    form.reset();
+    clearComboErrors();
+    setComboFormMessage("");
+    els.comboDrawerTitle.textContent = combo ? "Editar combo" : "Nuevo combo";
+    els.deleteComboBtn.hidden = !combo;
+    els.comboImagePreview.src = combo ? combo.image : PLACEHOLDER_IMAGE;
+
+    if (combo) {
+      form.elements.name.value = combo.name || "";
+      form.elements.description.value = combo.description || "";
+      form.elements.price.value = combo.price ?? "";
+      form.elements.old_price.value = combo.old_price ?? "";
+      form.elements.image_url.value = combo.image_url || "";
+      form.elements.is_active.checked = combo.is_active !== false;
+      form.elements.show_on_home.checked = Boolean(combo.show_on_home);
+      state.comboItems = combo.items.map((it) => ({ ...it }));
+    } else {
+      form.elements.is_active.checked = true;
+      form.elements.show_on_home.checked = false;
+      state.comboItems = [];
+    }
+
+    renderComboProductSelect();
+    renderComboItems();
+    updateComboPriceHint();
+    updateComboImageState();
+    els.comboDrawer.hidden = false;
+    els.comboDrawer.setAttribute("aria-hidden", "false");
+    form.elements.name.focus();
+  }
+
+  function closeComboDrawer() {
+    els.comboDrawer.hidden = true;
+    els.comboDrawer.setAttribute("aria-hidden", "true");
+    state.selectedComboId = null;
+    releaseComboImageObjectUrl();
+    state.comboLastFocused?.focus?.({ preventScroll: true });
+    state.comboLastFocused = null;
+  }
+
+  function handleComboDrawerKeydown(event) {
+    if (event.key === "Escape") { event.preventDefault(); closeComboDrawer(); return; }
+    if (event.key !== "Tab") return;
+    const focusables = Array.from(
+      els.comboDrawer.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')
+    ).filter((el) => el.offsetParent !== null);
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  }
+
+  function validateComboForm(form) {
+    clearComboErrors();
+    let ok = true;
+    if (!form.elements.name.value.trim()) { setComboError("combo_name", "El nombre es obligatorio."); ok = false; }
+    const price = form.elements.price.value;
+    if (price === "" || !Number.isFinite(Number(price)) || Number(price) < 0) { setComboError("combo_price", "Precio inválido."); ok = false; }
+    if (!state.comboItems.length) { setComboError("combo_items", "Agrega al menos un producto."); ok = false; }
+    return ok;
+  }
+
+  async function handleComboSubmit(event) {
+    event.preventDefault();
+    const form = els.comboForm;
+    if (!validateComboForm(form)) { setComboFormMessage("Revisa los campos marcados.", true); return; }
+    const submitBtn = form.querySelector("button[type='submit']");
+    const imageFile = form.elements.image_file.files?.[0];
+    let uploadedImageUrl = "";
+    const data = {
+      name: form.elements.name.value.trim(),
+      description: form.elements.description.value.trim(),
+      price: form.elements.price.value,
+      old_price: form.elements.old_price.value,
+      image_url: form.elements.image_url.value.trim(),
+      is_active: form.elements.is_active.checked,
+      show_on_home: form.elements.show_on_home.checked,
+    };
+    try {
+      setButtonLoading(submitBtn, true);
+      setComboFormMessage("Guardando combo...");
+      if (imageFile) {
+        uploadedImageUrl = await window.catalogDb.uploadProductImage(imageFile);
+        data.image_url = uploadedImageUrl;
+      }
+      let comboId = state.selectedComboId;
+      if (comboId) {
+        await window.catalogDb.updateCombo(comboId, data);
+      } else {
+        const created = await window.catalogDb.createCombo(data);
+        comboId = created.id;
+      }
+      await window.catalogDb.saveComboItems(comboId, state.comboItems);
+      await refreshAfterMutation("Combo guardado correctamente.");
+      closeComboDrawer();
+    } catch (error) {
+      if (uploadedImageUrl) await window.catalogDb.removeProductImage(uploadedImageUrl);
+      setComboFormMessage(error.message, true);
+      showToast("Error al guardar el combo.", "error");
+    } finally {
+      setButtonLoading(submitBtn, false);
+    }
+  }
+
+  async function deleteSelectedCombo() {
+    const combo = getComboById(state.selectedComboId);
+    if (!combo) return;
+    const ok = await confirmDialog({ title: "Eliminar combo", message: `Se eliminará "${combo.name}".`, confirmText: "Eliminar", danger: true });
+    if (!ok) return;
+    try {
+      setButtonLoading(els.deleteComboBtn, true, "Eliminando...");
+      await window.catalogDb.deleteCombo(combo.id);
+      await refreshAfterMutation("Combo eliminado.");
+      closeComboDrawer();
+    } catch (error) {
+      showToast(error.message, "error");
+    } finally {
+      setButtonLoading(els.deleteComboBtn, false);
+    }
+  }
+
+  async function toggleComboActive(comboId) {
+    const combo = getComboById(comboId);
+    if (!combo) return;
+    try {
+      await window.catalogDb.setComboActive(comboId, combo.is_active === false);
+      await refreshAfterMutation("Combo actualizado.");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  }
+
   function renderAll() {
     renderCategoryOptions();
     renderDashboard();
@@ -1178,6 +1495,7 @@
     renderDrawerFlavors();
     renderHomeProducts();
     renderCategoryManager();
+    renderCombos();
   }
 
   function setSection(section) {
@@ -1188,6 +1506,7 @@
       variants: "Sabores y variantes",
       home: "Productos del inicio",
       categories: "Categorías",
+      combos: "Combos",
       settings: "Configuracion",
     };
 
@@ -1800,6 +2119,27 @@
     els.deleteProductBtn?.addEventListener("click", deleteSelectedProduct);
     els.duplicateProductBtn?.addEventListener("click", duplicateProduct);
     document.querySelector("[data-cat-add-family]")?.addEventListener("click", () => createCategoryFromManager(null));
+
+    // Combos
+    els.newComboBtn?.addEventListener("click", () => openComboDrawer());
+    els.comboForm?.addEventListener("submit", handleComboSubmit);
+    els.deleteComboBtn?.addEventListener("click", deleteSelectedCombo);
+    els.comboDrawer?.addEventListener("keydown", handleComboDrawerKeydown);
+    document.querySelectorAll("[data-close-combo-drawer]").forEach((item) => item.addEventListener("click", closeComboDrawer));
+    els.comboForm?.querySelector("[data-combo-pick-image]")?.addEventListener("click", () => els.comboForm.elements.image_file.click());
+    els.comboForm?.querySelector("[data-combo-clear-image]")?.addEventListener("click", clearComboImage);
+    els.comboForm?.elements.image_file.addEventListener("change", () => {
+      const file = els.comboForm.elements.image_file.files?.[0];
+      if (!file) return;
+      releaseComboImageObjectUrl();
+      state.comboImageObjectUrl = URL.createObjectURL(file);
+      els.comboImagePreview.src = state.comboImageObjectUrl;
+      updateComboImageState();
+    });
+    els.comboForm?.elements.price.addEventListener("input", updateComboPriceHint);
+    els.comboForm?.elements.old_price.addEventListener("input", updateComboPriceHint);
+    $("#comboProductSelect")?.addEventListener("change", (event) => renderComboFlavorSelect(event.target.value));
+    $("#comboAddItemBtn")?.addEventListener("click", addComboItem);
     els.seedBtn?.addEventListener("click", seedProducts);
     els.saveHomeBtn?.addEventListener("click", saveHomeProducts);
 
@@ -1959,6 +2299,13 @@
       if (catUp) { await moveCategoryEntry(catUp.dataset.catUp, -1); return; }
       const catDown = event.target.closest("[data-cat-down]");
       if (catDown) { await moveCategoryEntry(catDown.dataset.catDown, 1); return; }
+
+      const editCombo = event.target.closest("[data-edit-combo]");
+      if (editCombo) { openComboDrawer(editCombo.dataset.editCombo); return; }
+      const toggleCombo = event.target.closest("[data-toggle-combo]");
+      if (toggleCombo) { await toggleComboActive(toggleCombo.dataset.toggleCombo); return; }
+      const removeComboItemBtn = event.target.closest("[data-remove-combo-item]");
+      if (removeComboItemBtn) { removeComboItem(removeComboItemBtn.dataset.removeComboItem); return; }
 
       const flavorRow = event.target.closest("[data-flavor-id]");
       if (flavorRow && event.target.closest("[data-save-flavor]")) {

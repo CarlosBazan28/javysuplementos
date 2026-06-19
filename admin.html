@@ -68,6 +68,10 @@
               <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="tags" aria-hidden="true"></span>
               <span class="admin-nav__text">Categorías</span>
             </button>
+            <button class="admin-nav__item" type="button" data-admin-section="combos">
+              <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="package" aria-hidden="true"></span>
+              <span class="admin-nav__text">Combos</span>
+            </button>
             <button class="admin-nav__item" type="button" data-admin-section="settings">
               <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="settings" aria-hidden="true"></span>
               <span class="admin-nav__text">Ajustes</span>
@@ -228,6 +232,23 @@
                 </button>
               </div>
               <div id="adminCategoryManager"></div>
+            </div>
+          </section>
+
+          <section class="admin-section" id="section-combos" data-section-panel="combos">
+            <div class="admin-panel">
+              <div class="admin-panel__head admin-panel__head--wrap">
+                <div>
+                  <p class="admin-kicker">Promociones</p>
+                  <h2>Combos</h2>
+                  <p class="admin-help-text">Paquetes de productos con precio especial (ej. proteína + creatina).</p>
+                </div>
+                <button class="admin-primary" type="button" id="adminNewComboBtn">
+                  <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>
+                  Nuevo combo
+                </button>
+              </div>
+              <div id="adminCombosList"></div>
             </div>
           </section>
 
@@ -483,6 +504,109 @@
           <button class="admin-primary" type="submit">
             <span class="btn-icon" data-javy-icon="save" aria-hidden="true"></span>
             <span class="btn-label">Guardar producto</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="admin-drawer" id="comboDrawer" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="comboDrawerTitle">
+      <div class="admin-drawer__backdrop" data-close-combo-drawer></div>
+      <form class="admin-drawer__panel" id="adminComboForm" novalidate>
+        <div class="admin-drawer__head">
+          <div>
+            <p class="admin-kicker">Combo</p>
+            <h2 id="comboDrawerTitle">Nuevo combo</h2>
+          </div>
+          <button type="button" class="admin-icon-btn" aria-label="Cerrar editor" data-close-combo-drawer>
+            <span class="btn-icon" data-javy-icon="x" aria-hidden="true"></span>
+          </button>
+        </div>
+
+        <div class="admin-form-scroll">
+          <details class="admin-form-group" open>
+            <summary>Información</summary>
+            <div class="admin-form-grid">
+              <label class="admin-form-grid__wide">
+                Nombre del combo <span class="admin-req" aria-hidden="true">*</span>
+                <input name="name" placeholder="Ej: Combo masa — Whey + Creatina" required />
+                <small data-field-error="combo_name"></small>
+              </label>
+              <label class="admin-form-grid__wide">
+                Descripción
+                <textarea name="description" rows="2" placeholder="Qué incluye y para quién es ideal"></textarea>
+              </label>
+              <label>
+                Precio del combo <span class="admin-req" aria-hidden="true">*</span>
+                <input name="price" type="number" min="0" step="0.01" placeholder="Ej: 75.00" required />
+                <small data-field-error="combo_price"></small>
+              </label>
+              <label>
+                Precio anterior (opcional)
+                <input name="old_price" type="number" min="0" step="0.01" placeholder="Ej: 90.00" />
+                <small class="admin-price-hint" data-combo-price-hint hidden></small>
+              </label>
+            </div>
+          </details>
+
+          <details class="admin-form-group" open>
+            <summary>Imagen</summary>
+            <div class="admin-image-field">
+              <div class="admin-image-preview-wrap">
+                <img id="comboImagePreview" src="img/products/product-placeholder.svg" alt="Vista previa del combo" />
+                <span class="admin-image-state" data-combo-image-state></span>
+              </div>
+              <div class="admin-image-controls">
+                <input name="image_file" type="file" accept="image/*" id="comboImageFile" hidden />
+                <div class="admin-image-buttons">
+                  <button type="button" class="admin-secondary" data-combo-pick-image>
+                    <span class="btn-icon" data-javy-icon="upload" aria-hidden="true"></span>
+                    <span class="btn-label" data-combo-pick-label>Subir imagen</span>
+                  </button>
+                  <button type="button" class="admin-chip-btn" data-combo-clear-image hidden>
+                    <span class="btn-icon" data-javy-icon="trash" aria-hidden="true"></span>Quitar
+                  </button>
+                </div>
+                <input type="hidden" name="image_url" />
+                <small>Sube un archivo (JPG, PNG o WebP, máx 5 MB).</small>
+              </div>
+            </div>
+          </details>
+
+          <details class="admin-form-group" open>
+            <summary>Productos del combo</summary>
+            <div class="admin-combo-builder">
+              <div class="admin-combo-add">
+                <select id="comboProductSelect" aria-label="Producto"></select>
+                <select id="comboFlavorSelect" aria-label="Sabor (opcional)"></select>
+                <input id="comboQtyInput" type="number" min="1" step="1" value="1" aria-label="Cantidad" />
+                <button type="button" class="admin-primary" id="comboAddItemBtn">
+                  <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>Agregar
+                </button>
+              </div>
+              <small data-field-error="combo_items"></small>
+              <div id="comboItemsList" class="admin-combo-items"></div>
+            </div>
+          </details>
+
+          <details class="admin-form-group" open>
+            <summary>Visibilidad</summary>
+            <div class="admin-switch-row">
+              <label><input name="is_active" type="checkbox" checked /> Activo</label>
+              <label><input name="show_on_home" type="checkbox" /> Mostrar en inicio</label>
+            </div>
+          </details>
+        </div>
+
+        <div class="admin-drawer__actions">
+          <button type="button" class="admin-danger" id="adminDeleteComboBtn" hidden>
+            <span class="btn-icon" data-javy-icon="trash" aria-hidden="true"></span>
+            <span class="btn-label">Eliminar</span>
+          </button>
+          <span class="admin-form-message" id="adminComboFormMessage" aria-live="polite"></span>
+          <button type="button" class="admin-secondary" data-close-combo-drawer>Cancelar</button>
+          <button class="admin-primary" type="submit">
+            <span class="btn-icon" data-javy-icon="save" aria-hidden="true"></span>
+            <span class="btn-label">Guardar combo</span>
           </button>
         </div>
       </form>

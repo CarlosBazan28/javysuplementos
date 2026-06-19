@@ -53,6 +53,16 @@ const PRODUCT_SELECT = `
   )
 `;
 
+const COMBO_SELECT = `
+  id, name, slug, description, image_url, price, precio_centavos, old_price,
+  is_active, show_on_home, sort_order, created_at, updated_at,
+  combo_items (
+    id, product_id, flavor_id, quantity, sort_order,
+    products ( id, name, image_url, price, slug ),
+    product_flavors ( id, name )
+  )
+`;
+
 const DB_PLACEHOLDER_IMAGE = "img/products/product-placeholder.svg";
 const PRODUCT_IMAGE_BUCKET = "product-images";
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -896,6 +906,125 @@ async function seedProductsFromLocalData() {
   return summary;
 }
 
+// ===== Combos =====
+function normalizeCombo(combo) {
+  const items = (combo.combo_items || [])
+    .slice()
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+    .map((item) => {
+      const product = item.products || null;
+      return {
+        id: item.id,
+        product_id: item.product_id,
+        flavor_id: item.flavor_id,
+        quantity: item.quantity ?? 1,
+        product_name: product?.name || "Producto",
+        product_image: product?.image_url || DB_PLACEHOLDER_IMAGE,
+        product_slug: product?.slug || null,
+        flavor_name: item.product_flavors?.name || null,
+      };
+    });
+
+  const price = combo.price == null
+    ? (combo.precio_centavos ? combo.precio_centavos / 100 : null)
+    : Number(combo.price);
+
+  return {
+    id: combo.id,
+    name: combo.name,
+    slug: combo.slug,
+    description: combo.description || "",
+    image: combo.image_url || DB_PLACEHOLDER_IMAGE,
+    image_url: combo.image_url || "",
+    price,
+    old_price: combo.old_price == null || combo.old_price === "" ? null : Number(combo.old_price),
+    is_active: combo.is_active !== false,
+    show_on_home: Boolean(combo.show_on_home),
+    sort_order: combo.sort_order ?? 100,
+    items,
+    created_at: combo.created_at,
+    updated_at: combo.updated_at,
+  };
+}
+
+function mapComboToDb(data = {}) {
+  const price = data.price === "" || data.price == null ? null : Number(data.price);
+  const oldPrice = data.old_price === "" || data.old_price == null ? null : Number(data.old_price);
+  return {
+    name: data.name?.trim(),
+    description: data.description?.trim() || null,
+    image_url: data.image_url?.trim() || null,
+    price,
+    precio_centavos: price == null ? 0 : Math.round(price * 100),
+    old_price: oldPrice,
+    is_active: data.is_active ?? true,
+    show_on_home: Boolean(data.show_on_home),
+    sort_order: data.sort_order ?? 100,
+  };
+}
+
+async function getCombos(options = {}) {
+  if (!hasSupabaseClient()) return [];
+  let query = supabaseClient.from("combos").select(COMBO_SELECT).order("sort_order", { ascending: true });
+  if (options.activeOnly) query = query.eq("is_active", true);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data || []).map(normalizeCombo);
+}
+
+async function createCombo(data) {
+  ensureSupabaseForWrite();
+  const payload = mapComboToDb(data);
+  payload.slug = `${categorySlugify(data.name) || "combo"}-${Date.now().toString(36)}`;
+  const { data: row, error } = await supabaseClient.from("combos").insert(payload).select(COMBO_SELECT).single();
+  if (error) throw error;
+  return normalizeCombo(row);
+}
+
+async function updateCombo(id, data) {
+  ensureSupabaseForWrite();
+  const payload = mapComboToDb(data);
+  const { data: row, error } = await supabaseClient.from("combos").update(payload).eq("id", id).select(COMBO_SELECT).single();
+  if (error) throw error;
+  return normalizeCombo(row);
+}
+
+// Update parcial: solo activa/desactiva el combo.
+async function setComboActive(id, active) {
+  ensureSupabaseForWrite();
+  const { data, error } = await supabaseClient
+    .from("combos")
+    .update({ is_active: Boolean(active) })
+    .eq("id", id)
+    .select(COMBO_SELECT)
+    .single();
+  if (error) throw error;
+  return normalizeCombo(data);
+}
+
+async function deleteCombo(id) {
+  ensureSupabaseForWrite();
+  const { error } = await supabaseClient.from("combos").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// Reemplaza por completo los items de un combo.
+async function saveComboItems(comboId, items = []) {
+  ensureSupabaseForWrite();
+  const { error: delError } = await supabaseClient.from("combo_items").delete().eq("combo_id", comboId);
+  if (delError) throw delError;
+  if (!items.length) return;
+  const rows = items.map((item, index) => ({
+    combo_id: comboId,
+    product_id: item.product_id,
+    flavor_id: item.flavor_id || null,
+    quantity: item.quantity || 1,
+    sort_order: index,
+  }));
+  const { error: insError } = await supabaseClient.from("combo_items").insert(rows);
+  if (insError) throw insError;
+}
+
 function getProductsCacheSource() {
   return productsCacheSource;
 }
@@ -909,6 +1038,12 @@ window.catalogDb = {
   updateCategory,
   deleteCategory,
   getCategoryProductCount,
+  getCombos,
+  createCombo,
+  updateCombo,
+  setComboActive,
+  deleteCombo,
+  saveComboItems,
   getAdminProfile,
   getHomeProducts,
   updateHomeProducts,
