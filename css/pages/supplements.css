@@ -204,6 +204,54 @@
   outline-offset: 3px;
 }
 
+/* Sub-filtros (Tipos) y facetas */
+.catalog-filters--types {
+  margin-top: -2px;
+}
+
+.catalog-filter--type {
+  min-height: 38px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: rgba(90, 180, 233, 0.08);
+  border-color: rgba(90, 180, 233, 0.22);
+}
+
+.catalog-filter--type.is-active {
+  background: var(--Cyan);
+  color: #08141c;
+  border-color: var(--Cyan);
+}
+
+.catalog-facets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.catalog-facet {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--grisClaro);
+}
+
+.catalog-facet__select {
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--blanco);
+  border-radius: 10px;
+  padding: 0 10px;
+  font-weight: 600;
+}
+
+.catalog-facet__select:focus-visible {
+  outline: 2px solid var(--Cyan);
+  outline-offset: 2px;
+}
+
 .catalog-results__bar {
   display: flex;
   justify-content: space-between;

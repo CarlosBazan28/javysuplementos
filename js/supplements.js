@@ -1,8 +1,14 @@
 let products = [];
+let categories = [];
 
 const catalogState = {
   query: "",
   category: "todos",
+  family: "todos",
+  type: "todos",
+  goal: "",
+  brand: "",
+  size: "",
   sort: "recomendados",
 };
 
@@ -14,6 +20,8 @@ const catalogCount = document.getElementById("catalogCount");
 const catalogEmpty = document.getElementById("catalogEmpty");
 const emptyAdvisorBtn = document.getElementById("emptyAdvisorBtn");
 const catalogFilters = document.getElementById("catalogFilters");
+const catalogSubFilters = document.getElementById("catalogSubFilters");
+const catalogFacets = document.getElementById("catalogFacets");
 const catalogToolsHint = document.querySelector(".catalog-tools__hint");
 const catalogSort = document.getElementById("catalogSort");
 const catalogFloatingQuote = document.getElementById("catalogFloatingQuote");
@@ -56,11 +64,49 @@ function getProductCategory(product) {
   return slugify(product.category || product.categoria || "otros");
 }
 
+// Hay jerarquía utilizable sólo si la migración ya corrió (hay tipos y productos con category_id).
+function useHierarchy() {
+  return categories.some((c) => c.parent_id) && products.some((p) => p.category_id);
+}
+function pubFamilies() {
+  return categories.filter((c) => !c.parent_id);
+}
+function pubTypesOf(familyId) {
+  return categories.filter((c) => c.parent_id === familyId);
+}
+function pubCategoryById(id) {
+  return id ? categories.find((c) => c.id === id) : null;
+}
+function productInFamily(product, familyId) {
+  const cat = pubCategoryById(product.category_id);
+  return Boolean(cat && (cat.id === familyId || cat.parent_id === familyId));
+}
+
 function productMatchesCategory(product) {
+  if (useHierarchy()) {
+    const fam = catalogState.family;
+    if (fam === "destacados") return Boolean(product.featured || product.destacado);
+    if (fam !== "todos") {
+      if (!productInFamily(product, fam)) return false;
+      if (catalogState.type !== "todos" && product.category_id !== catalogState.type) return false;
+    }
+    return true;
+  }
+
+  // Fallback plano (antes de aplicar la migración).
   if (catalogState.category === "todos") return true;
   if (catalogState.category === "destacados") return Boolean(product.featured || product.destacado);
-
   return getProductCategory(product) === catalogState.category;
+}
+
+function productMatchesFacets(product) {
+  if (catalogState.goal) {
+    const goals = (product.goals || product.objetivos || []).map((g) => slugify(g));
+    if (!goals.includes(catalogState.goal)) return false;
+  }
+  if (catalogState.brand && slugify(product.brand || "") !== catalogState.brand) return false;
+  if (catalogState.size && slugify(product.presentation || "") !== catalogState.size) return false;
+  return true;
 }
 
 function getFlavorNames(product, availableOnly = false) {
@@ -88,9 +134,10 @@ function getFilteredProducts() {
 
   const filtered = products.filter((product) => {
     const categoryMatch = productMatchesCategory(product);
+    const facetMatch = productMatchesFacets(product);
     const queryMatch = !query || getSearchText(product).includes(query);
 
-    return categoryMatch && queryMatch;
+    return categoryMatch && facetMatch && queryMatch;
   });
 
   return sortProducts(filtered);
@@ -305,17 +352,108 @@ function getCategoryFilters() {
     .filter((filter) => filter.value === "todos" || filter.count > 0);
 }
 
+function uniqueSorted(list) {
+  return [...new Set(list.filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+}
+
+function filterChip({ value, label, count, attr = "data-category", active, extraClass = "" }) {
+  return `
+    <button class="catalog-filter${extraClass}${active ? " is-active" : ""}" type="button" ${attr}="${escapeHTML(value)}" aria-pressed="${active}">
+      ${escapeHTML(label)}<span class="catalog-filter__count">${count}</span>
+    </button>`;
+}
+
+function renderFlatFilters() {
+  catalogFilters.innerHTML = getCategoryFilters()
+    .map((f) => filterChip({ value: f.value, label: f.label, count: f.count, active: f.value === catalogState.category }))
+    .join("");
+  if (catalogSubFilters) catalogSubFilters.hidden = true;
+  if (catalogFacets) catalogFacets.hidden = true;
+}
+
+function renderFamilyFilters() {
+  const featuredCount = products.filter((p) => p.featured || p.destacado).length;
+  const families = pubFamilies()
+    .map((f) => ({ value: f.id, label: f.name, count: products.filter((p) => productInFamily(p, f.id)).length }))
+    .filter((f) => f.count > 0)
+    .sort((a, b) => a.label.localeCompare(b.label, "es"));
+
+  const chips = [
+    { value: "todos", label: "Todos", count: products.length },
+    ...(featuredCount ? [{ value: "destacados", label: "Destacados", count: featuredCount }] : []),
+    ...families,
+  ];
+  catalogFilters.innerHTML = chips
+    .map((f) => filterChip({ value: f.value, label: f.label, count: f.count, attr: "data-family", active: f.value === catalogState.family }))
+    .join("");
+}
+
+function renderTypeFilters() {
+  if (!catalogSubFilters) return;
+  const fam = catalogState.family;
+  if (fam === "todos" || fam === "destacados") {
+    catalogSubFilters.hidden = true;
+    catalogSubFilters.innerHTML = "";
+    return;
+  }
+  const types = pubTypesOf(fam)
+    .map((t) => ({ value: t.id, label: t.name, count: products.filter((p) => p.category_id === t.id).length }))
+    .filter((t) => t.count > 0);
+
+  if (!types.length) {
+    catalogSubFilters.hidden = true;
+    catalogSubFilters.innerHTML = "";
+    return;
+  }
+
+  const chips = [
+    { value: "todos", label: "Todos", count: products.filter((p) => productInFamily(p, fam)).length },
+    ...types,
+  ];
+  catalogSubFilters.hidden = false;
+  catalogSubFilters.innerHTML = chips
+    .map((t) => filterChip({ value: t.value, label: t.label, count: t.count, attr: "data-type", active: t.value === catalogState.type, extraClass: " catalog-filter--type" }))
+    .join("");
+}
+
+function renderFacets() {
+  if (!catalogFacets) return;
+  const goals = uniqueSorted(products.flatMap((p) => p.goals || p.objetivos || []));
+  const brands = uniqueSorted(products.map((p) => p.brand));
+  const sizes = uniqueSorted(products.map((p) => p.presentation));
+
+  const facetSelect = (key, label, values, current) => {
+    if (!values.length) return "";
+    return `
+      <label class="catalog-facet">
+        <span class="catalog-facet__label">${label}</span>
+        <select class="catalog-facet__select" data-facet="${key}">
+          <option value="">Todas</option>
+          ${values.map((v) => `<option value="${escapeHTML(slugify(v))}"${slugify(v) === current ? " selected" : ""}>${escapeHTML(v)}</option>`).join("")}
+        </select>
+      </label>`;
+  };
+
+  const html = [
+    facetSelect("goal", "Objetivo", goals, catalogState.goal),
+    facetSelect("brand", "Marca", brands, catalogState.brand),
+    facetSelect("size", "Tamaño", sizes, catalogState.size),
+  ].join("");
+
+  catalogFacets.hidden = !html.trim();
+  catalogFacets.innerHTML = html;
+}
+
 function renderFilters() {
   if (!catalogFilters) return;
 
-  catalogFilters.innerHTML = getCategoryFilters().map((filter) => {
-    const isActive = filter.value === catalogState.category;
-    return `
-    <button class="catalog-filter${isActive ? " is-active" : ""}" type="button" data-category="${filter.value}" aria-pressed="${isActive}">
-      ${escapeHTML(filter.label)}<span class="catalog-filter__count">${filter.count}</span>
-    </button>
-  `;
-  }).join("");
+  if (useHierarchy()) {
+    renderFamilyFilters();
+    renderTypeFilters();
+    renderFacets();
+  } else {
+    renderFlatFilters();
+  }
 
   updateFilterHint();
 }
@@ -505,7 +643,15 @@ const debouncedCommit = debounce(commitState, 160);
 function writeStateToURL() {
   const params = new URLSearchParams();
   if (catalogState.query.trim()) params.set("q", catalogState.query.trim());
-  if (catalogState.category && catalogState.category !== "todos") params.set("cat", catalogState.category);
+  if (useHierarchy()) {
+    if (catalogState.family !== "todos") params.set("fam", catalogState.family);
+    if (catalogState.type !== "todos") params.set("tipo", catalogState.type);
+  } else if (catalogState.category !== "todos") {
+    params.set("cat", catalogState.category);
+  }
+  if (catalogState.goal) params.set("obj", catalogState.goal);
+  if (catalogState.brand) params.set("marca", catalogState.brand);
+  if (catalogState.size) params.set("size", catalogState.size);
   if (catalogState.sort && catalogState.sort !== "recomendados") params.set("sort", catalogState.sort);
 
   const qs = params.toString();
@@ -516,6 +662,11 @@ function readStateFromURL() {
   const params = new URLSearchParams(location.search);
   catalogState.query = params.get("q") || "";
   catalogState.category = params.get("cat") || "todos";
+  catalogState.family = params.get("fam") || "todos";
+  catalogState.type = params.get("tipo") || "todos";
+  catalogState.goal = params.get("obj") || "";
+  catalogState.brand = params.get("marca") || "";
+  catalogState.size = params.get("size") || "";
   catalogState.sort = params.get("sort") || "recomendados";
 
   if (searchInput) searchInput.value = catalogState.query;
@@ -549,23 +700,51 @@ catalogSort?.addEventListener("change", () => {
   commitState();
 });
 
-function selectCategory(button) {
-  catalogState.category = button.dataset.category || "todos";
+function commitWithFilters() {
+  renderFilters();
+  renderCatalog();
+  writeStateToURL();
+}
 
-  document.querySelectorAll(".catalog-filter").forEach((item) => {
+function selectCategory(button) {
+  // Modo jerárquico: familia o tipo.
+  if (button.dataset.family !== undefined) {
+    catalogState.family = button.dataset.family || "todos";
+    catalogState.type = "todos";
+    commitWithFilters();
+    return;
+  }
+  if (button.dataset.type !== undefined) {
+    catalogState.type = button.dataset.type || "todos";
+    commitWithFilters();
+    return;
+  }
+
+  // Modo plano (fallback).
+  catalogState.category = button.dataset.category || "todos";
+  document.querySelectorAll("#catalogFilters .catalog-filter").forEach((item) => {
     const isActive = item === button;
     item.classList.toggle("is-active", isActive);
     item.setAttribute("aria-pressed", String(isActive));
   });
-
   commitState();
 }
 
 catalogFilters?.addEventListener("click", (event) => {
   const button = event.target.closest(".catalog-filter");
-  if (!button) return;
+  if (button) selectCategory(button);
+});
 
-  selectCategory(button);
+catalogSubFilters?.addEventListener("click", (event) => {
+  const button = event.target.closest(".catalog-filter");
+  if (button) selectCategory(button);
+});
+
+catalogFacets?.addEventListener("change", (event) => {
+  const select = event.target.closest("[data-facet]");
+  if (!select) return;
+  catalogState[select.dataset.facet] = select.value;
+  commitWithFilters();
 });
 
 emptyAdvisorBtn?.addEventListener("click", () => {
@@ -699,10 +878,16 @@ function enableDragScroll(element) {
 async function initCatalog() {
   renderLoading();
   enableDragScroll(catalogFilters);
+  enableDragScroll(catalogSubFilters);
   updateFloatingQuoteVisibility();
   updateScrollTopVisibility();
 
   products = await window.catalogDb.getProductsWithFlavors();
+  try {
+    categories = await window.catalogDb.getCategories();
+  } catch (error) {
+    categories = [];
+  }
   readStateFromURL();
   renderFilters();
   renderCatalog();
