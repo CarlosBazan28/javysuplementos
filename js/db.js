@@ -39,8 +39,10 @@ const PRODUCT_BASE_SELECT = `
   updated_at
 `;
 
-const PRODUCT_SELECT = `
-  ${PRODUCT_BASE_SELECT},
+// Columnas de auditoría (Fase 5). Solo se incluyen si existen en la BD.
+const AUDIT_COLS = "created_by, updated_by";
+
+const PRODUCT_FLAVORS_FRAGMENT = `
   product_flavors (
     id,
     name,
@@ -53,15 +55,23 @@ const PRODUCT_SELECT = `
   )
 `;
 
-const COMBO_SELECT = `
+const PRODUCT_SELECT = `${PRODUCT_BASE_SELECT}, ${PRODUCT_FLAVORS_FRAGMENT}`;
+const PRODUCT_SELECT_AUDIT = `${PRODUCT_BASE_SELECT}, ${AUDIT_COLS}, ${PRODUCT_FLAVORS_FRAGMENT}`;
+
+const COMBO_BASE_SELECT = `
   id, name, slug, description, image_url, price, precio_centavos, old_price,
-  is_active, show_on_home, sort_order, created_at, updated_at,
+  is_active, show_on_home, sort_order, created_at, updated_at`;
+
+const COMBO_ITEMS_FRAGMENT = `
   combo_items (
     id, product_id, flavor_id, quantity, sort_order,
     products ( id, name, image_url, price, slug ),
     product_flavors ( id, name )
   )
 `;
+
+const COMBO_SELECT = `${COMBO_BASE_SELECT}, ${COMBO_ITEMS_FRAGMENT}`;
+const COMBO_SELECT_AUDIT = `${COMBO_BASE_SELECT}, ${AUDIT_COLS}, ${COMBO_ITEMS_FRAGMENT}`;
 
 const DB_PLACEHOLDER_IMAGE = "img/products/product-placeholder.svg";
 const PRODUCT_IMAGE_BUCKET = "product-images";
@@ -260,6 +270,8 @@ function normalizeProductFromDb(product) {
     flavors,
     created_at: product.created_at,
     updated_at: product.updated_at,
+    created_by: product.created_by || null,
+    updated_by: product.updated_by || null,
     source: product.source || "supabase",
 
     nombre: name,
@@ -418,6 +430,41 @@ function ensureSupabaseForWrite() {
   }
 }
 
+// Email del admin autenticado (para sellar created_by/updated_by). Cacheado.
+let cachedUserEmail;
+async function getCurrentUserEmail() {
+  if (cachedUserEmail !== undefined) return cachedUserEmail;
+  try {
+    const { data } = await supabaseClient.auth.getUser();
+    cachedUserEmail = data?.user?.email || null;
+  } catch (error) {
+    cachedUserEmail = null;
+  }
+  return cachedUserEmail;
+}
+
+// ¿Existen las columnas de auditoría (Fase 5)? Se detecta una vez. Si la migración
+// no se aplicó, todo sigue funcionando sin sellar/seleccionar esas columnas.
+let auditColumnsEnabled;
+async function auditEnabled() {
+  if (auditColumnsEnabled !== undefined) return auditColumnsEnabled;
+  if (!hasSupabaseClient()) return (auditColumnsEnabled = false);
+  try {
+    const { error } = await supabaseClient.from("products").select("updated_by").limit(1);
+    auditColumnsEnabled = !error;
+  } catch (error) {
+    auditColumnsEnabled = false;
+  }
+  return auditColumnsEnabled;
+}
+
+// Devuelve { updated_by } (y created_by si se pide) sólo si las columnas existen.
+async function auditStamp(includeCreated = false) {
+  if (!(await auditEnabled())) return {};
+  const email = await getCurrentUserEmail();
+  return includeCreated ? { created_by: email, updated_by: email } : { updated_by: email };
+}
+
 async function getProductsWithFlavors(options = {}) {
   const useCache = options.cache !== false;
   const allowFallback = options.fallback !== false;
@@ -426,9 +473,12 @@ async function getProductsWithFlavors(options = {}) {
 
   if (hasSupabaseClient()) {
     try {
+      // Las columnas de auditoría (email del editor) sólo se piden en el admin
+      // (options.audit), nunca en el catálogo público, para no exponer correos.
+      const productSelect = (options.audit && await auditEnabled()) ? PRODUCT_SELECT_AUDIT : PRODUCT_SELECT;
       const { data, error } = await supabaseClient
         .from("products")
-        .select(PRODUCT_SELECT)
+        .select(productSelect)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -522,7 +572,7 @@ async function createCategory({ name, parentId = null, sortOrder = 100 }) {
 
   const { data, error } = await supabaseClient
     .from("categories")
-    .insert({ name: trimmed, slug, parent_id: parentId, sort_order: sortOrder, is_active: true })
+    .insert({ name: trimmed, slug, parent_id: parentId, sort_order: sortOrder, is_active: true, ...(await auditStamp(true)) })
     .select("id, name, slug, sort_order, is_active, parent_id")
     .single();
 
@@ -532,7 +582,7 @@ async function createCategory({ name, parentId = null, sortOrder = 100 }) {
 
 async function updateCategory(id, changes = {}) {
   ensureSupabaseForWrite();
-  const payload = {};
+  const payload = { ...(await auditStamp()) };
   if (changes.name !== undefined) payload.name = changes.name?.trim();
   if (changes.sort_order !== undefined) payload.sort_order = Number(changes.sort_order);
   if (changes.is_active !== undefined) payload.is_active = Boolean(changes.is_active);
@@ -582,6 +632,31 @@ async function getAdminProfile(userId) {
 
   if (error) throw error;
   return data || null;
+}
+
+// Lista de perfiles admin (para la pantalla de Accesos). Solo admins (RLS).
+async function getAdminProfiles() {
+  ensureSupabaseForWrite();
+  const { data, error } = await supabaseClient
+    .from("admin_profiles")
+    .select("id, user_id, email, role, is_active, created_at")
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+async function setAdminProfileActive(id, active) {
+  ensureSupabaseForWrite();
+  const { data, error } = await supabaseClient
+    .from("admin_profiles")
+    .update({ is_active: Boolean(active) })
+    .eq("id", id)
+    .select("id, user_id, email, role, is_active, created_at")
+    .single();
+
+  if (error) throw error;
+  return data;
 }
 
 async function getHomeProducts() {
@@ -688,6 +763,7 @@ async function removeProductImage(publicUrl) {
 async function createProduct(productData) {
   ensureSupabaseForWrite();
   const payload = mapProductToDb(productData);
+  Object.assign(payload, await auditStamp(true));
   const { data, error } = await supabaseClient
     .from("products")
     .insert(payload)
@@ -699,10 +775,32 @@ async function createProduct(productData) {
   return normalizeProductFromDb(data);
 }
 
-async function updateProduct(id, productData) {
+// `options.expectedUpdatedAt`: si se pasa, sólo actualiza si el updated_at en BD
+// sigue igual al que se cargó (guard de edición concurrente). Si otro admin lo
+// cambió, no actualiza ninguna fila y se lanza un error con code "CONFLICT".
+async function updateProduct(id, productData, options = {}) {
   ensureSupabaseForWrite();
+
+  // Guard de edición concurrente: si el updated_at en BD ya no coincide con el
+  // que se cargó, otro admin lo modificó. Comparamos cadenas de la misma
+  // serialización (PostgREST), así que la igualdad es exacta cuando no cambió.
+  if (options.expectedUpdatedAt) {
+    const { data: current, error: checkError } = await supabaseClient
+      .from("products")
+      .select("updated_at")
+      .eq("id", id)
+      .maybeSingle();
+    if (checkError) throw checkError;
+    if (current && current.updated_at && current.updated_at !== options.expectedUpdatedAt) {
+      const conflict = new Error("Otro admin modificó este producto mientras lo editabas.");
+      conflict.code = "CONFLICT";
+      throw conflict;
+    }
+  }
+
   const payload = mapProductToDb(productData);
   delete payload.legacy_id;
+  Object.assign(payload, await auditStamp());
 
   const { data, error } = await supabaseClient
     .from("products")
@@ -728,6 +826,7 @@ async function setProductAvailability(id, available) {
       is_available: isAvailable,
       is_active: isAvailable,
       tag: isAvailable ? "Disponible" : "Consultar stock",
+      ...(await auditStamp()),
     })
     .eq("id", id)
     .select(PRODUCT_BASE_SELECT)
@@ -750,6 +849,7 @@ async function setProductPricing(id, { price, oldPrice } = {}) {
   const payload = {
     price: numericPrice,
     precio_centavos: numericPrice == null ? 0 : Math.round(numericPrice * 100),
+    ...(await auditStamp()),
   };
   if (oldPrice !== undefined) {
     const numericOld = oldPrice === "" || oldPrice == null ? null : Number(oldPrice);
@@ -777,7 +877,7 @@ async function setFlavorAvailability(id, available) {
   const isAvailable = Boolean(available);
   const { data, error } = await supabaseClient
     .from("product_flavors")
-    .update({ available: isAvailable, is_available: isAvailable })
+    .update({ available: isAvailable, is_available: isAvailable, ...(await auditStamp()) })
     .eq("id", id)
     .select()
     .single();
@@ -803,6 +903,7 @@ async function createFlavor(productId, flavorData) {
       name: flavorData.name?.trim(),
       available: flavorData.is_available ?? flavorData.available ?? true,
       is_available: flavorData.is_available ?? flavorData.available ?? true,
+      ...(await auditStamp(true)),
     })
     .select()
     .single();
@@ -820,6 +921,7 @@ async function updateFlavor(id, flavorData) {
       name: flavorData.name?.trim(),
       available: flavorData.is_available ?? flavorData.available ?? true,
       is_available: flavorData.is_available ?? flavorData.available ?? true,
+      ...(await auditStamp()),
     })
     .eq("id", id)
     .select()
@@ -944,6 +1046,8 @@ function normalizeCombo(combo) {
     items,
     created_at: combo.created_at,
     updated_at: combo.updated_at,
+    created_by: combo.created_by || null,
+    updated_by: combo.updated_by || null,
   };
 }
 
@@ -965,7 +1069,8 @@ function mapComboToDb(data = {}) {
 
 async function getCombos(options = {}) {
   if (!hasSupabaseClient()) return [];
-  let query = supabaseClient.from("combos").select(COMBO_SELECT).order("sort_order", { ascending: true });
+  const comboSelect = (options.audit && await auditEnabled()) ? COMBO_SELECT_AUDIT : COMBO_SELECT;
+  let query = supabaseClient.from("combos").select(comboSelect).order("sort_order", { ascending: true });
   if (options.activeOnly) query = query.eq("is_active", true);
   const { data, error } = await query;
   if (error) throw error;
@@ -976,6 +1081,7 @@ async function createCombo(data) {
   ensureSupabaseForWrite();
   const payload = mapComboToDb(data);
   payload.slug = `${categorySlugify(data.name) || "combo"}-${Date.now().toString(36)}`;
+  Object.assign(payload, await auditStamp(true));
   const { data: row, error } = await supabaseClient.from("combos").insert(payload).select(COMBO_SELECT).single();
   if (error) throw error;
   return normalizeCombo(row);
@@ -984,6 +1090,7 @@ async function createCombo(data) {
 async function updateCombo(id, data) {
   ensureSupabaseForWrite();
   const payload = mapComboToDb(data);
+  Object.assign(payload, await auditStamp());
   const { data: row, error } = await supabaseClient.from("combos").update(payload).eq("id", id).select(COMBO_SELECT).single();
   if (error) throw error;
   return normalizeCombo(row);
@@ -994,7 +1101,7 @@ async function setComboActive(id, active) {
   ensureSupabaseForWrite();
   const { data, error } = await supabaseClient
     .from("combos")
-    .update({ is_active: Boolean(active) })
+    .update({ is_active: Boolean(active), ...(await auditStamp()) })
     .eq("id", id)
     .select(COMBO_SELECT)
     .single();
@@ -1045,6 +1152,8 @@ window.catalogDb = {
   deleteCombo,
   saveComboItems,
   getAdminProfile,
+  getAdminProfiles,
+  setAdminProfileActive,
   getHomeProducts,
   updateHomeProducts,
   uploadProductImage,

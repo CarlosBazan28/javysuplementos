@@ -1947,6 +1947,39 @@ button.admin-stat:focus-visible {
   }
 }
 
+/* ===== Historial / Accesos ===== */
+.admin-meta-line {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  color: var(--admin-muted);
+}
+
+.admin-access-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  border: 1px solid var(--admin-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.admin-access-row.is-off {
+  opacity: 0.6;
+}
+
+.admin-access-row__info strong {
+  display: block;
+  word-break: break-all;
+}
+
+.admin-access-row__info small {
+  color: var(--admin-muted);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -10,6 +10,8 @@
     comboItems: [],
     selectedComboId: null,
     comboImageObjectUrl: null,
+    adminProfiles: [],
+    editingProductUpdatedAt: null,
     currentSection: "dashboard",
     selectedProductId: null,
     imageObjectUrl: null,
@@ -80,6 +82,8 @@
       saveHomeBtn: $("#adminSaveHomeBtn"),
       drawer: $("#productDrawer"),
       productForm: $("#adminProductForm"),
+      productMetaLine: $("#productMetaLine"),
+      comboMetaLine: $("#comboMetaLine"),
       drawerFlavors: $("#drawerFlavors"),
       combosList: $("#adminCombosList"),
       newComboBtn: $("#adminNewComboBtn"),
@@ -90,6 +94,7 @@
       comboItemsList: $("#comboItemsList"),
       comboFormMessage: $("#adminComboFormMessage"),
       deleteComboBtn: $("#adminDeleteComboBtn"),
+      accessList: $("#adminAccessList"),
       drawerTitle: $("#productDrawerTitle"),
       imagePreview: $("#productImagePreview"),
       deleteProductBtn: $("#adminDeleteProductBtn"),
@@ -139,6 +144,30 @@
   function formatPrice(price) {
     const value = Number(price || 0);
     return value > 0 ? `$${value.toFixed(2)}` : "Consultar";
+  }
+
+  function formatEditMeta(entity) {
+    if (!entity) return "";
+    const who = entity.updated_by || entity.created_by;
+    const when = entity.updated_at || entity.created_at;
+    if (!who && !when) return "";
+    let date = "";
+    if (when) {
+      const parsed = new Date(when);
+      if (!Number.isNaN(parsed.getTime())) {
+        date = parsed.toLocaleString("es-PA", { dateStyle: "medium", timeStyle: "short" });
+      }
+    }
+    if (who && date) return `Última edición por ${who} · ${date}`;
+    if (date) return `Última edición · ${date}`;
+    return `Última edición por ${who}`;
+  }
+
+  function setMetaLine(el, entity) {
+    if (!el) return;
+    const text = formatEditMeta(entity);
+    el.textContent = text;
+    el.hidden = !text;
   }
 
   function productImage(product) {
@@ -485,6 +514,9 @@
       return false;
     }
 
+    state.currentUserId = session.user.id;
+    state.currentUserEmail = session.user.email || null;
+
     setGate("Validando permisos de administrador...");
     const profile = window.javyAuth
       ? await window.javyAuth.getAdminProfile(session.user.id)
@@ -510,11 +542,16 @@
       state.allCategories = state.categories;
     }
     try {
-      state.combos = await window.catalogDb.getCombos();
+      state.combos = await window.catalogDb.getCombos({ audit: true });
     } catch (error) {
       state.combos = [];
     }
-    state.products = await window.catalogDb.getProductsWithFlavors({ cache: false, fallback: false });
+    try {
+      state.adminProfiles = await window.catalogDb.getAdminProfiles();
+    } catch (error) {
+      state.adminProfiles = [];
+    }
+    state.products = await window.catalogDb.getProductsWithFlavors({ cache: false, fallback: false, audit: true });
     state.homeIds = state.products
       .filter((product) => product.show_on_home)
       .sort((a, b) => (a.home_order ?? 999) - (b.home_order ?? 999))
@@ -1359,6 +1396,7 @@
     setComboFormMessage("");
     els.comboDrawerTitle.textContent = combo ? "Editar combo" : "Nuevo combo";
     els.deleteComboBtn.hidden = !combo;
+    setMetaLine(els.comboMetaLine, combo);
     els.comboImagePreview.src = combo ? combo.image : PLACEHOLDER_IMAGE;
 
     if (combo) {
@@ -1487,6 +1525,47 @@
     }
   }
 
+  // ===== Accesos (admin_profiles) =====
+  function renderAccess() {
+    if (!els.accessList) return;
+    const profiles = state.adminProfiles || [];
+    if (!profiles.length) {
+      els.accessList.innerHTML = `<p class="admin-help-text">No hay perfiles admin para mostrar (o no se pudieron cargar).</p>`;
+      return;
+    }
+    els.accessList.innerHTML = profiles.map((p) => {
+      const isMe = p.user_id === state.currentUserId || (p.email && p.email === state.currentUserEmail);
+      const who = p.email || p.user_id;
+      return `
+        <div class="admin-access-row${p.is_active === false ? " is-off" : ""}">
+          <div class="admin-access-row__info">
+            <strong>${escapeHTML(who)}${isMe ? " (tú)" : ""}</strong>
+            <small>${escapeHTML(p.role || "admin")} · ${p.is_active === false ? "inactivo" : "activo"}</small>
+          </div>
+          ${isMe
+            ? `<span class="admin-help-text">No puedes desactivarte</span>`
+            : availabilitySwitch({ on: p.is_active !== false, attr: "data-toggle-admin", id: p.id, onLabel: "Activo", offLabel: "Inactivo" })}
+        </div>`;
+    }).join("");
+  }
+
+  async function toggleAdminActive(id) {
+    const profile = (state.adminProfiles || []).find((p) => p.id === id);
+    if (!profile) return;
+    if (profile.user_id === state.currentUserId) {
+      showToast("No puedes desactivar tu propio acceso.", "error");
+      return;
+    }
+    try {
+      await window.catalogDb.setAdminProfileActive(id, profile.is_active === false);
+      state.adminProfiles = await window.catalogDb.getAdminProfiles();
+      renderAccess();
+      showToast("Acceso actualizado.");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  }
+
   function renderAll() {
     renderCategoryOptions();
     renderDashboard();
@@ -1496,6 +1575,7 @@
     renderHomeProducts();
     renderCategoryManager();
     renderCombos();
+    renderAccess();
   }
 
   function setSection(section) {
@@ -1507,6 +1587,7 @@
       home: "Productos del inicio",
       categories: "Categorías",
       combos: "Combos",
+      access: "Accesos",
       settings: "Configuracion",
     };
 
@@ -1596,6 +1677,9 @@
     // El gestor de sabores del drawer opera sobre este producto.
     if (productId) state.variantProductId = productId;
     const product = productId ? getProductById(productId) : null;
+    // Snapshot para el guard de edición concurrente.
+    state.editingProductUpdatedAt = product?.updated_at || null;
+    setMetaLine(els.productMetaLine, product);
     const form = els.productForm;
 
     releaseImageObjectUrl();
@@ -1829,7 +1913,26 @@
 
       const wasCreate = !state.selectedProductId;
       if (state.selectedProductId) {
-        await window.catalogDb.updateProduct(state.selectedProductId, productData);
+        try {
+          await window.catalogDb.updateProduct(state.selectedProductId, productData, {
+            expectedUpdatedAt: state.editingProductUpdatedAt,
+          });
+        } catch (conflict) {
+          if (conflict.code !== "CONFLICT") throw conflict;
+          const overwrite = await confirmDialog({
+            title: "Cambios en conflicto",
+            message: "Otro admin modificó este producto mientras lo editabas. ¿Sobrescribir con tus cambios?",
+            confirmText: "Sobrescribir",
+            danger: true,
+          });
+          if (!overwrite) {
+            if (uploadedImageUrl) await window.catalogDb.removeProductImage(uploadedImageUrl);
+            await refreshAfterMutation("Se recargó el producto con los cambios recientes.");
+            openProductDrawer(state.selectedProductId);
+            return;
+          }
+          await window.catalogDb.updateProduct(state.selectedProductId, productData);
+        }
       } else {
         const created = await window.catalogDb.createProduct(productData);
         state.selectedProductId = created.id;
@@ -2306,6 +2409,9 @@
       if (toggleCombo) { await toggleComboActive(toggleCombo.dataset.toggleCombo); return; }
       const removeComboItemBtn = event.target.closest("[data-remove-combo-item]");
       if (removeComboItemBtn) { removeComboItem(removeComboItemBtn.dataset.removeComboItem); return; }
+
+      const toggleAdmin = event.target.closest("[data-toggle-admin]");
+      if (toggleAdmin) { await toggleAdminActive(toggleAdmin.dataset.toggleAdmin); return; }
 
       const flavorRow = event.target.closest("[data-flavor-id]");
       if (flavorRow && event.target.closest("[data-save-flavor]")) {
