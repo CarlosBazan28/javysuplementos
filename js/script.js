@@ -313,3 +313,87 @@ async function initHomeProducts() {
 }
 
 initHomeProducts();
+
+// ===== Combos =====
+const combosSection = document.getElementById("combos");
+const combosList = document.getElementById("home-combos__list");
+
+// Un combo se agrega a la cotización como un item con forma de producto.
+function comboToQuoteProduct(combo) {
+  return {
+    id: combo.id,
+    name: `Combo: ${combo.name}`,
+    brand: "",
+    category: "Combo",
+    price: combo.price,
+    presentation: combo.items
+      .map((i) => `${i.quantity}× ${i.product_name}${i.flavor_name ? ` (${i.flavor_name})` : ""}`)
+      .join(", "),
+    image: combo.image,
+  };
+}
+
+function renderHomeCombos(combos) {
+  if (!combosSection || !combosList) return;
+  if (!combos.length) {
+    combosSection.hidden = true;
+    return;
+  }
+  combosSection.hidden = false;
+  combosList.innerHTML = "";
+
+  combos.forEach((combo) => {
+    const card = document.createElement("article");
+    card.className = "product-card combo-card";
+    const itemsHtml = combo.items
+      .map((i) => `<li>${i.quantity}× ${escapeHTML(i.product_name)}${i.flavor_name ? ` <span>(${escapeHTML(i.flavor_name)})</span>` : ""}</li>`)
+      .join("");
+
+    card.innerHTML = `
+      <div class="product-card__media">
+        <img src="${escapeHTML(combo.image)}" alt="${escapeHTML(combo.name)}" class="product-card__img" loading="lazy" />
+      </div>
+      <div class="product-card__info">
+        <h3 class="product-card__name">${escapeHTML(combo.name)}</h3>
+        ${combo.description ? `<p class="combo-card__desc">${escapeHTML(combo.description)}</p>` : ""}
+        <ul class="combo-card__items">${itemsHtml}</ul>
+        <div class="product-card__price-row">
+          <span class="product-card__price-group">
+            <span class="product-card__price">$${formatPrice(combo.price)}</span>
+            ${hasOffer(combo) ? `<span class="product-card__price-old">$${formatPrice(combo.old_price)}</span><span class="product-card__discount">-${discountPercent(combo)}%</span>` : ""}
+          </span>
+        </div>
+      </div>
+      <div class="product-card__actions product-card__actions--catalog">
+        <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+      </div>
+    `;
+
+    card.querySelector(".product-card__btn--buy")?.addEventListener("click", () => {
+      if (window.consultation?.hasItem?.(combo.id, "")) {
+        window.consultation?.toast?.("Ese combo ya está en tu cotización");
+        return;
+      }
+      window.consultation?.addItem?.(comboToQuoteProduct(combo), { quantity: 1 });
+      window.consultation?.toast?.("Combo agregado a tu cotización");
+    });
+
+    combosList.appendChild(card);
+  });
+
+  window.javyIcons?.enhance?.(combosList);
+}
+
+async function initHomeCombos() {
+  if (!combosList) return;
+  try {
+    const combos = await window.catalogDb.getCombos({ activeOnly: true });
+    const flagged = combos.filter((c) => c.show_on_home);
+    renderHomeCombos((flagged.length ? flagged : combos).slice(0, 8));
+  } catch (error) {
+    console.warn("No se pudieron cargar combos:", error.message);
+    if (combosSection) combosSection.hidden = true;
+  }
+}
+
+initHomeCombos();

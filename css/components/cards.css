@@ -261,6 +261,38 @@
   }
 }
 
+/* ===== Cards de combo (home) ===== */
+.combo-card__desc {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 4px 0 8px;
+}
+
+.combo-card__items {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.combo-card__items li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 0.88rem;
+}
+
+.combo-card__items li::before {
+  content: "•";
+  position: absolute;
+  left: 4px;
+  color: var(--accent);
+}
+
+.combo-card__items span {
+  color: var(--muted);
+}
+
 .product-card__pres {
   flex-shrink: 0;
   padding: 4px 10px;
