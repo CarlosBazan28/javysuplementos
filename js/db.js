@@ -16,6 +16,7 @@ const PRODUCT_BASE_SELECT = `
   name,
   brand,
   category,
+  category_id,
   price,
   presentation,
   image_url,
@@ -38,8 +39,10 @@ const PRODUCT_BASE_SELECT = `
   updated_at
 `;
 
-const PRODUCT_SELECT = `
-  ${PRODUCT_BASE_SELECT},
+// Columnas de auditoría (Fase 5). Solo se incluyen si existen en la BD.
+const AUDIT_COLS = "created_by, updated_by";
+
+const PRODUCT_FLAVORS_FRAGMENT = `
   product_flavors (
     id,
     name,
@@ -52,8 +55,27 @@ const PRODUCT_SELECT = `
   )
 `;
 
+const PRODUCT_SELECT = `${PRODUCT_BASE_SELECT}, ${PRODUCT_FLAVORS_FRAGMENT}`;
+const PRODUCT_SELECT_AUDIT = `${PRODUCT_BASE_SELECT}, ${AUDIT_COLS}, ${PRODUCT_FLAVORS_FRAGMENT}`;
+
+const COMBO_BASE_SELECT = `
+  id, name, slug, description, image_url, price, precio_centavos, old_price,
+  is_active, show_on_home, sort_order, created_at, updated_at`;
+
+const COMBO_ITEMS_FRAGMENT = `
+  combo_items (
+    id, product_id, flavor_id, quantity, sort_order,
+    products ( id, name, image_url, price, slug ),
+    product_flavors ( id, name )
+  )
+`;
+
+const COMBO_SELECT = `${COMBO_BASE_SELECT}, ${COMBO_ITEMS_FRAGMENT}`;
+const COMBO_SELECT_AUDIT = `${COMBO_BASE_SELECT}, ${AUDIT_COLS}, ${COMBO_ITEMS_FRAGMENT}`;
+
 const DB_PLACEHOLDER_IMAGE = "img/products/product-placeholder.svg";
 const PRODUCT_IMAGE_BUCKET = "product-images";
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 const DEFAULT_CATEGORIES = [
   { name: "Proteinas", slug: "proteinas", sort_order: 1 },
@@ -223,11 +245,15 @@ function normalizeProductFromDb(product) {
     name,
     brand,
     category,
+    category_id: product.category_id ?? null,
     price,
     old_price: product.old_price == null || product.old_price === "" ? null : Number(product.old_price),
     presentation,
     image,
     image_url: image,
+    // Imagen tal cual está guardada en la BD, sin el fallback a imagen local.
+    // El admin debe editar/persistir ESTO, no el `image` resuelto para mostrar.
+    stored_image_url: remoteImage,
     description: descriptionText,
     description_short: descriptionShort,
     description_long: descriptionText,
@@ -244,6 +270,8 @@ function normalizeProductFromDb(product) {
     flavors,
     created_at: product.created_at,
     updated_at: product.updated_at,
+    created_by: product.created_by || null,
+    updated_by: product.updated_by || null,
     source: product.source || "supabase",
 
     nombre: name,
@@ -350,7 +378,7 @@ function mapProductToDb(productData = {}) {
     "Usar como complemento de una alimentacion y entrenamiento adecuados.",
   ]);
 
-  return {
+  const payload = {
     slug: getProductSlug(productData),
     nombre: name,
     subtitulo: subtitle,
@@ -386,12 +414,55 @@ function mapProductToDb(productData = {}) {
     goals: asArray(productData.goals),
     legacy_id: productData.legacy_id?.trim() || null,
   };
+
+  // Sólo tocar category_id si el form lo manda; así editar un producto no borra
+  // la categoría mapeada por la migración mientras el selector aún no existe.
+  if (productData.category_id !== undefined) {
+    payload.category_id = productData.category_id || null;
+  }
+
+  return payload;
 }
 
 function ensureSupabaseForWrite() {
   if (!hasSupabaseClient()) {
     throw new Error("Supabase no esta disponible. Revisa el CDN y supabase-config.js.");
   }
+}
+
+// Email del admin autenticado (para sellar created_by/updated_by). Cacheado.
+let cachedUserEmail;
+async function getCurrentUserEmail() {
+  if (cachedUserEmail !== undefined) return cachedUserEmail;
+  try {
+    const { data } = await supabaseClient.auth.getUser();
+    cachedUserEmail = data?.user?.email || null;
+  } catch (error) {
+    cachedUserEmail = null;
+  }
+  return cachedUserEmail;
+}
+
+// ¿Existen las columnas de auditoría (Fase 5)? Se detecta una vez. Si la migración
+// no se aplicó, todo sigue funcionando sin sellar/seleccionar esas columnas.
+let auditColumnsEnabled;
+async function auditEnabled() {
+  if (auditColumnsEnabled !== undefined) return auditColumnsEnabled;
+  if (!hasSupabaseClient()) return (auditColumnsEnabled = false);
+  try {
+    const { error } = await supabaseClient.from("products").select("updated_by").limit(1);
+    auditColumnsEnabled = !error;
+  } catch (error) {
+    auditColumnsEnabled = false;
+  }
+  return auditColumnsEnabled;
+}
+
+// Devuelve { updated_by } (y created_by si se pide) sólo si las columnas existen.
+async function auditStamp(includeCreated = false) {
+  if (!(await auditEnabled())) return {};
+  const email = await getCurrentUserEmail();
+  return includeCreated ? { created_by: email, updated_by: email } : { updated_by: email };
 }
 
 async function getProductsWithFlavors(options = {}) {
@@ -402,9 +473,12 @@ async function getProductsWithFlavors(options = {}) {
 
   if (hasSupabaseClient()) {
     try {
+      // Las columnas de auditoría (email del editor) sólo se piden en el admin
+      // (options.audit), nunca en el catálogo público, para no exponer correos.
+      const productSelect = (options.audit && await auditEnabled()) ? PRODUCT_SELECT_AUDIT : PRODUCT_SELECT;
       const { data, error } = await supabaseClient
         .from("products")
-        .select(PRODUCT_SELECT)
+        .select(productSelect)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -450,7 +524,7 @@ async function getCategories() {
     try {
       const { data, error } = await supabaseClient
         .from("categories")
-        .select("id, name, slug, sort_order, is_active")
+        .select("id, name, slug, sort_order, is_active, parent_id")
         .eq("is_active", true)
         .order("sort_order", { ascending: true })
         .order("name", { ascending: true });
@@ -463,6 +537,85 @@ async function getCategories() {
   }
 
   return DEFAULT_CATEGORIES;
+}
+
+// Todas las categorías (incluidas inactivas) para la gestión del admin.
+async function getAllCategories() {
+  ensureSupabaseForWrite();
+  const { data, error } = await supabaseClient
+    .from("categories")
+    .select("id, name, slug, sort_order, is_active, parent_id")
+    .order("sort_order", { ascending: true })
+    .order("name", { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+function categorySlugify(value = "") {
+  return value
+    .toString()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+async function createCategory({ name, parentId = null, sortOrder = 100 }) {
+  ensureSupabaseForWrite();
+  const trimmed = name?.trim();
+  if (!trimmed) throw new Error("El nombre de la categoría es obligatorio.");
+  // Slug único: fam- para familias, tipo- para tipos, + base del nombre.
+  const base = categorySlugify(trimmed) || "categoria";
+  const slug = `${parentId ? "tipo" : "fam"}-${base}-${Date.now().toString(36)}`;
+
+  const { data, error } = await supabaseClient
+    .from("categories")
+    .insert({ name: trimmed, slug, parent_id: parentId, sort_order: sortOrder, is_active: true, ...(await auditStamp(true)) })
+    .select("id, name, slug, sort_order, is_active, parent_id")
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+async function updateCategory(id, changes = {}) {
+  ensureSupabaseForWrite();
+  const payload = { ...(await auditStamp()) };
+  if (changes.name !== undefined) payload.name = changes.name?.trim();
+  if (changes.sort_order !== undefined) payload.sort_order = Number(changes.sort_order);
+  if (changes.is_active !== undefined) payload.is_active = Boolean(changes.is_active);
+  if (changes.parent_id !== undefined) payload.parent_id = changes.parent_id;
+
+  const { data, error } = await supabaseClient
+    .from("categories")
+    .update(payload)
+    .eq("id", id)
+    .select("id, name, slug, sort_order, is_active, parent_id")
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Cuántos productos usan una categoría (o cualquiera de sus tipos hijos).
+async function getCategoryProductCount(categoryId, childIds = []) {
+  ensureSupabaseForWrite();
+  const ids = [categoryId, ...childIds];
+  const { count, error } = await supabaseClient
+    .from("products")
+    .select("id", { count: "exact", head: true })
+    .in("category_id", ids);
+
+  if (error) throw error;
+  return count || 0;
+}
+
+async function deleteCategory(id) {
+  ensureSupabaseForWrite();
+  const { error } = await supabaseClient.from("categories").delete().eq("id", id);
+  if (error) throw error;
 }
 
 async function getAdminProfile(userId) {
@@ -479,6 +632,31 @@ async function getAdminProfile(userId) {
 
   if (error) throw error;
   return data || null;
+}
+
+// Lista de perfiles admin (para la pantalla de Accesos). Solo admins (RLS).
+async function getAdminProfiles() {
+  ensureSupabaseForWrite();
+  const { data, error } = await supabaseClient
+    .from("admin_profiles")
+    .select("id, user_id, email, role, is_active, created_at")
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+async function setAdminProfileActive(id, active) {
+  ensureSupabaseForWrite();
+  const { data, error } = await supabaseClient
+    .from("admin_profiles")
+    .update({ is_active: Boolean(active) })
+    .eq("id", id)
+    .select("id, user_id, email, role, is_active, created_at")
+    .single();
+
+  if (error) throw error;
+  return data;
 }
 
 async function getHomeProducts() {
@@ -540,6 +718,15 @@ async function uploadProductImage(file) {
   ensureSupabaseForWrite();
   if (!file) return "";
 
+  // Validar antes de subir: el bucket es público y la extensión del nombre
+  // es falsificable, así que comprobamos el tipo MIME real y el tamaño.
+  if (!file.type || !file.type.startsWith("image/")) {
+    throw new Error("El archivo debe ser una imagen (JPG, PNG o WebP).");
+  }
+  if (file.size > MAX_IMAGE_BYTES) {
+    throw new Error("La imagen supera el límite de 5 MB. Optimízala antes de subirla.");
+  }
+
   const extension = file.name.split(".").pop()?.toLowerCase() || "webp";
   const safeName = createSlug(file.name.replace(/\.[^.]+$/, "")) || "producto";
   const path = `${Date.now()}-${safeName}.${extension}`;
@@ -557,9 +744,26 @@ async function uploadProductImage(file) {
   return data?.publicUrl || "";
 }
 
+// Borra del bucket una imagen recién subida cuya URL pública conocemos.
+// Se usa para limpiar huérfanas cuando el guardado del producto falla
+// después de haber subido la imagen. Best-effort: no propaga errores.
+async function removeProductImage(publicUrl) {
+  if (!publicUrl) return;
+  const marker = `/${PRODUCT_IMAGE_BUCKET}/`;
+  const idx = publicUrl.indexOf(marker);
+  if (idx === -1) return; // no es una URL de nuestro bucket (p.ej. imagen externa)
+  const path = decodeURIComponent(publicUrl.slice(idx + marker.length));
+  try {
+    await supabaseClient.storage.from(PRODUCT_IMAGE_BUCKET).remove([path]);
+  } catch (_) {
+    // Silencioso: limpiar la huérfana es secundario al error original.
+  }
+}
+
 async function createProduct(productData) {
   ensureSupabaseForWrite();
   const payload = mapProductToDb(productData);
+  Object.assign(payload, await auditStamp(true));
   const { data, error } = await supabaseClient
     .from("products")
     .insert(payload)
@@ -571,10 +775,32 @@ async function createProduct(productData) {
   return normalizeProductFromDb(data);
 }
 
-async function updateProduct(id, productData) {
+// `options.expectedUpdatedAt`: si se pasa, sólo actualiza si el updated_at en BD
+// sigue igual al que se cargó (guard de edición concurrente). Si otro admin lo
+// cambió, no actualiza ninguna fila y se lanza un error con code "CONFLICT".
+async function updateProduct(id, productData, options = {}) {
   ensureSupabaseForWrite();
+
+  // Guard de edición concurrente: si el updated_at en BD ya no coincide con el
+  // que se cargó, otro admin lo modificó. Comparamos cadenas de la misma
+  // serialización (PostgREST), así que la igualdad es exacta cuando no cambió.
+  if (options.expectedUpdatedAt) {
+    const { data: current, error: checkError } = await supabaseClient
+      .from("products")
+      .select("updated_at")
+      .eq("id", id)
+      .maybeSingle();
+    if (checkError) throw checkError;
+    if (current && current.updated_at && current.updated_at !== options.expectedUpdatedAt) {
+      const conflict = new Error("Otro admin modificó este producto mientras lo editabas.");
+      conflict.code = "CONFLICT";
+      throw conflict;
+    }
+  }
+
   const payload = mapProductToDb(productData);
   delete payload.legacy_id;
+  Object.assign(payload, await auditStamp());
 
   const { data, error } = await supabaseClient
     .from("products")
@@ -586,6 +812,79 @@ async function updateProduct(id, productData) {
   if (error) throw error;
   productsCache = null;
   return normalizeProductFromDb(data);
+}
+
+// Update parcial: toca SOLO las columnas de disponibilidad. No pasa por
+// mapProductToDb, así que no reescribe imagen, slug ni precio_centavos.
+async function setProductAvailability(id, available) {
+  ensureSupabaseForWrite();
+  const isAvailable = Boolean(available);
+  const { data, error } = await supabaseClient
+    .from("products")
+    .update({
+      available: isAvailable,
+      is_available: isAvailable,
+      is_active: isAvailable,
+      tag: isAvailable ? "Disponible" : "Consultar stock",
+      ...(await auditStamp()),
+    })
+    .eq("id", id)
+    .select(PRODUCT_BASE_SELECT)
+    .single();
+
+  if (error) throw error;
+  productsCache = null;
+  return normalizeProductFromDb(data);
+}
+
+// Update parcial de precio: toca SOLO las columnas de precio. No pasa por
+// mapProductToDb, así que no reescribe imagen, slug ni disponibilidad.
+// `oldPrice` undefined = no tocar la oferta; null o "" = quitar la oferta.
+async function setProductPricing(id, { price, oldPrice } = {}) {
+  ensureSupabaseForWrite();
+  const numericPrice = price === "" || price == null ? null : Number(price);
+  if (numericPrice != null && !Number.isFinite(numericPrice)) {
+    throw new Error("El precio no es un número válido.");
+  }
+  const payload = {
+    price: numericPrice,
+    precio_centavos: numericPrice == null ? 0 : Math.round(numericPrice * 100),
+    ...(await auditStamp()),
+  };
+  if (oldPrice !== undefined) {
+    const numericOld = oldPrice === "" || oldPrice == null ? null : Number(oldPrice);
+    if (numericOld != null && !Number.isFinite(numericOld)) {
+      throw new Error("El precio anterior no es un número válido.");
+    }
+    payload.old_price = numericOld;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("products")
+    .update(payload)
+    .eq("id", id)
+    .select(PRODUCT_BASE_SELECT)
+    .single();
+
+  if (error) throw error;
+  productsCache = null;
+  return normalizeProductFromDb(data);
+}
+
+// Update parcial de disponibilidad de un sabor: no reescribe nombre/precio/stock.
+async function setFlavorAvailability(id, available) {
+  ensureSupabaseForWrite();
+  const isAvailable = Boolean(available);
+  const { data, error } = await supabaseClient
+    .from("product_flavors")
+    .update({ available: isAvailable, is_available: isAvailable, ...(await auditStamp()) })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  productsCache = null;
+  return normalizeFlavor(data);
 }
 
 async function deleteProduct(id) {
@@ -602,11 +901,9 @@ async function createFlavor(productId, flavorData) {
     .insert({
       product_id: productId,
       name: flavorData.name?.trim(),
-      presentation: flavorData.presentation?.trim() || null,
-      price: flavorData.price === "" || flavorData.price == null ? null : Number(flavorData.price),
-      stock: flavorData.stock === "" || flavorData.stock == null ? null : Number(flavorData.stock),
       available: flavorData.is_available ?? flavorData.available ?? true,
       is_available: flavorData.is_available ?? flavorData.available ?? true,
+      ...(await auditStamp(true)),
     })
     .select()
     .single();
@@ -622,11 +919,9 @@ async function updateFlavor(id, flavorData) {
     .from("product_flavors")
     .update({
       name: flavorData.name?.trim(),
-      presentation: flavorData.presentation?.trim() || null,
-      price: flavorData.price === "" || flavorData.price == null ? null : Number(flavorData.price),
-      stock: flavorData.stock === "" || flavorData.stock == null ? null : Number(flavorData.stock),
       available: flavorData.is_available ?? flavorData.available ?? true,
       is_available: flavorData.is_available ?? flavorData.available ?? true,
+      ...(await auditStamp()),
     })
     .eq("id", id)
     .select()
@@ -713,6 +1008,130 @@ async function seedProductsFromLocalData() {
   return summary;
 }
 
+// ===== Combos =====
+function normalizeCombo(combo) {
+  const items = (combo.combo_items || [])
+    .slice()
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+    .map((item) => {
+      const product = item.products || null;
+      return {
+        id: item.id,
+        product_id: item.product_id,
+        flavor_id: item.flavor_id,
+        quantity: item.quantity ?? 1,
+        product_name: product?.name || "Producto",
+        product_image: product?.image_url || DB_PLACEHOLDER_IMAGE,
+        product_slug: product?.slug || null,
+        flavor_name: item.product_flavors?.name || null,
+      };
+    });
+
+  const price = combo.price == null
+    ? (combo.precio_centavos ? combo.precio_centavos / 100 : null)
+    : Number(combo.price);
+
+  return {
+    id: combo.id,
+    name: combo.name,
+    slug: combo.slug,
+    description: combo.description || "",
+    image: combo.image_url || DB_PLACEHOLDER_IMAGE,
+    image_url: combo.image_url || "",
+    price,
+    old_price: combo.old_price == null || combo.old_price === "" ? null : Number(combo.old_price),
+    is_active: combo.is_active !== false,
+    show_on_home: Boolean(combo.show_on_home),
+    sort_order: combo.sort_order ?? 100,
+    items,
+    created_at: combo.created_at,
+    updated_at: combo.updated_at,
+    created_by: combo.created_by || null,
+    updated_by: combo.updated_by || null,
+  };
+}
+
+function mapComboToDb(data = {}) {
+  const price = data.price === "" || data.price == null ? null : Number(data.price);
+  const oldPrice = data.old_price === "" || data.old_price == null ? null : Number(data.old_price);
+  return {
+    name: data.name?.trim(),
+    description: data.description?.trim() || null,
+    image_url: data.image_url?.trim() || null,
+    price,
+    precio_centavos: price == null ? 0 : Math.round(price * 100),
+    old_price: oldPrice,
+    is_active: data.is_active ?? true,
+    show_on_home: Boolean(data.show_on_home),
+    sort_order: data.sort_order ?? 100,
+  };
+}
+
+async function getCombos(options = {}) {
+  if (!hasSupabaseClient()) return [];
+  const comboSelect = (options.audit && await auditEnabled()) ? COMBO_SELECT_AUDIT : COMBO_SELECT;
+  let query = supabaseClient.from("combos").select(comboSelect).order("sort_order", { ascending: true });
+  if (options.activeOnly) query = query.eq("is_active", true);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data || []).map(normalizeCombo);
+}
+
+async function createCombo(data) {
+  ensureSupabaseForWrite();
+  const payload = mapComboToDb(data);
+  payload.slug = `${categorySlugify(data.name) || "combo"}-${Date.now().toString(36)}`;
+  Object.assign(payload, await auditStamp(true));
+  const { data: row, error } = await supabaseClient.from("combos").insert(payload).select(COMBO_SELECT).single();
+  if (error) throw error;
+  return normalizeCombo(row);
+}
+
+async function updateCombo(id, data) {
+  ensureSupabaseForWrite();
+  const payload = mapComboToDb(data);
+  Object.assign(payload, await auditStamp());
+  const { data: row, error } = await supabaseClient.from("combos").update(payload).eq("id", id).select(COMBO_SELECT).single();
+  if (error) throw error;
+  return normalizeCombo(row);
+}
+
+// Update parcial: solo activa/desactiva el combo.
+async function setComboActive(id, active) {
+  ensureSupabaseForWrite();
+  const { data, error } = await supabaseClient
+    .from("combos")
+    .update({ is_active: Boolean(active), ...(await auditStamp()) })
+    .eq("id", id)
+    .select(COMBO_SELECT)
+    .single();
+  if (error) throw error;
+  return normalizeCombo(data);
+}
+
+async function deleteCombo(id) {
+  ensureSupabaseForWrite();
+  const { error } = await supabaseClient.from("combos").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// Reemplaza por completo los items de un combo.
+async function saveComboItems(comboId, items = []) {
+  ensureSupabaseForWrite();
+  const { error: delError } = await supabaseClient.from("combo_items").delete().eq("combo_id", comboId);
+  if (delError) throw delError;
+  if (!items.length) return;
+  const rows = items.map((item, index) => ({
+    combo_id: comboId,
+    product_id: item.product_id,
+    flavor_id: item.flavor_id || null,
+    quantity: item.quantity || 1,
+    sort_order: index,
+  }));
+  const { error: insError } = await supabaseClient.from("combo_items").insert(rows);
+  if (insError) throw insError;
+}
+
 function getProductsCacheSource() {
   return productsCacheSource;
 }
@@ -721,12 +1140,29 @@ window.catalogDb = {
   getProductsWithFlavors,
   getProductById,
   getCategories,
+  getAllCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  getCategoryProductCount,
+  getCombos,
+  createCombo,
+  updateCombo,
+  setComboActive,
+  deleteCombo,
+  saveComboItems,
   getAdminProfile,
+  getAdminProfiles,
+  setAdminProfileActive,
   getHomeProducts,
   updateHomeProducts,
   uploadProductImage,
+  removeProductImage,
   createProduct,
   updateProduct,
+  setProductAvailability,
+  setProductPricing,
+  setFlavorAvailability,
   deleteProduct,
   createFlavor,
   updateFlavor,

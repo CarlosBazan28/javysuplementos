@@ -48,7 +48,7 @@
   .footer__logo {
     margin: 0 0 10px 0;
     font-size: 1.4rem;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.03em;
   }
 
@@ -106,7 +106,7 @@
     padding: 0.6rem 1rem;
     border-radius: 999px;
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 500;
     border: 1px solid rgba(90,180,233,0.8);
     color: #ffffff;
     background: radial-gradient(circle at 0% 0%,
@@ -134,12 +134,11 @@
     padding-top: 16px;
     border-top: 1px solid var(--footer-line);
     font-size: 0.85rem;
-    color: #6F7A87;
+    color: var(--footer-muted);
     text-align: center;
   }
 
   .footer__dev {
     margin-top: 4px;
     font-size: 0.8rem;
-    opacity: 0.85;
   }

@@ -11,7 +11,7 @@
 .catalog-hero__eyebrow {
   color: var(--Cyan);
   font-size: 0.8rem;
-  font-weight: 800;
+  font-weight: 500;
   margin-bottom: 8px;
   text-transform: uppercase;
 }
@@ -19,6 +19,7 @@
 .catalog-hero__title {
   color: var(--blanco);
   font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 900;
   line-height: 1.05;
   max-width: 760px;
   margin-bottom: 12px;
@@ -122,7 +123,7 @@
   padding: 0 16px;
   border-radius: 12px;
   cursor:pointer;
-  font-weight:800;
+  font-weight: 500;
   flex: 0 0 auto;
 }
 
@@ -155,6 +156,12 @@
   cursor: grabbing;
 }
 
+/* Indica con un degradado a la derecha que hay más categorías al deslizar */
+.catalog-filters.has-overflow {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}
+
 .catalog-filter {
   border: 1px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.04);
@@ -168,10 +175,21 @@
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
 }
 
+.catalog-filter__count {
+  margin-left: 6px;
+  font-size: 0.78em;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
 .catalog-filter.is-active {
   background: var(--Cyan);
   color: #08141c;
   border-color: var(--Cyan);
+}
+
+.catalog-filter.is-active .catalog-filter__count {
+  opacity: 0.85;
 }
 
 .catalog-filter:hover {
@@ -186,10 +204,60 @@
   outline-offset: 3px;
 }
 
+/* Sub-filtros (Tipos) y facetas */
+.catalog-filters--types {
+  margin-top: -2px;
+}
+
+.catalog-filter--type {
+  min-height: 38px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: rgba(90, 180, 233, 0.08);
+  border-color: rgba(90, 180, 233, 0.22);
+}
+
+.catalog-filter--type.is-active {
+  background: var(--Cyan);
+  color: #08141c;
+  border-color: var(--Cyan);
+}
+
+.catalog-facets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.catalog-facet {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--grisClaro);
+}
+
+.catalog-facet__select {
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--blanco);
+  border-radius: 10px;
+  padding: 0 10px;
+  font-weight: 600;
+}
+
+.catalog-facet__select:focus-visible {
+  outline: 2px solid var(--Cyan);
+  outline-offset: 2px;
+}
+
 .catalog-results__bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
   min-height: 28px;
   margin-bottom: 12px;
 }
@@ -197,6 +265,35 @@
 .catalog-results__count {
   color: var(--grisClaro);
   font-size: 0.95rem;
+}
+
+.catalog-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--grisClaro);
+  font-size: 0.85rem;
+}
+
+.catalog-sort__label {
+  white-space: nowrap;
+}
+
+.catalog-sort__select {
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: #101724;
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0 30px 0 12px;
+  cursor: pointer;
+}
+
+.catalog-sort__select:focus-visible {
+  outline: 2px solid var(--Cyan);
+  outline-offset: 2px;
 }
 
 .catalog-grid {
@@ -232,7 +329,7 @@
   background: var(--Cyan);
   color: #08141c;
   cursor: pointer;
-  font-weight: 800;
+  font-weight: 500;
   padding: 11px 16px;
 }
 
@@ -295,6 +392,7 @@
   width: 22px;
   height: 22px;
   display: block;
+  color: #fff;
 }
 
 .catalog-floating-quote__text {
@@ -313,14 +411,14 @@
 
 .catalog-floating-quote__text strong {
   font-size: 0.9rem;
-  font-weight: 950;
+  font-weight: 700;
   line-height: 1;
 }
 
 .catalog-floating-quote__text small {
   color: rgba(3, 16, 21, 0.78);
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .catalog-floating-quote__count {
@@ -333,7 +431,7 @@
   background: #050709;
   color: #fff;
   font-size: 0.76rem;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .catalog-floating-quote__count[hidden] {
@@ -401,13 +499,13 @@
   padding-right: 2px;
   color: #fff;
   font-size: 0.82rem;
-  font-weight: 950;
+  font-weight: 700;
   line-height: 1;
 }
 
 @media (max-width: 620px) {
   .catalog-page {
-    width: min(100% - 20px, 1180px);
+    width: min(100% - 12px, 1180px);
     padding-top: 8px;
   }
 
@@ -428,7 +526,7 @@
 
   .catalog-grid {
     grid-template-columns: repeat(auto-fit, minmax(min(136px, 100%), 180px));
-    gap: 10px;
+    gap: 8px;
     justify-content: center;
   }
 

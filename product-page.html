@@ -31,6 +31,7 @@
 
     <link rel="stylesheet" href="css/tokens.css" />
     <link rel="stylesheet" href="css/components/cart.css" />
+    <link rel="stylesheet" href="css/pages/product.css" />
 
 
     <!-- Google Fonts -->
@@ -38,17 +39,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap"
       rel="stylesheet">
-    <link
-      rel="preconnect"
-      href="https://fonts.googleapis.com"
-    />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Vast+Shadow&display=swap"
-      rel="stylesheet"
-    />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="js/supabase-config.js" defer></script>
     <script src="js/whatsapp-config.js" defer></script>
@@ -62,30 +54,30 @@
   </head>
   <body>
     <div id="site-header"></div>
-       <main class="main-container">
-      <section class="product-detail">
-        <div class="product-detail__inner">
+    <main class="pdp">
+      <div class="pdp__container">
 
-          <div class="product-detail__media">
-            <img
-              id="prod-image"
-              src=""
-              alt=""
-              class="product-detail__img"
-            />
-          </div>
+        <nav class="pdp__breadcrumb" aria-label="Ruta de navegación">
+          <a href="supplements-page.html">Catálogo</a>
+          <span class="pdp__breadcrumb-sep">/</span>
+          <span id="pdp-breadcrumb-cat"></span>
+        </nav>
 
-        
-          <div class="product-detail__info">
-            <h1 id="prod-title" class="product-detail__title"></h1>
-            <p id="prod-subtitle" class="product-detail__subtitle"></p>
+        <div class="pdp__layout">
 
-            <div class="product-detail__meta">
-              <span id="prod-price" class="product-detail__price"></span>
-              <span id="prod-tag" class="product-detail__tag"></span>
+          <figure class="pdp__media">
+            <img id="prod-image" class="pdp__img" src="" alt="" />
+          </figure>
+
+          <section class="pdp__info">
+            <div class="pdp__info-head">
+              <h1 id="prod-title" class="pdp__title"></h1>
+              <span class="pdp__status" data-status-pill></span>
             </div>
+            <p id="prod-subtitle" class="pdp__subtitle"></p>
+            <p id="prod-price" class="pdp__price"></p>
 
-            <dl class="product-detail__data">
+            <dl class="pdp__data">
               <div>
                 <dt>Marca</dt>
                 <dd id="prod-brand"></dd>
@@ -94,108 +86,90 @@
                 <dt>Categoría</dt>
                 <dd id="prod-category"></dd>
               </div>
-              <div>
-                <dt>Sabores</dt>
-                <dd id="prod-flavors"></dd>
-              </div>
-              <div>
-                <dt>Estado</dt>
-                <dd id="prod-status"></dd>
-              </div>
             </dl>
 
-            <div class="product-detail__actions">
-              <button
-                id="prod-whatsapp"
-                type="button"
-                class="product-detail__cta"
-              >
-                Cotizar este producto
-              </button>
-
-              <button
-                id="prod-add-consultation"
-                type="button"
-                class="product-detail__cta product-detail__cta--secondary"
-              >
-                Agregar a cotización
-              </button>
-
-              <button
-                id="prod-availability"
-                type="button"
-                class="product-detail__cta product-detail__cta--secondary"
-                hidden
-              >
-                Consultar disponibilidad
-              </button>
+            <div class="pdp__selectors">
+              <div class="pdp__field">
+                <label class="pdp__label" for="prod-flavor-select">Sabores</label>
+                <div id="prod-flavors"></div>
+              </div>
+              <div class="pdp__field">
+                <span class="pdp__label">Cantidad</span>
+                <div class="pdp__stepper" role="group" aria-label="Cantidad">
+                  <button type="button" class="pdp__qty-btn" data-qty-dec aria-label="Disminuir">−</button>
+                  <span class="pdp__qty-value" data-qty-value aria-live="polite">1</span>
+                  <button type="button" class="pdp__qty-btn pdp__qty-btn--plus" data-qty-inc aria-label="Aumentar">+</button>
+                </div>
+              </div>
             </div>
 
-            <div class="product-tabs">
-              <div class="product-tabs__list" role="tablist" aria-label="Información del suplemento">
-                <button
-                  class="product-tabs__btn is-active"
-                  type="button"
-                  role="tab"
-                  aria-selected="true"
-                  aria-controls="tab-beneficios"
-                  data-tab="beneficios"
-                >
-                  Beneficios
-                </button>
-                <button
-                  class="product-tabs__btn"
-                  type="button"
-                  role="tab"
-                  aria-selected="false"
-                  aria-controls="tab-descripcion"
-                  data-tab="descripcion"
-                >
-                  Descripción
-                </button>
-                <button
-                  class="product-tabs__btn"
-                  type="button"
-                  role="tab"
-                  aria-selected="false"
-                  aria-controls="tab-uso"
-                  data-tab="uso"
-                >
-                  Cómo usar
-                </button>
+            <p class="pdp__added-note" data-added-note hidden></p>
+
+            <p class="pdp__hint">Selecciona sabor y cantidad antes de agregarlo a la cotización.</p>
+
+            <button id="prod-add-consultation" type="button" class="pdp__cta" data-add-cta>
+              Agregar a cotización
+            </button>
+          </section>
+
+          <section class="pdp__details">
+            <h3 class="pdp__details-title">Información<span class="pdp__hide-mobile"> del producto</span></h3>
+            <div class="pdp__tabs">
+              <div class="pdp__tabs-bar" role="tablist" aria-label="Información del suplemento">
+                <button class="pdp__tab is-active" type="button" role="tab" aria-selected="true" data-tab="beneficios">Beneficios</button>
+                <button class="pdp__tab" type="button" role="tab" aria-selected="false" data-tab="descripcion">Descripción</button>
+                <button class="pdp__tab" type="button" role="tab" aria-selected="false" data-tab="uso">Cómo usar</button>
               </div>
 
+              <div class="pdp__panels">
+                <article class="pdp__panel is-active" data-panel="beneficios">
+                  <button class="pdp__acc-head" type="button" data-acc aria-expanded="true">
+                    <span>Beneficios</span>
+                    <span class="pdp__acc-icon" aria-hidden="true"></span>
+                  </button>
+                  <div class="pdp__panel-body">
+                    <h4 class="pdp__panel-title">Beneficios principales</h4>
+                    <div id="tab-beneficios" class="pdp__benefits"></div>
+                  </div>
+                </article>
 
-              <div
-                id="tab-beneficios"
-                class="product-tabs__panel is-active"
-                role="tabpanel"
-                aria-labelledby="tab-beneficios"
-                data-tab-panel="beneficios"
-              ></div>
+                <article class="pdp__panel" data-panel="descripcion">
+                  <button class="pdp__acc-head" type="button" data-acc aria-expanded="false">
+                    <span>Descripción</span>
+                    <span class="pdp__acc-icon" aria-hidden="true"></span>
+                  </button>
+                  <div class="pdp__panel-body">
+                    <div id="tab-descripcion" class="pdp__prose"></div>
+                  </div>
+                </article>
 
-              <div
-                id="tab-descripcion"
-                class="product-tabs__panel"
-                role="tabpanel"
-                aria-labelledby="tab-descripcion"
-                data-tab-panel="descripcion"
-                hidden
-              ></div>
-
-              <div
-                id="tab-uso"
-                class="product-tabs__panel"
-                role="tabpanel"
-                aria-labelledby="tab-uso"
-                data-tab-panel="uso"
-                hidden
-              ></div>
+                <article class="pdp__panel" data-panel="uso">
+                  <button class="pdp__acc-head" type="button" data-acc aria-expanded="false">
+                    <span>Cómo usar</span>
+                    <span class="pdp__acc-icon" aria-hidden="true"></span>
+                  </button>
+                  <div class="pdp__panel-body">
+                    <div id="tab-uso" class="pdp__prose"></div>
+                  </div>
+                </article>
+              </div>
             </div>
-          </div>
+          </section>
         </div>
-      </section>
-    </main>
 
-    </body>
-    </html>
+        <div class="pdp__bar">
+          <div class="pdp__bar-info">
+            <span class="pdp__bar-strong pdp__bar-price" id="pdp-bar-price"></span>
+            <span class="pdp__bar-strong pdp__bar-ready">Listo para cotizar</span>
+            <span class="pdp__bar-sub">
+              <span data-bar-units>1 unidad</span>
+              <span class="pdp__bar-flavornote" data-bar-flavor> · sabor por elegir</span>
+            </span>
+          </div>
+          <button type="button" class="pdp__cta pdp__bar-cta" data-add-cta>Agregar a cotización</button>
+        </div>
+
+      </div>
+    </main>
+  </body>
+</html>

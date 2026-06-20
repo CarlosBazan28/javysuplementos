@@ -7,6 +7,17 @@ function formatPrice(price) {
   return value > 0 ? value.toFixed(2) : "Consultar";
 }
 
+function hasOffer(product) {
+  const price = Number(product?.price || 0);
+  const oldPrice = Number(product?.old_price || 0);
+  return price > 0 && oldPrice > price;
+}
+
+function discountPercent(product) {
+  if (!hasOffer(product)) return 0;
+  return Math.round((1 - Number(product.price) / Number(product.old_price)) * 100);
+}
+
 function escapeHTML(value = "") {
   return value
     .toString()
@@ -39,30 +50,30 @@ function isNoFlavorProduct(product) {
 
 function renderFlavorOptions(product) {
   const flavors = product.flavors || [];
-  const label = flavors.length === 1 ? "Sabor" : "Sabores";
   const selectId = `home-flavor-${slugify(product.id)}`;
   const enabled = productCanBeQuoted(product);
 
   if (!flavors.length) {
-    const flavorLabel = isNoFlavorProduct(product) ? "Sin sabor" : "No aplica / consultar";
     return `
-      <div class="product-card__flavors" aria-label="Sabores disponibles">
+      <div class="product-card__flavors">
         <label class="product-card__flavor-label" for="${selectId}">Sabor</label>
-        <select class="product-card__flavor-select" id="${selectId}" disabled>
-          <option>${flavorLabel}</option>
+        <select class="product-card__flavor-select" id="${selectId}" data-flavor-select disabled>
+          <option>Sin sabor</option>
         </select>
       </div>
     `;
   }
 
+  const label = flavors.length === 1 ? "Sabor" : "Sabores";
+
   return `
     <div class="product-card__flavors" aria-label="${label} disponibles">
       <label class="product-card__flavor-label" for="${selectId}">${label}</label>
       <select class="product-card__flavor-select" id="${selectId}" data-flavor-select ${enabled ? "" : "disabled"}>
-        <option value="">Elegir sabor (${flavors.length})</option>
+        <option value="">Elegir sabor</option>
         ${flavors.map((flavor) => `
           <option value="${escapeHTML(flavor.id)}" ${flavor.available === false ? "disabled" : ""}>
-            ${escapeHTML(flavor.name)}${flavor.available === false ? " - No disponible" : ""}
+            ${escapeHTML(flavor.name)}${flavor.available === false ? " — No disponible" : ""}
           </option>
         `).join("")}
       </select>
@@ -84,15 +95,80 @@ function getSelectedFlavor(card, product, shouldRequire = true) {
   return { flavor: flavor.name, flavor_id: flavor.id };
 }
 
-function showAddedState(button) {
-  const originalText = button.textContent;
-  button.textContent = "Agregado";
-  button.disabled = true;
+function wireQuantityStepper(card) {
+  const valueEl = card.querySelector("[data-qty-value]");
+  if (!valueEl) return;
+  card.querySelector("[data-qty-dec]")?.addEventListener("click", () => {
+    valueEl.textContent = Math.max(1, (parseInt(valueEl.textContent, 10) || 1) - 1);
+  });
+  card.querySelector("[data-qty-inc]")?.addEventListener("click", () => {
+    valueEl.textContent = Math.min(99, (parseInt(valueEl.textContent, 10) || 1) + 1);
+  });
+}
 
-  window.setTimeout(() => {
-    button.textContent = originalText;
-    button.disabled = false;
-  }, 1200);
+function getCardQuantity(card) {
+  if (window.matchMedia("(max-width: 767px)").matches) {
+    const select = card.querySelector("[data-qty-select]");
+    if (select) return Math.max(1, parseInt(select.value, 10) || 1);
+  }
+  return Math.max(1, parseInt(card.querySelector("[data-qty-value]")?.textContent, 10) || 1);
+}
+
+function setAddButtonState(button, added) {
+  if (!button) return;
+  button.classList.toggle("is-added", added);
+  button.textContent = added ? "✓ En cotización" : "Agregar a cotización";
+}
+
+// Sincroniza la card con el estado real de la cotización: botón según el sabor
+// seleccionado, nota con los sabores ya agregados y ✓ en la lista de sabores.
+function syncAddButton(card, product) {
+  const button = card.querySelector(".product-card__btn--buy");
+  if (!button) return;
+
+  const selected = getSelectedFlavor(card, product, false);
+  const flavorName = selected ? selected.flavor : "";
+  setAddButtonState(button, !!window.consultation?.hasItem?.(product.id, flavorName));
+
+  // Nota: "En tu cotización: Chocolate, Vainilla"
+  const note = card.querySelector("[data-added-note]");
+  if (note) {
+    const added = window.consultation?.getAddedFlavors?.(product.id) || [];
+    if (added.length) {
+      note.textContent = `En tu cotización: ${added.join(", ")}`;
+      note.hidden = false;
+    } else {
+      note.textContent = "";
+      note.hidden = true;
+    }
+  }
+
+  // ✓ en los sabores ya agregados.
+  const select = card.querySelector("[data-flavor-select]");
+  if (select && product.flavors?.length) {
+    Array.from(select.options).forEach((opt) => {
+      if (!opt.value) return; // placeholder
+      const f = product.flavors.find((item) => item.id === opt.value);
+      if (!f) return;
+      const unavailable = f.available === false ? " — No disponible" : "";
+      const inCart = window.consultation?.hasItem?.(product.id, f.name) ? " ✓" : "";
+      opt.textContent = `${f.name}${unavailable}${inCart}`;
+    });
+  }
+}
+
+function syncAllAddButtons() {
+  document.querySelectorAll(".product-card").forEach((card) => {
+    if (card._javyProduct) syncAddButton(card, card._javyProduct);
+  });
+}
+
+let consultationSyncBound = false;
+function bindConsultationSync() {
+  if (consultationSyncBound) return;
+  consultationSyncBound = true;
+  // Un único listener por página evita fugas al re-renderizar la lista.
+  document.addEventListener("consultation:change", syncAllAddButtons);
 }
 
 function renderFeaturedProducts(productos) {
@@ -108,6 +184,7 @@ function renderFeaturedProducts(productos) {
   }
 
   lista.innerHTML = "";
+  bindConsultationSync();
 
   productos.forEach((product) => {
     const canQuote = productCanBeQuoted(product);
@@ -122,45 +199,76 @@ function renderFeaturedProducts(productos) {
 
       <div class="product-card__info">
         <div class="product-card__meta">
-          <span>${escapeHTML(product.brand || "Marca en revision")}</span>
-          <span class="${canQuote ? "is-available" : "is-unavailable"}">
+          <span class="product-card__brand">${escapeHTML(product.brand || "Marca en revision")}</span>
+          <span class="product-card__status ${canQuote ? "is-available" : "is-unavailable"}">
             ${canQuote ? "Disponible" : "Consultar stock"}
           </span>
         </div>
         <h3 class="product-card__name">${escapeHTML(product.name)}</h3>
-        <p class="product-card__price">$ ${formatPrice(product.price)}</p>
+        <div class="product-card__price-row">
+          <span class="product-card__price-group">
+            <span class="product-card__price">$${formatPrice(product.price)}</span>
+            ${hasOffer(product) ? `<span class="product-card__price-old">$${formatPrice(product.old_price)}</span><span class="product-card__discount">-${discountPercent(product)}%</span>` : ""}
+          </span>
+          ${product.presentation ? `<span class="product-card__pres">${escapeHTML(product.presentation)}</span>` : ""}
+        </div>
         ${renderFlavorOptions(product)}
-        <p class="product-card__disclaimer">${escapeHTML(product.presentation || "Cotizacion por WhatsApp")}</p>
+        <div class="product-card__qty">
+          <span class="product-card__qty-label">Cantidad</span>
+          <div class="product-card__stepper" role="group" aria-label="Cantidad">
+            <button type="button" class="product-card__qty-btn" data-qty-dec aria-label="Disminuir">−</button>
+            <span class="product-card__qty-value" data-qty-value aria-live="polite">1</span>
+            <button type="button" class="product-card__qty-btn product-card__qty-btn--plus" data-qty-inc aria-label="Aumentar">+</button>
+          </div>
+          <select class="product-card__qty-select" data-qty-select aria-label="Cantidad">
+            ${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}
+          </select>
+        </div>
+        <p class="product-card__added-note" data-added-note hidden></p>
       </div>
 
       <div class="product-card__actions product-card__actions--catalog">
-        ${canQuote ? '<button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotizacion</button>' : ""}
-        ${canQuote ? '<button class="product-card__btn product-card__btn--quote" type="button">Cotizar este producto</button>' : '<button class="product-card__btn product-card__btn--quote" type="button">Consultar disponibilidad</button>'}
+        ${canQuote
+          ? '<button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>'
+          : '<button class="product-card__btn product-card__btn--quote" type="button">Consultar disponibilidad</button>'
+        }
         <button class="product-card__btn product-card__btn--info" type="button">Ver detalles</button>
       </div>
     `;
+
+    wireQuantityStepper(card);
+    card._javyProduct = product;
 
     const btnConsulta = card.querySelector(".product-card__btn--buy");
     btnConsulta?.addEventListener("click", () => {
       const selectedFlavor = getSelectedFlavor(card, product);
       if (product.flavors?.length && !selectedFlavor) {
         btnConsulta.textContent = "Elige sabor";
-        window.setTimeout(() => { btnConsulta.textContent = "Agregar a cotizacion"; }, 1200);
+        window.setTimeout(() => { syncAddButton(card, product); }, 1200);
         return;
       }
 
-      window.consultation?.addItem?.(product, selectedFlavor || {});
-      showAddedState(btnConsulta);
+      const flavorName = selectedFlavor?.flavor || "";
+      if (window.consultation?.hasItem?.(product.id, flavorName)) {
+        window.consultation?.toast?.(flavorName ? "Ese sabor ya está en tu cotización" : "Ya está en tu cotización");
+        return;
+      }
+
+      const quantity = getCardQuantity(card);
+      window.consultation?.addItem?.(product, { ...(selectedFlavor || {}), quantity });
+      syncAddButton(card, product);
     });
 
+    // El estado del botón depende del sabor elegido: re-sincroniza al cambiarlo.
+    card.querySelector("[data-flavor-select]")?.addEventListener("change", () => {
+      syncAddButton(card, product);
+    });
+    syncAddButton(card, product);
+
+    // El botón "Consultar disponibilidad" solo se renderiza cuando !canQuote
     const btnQuote = card.querySelector(".product-card__btn--quote");
     btnQuote?.addEventListener("click", () => {
-      const selectedFlavor = canQuote ? getSelectedFlavor(card, product, false) : {};
-      if (canQuote) {
-        window.consultation?.quoteSingleProduct?.(product, selectedFlavor || {});
-      } else {
-        window.consultation?.askAvailability?.(product, selectedFlavor || {});
-      }
+      window.consultation?.askAvailability?.(product, {});
     });
 
     const btnInfo = card.querySelector(".product-card__btn--info");
@@ -205,3 +313,87 @@ async function initHomeProducts() {
 }
 
 initHomeProducts();
+
+// ===== Combos =====
+const combosSection = document.getElementById("combos");
+const combosList = document.getElementById("home-combos__list");
+
+// Un combo se agrega a la cotización como un item con forma de producto.
+function comboToQuoteProduct(combo) {
+  return {
+    id: combo.id,
+    name: `Combo: ${combo.name}`,
+    brand: "",
+    category: "Combo",
+    price: combo.price,
+    presentation: combo.items
+      .map((i) => `${i.quantity}× ${i.product_name}${i.flavor_name ? ` (${i.flavor_name})` : ""}`)
+      .join(", "),
+    image: combo.image,
+  };
+}
+
+function renderHomeCombos(combos) {
+  if (!combosSection || !combosList) return;
+  if (!combos.length) {
+    combosSection.hidden = true;
+    return;
+  }
+  combosSection.hidden = false;
+  combosList.innerHTML = "";
+
+  combos.forEach((combo) => {
+    const card = document.createElement("article");
+    card.className = "product-card combo-card";
+    const itemsHtml = combo.items
+      .map((i) => `<li>${i.quantity}× ${escapeHTML(i.product_name)}${i.flavor_name ? ` <span>(${escapeHTML(i.flavor_name)})</span>` : ""}</li>`)
+      .join("");
+
+    card.innerHTML = `
+      <div class="product-card__media">
+        <img src="${escapeHTML(combo.image)}" alt="${escapeHTML(combo.name)}" class="product-card__img" loading="lazy" />
+      </div>
+      <div class="product-card__info">
+        <h3 class="product-card__name">${escapeHTML(combo.name)}</h3>
+        ${combo.description ? `<p class="combo-card__desc">${escapeHTML(combo.description)}</p>` : ""}
+        <ul class="combo-card__items">${itemsHtml}</ul>
+        <div class="product-card__price-row">
+          <span class="product-card__price-group">
+            <span class="product-card__price">$${formatPrice(combo.price)}</span>
+            ${hasOffer(combo) ? `<span class="product-card__price-old">$${formatPrice(combo.old_price)}</span><span class="product-card__discount">-${discountPercent(combo)}%</span>` : ""}
+          </span>
+        </div>
+      </div>
+      <div class="product-card__actions product-card__actions--catalog">
+        <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+      </div>
+    `;
+
+    card.querySelector(".product-card__btn--buy")?.addEventListener("click", () => {
+      if (window.consultation?.hasItem?.(combo.id, "")) {
+        window.consultation?.toast?.("Ese combo ya está en tu cotización");
+        return;
+      }
+      window.consultation?.addItem?.(comboToQuoteProduct(combo), { quantity: 1 });
+      window.consultation?.toast?.("Combo agregado a tu cotización");
+    });
+
+    combosList.appendChild(card);
+  });
+
+  window.javyIcons?.enhance?.(combosList);
+}
+
+async function initHomeCombos() {
+  if (!combosList) return;
+  try {
+    const combos = await window.catalogDb.getCombos({ activeOnly: true });
+    const flagged = combos.filter((c) => c.show_on_home);
+    renderHomeCombos((flagged.length ? flagged : combos).slice(0, 8));
+  } catch (error) {
+    console.warn("No se pudieron cargar combos:", error.message);
+    if (combosSection) combosSection.hidden = true;
+  }
+}
+
+initHomeCombos();

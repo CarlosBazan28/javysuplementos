@@ -37,14 +37,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap"
       rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com"/>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Vast+Shadow&display=swap"
-      rel="stylesheet"
-    />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="js/supabase-config.js" defer></script>
     <script src="js/whatsapp-config.js" defer></script>
@@ -96,12 +90,23 @@
         </form>
 
         <p class="catalog-tools__hint">Desliza los filtros para ver más categorías.</p>
-        <div class="catalog-filters" id="catalogFilters" aria-label="Filtrar por categoría"></div>
+        <div class="catalog-filters" id="catalogFilters" aria-label="Filtrar por familia"></div>
+        <div class="catalog-filters catalog-filters--types" id="catalogSubFilters" aria-label="Filtrar por tipo" hidden></div>
+        <div class="catalog-facets" id="catalogFacets" aria-label="Filtros adicionales" hidden></div>
       </section>
 
-      <section class="catalog-results" aria-live="polite">
+      <section class="catalog-results">
         <div class="catalog-results__bar">
-          <p class="catalog-results__count" id="catalogCount"></p>
+          <p class="catalog-results__count" id="catalogCount" aria-live="polite"></p>
+          <label class="catalog-sort">
+            <span class="catalog-sort__label">Ordenar</span>
+            <select class="catalog-sort__select" id="catalogSort" aria-label="Ordenar productos">
+              <option value="recomendados">Recomendados</option>
+              <option value="precio-asc">Precio: menor a mayor</option>
+              <option value="precio-desc">Precio: mayor a menor</option>
+              <option value="nombre">Nombre: A-Z</option>
+            </select>
+          </label>
         </div>
 
         <div class="catalog-grid" id="supplementsList"></div>
