@@ -49,6 +49,10 @@
 html, body { margin: 0; background: var(--pb-bg-0); }
 body.ad-body { min-height: 100vh; }
 
+/* El atributo [hidden] debe ganar sobre las reglas de layout del kit
+   (.ad-gate / .ad-shell usan display:grid, que de otro modo lo anularía). */
+[hidden] { display: none !important; }
+
 /* ============================================================================
    KIT (basado en design/admin.css del handoff)
    ============================================================================ */
