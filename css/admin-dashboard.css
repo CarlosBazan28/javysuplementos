@@ -458,6 +458,14 @@ body.ad-body { min-height: 100vh; }
 .ad-confirm p { color: var(--pb-muted); font-size: 0.9rem; line-height: 1.5; }
 .ad-confirm__actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
 
+/* ---- error de render (en vez de pantalla en blanco) ---- */
+.ad-error { border: 1px solid rgba(255,79,118,0.35); border-radius: var(--ad-radius); background: rgba(255,79,118,0.08); padding: 18px; display: grid; gap: 10px; }
+.ad-error h3 { display: flex; align-items: center; gap: 8px; font-size: 1.02rem; font-weight: 800; color: #ffc1ce; }
+.ad-error h3 .ad-ico { width: 18px; height: 18px; }
+.ad-error p { color: var(--pb-text); font-size: 0.9rem; }
+.ad-error pre { overflow: auto; max-height: 220px; margin: 0; padding: 12px; border-radius: var(--ad-radius-sm); background: var(--pb-surface-2); color: var(--pb-muted); font-size: 0.72rem; line-height: 1.4; white-space: pre-wrap; word-break: break-word; }
+.ad-error .ad-btn { justify-self: start; }
+
 /* ---- empty state ---- */
 .ad-empty { display: grid; place-items: center; gap: 10px; padding: 40px 20px; text-align: center; }
 .ad-empty__icon { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; background: var(--pb-white-06); color: var(--pb-muted); }

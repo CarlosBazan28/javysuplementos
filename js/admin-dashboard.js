@@ -53,9 +53,10 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  function esc(value = "") {
-    return value
-      .toString()
+  function esc(value) {
+    // String(value ?? "") tolera null, undefined y números sin tirar
+    // (un default de parámetro solo cubre undefined, no null).
+    return String(value ?? "")
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
@@ -232,7 +233,10 @@
       go("dashboard");
     } catch (error) {
       console.error(error);
+      // El gate puede estar oculto si ya mostramos el shell; mostrar el error
+      // donde se vea (la vista) además del gate.
       setGate("No se pudo validar el acceso: " + (error.message || error));
+      if (!$("#adminShell").hidden) showViewError(error, "el panel");
     }
   }
 
@@ -327,7 +331,25 @@
       home: renderHome, categories: renderCategories, combos: renderCombos,
       access: renderAccess, settings: renderSettings,
     };
-    (renderers[nav.key] || renderDashboard)();
+    try {
+      (renderers[nav.key] || renderDashboard)();
+    } catch (error) {
+      console.error("Error al renderizar la sección", nav.key, error);
+      showViewError(error, nav.label);
+    }
+  }
+
+  // Pinta un error legible dentro de #adminView (en vez de dejar la vista en blanco).
+  function showViewError(error, where = "") {
+    const view = $("#adminView");
+    if (!view) return;
+    view.innerHTML = `<div class="ad-section"><div class="ad-error">
+      <h3>${ico("x")} No se pudo mostrar ${esc(where || "esta sección")}</h3>
+      <p>${esc(error && error.message ? error.message : error)}</p>
+      ${error && error.stack ? `<pre>${esc(error.stack)}</pre>` : ""}
+      <button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" onclick="location.reload()">Recargar</button>
+    </div></div>`;
+    if (window.javyIcons) window.javyIcons.enhance(view);
   }
 
   function setView(html) {
