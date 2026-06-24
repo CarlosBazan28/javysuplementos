@@ -2,13 +2,12 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Admin | Javy Suplementos</title>
-    <meta name="robots" content="noindex, nofollow">
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#050709" />
     <link rel="icon" href="img/icons/logo-16x16.png" type="image/png" />
-    <link rel="stylesheet" href="css/base.css" />
-    <link rel="stylesheet" href="css/tokens.css" />
-    <link rel="stylesheet" href="css/admin-dashboard.css?v=admin-filter-modal" />
+    <link rel="stylesheet" href="css/admin-dashboard.css?v=handoff-redesign-3" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -19,618 +18,78 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="js/supabase-config.js" defer></script>
+    <script src="js/whatsapp-config.js" defer></script>
     <script src="js/product-data.js" defer></script>
-    <script src="js/db.js?v=admin-auth" defer></script>
+    <script src="js/db.js?v=no-img-fallback" defer></script>
     <script src="js/auth.js?v=session-state" defer></script>
     <script src="js/icons.js?v=icons" defer></script>
-    <script src="js/admin-dashboard.js?v=admin-filter-modal" defer></script>
+    <script type="module" src="js/admin/main.js?v=handoff-redesign"></script>
   </head>
-  <body class="admin-dashboard-page">
-    <main class="admin-app" id="adminApp">
-      <section class="admin-gate" id="adminGate" aria-live="polite">
-        <div class="admin-gate__card">
+  <body class="ad-body">
+    <div class="ad-app" data-anim="on" id="adminApp">
+      <!-- Gate de acceso -->
+      <section class="ad-gate" id="adminGate" aria-live="polite">
+        <div class="ad-gate__card">
           <img src="img/icons/logo.png" alt="Javy Supplements" />
-          <p class="admin-kicker">Panel privado</p>
+          <p class="ad-gate__kicker">Panel privado</p>
           <h1>Validando acceso</h1>
-          <p id="adminGateMessage">Revisando sesion y permisos de administrador...</p>
-          <span class="admin-loader" aria-hidden="true"></span>
+          <p id="adminGateMessage">Revisando sesión y permisos de administrador…</p>
+          <span class="ad-gate__loader" aria-hidden="true"></span>
         </div>
       </section>
 
-      <section class="admin-dashboard" id="adminDashboard" hidden>
-        <aside class="admin-sidebar" aria-label="Navegacion del panel">
-          <a class="admin-brand" href="index.html" aria-label="Volver al inicio">
+      <!-- Shell (oculto hasta validar admin) -->
+      <div class="ad-shell" id="adminShell" hidden>
+        <aside class="ad-sidebar" aria-label="Navegación del panel">
+          <a class="ad-brand" href="index.html" aria-label="Ir a la tienda">
             <img src="img/icons/logo.png" alt="" />
-            <span>
-              <strong>Javy</strong>
-              <small>Admin</small>
-            </span>
+            <span><strong>Javy</strong><small>Admin</small></span>
           </a>
-
-          <nav class="admin-nav" aria-label="Secciones">
-            <button class="admin-nav__item is-active" type="button" data-admin-section="dashboard">
-              <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="layout-dashboard" aria-hidden="true"></span>
-              <span class="admin-nav__text">Dashboard</span>
-            </button>
-            <button class="admin-nav__item" type="button" data-admin-section="products">
-              <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="package" aria-hidden="true"></span>
-              <span class="admin-nav__text">Productos</span>
-            </button>
-            <button class="admin-nav__item" type="button" data-admin-section="variants">
-              <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="tags" aria-hidden="true"></span>
-              <span class="admin-nav__text">Sabores</span>
-            </button>
-            <button class="admin-nav__item" type="button" data-admin-section="home">
-              <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="home" aria-hidden="true"></span>
-              <span class="admin-nav__text">Inicio</span>
-            </button>
-            <button class="admin-nav__item" type="button" data-admin-section="categories">
-              <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="tags" aria-hidden="true"></span>
-              <span class="admin-nav__text">Categorías</span>
-            </button>
-            <button class="admin-nav__item" type="button" data-admin-section="combos">
-              <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="package" aria-hidden="true"></span>
-              <span class="admin-nav__text">Combos</span>
-            </button>
-            <button class="admin-nav__item" type="button" data-admin-section="access">
-              <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="log-in" aria-hidden="true"></span>
-              <span class="admin-nav__text">Accesos</span>
-            </button>
-            <button class="admin-nav__item" type="button" data-admin-section="settings">
-              <span class="btn-icon btn-icon--box admin-nav__icon" data-javy-icon="settings" aria-hidden="true"></span>
-              <span class="admin-nav__text">Ajustes</span>
-            </button>
-          </nav>
-
-          <button class="admin-logout" id="adminLogoutBtn" type="button">
-            <span class="btn-icon" data-javy-icon="log-out" aria-hidden="true"></span>
-            Cerrar sesion
+          <nav class="ad-nav" id="adminNav" aria-label="Secciones"></nav>
+          <button class="ad-logout" id="adminLogoutBtn" type="button">
+            <span class="ad-ico" data-javy-icon="log-out" aria-hidden="true"></span>
+            Cerrar sesión
           </button>
         </aside>
 
-        <section class="admin-main">
-          <header class="admin-topbar">
-            <div>
-              <h1 id="adminSectionTitle">Dashboard</h1>
+        <main class="ad-main">
+          <header class="ad-topbar">
+            <div class="ad-topbar__title">
+              <h1 id="adminTitle">Dashboard</h1>
+              <p id="adminSubtitle">Resumen de la tienda y acciones pendientes</p>
             </div>
-            <div class="admin-topbar__actions">
-              <input class="admin-context-action" id="adminQuickSearch" type="search" placeholder="Buscar producto" aria-label="Buscar producto" data-show-sections="products" />
-              <button class="admin-primary admin-context-action" id="adminNewProductBtn" type="button" data-show-sections="products">
-                <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>
+            <div class="ad-topbar__actions">
+              <div class="ad-search">
+                <span class="ad-ico" data-javy-icon="search" aria-hidden="true"></span>
+                <input type="search" id="adminSearch" placeholder="Buscar producto" aria-label="Buscar producto" />
+              </div>
+              <button class="ad-btn ad-btn--primary" id="adminAddBtn" type="button">
+                <span class="ad-ico" data-javy-icon="plus" aria-hidden="true"></span>
                 Agregar producto
               </button>
             </div>
           </header>
 
-          <section class="admin-section is-active" id="section-dashboard" data-section-panel="dashboard">
-            <div class="admin-stats" id="adminStats"></div>
-            <div class="admin-ops">
-              <div class="admin-panel admin-ops__panel admin-ops__panel--alert">
-                <div class="admin-panel__head">
-                  <div>
-                    <p class="admin-kicker">Inventario</p>
-                    <h2>Agotados</h2>
-                    <p class="admin-help-text">Lo que se acabó, listo para reactivar cuando vuelva.</p>
-                  </div>
-                  <span class="admin-ops__count" id="adminOpsAgotadosCount" hidden></span>
-                </div>
-                <div class="admin-ops__list" id="adminOpsAgotados"></div>
-              </div>
-              <div class="admin-panel admin-ops__panel">
-                <div class="admin-panel__head">
-                  <div>
-                    <p class="admin-kicker">Promociones</p>
-                    <h2>Ofertas activas</h2>
-                    <p class="admin-help-text">Productos con precio anterior tachado.</p>
-                  </div>
-                  <span class="admin-ops__count" id="adminOpsOfertasCount" hidden></span>
-                </div>
-                <div class="admin-ops__list" id="adminOpsOfertas"></div>
-              </div>
-              <div class="admin-panel admin-ops__panel">
-                <div class="admin-panel__head">
-                  <div>
-                    <p class="admin-kicker">Reabastecer</p>
-                    <h2>Agotado hace mucho</h2>
-                    <p class="admin-help-text">Agotados sin cambios hace semanas: revisar si reponer o descatalogar.</p>
-                  </div>
-                  <span class="admin-ops__count" id="adminOpsStaleCount" hidden></span>
-                </div>
-                <div class="admin-ops__list" id="adminOpsStale"></div>
-              </div>
-            </div>
-            <div class="admin-panel admin-panel--split">
-              <div>
-                <div class="admin-panel__head">
-                  <div>
-                    <h2>Ultimos 6 agregados</h2>
-                  </div>
-                </div>
-                <div class="admin-recent" id="adminRecentProducts"></div>
-              </div>
-            </div>
-          </section>
-
-          <section class="admin-section" id="section-products" data-section-panel="products">
-            <div class="admin-panel">
-              <div class="admin-panel__head admin-panel__head--wrap">
-                <div>
-                  <p class="admin-kicker">Catalogo</p>
-                  <h2>Productos</h2>
-                </div>
-                <div class="admin-products-toolbar">
-                  <p class="admin-results-count" id="adminProductResultCount">Mostrando productos</p>
-                  <button class="admin-secondary admin-filter-toggle" id="adminFilterToggle" type="button" aria-expanded="false" aria-controls="adminFilterPanel">
-                    <span class="btn-icon" data-javy-icon="settings" aria-hidden="true"></span>
-                    Filtros
-                    <span class="admin-filter-count" id="adminFilterCount" hidden>0</span>
-                  </button>
-                </div>
-              </div>
-
-              <div class="admin-table-wrap" id="adminProductTableWrap"></div>
-              <div class="admin-product-cards" id="adminProductCards"></div>
-              <div class="admin-empty" id="adminProductsEmpty" hidden>No hay productos con esos filtros.</div>
-              <div class="admin-load-more">
-                <button type="button" id="adminLoadMoreBtn" hidden>
-                  <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>
-                  Ver mas productos
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <section class="admin-section" id="section-variants" data-section-panel="variants">
-            <div class="admin-panel">
-              <div class="admin-panel__head admin-panel__head--wrap">
-                <div>
-                  <p class="admin-kicker">Sabores y variantes</p>
-                  <h2>Gestion rapida por producto</h2>
-                </div>
-                <select id="variantProductSelect" aria-label="Seleccionar producto"></select>
-              </div>
-              <div id="variantManager"></div>
-            </div>
-          </section>
-
-          <section class="admin-section" id="section-home" data-section-panel="home">
-            <div class="admin-panel">
-              <div class="admin-panel__head admin-panel__head--wrap">
-                <div>
-                  <p class="admin-kicker">Pagina principal</p>
-                  <h2>Productos del inicio</h2>
-                  <p class="admin-help-text">Selecciona entre 4 y 8 productos. El orden aqui se refleja en el home.</p>
-                </div>
-                <strong class="admin-home-counter" id="adminHomeCounter">0 de 8</strong>
-              </div>
-              <div class="admin-home-layout">
-                <div>
-                  <h3>Seleccionados</h3>
-                  <div class="admin-home-list" id="adminHomeList"></div>
-                </div>
-                <div>
-                  <h3>Agregar al inicio</h3>
-                  <div class="admin-home-pool" id="adminHomePool"></div>
-                </div>
-              </div>
-              <div class="admin-sticky-actions">
-                <button class="admin-primary" id="adminSaveHomeBtn" type="button">
-                  <span class="btn-icon" data-javy-icon="save" aria-hidden="true"></span>
-                  <span class="btn-label">Guardar inicio</span>
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <section class="admin-section" id="section-categories" data-section-panel="categories">
-            <div class="admin-panel">
-              <div class="admin-panel__head admin-panel__head--wrap">
-                <div>
-                  <p class="admin-kicker">Catalogo</p>
-                  <h2>Categorías</h2>
-                  <p class="admin-help-text">Familias y sus tipos. Reordena con las flechas; oculta sin borrar.</p>
-                </div>
-                <button class="admin-primary" type="button" data-cat-add-family>
-                  <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>
-                  Nueva familia
-                </button>
-              </div>
-              <div id="adminCategoryManager"></div>
-            </div>
-          </section>
-
-          <section class="admin-section" id="section-combos" data-section-panel="combos">
-            <div class="admin-panel">
-              <div class="admin-panel__head admin-panel__head--wrap">
-                <div>
-                  <p class="admin-kicker">Promociones</p>
-                  <h2>Combos</h2>
-                  <p class="admin-help-text">Paquetes de productos con precio especial (ej. proteína + creatina).</p>
-                </div>
-                <button class="admin-primary" type="button" id="adminNewComboBtn">
-                  <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>
-                  Nuevo combo
-                </button>
-              </div>
-              <div id="adminCombosList"></div>
-            </div>
-          </section>
-
-          <section class="admin-section" id="section-access" data-section-panel="access">
-            <div class="admin-panel">
-              <div class="admin-panel__head">
-                <div>
-                  <p class="admin-kicker">Seguridad</p>
-                  <h2>Accesos</h2>
-                  <p class="admin-help-text">Administradores con acceso al panel. Activa o desactiva accesos; crear un admin nuevo se hace en Supabase (Auth + admin_profiles).</p>
-                </div>
-              </div>
-              <div id="adminAccessList"></div>
-            </div>
-          </section>
-
-          <section class="admin-section" id="section-settings" data-section-panel="settings">
-            <div class="admin-panel">
-              <div class="admin-panel__head">
-                <div>
-                  <p class="admin-kicker">Configuracion</p>
-                  <h2>Estado del sistema</h2>
-                </div>
-              </div>
-              <div class="admin-settings-grid">
-                <article>
-                  <strong>Base de datos</strong>
-                  <p>Productos, categorias, sabores y perfiles admin viven en Supabase.</p>
-                </article>
-                <article>
-                  <strong>Imagenes</strong>
-                  <p>Las nuevas imagenes se suben al bucket <code>product-images</code>.</p>
-                </article>
-                <article>
-                  <strong>Seguridad</strong>
-                  <p>Solo usuarios con perfil admin activo pueden escribir.</p>
-                </article>
-              </div>
-            </div>
-          </section>
-        </section>
-      </section>
-    </main>
-
-    <div class="admin-filter-backdrop" id="adminFilterBackdrop" hidden></div>
-    <div class="admin-filter-panel" id="adminFilterPanel" role="dialog" aria-modal="true" aria-labelledby="adminFilterTitle" tabindex="-1" hidden>
-      <div class="admin-filter-panel__head">
-        <h3 id="adminFilterTitle">Filtros de productos</h3>
-        <button class="admin-chip-btn" id="adminFilterClose" type="button" aria-label="Cerrar filtros">
-          <span class="btn-icon" data-javy-icon="x" aria-hidden="true"></span>
-        </button>
+          <div id="adminView"></div>
+        </main>
       </div>
-      <div class="admin-filters">
-        <label>
-          <span>Categoria</span>
-          <select id="adminCategoryFilter" aria-label="Filtrar por categoria"></select>
-        </label>
-        <label>
-          <span>Disponibilidad</span>
-          <select id="adminAvailabilityFilter" aria-label="Filtrar por disponibilidad">
-            <option value="all">Todos</option>
-            <option value="available">Disponibles</option>
-            <option value="unavailable">No disponibles</option>
-          </select>
-        </label>
-        <label>
-          <span>Inicio</span>
-          <select id="adminHomeFilter" aria-label="Filtrar por inicio">
-            <option value="all">Inicio: todos</option>
-            <option value="home">En inicio</option>
-            <option value="not-home">Fuera del inicio</option>
-          </select>
-        </label>
-        <label>
-          <span>Revision</span>
-          <select id="adminReviewFilter" aria-label="Filtrar por revision">
-            <option value="all">Todos</option>
-            <option value="missing-image">Sin imagen</option>
-            <option value="no-flavor">Sin sabor</option>
-            <option value="missing-flavors">Faltan sabores</option>
-            <option value="inactive-flavors">Sin sabores activos</option>
-            <option value="flavor-review">Revisar tipo de sabor</option>
-            <option value="unavailable">No disponibles</option>
-            <option value="empty-price">Precio vacio</option>
-            <option value="featured">Destacados</option>
-          </select>
-        </label>
-        <label>
-          <span>Orden</span>
-          <select id="adminSortFilter" aria-label="Ordenar productos">
-            <option value="recent">Mas recientes</option>
-            <option value="name">Nombre</option>
-            <option value="price-asc">Precio bajo a alto</option>
-            <option value="price-desc">Precio alto a bajo</option>
-            <option value="availability">Disponibilidad</option>
-          </select>
-        </label>
+
+      <!-- Bottom nav (mobile) -->
+      <nav class="ad-tabbar" id="adminTabbar" aria-label="Navegación rápida"></nav>
+
+      <!-- Sheet "Más" (mobile) -->
+      <div class="ad-sheet" id="adminSheet">
+        <div class="ad-sheet__backdrop" data-close-sheet></div>
+        <div class="ad-sheet__panel">
+          <h3>Más secciones</h3>
+          <div class="ad-sheet__grid" id="adminSheetGrid"></div>
+        </div>
       </div>
-      <div class="admin-filter-actions">
-        <button class="admin-secondary" id="adminFilterClear" type="button">Limpiar filtros</button>
-        <button class="admin-primary" id="adminFilterApply" type="button">Aplicar filtros</button>
-      </div>
+
+      <!-- Hosts dinámicos -->
+      <div id="adminDrawerHost"></div>
+      <div id="adminConfirmHost"></div>
+      <div class="ad-toast-host" id="adminToastHost" role="status" aria-live="polite"></div>
     </div>
-
-    <section class="admin-drawer" id="productDrawer" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="productDrawerTitle">
-      <div class="admin-drawer__backdrop" data-close-product-drawer></div>
-      <form class="admin-drawer__panel" id="adminProductForm" novalidate>
-        <div class="admin-drawer__head">
-          <div>
-            <p class="admin-kicker">Producto</p>
-            <h2 id="productDrawerTitle">Agregar producto</h2>
-            <p class="admin-meta-line" id="productMetaLine" hidden></p>
-          </div>
-          <button type="button" class="admin-icon-btn" aria-label="Cerrar editor" data-close-product-drawer>
-            <span class="btn-icon" data-javy-icon="x" aria-hidden="true"></span>
-          </button>
-        </div>
-
-        <div class="admin-form-scroll">
-          <p class="admin-form-note">Los campos con <span class="admin-req">*</span> son obligatorios.</p>
-          <details class="admin-form-group" open>
-            <summary>Informacion basica</summary>
-            <div class="admin-form-grid">
-              <label>
-                Nombre del producto <span class="admin-req" aria-hidden="true">*</span>
-                <input name="name" placeholder="Ej: Whey Protein Gold Standard" required />
-                <small data-field-error="name"></small>
-              </label>
-              <label>
-                Marca
-                <input name="brand" placeholder="Ej: Optimum Nutrition" />
-              </label>
-              <div class="admin-form-grid__wide admin-cascade">
-                <div class="admin-cascade__field">
-                  <label for="productFamily">Familia <span class="admin-req" aria-hidden="true">*</span></label>
-                  <div class="admin-cascade__row">
-                    <select name="family" id="productFamily"></select>
-                    <button type="button" class="admin-chip-btn" data-new-family>
-                      <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>Nueva
-                    </button>
-                  </div>
-                </div>
-                <div class="admin-cascade__field">
-                  <label for="productType">Tipo</label>
-                  <div class="admin-cascade__row">
-                    <select name="type" id="productType"></select>
-                    <button type="button" class="admin-chip-btn" data-new-type>
-                      <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>Nuevo
-                    </button>
-                  </div>
-                </div>
-                <small data-field-error="category"></small>
-                <input type="hidden" name="category" />
-                <input type="hidden" name="category_id" />
-              </div>
-              <label>
-                Presentacion
-                <input name="presentation" placeholder="Ej: 5 lb, 30 servicios" />
-              </label>
-              <label class="admin-form-grid__wide">
-                Descripcion corta
-                <input name="description_short" placeholder="Ej: Proteina de alta calidad para recuperacion muscular" />
-              </label>
-              <label class="admin-form-grid__wide">
-                Descripcion larga
-                <textarea name="description_long" rows="4" placeholder="Ej: Ideal para aumentar consumo de proteina diaria..."></textarea>
-              </label>
-            </div>
-          </details>
-
-          <details class="admin-form-group" open>
-            <summary>Precio y oferta</summary>
-            <div class="admin-form-grid">
-              <label>
-                Precio actual <span class="admin-req" aria-hidden="true">*</span>
-                <input name="price" type="number" min="0" step="0.01" placeholder="Ej: 45.00" required />
-                <small data-field-error="price"></small>
-              </label>
-              <label>
-                Precio anterior
-                <input name="old_price" type="number" min="0" step="0.01" placeholder="Ej: 55.00" />
-                <small data-field-error="old_price"></small>
-                <small class="admin-price-hint" data-price-hint hidden></small>
-              </label>
-            </div>
-          </details>
-
-          <details class="admin-form-group" open>
-            <summary>Imagen</summary>
-            <div class="admin-image-field">
-              <div class="admin-image-preview-wrap">
-                <img id="productImagePreview" src="img/products/product-placeholder.svg" alt="Vista previa de producto" />
-                <span class="admin-image-state" data-image-state></span>
-              </div>
-              <div class="admin-image-controls">
-                <input name="image_file" type="file" accept="image/*" id="productImageFile" hidden />
-                <div class="admin-image-buttons">
-                  <button type="button" class="admin-secondary" data-pick-image>
-                    <span class="btn-icon" data-javy-icon="upload" aria-hidden="true"></span>
-                    <span class="btn-label" data-pick-image-label>Subir imagen</span>
-                  </button>
-                  <button type="button" class="admin-chip-btn" data-clear-image hidden>
-                    <span class="btn-icon" data-javy-icon="trash" aria-hidden="true"></span>
-                    Quitar
-                  </button>
-                </div>
-                <small class="admin-image-filename" data-image-filename hidden></small>
-                <input type="hidden" name="image_url" />
-                <small>Sube un archivo de imagen (JPG, PNG o WebP, máx 5 MB). Se guarda en Supabase Storage.</small>
-              </div>
-            </div>
-          </details>
-
-          <details class="admin-form-group" open>
-            <summary>Sabores / variantes</summary>
-            <div class="admin-drawer-flavors" id="drawerFlavors"></div>
-          </details>
-
-          <details class="admin-form-group" open>
-            <summary>Disponibilidad, inicio y etiquetas</summary>
-            <div class="admin-form-grid">
-              <label>
-                Etiqueta visual
-                <input name="label" placeholder="Nuevo, Oferta, Mas vendido" />
-              </label>
-              <label>
-                Orden de aparicion
-                <input name="home_order" type="number" min="1" max="8" step="1" placeholder="Ej: 1" />
-                <small data-field-error="home_order"></small>
-              </label>
-              <label>
-                Tags separados por coma
-                <input name="tags" placeholder="proteina, masa, recuperacion" />
-              </label>
-              <label>
-                Objetivos separados por coma
-                <input name="goals" placeholder="Ganar masa muscular, Recuperacion" />
-              </label>
-              <label>
-                Tipo de sabor
-                <select name="flavor_mode">
-                  <option value="needs_review">Pendiente por revisar</option>
-                  <option value="has_flavors">Tiene sabores</option>
-                  <option value="no_flavor">Sin sabor</option>
-                </select>
-              </label>
-              <div class="admin-switch-row admin-form-grid__wide">
-                <label><input name="is_available" type="checkbox" checked /> Disponible</label>
-                <label><input name="is_featured" type="checkbox" /> Destacado</label>
-                <label><input name="show_on_home" type="checkbox" /> Mostrar en inicio</label>
-              </div>
-            </div>
-          </details>
-        </div>
-
-        <div class="admin-drawer__actions">
-          <button type="button" class="admin-danger" id="adminDeleteProductBtn" hidden>
-            <span class="btn-icon" data-javy-icon="trash" aria-hidden="true"></span>
-            <span class="btn-label">Eliminar</span>
-          </button>
-          <button type="button" class="admin-secondary" id="adminDuplicateProductBtn" hidden>
-            <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>
-            <span class="btn-label">Duplicar</span>
-          </button>
-          <span class="admin-form-message" id="adminProductFormMessage" aria-live="polite"></span>
-          <button type="button" class="admin-secondary" data-close-product-drawer>Cancelar</button>
-          <button class="admin-primary" type="submit">
-            <span class="btn-icon" data-javy-icon="save" aria-hidden="true"></span>
-            <span class="btn-label">Guardar producto</span>
-          </button>
-        </div>
-      </form>
-    </section>
-
-    <section class="admin-drawer" id="comboDrawer" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="comboDrawerTitle">
-      <div class="admin-drawer__backdrop" data-close-combo-drawer></div>
-      <form class="admin-drawer__panel" id="adminComboForm" novalidate>
-        <div class="admin-drawer__head">
-          <div>
-            <p class="admin-kicker">Combo</p>
-            <h2 id="comboDrawerTitle">Nuevo combo</h2>
-            <p class="admin-meta-line" id="comboMetaLine" hidden></p>
-          </div>
-          <button type="button" class="admin-icon-btn" aria-label="Cerrar editor" data-close-combo-drawer>
-            <span class="btn-icon" data-javy-icon="x" aria-hidden="true"></span>
-          </button>
-        </div>
-
-        <div class="admin-form-scroll">
-          <details class="admin-form-group" open>
-            <summary>Información</summary>
-            <div class="admin-form-grid">
-              <label class="admin-form-grid__wide">
-                Nombre del combo <span class="admin-req" aria-hidden="true">*</span>
-                <input name="name" placeholder="Ej: Combo masa — Whey + Creatina" required />
-                <small data-field-error="combo_name"></small>
-              </label>
-              <label class="admin-form-grid__wide">
-                Descripción
-                <textarea name="description" rows="2" placeholder="Qué incluye y para quién es ideal"></textarea>
-              </label>
-              <label>
-                Precio del combo <span class="admin-req" aria-hidden="true">*</span>
-                <input name="price" type="number" min="0" step="0.01" placeholder="Ej: 75.00" required />
-                <small data-field-error="combo_price"></small>
-              </label>
-              <label>
-                Precio anterior (opcional)
-                <input name="old_price" type="number" min="0" step="0.01" placeholder="Ej: 90.00" />
-                <small class="admin-price-hint" data-combo-price-hint hidden></small>
-              </label>
-            </div>
-          </details>
-
-          <details class="admin-form-group" open>
-            <summary>Imagen</summary>
-            <div class="admin-image-field">
-              <div class="admin-image-preview-wrap">
-                <img id="comboImagePreview" src="img/products/product-placeholder.svg" alt="Vista previa del combo" />
-                <span class="admin-image-state" data-combo-image-state></span>
-              </div>
-              <div class="admin-image-controls">
-                <input name="image_file" type="file" accept="image/*" id="comboImageFile" hidden />
-                <div class="admin-image-buttons">
-                  <button type="button" class="admin-secondary" data-combo-pick-image>
-                    <span class="btn-icon" data-javy-icon="upload" aria-hidden="true"></span>
-                    <span class="btn-label" data-combo-pick-label>Subir imagen</span>
-                  </button>
-                  <button type="button" class="admin-chip-btn" data-combo-clear-image hidden>
-                    <span class="btn-icon" data-javy-icon="trash" aria-hidden="true"></span>Quitar
-                  </button>
-                </div>
-                <input type="hidden" name="image_url" />
-                <small>Sube un archivo (JPG, PNG o WebP, máx 5 MB).</small>
-              </div>
-            </div>
-          </details>
-
-          <details class="admin-form-group" open>
-            <summary>Productos del combo</summary>
-            <div class="admin-combo-builder">
-              <div class="admin-combo-add">
-                <select id="comboProductSelect" aria-label="Producto"></select>
-                <select id="comboFlavorSelect" aria-label="Sabor (opcional)"></select>
-                <input id="comboQtyInput" type="number" min="1" step="1" value="1" aria-label="Cantidad" />
-                <button type="button" class="admin-primary" id="comboAddItemBtn">
-                  <span class="btn-icon" data-javy-icon="plus" aria-hidden="true"></span>Agregar
-                </button>
-              </div>
-              <small data-field-error="combo_items"></small>
-              <div id="comboItemsList" class="admin-combo-items"></div>
-            </div>
-          </details>
-
-          <details class="admin-form-group" open>
-            <summary>Visibilidad</summary>
-            <div class="admin-switch-row">
-              <label><input name="is_active" type="checkbox" checked /> Activo</label>
-              <label><input name="show_on_home" type="checkbox" /> Mostrar en inicio</label>
-            </div>
-          </details>
-        </div>
-
-        <div class="admin-drawer__actions">
-          <button type="button" class="admin-danger" id="adminDeleteComboBtn" hidden>
-            <span class="btn-icon" data-javy-icon="trash" aria-hidden="true"></span>
-            <span class="btn-label">Eliminar</span>
-          </button>
-          <span class="admin-form-message" id="adminComboFormMessage" aria-live="polite"></span>
-          <button type="button" class="admin-secondary" data-close-combo-drawer>Cancelar</button>
-          <button class="admin-primary" type="submit">
-            <span class="btn-icon" data-javy-icon="save" aria-hidden="true"></span>
-            <span class="btn-label">Guardar combo</span>
-          </button>
-        </div>
-      </form>
-    </section>
-
-    <div class="admin-toast-region" id="adminToastRegion" aria-live="polite"></div>
   </body>
 </html>

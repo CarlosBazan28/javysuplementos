@@ -16,11 +16,14 @@ code .
 # 2. En la terminal integrada, inicia Claude Code
 claude
 
-# 3. Trae lo último antes de trabajar (o usa el comando /sync)
+# 3. Trae lo último antes de trabajar (tu rama: claude para Claude, codex para Codex)
 git pull origin claude
 ```
 
-Para ver los cambios en vivo, dentro de Claude escribe `/preview` y abre la URL
+> Para ver de un vistazo si tu rama está al día o tienes cambios por subir/bajar, usa
+> `/estado-ramas`.
+
+Para ver los cambios en vivo, dentro de Claude escribe `/ver-sitio` y abre la URL
 que te dé (normalmente http://localhost:8080).
 
 ---
@@ -31,14 +34,15 @@ Escribe `/` en Claude y aparecen. Los de este proyecto:
 
 | Comando | Qué hace |
 |---|---|
-| `/preview` | Levanta un servidor local para ver el sitio en vivo. |
-| `/sync` | Pull + push seguro de la rama `claude` (nunca toca `main`). |
-| `/nuevo-producto` | Agrega un producto manteniendo Supabase y `product-data.js` sincronizados. |
-| `/optimizar-img` | Convierte PNG pesados a WebP y actualiza las referencias. |
-| `/revisar` | Lanza en paralelo la revisión de diseño + lógica de tus cambios. |
+| `/ver-sitio` | Levanta un servidor local para ver el sitio en vivo. |
+| `/guardar` | Commit + push a tu rama de desarrollo (nunca toca `main`). |
+| `/estado-ramas` | Muestra el estado de cada rama: al día / por subir / por bajar / detrás de `main`. |
+| `/agregar-producto` | Agrega un producto manteniendo Supabase y `product-data.js` sincronizados. |
+| `/aligerar-imagenes` | Convierte PNG pesados a WebP y actualiza las referencias. |
+| `/revisar-cambios` | Lanza en paralelo la revisión de diseño + lógica de tus cambios. |
 
 Puedes pasarle datos, por ejemplo:
-`/nuevo-producto Proteína Whey Gold marca ON, $54, 5lb, sabores chocolate y vainilla`
+`/agregar-producto Proteína Whey Gold marca ON, $54, 5lb, sabores chocolate y vainilla`
 
 Para crear uno nuevo: crea un archivo `.md` en `.claude/commands/`. El nombre del
 archivo es el nombre del comando.
@@ -59,7 +63,7 @@ Formas de usarlos:
    > "Revisa el diseño y la lógica de los últimos cambios al mismo tiempo."
 2. **Explícito:** nómbralo.
    > "Usa el subagente *disenador* para revisar `css/pages/product.css`."
-3. **Con el comando `/revisar`** — lanza los dos a la vez y consolida los hallazgos.
+3. **Con el comando `/revisar-cambios`** — lanza los dos a la vez y consolida los hallazgos.
 
 > 💡 La clave para paralelizar: pedir varias cosas independientes en **un mismo
 > mensaje**. Claude lanza varios agentes a la vez en lugar de uno por uno.
@@ -127,14 +131,15 @@ git worktree remove ../javy-footer
 ## 7. Servidor en segundo plano
 
 Claude puede dejar el servidor de preview corriendo **mientras sigue editando**.
-Así ves los cambios al instante sin frenar el trabajo. El comando `/preview` ya lo
+Así ves los cambios al instante sin frenar el trabajo. El comando `/ver-sitio` ya lo
 levanta en background.
 
 ---
 
 ## 8. Buenas prácticas del proyecto (recordatorios)
 
-- Siempre se trabaja en la rama **`claude`**. A `main` solo por PR aprobado.
+- Cada herramienta trabaja en su rama: **`claude`** (Claude Code) y **`codex`** (Codex).
+  A `main` solo por PR aprobado. Guarda con `/guardar`; revisa estado con `/estado-ramas`.
 - Imágenes nuevas en **WebP** cuando se pueda.
 - Texto de usuario/BD al DOM: siempre con **`escapeHTML()`**.
 - El número de WhatsApp solo vive en `js/whatsapp-config.js`.
@@ -146,11 +151,12 @@ levanta en background.
 
 | Quiero... | Hago... |
 |---|---|
-| Ver el sitio en vivo | `/preview` |
-| Bajar/subir cambios seguro | `/sync` |
-| Agregar un producto | `/nuevo-producto ...` |
-| Aligerar imágenes | `/optimizar-img` |
-| Revisar diseño + lógica | `/revisar` |
+| Ver el sitio en vivo | `/ver-sitio` |
+| Guardar cambios (commit + push a tu rama) | `/guardar` |
+| Ver el estado de las ramas | `/estado-ramas` |
+| Agregar un producto | `/agregar-producto ...` |
+| Aligerar imágenes | `/aligerar-imagenes` |
+| Revisar diseño + lógica | `/revisar-cambios` |
 | Planear un cambio grande | `Shift+Tab` → Plan Mode |
 | Ajustar permisos | `/permissions` |
 | Ver/crear subagentes | `/agents` |

@@ -1,123 +1,62 @@
+/* ============================================================================
+   JAVY / P-BOOM ADMIN — controlador vanilla del panel rediseñado.
+   Recrea el handoff (design_handoff_admin_panel) sobre el codebase real:
+   shell + 8 secciones + drawer de producto + builder de combos + toasts,
+   todo wireado a window.catalogDb (Supabase) con degradación elegante.
+   ============================================================================ */
 (function () {
-  const PAGE_SIZE = 24;
-  const PLACEHOLDER_IMAGE = "img/products/product-placeholder.svg";
+  "use strict";
+
+  const PLACEHOLDER = "img/products/product-placeholder.svg";
+  const HOME_MAX = 8;
+  const HOME_MIN = 4;
+  const STALE_DAYS = 21;
+
+  const GOAL_SUGGESTIONS = [
+    "Ganar masa muscular", "Ganar peso", "Rendimiento", "Definición", "Recuperación", "Energía",
+  ];
+
+  const NAV = [
+    { key: "dashboard", label: "Dashboard", icon: "layout-dashboard", primary: true,
+      subtitle: "Resumen de la tienda y acciones pendientes" },
+    { key: "products", label: "Productos", icon: "package", primary: true,
+      subtitle: "Gestiona el catálogo, precios y disponibilidad" },
+    { key: "variants", label: "Sabores", icon: "tags", primary: true,
+      subtitle: "Sabores y variantes por producto" },
+    { key: "home", label: "Inicio", icon: "home", primary: true,
+      subtitle: "Productos destacados en el inicio" },
+    { key: "categories", label: "Categorías", icon: "tags", primary: false,
+      subtitle: "Familias y tipos del catálogo" },
+    { key: "combos", label: "Combos", icon: "package", primary: false,
+      subtitle: "Paquetes con precio especial" },
+    { key: "access", label: "Accesos", icon: "log-in", primary: false,
+      subtitle: "Administradores con acceso al panel" },
+    { key: "settings", label: "Ajustes", icon: "settings", primary: false,
+      subtitle: "Estado del sistema y configuración" },
+  ];
 
   const state = {
     products: [],
     categories: [],
-    allCategories: [],
     combos: [],
-    comboItems: [],
-    selectedComboId: null,
-    comboImageObjectUrl: null,
-    adminProfiles: [],
-    editingProductUpdatedAt: null,
-    currentSection: "dashboard",
-    selectedProductId: null,
-    imageObjectUrl: null,
-    variantProductId: null,
-    homeIds: [],
-    visibleCount: PAGE_SIZE,
-    filterScrollY: 0,
-    filterScrollLocked: false,
-    filters: {
-      query: "",
-      category: "all",
-      availability: "all",
-      home: "all",
-      review: "all",
-      sort: "recent",
-    },
+    admins: [],
+    userId: null,
+    userEmail: null,
+    active: "dashboard",
+    productFilter: "all",
+    search: "",
+    combosSupported: true,
+    categoriesSupported: true,
   };
 
-  const els = {};
+  /* ----------------------------- helpers ----------------------------- */
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  function $(selector) {
-    return document.querySelector(selector);
-  }
-
-  function cacheElements() {
-    Object.assign(els, {
-      gate: $("#adminGate"),
-      gateMessage: $("#adminGateMessage"),
-      dashboard: $("#adminDashboard"),
-      sectionTitle: $("#adminSectionTitle"),
-      navItems: document.querySelectorAll("[data-admin-section]"),
-      contextActions: document.querySelectorAll("[data-show-sections]"),
-      quickSearch: $("#adminQuickSearch"),
-      newProductBtn: $("#adminNewProductBtn"),
-      logoutBtn: $("#adminLogoutBtn"),
-      stats: $("#adminStats"),
-      recent: $("#adminRecentProducts"),
-      opsAgotados: $("#adminOpsAgotados"),
-      opsAgotadosCount: $("#adminOpsAgotadosCount"),
-      opsOfertas: $("#adminOpsOfertas"),
-      opsOfertasCount: $("#adminOpsOfertasCount"),
-      opsStale: $("#adminOpsStale"),
-      opsStaleCount: $("#adminOpsStaleCount"),
-      seedBtn: $("#adminSeedBtn"),
-      categoryFilter: $("#adminCategoryFilter"),
-      availabilityFilter: $("#adminAvailabilityFilter"),
-      homeFilter: $("#adminHomeFilter"),
-      reviewFilter: $("#adminReviewFilter"),
-      sortFilter: $("#adminSortFilter"),
-      filterToggle: $("#adminFilterToggle"),
-      filterPanel: $("#adminFilterPanel"),
-      filterBackdrop: $("#adminFilterBackdrop"),
-      filterApply: $("#adminFilterApply"),
-      filterClear: $("#adminFilterClear"),
-      filterClose: $("#adminFilterClose"),
-      filterCount: $("#adminFilterCount"),
-      productResultCount: $("#adminProductResultCount"),
-      tableWrap: $("#adminProductTableWrap"),
-      cardWrap: $("#adminProductCards"),
-      productsEmpty: $("#adminProductsEmpty"),
-      loadMoreBtn: $("#adminLoadMoreBtn"),
-      variantProductSelect: $("#variantProductSelect"),
-      variantManager: $("#variantManager"),
-      homeCounter: $("#adminHomeCounter"),
-      categoryManager: $("#adminCategoryManager"),
-      homeList: $("#adminHomeList"),
-      homePool: $("#adminHomePool"),
-      saveHomeBtn: $("#adminSaveHomeBtn"),
-      drawer: $("#productDrawer"),
-      productForm: $("#adminProductForm"),
-      productMetaLine: $("#productMetaLine"),
-      comboMetaLine: $("#comboMetaLine"),
-      drawerFlavors: $("#drawerFlavors"),
-      combosList: $("#adminCombosList"),
-      newComboBtn: $("#adminNewComboBtn"),
-      comboDrawer: $("#comboDrawer"),
-      comboForm: $("#adminComboForm"),
-      comboDrawerTitle: $("#comboDrawerTitle"),
-      comboImagePreview: $("#comboImagePreview"),
-      comboItemsList: $("#comboItemsList"),
-      comboFormMessage: $("#adminComboFormMessage"),
-      deleteComboBtn: $("#adminDeleteComboBtn"),
-      accessList: $("#adminAccessList"),
-      drawerTitle: $("#productDrawerTitle"),
-      imagePreview: $("#productImagePreview"),
-      deleteProductBtn: $("#adminDeleteProductBtn"),
-      duplicateProductBtn: $("#adminDuplicateProductBtn"),
-      formMessage: $("#adminProductFormMessage"),
-      toastRegion: $("#adminToastRegion"),
-    });
-    ensureFilterPortal();
-  }
-
-  function ensureFilterPortal() {
-    if (!els.filterPanel || !els.filterBackdrop) return;
-    if (els.filterBackdrop.parentElement !== document.body) {
-      document.body.appendChild(els.filterBackdrop);
-    }
-    if (els.filterPanel.parentElement !== document.body) {
-      document.body.appendChild(els.filterPanel);
-    }
-  }
-
-  function escapeHTML(value = "") {
-    return value
-      .toString()
+  function esc(value) {
+    // String(value ?? "") tolera null, undefined y números sin tirar
+    // (un default de parámetro solo cubre undefined, no null).
+    return String(value ?? "")
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
@@ -125,2345 +64,1538 @@
       .replace(/'/g, "&#039;");
   }
 
-  function icon(name, className = "btn-icon") {
-    return window.javyIcons?.get?.(name, className) || "";
+  function ico(name) {
+    return window.javyIcons ? window.javyIcons.get(name, "ad-ico") : "";
   }
 
-  function normalizeText(value = "") {
-    return value.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  function peso(n) {
+    const v = Number(n || 0);
+    if (!(v > 0)) return "Consultar";
+    return "$" + (Number.isInteger(v) ? v : v.toFixed(2).replace(/\.0+$/, ""));
   }
 
-  function parseList(value = "") {
-    return value.split(",").map((item) => item.trim()).filter(Boolean);
+  function hasOffer(p) {
+    const price = Number(p.price || 0);
+    const old = Number(p.old_price || 0);
+    return price > 0 && old > price;
+  }
+  function discountPct(p) {
+    if (!hasOffer(p)) return 0;
+    return Math.round((1 - Number(p.price) / Number(p.old_price)) * 100);
   }
 
-  function listToInput(list = []) {
-    return Array.isArray(list) ? list.join(", ") : "";
-  }
-
-  function formatPrice(price) {
-    const value = Number(price || 0);
-    return value > 0 ? `$${value.toFixed(2)}` : "Consultar";
-  }
-
-  function formatEditMeta(entity) {
-    if (!entity) return "";
-    const who = entity.updated_by || entity.created_by;
-    const when = entity.updated_at || entity.created_at;
-    if (!who && !when) return "";
-    let date = "";
-    if (when) {
-      const parsed = new Date(when);
-      if (!Number.isNaN(parsed.getTime())) {
-        date = parsed.toLocaleString("es-PA", { dateStyle: "medium", timeStyle: "short" });
-      }
-    }
-    if (who && date) return `Última edición por ${who} · ${date}`;
-    if (date) return `Última edición · ${date}`;
-    return `Última edición por ${who}`;
-  }
-
-  function setMetaLine(el, entity) {
-    if (!el) return;
-    const text = formatEditMeta(entity);
-    el.textContent = text;
-    el.hidden = !text;
-  }
-
-  function productImage(product) {
-    return product?.image || product?.image_url || PLACEHOLDER_IMAGE;
-  }
-
-  function getAvailableFlavorCount(product) {
-    return (product.flavors || []).filter((flavor) => flavor.available !== false).length;
-  }
-
-  function hasProductImage(product) {
-    return Boolean(productImage(product)) && productImage(product) !== PLACEHOLDER_IMAGE;
-  }
-
-  function hasProductPrice(product) {
-    return Number(product.price || 0) > 0;
-  }
-
-  function hasProductFlavors(product) {
-    return Boolean(product.flavors?.length);
-  }
-
-  function getFlavorMode(product) {
-    return ["has_flavors", "no_flavor", "needs_review"].includes(product?.flavor_mode)
-      ? product.flavor_mode
-      : "needs_review";
-  }
-
-  function isNoFlavorProduct(product) {
-    return getFlavorMode(product) === "no_flavor";
-  }
-
-  function requiresFlavors(product) {
-    return getFlavorMode(product) === "has_flavors";
-  }
-
-  function needsFlavorReview(product) {
-    return getFlavorMode(product) === "needs_review";
-  }
-
-  function hasInactiveFlavorsOnly(product) {
-    return requiresFlavors(product) && hasProductFlavors(product) && getAvailableFlavorCount(product) === 0;
-  }
-
-  function isMissingRequiredFlavors(product) {
-    return requiresFlavors(product) && !hasProductFlavors(product);
-  }
-
-  function isFeaturedProduct(product) {
-    return Boolean(product.featured || product.is_featured);
-  }
-
-  function getProductPrice(product) {
-    return Number(product.price || 0);
-  }
-
-  function isAgotado(product) {
-    return product?.available === false;
-  }
-
-  function hasActiveOffer(product) {
-    const price = Number(product?.price || 0);
-    const oldPrice = Number(product?.old_price || 0);
-    return price > 0 && oldPrice > price;
-  }
-
-  function getDiscountPercent(product) {
-    if (!hasActiveOffer(product)) return 0;
-    return Math.round((1 - Number(product.price) / Number(product.old_price)) * 100);
-  }
-
-  function daysSince(dateValue) {
-    if (!dateValue) return 0;
-    const then = new Date(dateValue).getTime();
-    if (Number.isNaN(then)) return 0;
+  function daysSince(iso) {
+    if (!iso) return Infinity;
+    const then = new Date(iso).getTime();
+    if (Number.isNaN(then)) return Infinity;
     return Math.floor((Date.now() - then) / 86400000);
   }
-
-  // Sabores agotados de productos que en sí están disponibles (caso típico:
-  // el producto se vende, pero a un sabor puntual se le acabó el stock).
-  function getAgotadoFlavorEntries() {
-    const entries = [];
-    state.products.forEach((product) => {
-      if (isAgotado(product)) return;
-      (product.flavors || []).forEach((flavor) => {
-        if (flavor.available === false) entries.push({ product, flavor });
-      });
-    });
-    return entries;
+  function agoLabel(iso) {
+    const d = daysSince(iso);
+    if (!Number.isFinite(d)) return "sin fecha";
+    if (d <= 0) return "hoy";
+    if (d === 1) return "hace 1 día";
+    if (d < 7) return `hace ${d} días`;
+    const w = Math.floor(d / 7);
+    if (w === 1) return "hace 1 sem";
+    if (w < 4) return `hace ${w} sem`;
+    const m = Math.floor(d / 30);
+    return m <= 1 ? "hace 1 mes" : `hace ${m} meses`;
   }
 
-  function findFlavorById(flavorId) {
-    for (const product of state.products) {
-      const flavor = (product.flavors || []).find((item) => item.id === flavorId);
-      if (flavor) return flavor;
-    }
-    return null;
+  function onImgErr(img) {
+    img.onerror = null;
+    img.src = PLACEHOLDER;
+  }
+  // attach the safe-fallback to every product image after a render
+  function wireImageFallbacks(root) {
+    $$("img[data-fallback]", root).forEach((img) => { img.onerror = () => onImgErr(img); });
   }
 
-  function getActiveFilterCount() {
-    return [
-      state.filters.category !== "all",
-      state.filters.availability !== "all",
-      state.filters.home !== "all",
-      state.filters.review !== "all",
-      state.filters.sort !== "recent",
-    ].filter(Boolean).length;
+  function isAvailable(p) { return p.available !== false; }
+
+  function stockTone(p) {
+    if (!isAvailable(p)) return ["out", "Agotado"];
+    return ["ok", "Disponible"];
   }
 
-  function syncFilterControls() {
-    if (els.categoryFilter) els.categoryFilter.value = state.filters.category;
-    if (els.availabilityFilter) els.availabilityFilter.value = state.filters.availability;
-    if (els.homeFilter) els.homeFilter.value = state.filters.home;
-    if (els.reviewFilter) els.reviewFilter.value = state.filters.review;
-    if (els.sortFilter) els.sortFilter.value = state.filters.sort;
+  /* category helpers (jerarquía Familia → Tipo) */
+  const families = () => state.categories.filter((c) => !c.parent_id).sort(byOrder);
+  const typesOf = (famId) => state.categories.filter((c) => c.parent_id === famId).sort(byOrder);
+  const catById = (id) => state.categories.find((c) => c.id === id) || null;
+  function byOrder(a, b) {
+    const oa = a.sort_order ?? 100, ob = b.sort_order ?? 100;
+    if (oa !== ob) return oa - ob;
+    return (a.name || "").localeCompare(b.name || "", "es");
   }
 
-  function updateFilterCount() {
-    if (!els.filterCount) return;
-    const count = getActiveFilterCount();
-    els.filterCount.hidden = count === 0;
-    els.filterCount.textContent = count;
+  /* ----------------------------- toasts ----------------------------- */
+  function toast({ tone = "ok", msg = "", sub = "" }) {
+    const host = $("#adminToastHost");
+    if (!host) return;
+    const el = document.createElement("div");
+    el.className = "ad-toast ad-toast--" + tone;
+    const iconName = tone === "err" ? "x" : tone === "info" ? "package" : "save";
+    el.innerHTML = `
+      <span class="ad-toast__icon">${ico(iconName)}</span>
+      <span class="ad-toast__msg">${esc(msg)}${sub ? `<small>${esc(sub)}</small>` : ""}</span>
+      <button class="ad-toast__x" type="button" aria-label="Cerrar">${ico("x")}</button>`;
+    const remove = () => { el.remove(); };
+    el.querySelector(".ad-toast__x").addEventListener("click", remove);
+    host.appendChild(el);
+    setTimeout(remove, 3600);
   }
 
-  function setFilterPanelOpen(isOpen) {
-    ensureFilterPortal();
-    if (!els.filterPanel || !els.filterToggle || !els.filterBackdrop) return;
-    const wasOpen = els.filterToggle.getAttribute("aria-expanded") === "true";
-    if (isOpen === wasOpen) return;
-
-    if (isOpen && window.matchMedia("(max-width: 860px)").matches) {
-      state.filterScrollY = window.scrollY || window.pageYOffset || 0;
-      document.body.classList.add("admin-filter-open");
-      state.filterScrollLocked = true;
-    } else if (!isOpen && state.filterScrollLocked) {
-      document.body.classList.remove("admin-filter-open");
-      window.scrollTo(0, state.filterScrollY);
-      state.filterScrollLocked = false;
-    }
-
-    els.filterPanel.hidden = !isOpen;
-    els.filterBackdrop.hidden = !isOpen;
-    els.filterPanel.classList.toggle("is-open", isOpen);
-    els.filterBackdrop.classList.toggle("is-open", isOpen);
-    els.filterToggle.setAttribute("aria-expanded", String(isOpen));
-    els.filterPanel.setAttribute("aria-hidden", String(!isOpen));
-    if (isOpen) {
-      els.filterPanel.scrollTop = 0;
-      els.filterPanel.focus({ preventScroll: true });
-    } else {
-      els.filterToggle.focus({ preventScroll: true });
-    }
-  }
-
-  function unlockFilterScrollIfNeeded() {
-    if (!state.filterScrollLocked || window.matchMedia("(max-width: 860px)").matches) return;
-    document.body.classList.remove("admin-filter-open");
-    window.scrollTo(0, state.filterScrollY);
-    state.filterScrollLocked = false;
-  }
-
-  function resetProductFilters() {
-    state.filters = {
-      ...state.filters,
-      category: "all",
-      availability: "all",
-      home: "all",
-      review: "all",
-      sort: "recent",
-    };
-    state.visibleCount = PAGE_SIZE;
-    syncFilterControls();
-    renderProducts();
-  }
-
-  function setGate(message, isError = false) {
-    if (!els.gateMessage) return;
-    els.gateMessage.textContent = message;
-    els.gateMessage.style.color = isError ? "#ffc1ce" : "";
-  }
-
-  function showToast(message, type = "success") {
-    const toast = document.createElement("div");
-    toast.className = `admin-toast${type === "error" ? " is-error" : ""}`;
-    toast.textContent = message;
-    els.toastRegion?.appendChild(toast);
-    window.setTimeout(() => toast.remove(), 4200);
-  }
-
-  // Modal de confirmación accesible (reemplaza window.confirm). Devuelve Promise<boolean>.
-  function confirmDialog({ title, message, confirmText = "Confirmar", cancelText = "Cancelar", danger = false }) {
+  /* --------------------------- confirm / prompt --------------------------- */
+  function confirmModal({ title, body, confirmLabel = "Confirmar", danger = false }) {
     return new Promise((resolve) => {
-      const lastFocused = document.activeElement;
+      const host = $("#adminConfirmHost");
       const overlay = document.createElement("div");
-      overlay.className = "admin-confirm";
+      overlay.className = "ad-confirm-overlay";
       overlay.innerHTML = `
-        <div class="admin-confirm__backdrop" data-confirm-cancel></div>
-        <div class="admin-confirm__panel" role="dialog" aria-modal="true" aria-labelledby="adminConfirmTitle">
-          <h3 id="adminConfirmTitle">${escapeHTML(title)}</h3>
-          <p>${escapeHTML(message)}</p>
-          <div class="admin-confirm__actions">
-            <button type="button" class="admin-secondary" data-confirm-cancel>${escapeHTML(cancelText)}</button>
-            <button type="button" class="${danger ? "admin-danger" : "admin-primary"}" data-confirm-ok>${escapeHTML(confirmText)}</button>
+        <div class="ad-confirm" role="dialog" aria-modal="true">
+          <h3>${esc(title)}</h3>
+          ${body ? `<p>${esc(body)}</p>` : ""}
+          <div class="ad-confirm__actions">
+            <button class="ad-btn ad-btn--ghost" data-cancel type="button">Cancelar</button>
+            <button class="ad-btn ${danger ? "ad-btn--danger" : "ad-btn--primary"}" data-ok type="button">${esc(confirmLabel)}</button>
           </div>
         </div>`;
-      document.body.appendChild(overlay);
-
-      const okBtn = overlay.querySelector("[data-confirm-ok]");
-      const cancelBtn = overlay.querySelector("button[data-confirm-cancel]");
-      okBtn.focus({ preventScroll: true });
-
-      function close(result) {
-        overlay.remove();
-        document.removeEventListener("keydown", onKey, true);
-        lastFocused?.focus?.({ preventScroll: true });
-        resolve(result);
-      }
-      function onKey(event) {
-        if (event.key === "Escape") {
-          event.preventDefault();
-          close(false);
-        } else if (event.key === "Tab") {
-          event.preventDefault(); // trap simple entre los dos botones
-          (document.activeElement === okBtn ? cancelBtn : okBtn).focus();
-        }
-      }
-      overlay.addEventListener("click", (event) => {
-        if (event.target.closest("[data-confirm-ok]")) close(true);
-        else if (event.target.closest("[data-confirm-cancel]")) close(false);
-      });
-      document.addEventListener("keydown", onKey, true);
+      const close = (val) => { overlay.remove(); document.removeEventListener("keydown", onKey); resolve(val); };
+      const onKey = (e) => { if (e.key === "Escape") close(false); };
+      overlay.addEventListener("click", (e) => { if (e.target === overlay) close(false); });
+      overlay.querySelector("[data-cancel]").addEventListener("click", () => close(false));
+      overlay.querySelector("[data-ok]").addEventListener("click", () => close(true));
+      document.addEventListener("keydown", onKey);
+      host.appendChild(overlay);
+      overlay.querySelector("[data-ok]").focus();
     });
   }
 
-  // Modal con un input de texto. Devuelve Promise<string|null>.
-  function promptDialog({ title, label = "Nombre", placeholder = "", confirmText = "Crear" }) {
+  function promptModal({ title, label = "", value = "", confirmLabel = "Guardar" }) {
     return new Promise((resolve) => {
-      const lastFocused = document.activeElement;
+      const host = $("#adminConfirmHost");
       const overlay = document.createElement("div");
-      overlay.className = "admin-confirm";
+      overlay.className = "ad-confirm-overlay";
       overlay.innerHTML = `
-        <div class="admin-confirm__backdrop" data-confirm-cancel></div>
-        <div class="admin-confirm__panel" role="dialog" aria-modal="true" aria-labelledby="adminPromptTitle">
-          <h3 id="adminPromptTitle">${escapeHTML(title)}</h3>
-          <label class="admin-prompt__label">${escapeHTML(label)}
-            <input type="text" data-prompt-input placeholder="${escapeHTML(placeholder)}" />
-          </label>
-          <div class="admin-confirm__actions">
-            <button type="button" class="admin-secondary" data-confirm-cancel>Cancelar</button>
-            <button type="button" class="admin-primary" data-confirm-ok>${escapeHTML(confirmText)}</button>
+        <div class="ad-confirm" role="dialog" aria-modal="true">
+          <h3>${esc(title)}</h3>
+          <div class="ad-field">
+            ${label ? `<label class="ad-field__label">${esc(label)}</label>` : ""}
+            <input class="ad-input" data-input value="${esc(value)}" />
+          </div>
+          <div class="ad-confirm__actions">
+            <button class="ad-btn ad-btn--ghost" data-cancel type="button">Cancelar</button>
+            <button class="ad-btn ad-btn--primary" data-ok type="button">${esc(confirmLabel)}</button>
           </div>
         </div>`;
-      document.body.appendChild(overlay);
-      const input = overlay.querySelector("[data-prompt-input]");
+      const input = overlay.querySelector("[data-input]");
+      const close = (val) => { overlay.remove(); document.removeEventListener("keydown", onKey); resolve(val); };
+      const submit = () => { const v = input.value.trim(); close(v || null); };
+      const onKey = (e) => {
+        if (e.key === "Escape") close(null);
+        if (e.key === "Enter") { e.preventDefault(); submit(); }
+      };
+      overlay.addEventListener("click", (e) => { if (e.target === overlay) close(null); });
+      overlay.querySelector("[data-cancel]").addEventListener("click", () => close(null));
+      overlay.querySelector("[data-ok]").addEventListener("click", submit);
+      document.addEventListener("keydown", onKey);
+      host.appendChild(overlay);
       input.focus();
-
-      function close(result) {
-        overlay.remove();
-        document.removeEventListener("keydown", onKey, true);
-        lastFocused?.focus?.({ preventScroll: true });
-        resolve(result);
-      }
-      function submit() {
-        const value = input.value.trim();
-        if (!value) { input.focus(); return; }
-        close(value);
-      }
-      function onKey(event) {
-        if (event.key === "Escape") { event.preventDefault(); close(null); }
-        else if (event.key === "Enter") { event.preventDefault(); submit(); }
-      }
-      overlay.addEventListener("click", (event) => {
-        if (event.target.closest("[data-confirm-ok]")) submit();
-        else if (event.target.closest("[data-confirm-cancel]")) close(null);
-      });
-      document.addEventListener("keydown", onKey, true);
+      input.select();
     });
   }
 
-  async function createCategoryInline(parentId) {
-    const name = await promptDialog({
-      title: parentId ? "Nuevo tipo" : "Nueva familia",
-      label: parentId ? "Nombre del tipo" : "Nombre de la familia",
-      confirmText: "Crear",
-    });
-    if (!name) return;
-    try {
-      const created = await window.catalogDb.createCategory({ name, parentId: parentId || null, sortOrder: nextCategorySort(parentId) });
-      await reloadCategories();
-      if (parentId) {
-        els.productForm.elements.family.value = parentId;
-        renderTypeOptions(parentId, created.id);
-      } else {
-        els.productForm.elements.family.value = created.id;
-        renderTypeOptions(created.id, "");
-      }
-      showToast("Categoría creada.");
-    } catch (error) {
-      showToast(error.message, "error");
-    }
+  /* ----------------------------- boot / auth ----------------------------- */
+  function setGate(msg) {
+    const el = $("#adminGateMessage");
+    if (el) el.textContent = msg;
   }
 
-  function setFormMessage(message = "", isError = false) {
-    if (!els.formMessage) return;
-    els.formMessage.textContent = message;
-    els.formMessage.classList.toggle("is-error", Boolean(isError));
-  }
-
-  function setButtonLoading(button, isLoading, loadingText = "Guardando...") {
-    if (!button) return;
-    // Solo cambia el texto del label, nunca el botón completo: así el icono
-    // (un <span class="btn-icon"> hermano) sobrevive al estado de carga.
-    const target = button.querySelector(".btn-label") || button;
-    if (isLoading) {
-      button.dataset.originalText = target.textContent;
-      target.textContent = loadingText;
-      button.disabled = true;
-      return;
-    }
-    if (button.dataset.originalText != null) {
-      target.textContent = button.dataset.originalText;
-    }
-    button.disabled = false;
-    delete button.dataset.originalText;
-  }
-
-  function requireSupabase() {
-    if (!window.supabaseClient) {
-      throw new Error("Supabase no esta disponible. Revisa el CDN o la conexion.");
-    }
-  }
-
-  async function protectAdminPage() {
-    requireSupabase();
-    setGate("Revisando sesion activa...");
-
-    const { data, error } = await supabaseClient.auth.getSession();
-    if (error) throw error;
-
-    const session = data?.session;
-    if (!session?.user?.id) {
-      setGate("No hay sesión activa. Te llevo al inicio de sesión.", true);
-      window.setTimeout(() => { window.location.href = "login.html"; }, 900);
-      return false;
-    }
-
-    state.currentUserId = session.user.id;
-    state.currentUserEmail = session.user.email || null;
-
-    setGate("Validando permisos de administrador...");
-    const profile = window.javyAuth
-      ? await window.javyAuth.getAdminProfile(session.user.id)
-      : await window.catalogDb.getAdminProfile(session.user.id);
-
-    if (!profile) {
-      await supabaseClient.auth.signOut();
-      setGate("El acceso es exclusivo para administración.", true);
-      window.setTimeout(() => { window.location.href = "login.html"; }, 1300);
-      return false;
-    }
-
-    els.gate.hidden = true;
-    els.dashboard.hidden = false;
-    return true;
-  }
-
-  async function loadData() {
-    state.categories = await window.catalogDb.getCategories();
-    try {
-      state.allCategories = await window.catalogDb.getAllCategories();
-    } catch (error) {
-      state.allCategories = state.categories;
-    }
-    try {
-      state.combos = await window.catalogDb.getCombos({ audit: true });
-    } catch (error) {
-      state.combos = [];
-    }
-    try {
-      state.adminProfiles = await window.catalogDb.getAdminProfiles();
-    } catch (error) {
-      state.adminProfiles = [];
-    }
-    state.products = await window.catalogDb.getProductsWithFlavors({ cache: false, fallback: false, audit: true });
-    state.homeIds = state.products
-      .filter((product) => product.show_on_home)
-      .sort((a, b) => (a.home_order ?? 999) - (b.home_order ?? 999))
-      .map((product) => product.id);
-
-    if (!state.homeIds.length) {
-      state.homeIds = state.products.filter((product) => product.featured).slice(0, 8).map((product) => product.id);
-    }
-
-    if (!state.variantProductId && state.products.length) state.variantProductId = state.products[0].id;
-  }
-
-  // Jerarquía de categorías: familia = sin parent_id; tipo = hijo de una familia.
-  function getFamilies() {
-    return state.categories.filter((category) => !category.parent_id);
-  }
-  function getTypesOf(familyId) {
-    return state.categories.filter((category) => category.parent_id === familyId);
-  }
-  function getCategoryById(id) {
-    return id ? state.categories.find((category) => category.id === id) : null;
-  }
-
-  function renderCategoryOptions() {
-    // Filtro de productos del admin: por TEXTO real de las categorías presentes
-    // (robusto antes y después de la migración).
-    const presentCats = [...new Set(state.products.map((p) => p.category).filter(Boolean))]
-      .sort((a, b) => a.localeCompare(b, "es"));
-    if (els.categoryFilter) {
-      els.categoryFilter.innerHTML = [
-        `<option value="all">Todas las categorias</option>`,
-        ...presentCats.map((name) => `<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`),
-      ].join("");
-      syncFilterControls();
-    }
-
-    // Select de FAMILIA en el drawer (el de TIPO se llena según la familia elegida).
-    const familySelect = els.productForm?.elements.family;
-    if (familySelect) {
-      const current = familySelect.value;
-      familySelect.innerHTML = [
-        `<option value="">Selecciona familia</option>`,
-        ...getFamilies().map((fam) => `<option value="${fam.id}">${escapeHTML(fam.name)}</option>`),
-      ].join("");
-      if (current) familySelect.value = current;
-    }
-  }
-
-  function renderTypeOptions(familyId, selectedTypeId = "") {
-    const typeSelect = els.productForm?.elements.type;
-    if (!typeSelect) return;
-    const types = familyId ? getTypesOf(familyId) : [];
-    typeSelect.innerHTML = [
-      `<option value="">General (toda la familia)</option>`,
-      ...types.map((t) => `<option value="${t.id}"${t.id === selectedTypeId ? " selected" : ""}>${escapeHTML(t.name)}</option>`),
-    ].join("");
-    typeSelect.disabled = !familyId;
-  }
-
-  // Posiciona los selects familia/tipo a partir del category_id del producto.
-  function setCategoryCascade(product) {
-    const familySelect = els.productForm?.elements.family;
-    if (!familySelect) return;
-    const cat = product ? getCategoryById(product.category_id) : null;
-    if (cat && cat.parent_id) {
-      familySelect.value = cat.parent_id;
-      renderTypeOptions(cat.parent_id, cat.id);
-    } else if (cat) {
-      familySelect.value = cat.id;
-      renderTypeOptions(cat.id, "");
-    } else {
-      familySelect.value = "";
-      renderTypeOptions(null);
-    }
-  }
-
-  // ===== Gestión de categorías (pantalla dedicada) =====
-  async function reloadCategories() {
-    state.categories = await window.catalogDb.getCategories();
-    try {
-      state.allCategories = await window.catalogDb.getAllCategories();
-    } catch (error) {
-      state.allCategories = state.categories;
-    }
-    renderCategoryOptions();
-    renderCategoryManager();
-  }
-
-  function categorySortList(list) {
-    return [...list].sort((a, b) => (a.sort_order ?? 99) - (b.sort_order ?? 99) || a.name.localeCompare(b.name, "es"));
-  }
-
-  function categoryActionsMarkup(cat, index, total) {
-    return `
-      <div class="admin-cat-actions">
-        <button class="admin-chip-btn" type="button" data-cat-up="${cat.id}" ${index === 0 ? "disabled" : ""} aria-label="Subir">${icon("arrow-up", "")}</button>
-        <button class="admin-chip-btn" type="button" data-cat-down="${cat.id}" ${index === total - 1 ? "disabled" : ""} aria-label="Bajar">${icon("arrow-down", "")}</button>
-        <button class="admin-chip-btn" type="button" data-cat-rename="${cat.id}" aria-label="Renombrar">${icon("pencil", "")}</button>
-        <button class="admin-chip-btn" type="button" data-cat-toggle="${cat.id}">${cat.is_active === false ? "Activar" : "Ocultar"}</button>
-        <button class="admin-chip-btn" type="button" data-cat-delete="${cat.id}" aria-label="Eliminar">${icon("trash", "")}</button>
-      </div>`;
-  }
-
-  function renderCategoryManager() {
-    if (!els.categoryManager) return;
-    const cats = state.allCategories?.length ? state.allCategories : state.categories;
-    const families = categorySortList(cats.filter((c) => !c.parent_id));
-    if (!families.length) {
-      els.categoryManager.innerHTML = `<p class="admin-help-text">No hay categorías todavía. Crea la primera familia.</p>`;
-      return;
-    }
-    els.categoryManager.innerHTML = families.map((fam, fi) => {
-      const types = categorySortList(cats.filter((c) => c.parent_id === fam.id));
-      return `
-      <article class="admin-cat-family${fam.is_active === false ? " is-off" : ""}">
-        <div class="admin-cat-row admin-cat-row--family">
-          <strong>${escapeHTML(fam.name)}${fam.is_active === false ? " (oculta)" : ""}</strong>
-          <div class="admin-cat-actions">
-            <button class="admin-chip-btn" type="button" data-cat-up="${fam.id}" ${fi === 0 ? "disabled" : ""} aria-label="Subir">${icon("arrow-up", "")}</button>
-            <button class="admin-chip-btn" type="button" data-cat-down="${fam.id}" ${fi === families.length - 1 ? "disabled" : ""} aria-label="Bajar">${icon("arrow-down", "")}</button>
-            <button class="admin-chip-btn" type="button" data-cat-add-type="${fam.id}">${icon("plus")}Tipo</button>
-            <button class="admin-chip-btn" type="button" data-cat-rename="${fam.id}">${icon("pencil")}Renombrar</button>
-            <button class="admin-chip-btn" type="button" data-cat-toggle="${fam.id}">${fam.is_active === false ? "Activar" : "Ocultar"}</button>
-            <button class="admin-chip-btn" type="button" data-cat-delete="${fam.id}" aria-label="Eliminar familia">${icon("trash", "")}</button>
-          </div>
-        </div>
-        <div class="admin-cat-types">
-          ${types.length ? types.map((t, ti) => `
-            <div class="admin-cat-row admin-cat-type${t.is_active === false ? " is-off" : ""}">
-              <span>${escapeHTML(t.name)}${t.is_active === false ? " (oculto)" : ""}</span>
-              ${categoryActionsMarkup(t, ti, types.length)}
-            </div>`).join("") : `<p class="admin-help-text admin-cat-empty">Sin tipos.</p>`}
-        </div>
-      </article>`;
-    }).join("");
-  }
-
-  function nextCategorySort(parentId) {
-    const siblings = (state.allCategories || []).filter((c) => (c.parent_id || null) === (parentId || null));
-    return siblings.reduce((max, c) => Math.max(max, c.sort_order ?? 0), 0) + 1;
-  }
-
-  async function createCategoryFromManager(parentId) {
-    const name = await promptDialog({
-      title: parentId ? "Nuevo tipo" : "Nueva familia",
-      label: parentId ? "Nombre del tipo" : "Nombre de la familia",
-      confirmText: "Crear",
-    });
-    if (!name) return;
-    try {
-      await window.catalogDb.createCategory({ name, parentId: parentId || null, sortOrder: nextCategorySort(parentId) });
-      await reloadCategories();
-      showToast("Categoría creada.");
-    } catch (error) {
-      showToast(error.message, "error");
-    }
-  }
-
-  async function renameCategoryEntry(id) {
-    const name = await promptDialog({ title: "Renombrar categoría", label: "Nuevo nombre", confirmText: "Guardar" });
-    if (!name) return;
-    try {
-      await window.catalogDb.updateCategory(id, { name });
-      await reloadCategories();
-      showToast("Categoría actualizada.");
-    } catch (error) {
-      showToast(error.message, "error");
-    }
-  }
-
-  async function toggleCategoryActive(id) {
-    const cat = (state.allCategories || []).find((c) => c.id === id);
-    if (!cat) return;
-    try {
-      await window.catalogDb.updateCategory(id, { is_active: cat.is_active === false });
-      await reloadCategories();
-    } catch (error) {
-      showToast(error.message, "error");
-    }
-  }
-
-  async function deleteCategoryEntry(id) {
-    const cats = state.allCategories || [];
-    const cat = cats.find((c) => c.id === id);
-    if (!cat) return;
-    if (cats.some((c) => c.parent_id === id)) {
-      showToast("Primero elimina o mueve los tipos de esta familia.", "error");
+  async function boot() {
+    if (!window.javyAuth || !window.javyAuth.hasSupabase()) {
+      setGate("Supabase no está disponible. Revisa la conexión y recarga.");
       return;
     }
     try {
-      const count = await window.catalogDb.getCategoryProductCount(id, []);
-      if (count > 0) {
-        showToast(`No se puede borrar: ${count} producto(s) la usan. Reasígnalos primero.`, "error");
+      const { session, profile } = await window.javyAuth.requireAdminSession();
+      if (!session || !profile) {
+        window.location.href = "login.html";
         return;
       }
-      const ok = await confirmDialog({
-        title: "Eliminar categoría",
-        message: `Se eliminará "${cat.name}". Esta acción no se puede deshacer.`,
-        confirmText: "Eliminar",
-        danger: true,
-      });
-      if (!ok) return;
-      await window.catalogDb.deleteCategory(id);
-      await reloadCategories();
-      showToast("Categoría eliminada.");
+      state.userId = session.user.id;
+      state.userEmail = session.user.email || null;
+      setGate("Cargando catálogo…");
+      await loadAll();
+      buildChrome();
+      $("#adminGate").hidden = true;
+      $("#adminShell").hidden = false;
+      go("dashboard");
     } catch (error) {
-      showToast(error.message, "error");
+      console.error(error);
+      // El gate puede estar oculto si ya mostramos el shell; mostrar el error
+      // donde se vea (la vista) además del gate.
+      setGate("No se pudo validar el acceso: " + (error.message || error));
+      if (!$("#adminShell").hidden) showViewError(error, "el panel");
     }
   }
 
-  async function moveCategoryEntry(id, direction) {
-    const cats = state.allCategories || [];
-    const cat = cats.find((c) => c.id === id);
-    if (!cat) return;
-    const siblings = categorySortList(cats.filter((c) => (c.parent_id || null) === (cat.parent_id || null)));
-    const index = siblings.findIndex((c) => c.id === id);
-    const swapWith = siblings[index + direction];
-    if (!swapWith) return;
-    try {
-      const a = cat.sort_order ?? index;
-      const b = swapWith.sort_order ?? (index + direction);
-      // Si empatan, separa para que el reordenamiento tenga efecto.
-      const newA = a === b ? (direction < 0 ? b - 1 : b + 1) : b;
-      await window.catalogDb.updateCategory(cat.id, { sort_order: newA });
-      await window.catalogDb.updateCategory(swapWith.id, { sort_order: a });
-      await reloadCategories();
-    } catch (error) {
-      showToast(error.message, "error");
-    }
+  async function loadAll() {
+    const db = window.catalogDb;
+    const [products, categories, combos, admins] = await Promise.all([
+      db.getProductsWithFlavors({ audit: true, cache: false }).catch((e) => { console.warn(e); return []; }),
+      db.getAllCategories().catch(() => { state.categoriesSupported = false; return []; }),
+      db.getCombos({ audit: true }).catch(() => { state.combosSupported = false; return []; }),
+      db.getAdminProfiles().catch(() => []),
+    ]);
+    state.products = products || [];
+    state.categories = categories || [];
+    state.combos = combos || [];
+    state.admins = admins || [];
   }
 
-  function getFilteredProducts() {
-    const query = normalizeText(state.filters.query);
-    let products = state.products.filter((product) => {
-      const searchText = normalizeText([
-        product.name,
-        product.brand,
-        product.category,
-        product.presentation,
-        product.tags?.join(" "),
-        product.goals?.join(" "),
-        product.flavors?.map((flavor) => flavor.name).join(" "),
-      ].join(" "));
+  async function reloadProducts() {
+    state.products = await window.catalogDb.getProductsWithFlavors({ audit: true, cache: false }).catch(() => state.products);
+  }
 
-      const categoryMatch = state.filters.category === "all" || product.category === state.filters.category;
-      const availabilityMatch =
-        state.filters.availability === "all" ||
-        (state.filters.availability === "available" && product.available !== false) ||
-        (state.filters.availability === "unavailable" && product.available === false);
-      const homeMatch =
-        state.filters.home === "all" ||
-        (state.filters.home === "home" && state.homeIds.includes(product.id)) ||
-        (state.filters.home === "not-home" && !state.homeIds.includes(product.id));
-      const reviewMatch =
-        state.filters.review === "all" ||
-        (state.filters.review === "missing-image" && !hasProductImage(product)) ||
-        (state.filters.review === "no-flavor" && isNoFlavorProduct(product)) ||
-        (state.filters.review === "missing-flavors" && isMissingRequiredFlavors(product)) ||
-        (state.filters.review === "inactive-flavors" && hasInactiveFlavorsOnly(product)) ||
-        (state.filters.review === "flavor-review" && needsFlavorReview(product)) ||
-        (state.filters.review === "unavailable" && product.available === false) ||
-        (state.filters.review === "empty-price" && !hasProductPrice(product)) ||
-        (state.filters.review === "featured" && isFeaturedProduct(product));
+  /* ----------------------------- chrome (nav) ----------------------------- */
+  function buildChrome() {
+    const nav = $("#adminNav");
+    const primary = NAV.filter((n) => n.primary);
+    const secondary = NAV.filter((n) => !n.primary);
 
-      return (!query || searchText.includes(query)) && categoryMatch && availabilityMatch && homeMatch && reviewMatch;
+    nav.innerHTML =
+      `<span class="ad-nav__group-label">Operación</span>` +
+      primary.map(navItem).join("") +
+      `<span class="ad-nav__group-label">Configuración</span>` +
+      secondary.map(navItem).join("");
+
+    // tab-bar móvil: 4 primarias + "Más"
+    $("#adminTabbar").innerHTML =
+      primary.map((n) => `
+        <button class="ad-tab" type="button" data-go="${n.key}">
+          ${ico(n.icon)}${esc(n.label)}
+        </button>`).join("") +
+      `<button class="ad-tab" type="button" data-sheet-open>${ico("menu")}Más</button>`;
+
+    // sheet "Más"
+    $("#adminSheetGrid").innerHTML =
+      secondary.map(navItem).join("") +
+      `<button class="ad-logout" type="button" data-logout style="grid-column:1 / -1;margin-top:4px">${ico("log-out")}Cerrar sesión</button>`;
+
+    // listeners
+    if (window.javyIcons) window.javyIcons.enhance(document);
+
+    document.addEventListener("click", (e) => {
+      const goBtn = e.target.closest("[data-go]");
+      if (goBtn) { go(goBtn.getAttribute("data-go")); closeSheet(); return; }
+      if (e.target.closest("[data-sheet-open]")) { openSheet(); return; }
+      if (e.target.closest("[data-close-sheet]")) { closeSheet(); return; }
+      if (e.target.closest("[data-logout]") || e.target.closest("#adminLogoutBtn")) { logout(); return; }
     });
 
-    products = products.sort((a, b) => {
-      if (state.filters.sort === "name") return a.name.localeCompare(b.name, "es");
-      if (state.filters.sort === "price-asc") return getProductPrice(a) - getProductPrice(b);
-      if (state.filters.sort === "price-desc") return getProductPrice(b) - getProductPrice(a);
-      if (state.filters.sort === "availability") return Number(b.available !== false) - Number(a.available !== false);
-      return new Date(b.updated_at || b.created_at || 0) - new Date(a.updated_at || a.created_at || 0);
+    const search = $("#adminSearch");
+    search.addEventListener("input", () => {
+      state.search = search.value.trim().toLowerCase();
+      if (state.active !== "products") go("products");
+      else renderProducts();
     });
-
-    return products;
+    $("#adminAddBtn").addEventListener("click", () => openProductDrawer(null));
   }
 
-  function renderDashboard() {
-    const total = state.products.length;
-    const available = state.products.filter((product) => product.available !== false).length;
-    const unavailable = total - available;
-    const home = state.homeIds.length;
-    const flavors = state.products.reduce((sum, product) => sum + (product.flavors?.length || 0), 0);
-    const withoutImage = state.products.filter((product) => !hasProductImage(product)).length;
-    const noFlavor = state.products.filter(isNoFlavorProduct).length;
-    const missingFlavors = state.products.filter(isMissingRequiredFlavors).length;
-    const inactiveFlavors = state.products.filter(hasInactiveFlavorsOnly).length;
-    const flavorReview = state.products.filter(needsFlavorReview).length;
-    const emptyPrice = state.products.filter((product) => !hasProductPrice(product)).length;
-    const featured = state.products.filter((product) => isFeaturedProduct(product)).length;
-
-    els.stats.innerHTML = [
-      ["Total productos", total, "Catalogo"],
-      ["Disponibles", available, "Activos"],
-      ["Agotados", unavailable, "Reactivar", "bad", "unavailable"],
-      ["Inicio", home, "Home"],
-      ["Sabores", flavors, "Variantes"],
-      ["Sin imagen", withoutImage, "Revisar", "warn", "missing-image"],
-      ["Sin sabor", noFlavor, "Correctos", "ok", "no-flavor"],
-      ["Faltan sabores", missingFlavors, "Revisar", "warn", "missing-flavors"],
-      ["Sin sabores activos", inactiveFlavors, "Revisar", "warn", "inactive-flavors"],
-      ["Revisar tipo de sabor", flavorReview, "Clasificar", "warn", "flavor-review"],
-      ["Precio vacio", emptyPrice, "Revisar", "bad", "empty-price"],
-      ["Destacados", featured, "Actuales", "ok", "featured"],
-    ].map(([label, value, note, tone, review]) => {
-      const tag = review ? "button" : "article";
-      const attrs = review ? ` type="button" data-products-review="${review}"` : "";
-      return `
-      <${tag} class="admin-stat${tone ? ` admin-stat--${tone}` : ""}"${attrs}>
-        <span>${label}</span>
-        <strong>${value}</strong>
-        <small>${note}</small>
-      </${tag}>
-    `;
-    }).join("");
-
-    const recent = [...state.products]
-      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
-      .slice(0, 6);
-
-    els.recent.innerHTML = recent.length ? recent.map((product) => `
-      <article>
-        <img src="${escapeHTML(productImage(product))}" alt="" />
-        <div>
-          <strong>${escapeHTML(product.name)}</strong>
-          <small>${escapeHTML(product.brand || product.category || "Producto")}</small>
-        </div>
-        <button class="admin-chip-btn" type="button" data-edit-product="${product.id}">${icon("pencil")}Editar</button>
-      </article>
-    `).join("") : `<p class="admin-help-text">Aun no hay productos en Supabase.</p>`;
-
-    renderOpsCenter();
-  }
-
-  function opsCountBadge(el, count) {
-    if (!el) return;
-    el.hidden = count === 0;
-    el.textContent = count;
-  }
-
-  // OJO: `subtitle` se inserta como HTML (admite <strong>/<s>), así que el caller
-  // DEBE pre-escapar cualquier texto que venga de la BD. `title` e `image` sí se
-  // escapan aquí dentro.
-  function opsItem({ image, title, subtitle, action }) {
-    return `
-      <article class="admin-ops__item">
-        <img src="${escapeHTML(image)}" alt="" />
-        <div class="admin-ops__info">
-          <strong>${escapeHTML(title)}</strong>
-          <small>${subtitle}</small>
-        </div>
-        ${action}
-      </article>
-    `;
-  }
-
-  function renderOpsCenter() {
-    // Agotados: productos completos + sabores puntuales agotados.
-    const agotadoProducts = state.products.filter(isAgotado);
-    const agotadoFlavors = getAgotadoFlavorEntries();
-    const agotadoTotal = agotadoProducts.length + agotadoFlavors.length;
-    opsCountBadge(els.opsAgotadosCount, agotadoTotal);
-
-    if (els.opsAgotados) {
-      const productRows = agotadoProducts.map((product) => opsItem({
-        image: productImage(product),
-        title: product.name,
-        subtitle: escapeHTML(product.brand || product.category || "Producto"),
-        action: availabilityToggle(product),
-      }));
-      const flavorRows = agotadoFlavors.map(({ product, flavor }) => opsItem({
-        image: productImage(product),
-        title: product.name,
-        subtitle: `Sabor agotado: <strong>${escapeHTML(flavor.name)}</strong>`,
-        action: flavorToggle(flavor),
-      }));
-      els.opsAgotados.innerHTML = agotadoTotal
-        ? [...productRows, ...flavorRows].join("")
-        : `<p class="admin-ops__empty">Todo disponible. Nada agotado por ahora.</p>`;
-    }
-
-    // Ofertas activas: old_price > price.
-    const offers = state.products.filter(hasActiveOffer);
-    opsCountBadge(els.opsOfertasCount, offers.length);
-    if (els.opsOfertas) {
-      els.opsOfertas.innerHTML = offers.length ? offers.map((product) => opsItem({
-        image: productImage(product),
-        title: product.name,
-        subtitle: `<s>${formatPrice(product.old_price)}</s> ${formatPrice(product.price)} <span class="admin-ops__discount">-${getDiscountPercent(product)}%</span>`,
-        action: `<button class="admin-chip-btn" type="button" data-remove-offer="${product.id}">${icon("x")}Quitar oferta</button>`,
-      })).join("") : `<p class="admin-ops__empty">No hay ofertas activas.</p>`;
-    }
-
-    // Agotado hace mucho: agotados con updated_at viejo (>= 21 dias).
-    const STALE_DAYS = 21;
-    const stale = state.products
-      .filter((product) => isAgotado(product) && daysSince(product.updated_at) >= STALE_DAYS)
-      .sort((a, b) => daysSince(b.updated_at) - daysSince(a.updated_at));
-    opsCountBadge(els.opsStaleCount, stale.length);
-    if (els.opsStale) {
-      els.opsStale.innerHTML = stale.length ? stale.map((product) => opsItem({
-        image: productImage(product),
-        title: product.name,
-        subtitle: `Agotado, sin cambios hace ${daysSince(product.updated_at)} dias`,
-        action: availabilityToggle(product),
-      })).join("") : `<p class="admin-ops__empty">Nada pendiente de reabastecer.</p>`;
-    }
-  }
-
-  function productStatus(product) {
-    if (product.available === false) return `<span class="admin-status admin-status--bad">No disponible</span>`;
-    if (!hasProductPrice(product)) return `<span class="admin-status admin-status--bad">Precio vacio</span>`;
-    if (needsFlavorReview(product)) return `<span class="admin-status admin-status--warn">Revisar tipo de sabor</span>`;
-    if (isNoFlavorProduct(product)) return `<span class="admin-status admin-status--ok">Sin sabor</span>`;
-    if (isMissingRequiredFlavors(product)) return `<span class="admin-status admin-status--warn">Faltan sabores</span>`;
-    if (hasInactiveFlavorsOnly(product)) return `<span class="admin-status admin-status--warn">Sin sabores activos</span>`;
-    return `<span class="admin-status admin-status--ok">Disponible</span>`;
-  }
-
-  function flavorSummaryText(product) {
-    const total = (product.flavors || []).length;
-    const available = getAvailableFlavorCount(product);
-
-    if (isNoFlavorProduct(product)) return "Sin sabor";
-    if (needsFlavorReview(product)) return "Pendiente por clasificar";
-    if (isMissingRequiredFlavors(product)) return "Faltan sabores";
-    if (hasInactiveFlavorsOnly(product)) return `0 de ${total} sabores activos`;
-    return `${available} de ${total} sabores`;
-  }
-
-  function flavorSummaryBadge(product) {
-    if (!requiresFlavors(product) || isMissingRequiredFlavors(product) || hasInactiveFlavorsOnly(product)) return "";
-    return `<span class="admin-status admin-status--ok">${flavorSummaryText(product)}</span>`;
-  }
-
-  function productReviewBadges(product) {
-    return [
-      !hasProductImage(product) ? `<span class="admin-status admin-status--warn">Sin imagen</span>` : "",
-      isFeaturedProduct(product) ? `<span class="admin-status admin-status--ok">Destacado</span>` : "",
-    ].filter(Boolean).join("");
-  }
-
-  function productActions(product) {
-    return `
-      <div class="admin-row-actions">
-        ${availabilityToggle(product)}
-        <button class="admin-chip-btn" type="button" data-edit-product="${product.id}">${icon("pencil")}Editar</button>
-        <button class="admin-chip-btn" type="button" data-manage-variants="${product.id}">${icon("tags")}Sabores</button>
-      </div>
-    `;
-  }
-
-  function productMobileActions(product) {
-    return `
-      <div class="admin-mobile-actions">
-        ${availabilityToggle(product)}
-        <button class="admin-chip-btn admin-card-main-action" type="button" data-edit-product="${product.id}">${icon("pencil")}Editar</button>
-        <div class="admin-card-secondary-actions">
-          <button class="admin-chip-btn" type="button" data-manage-variants="${product.id}">${icon("tags")}Sabores</button>
-        </div>
-      </div>
-    `;
-  }
-
-  // Switch deslizante reutilizable para disponibilidad (producto o sabor).
-  // Un solo control sistematico en tabla, cards y centro de operaciones.
-  function availabilitySwitch({ on, attr, id, onLabel = "Disponible", offLabel = "Agotado" }) {
-    return `
-      <button type="button" role="switch" aria-checked="${on}" ${attr}="${id}"
-        class="admin-switch${on ? " is-on" : ""}" aria-label="${on ? onLabel : offLabel}">
-        <span class="admin-switch__track"><span class="admin-switch__thumb"></span></span>
-        <span class="admin-switch__label">${on ? onLabel : offLabel}</span>
-      </button>
-    `;
-  }
-
-  function availabilityToggle(product) {
-    return availabilitySwitch({ on: product.available !== false, attr: "data-toggle-available", id: product.id });
-  }
-
-  function flavorToggle(flavor) {
-    return availabilitySwitch({ on: flavor.available !== false, attr: "data-toggle-flavor", id: flavor.id });
-  }
-
-  function priceCell(product) {
-    return `<button class="admin-price-edit" type="button" data-edit-price="${product.id}" title="Editar precio rapido">
-      <span class="admin-price-edit__value">${formatPrice(product.price)}</span>${icon("pencil", "admin-price-edit__icon")}
+  function navItem(n) {
+    return `<button class="ad-nav__item${state.active === n.key ? " is-active" : ""}" type="button" data-go="${n.key}">
+      ${ico(n.icon)}<span class="ad-nav__text">${esc(n.label)}</span>
     </button>`;
   }
 
-  function flavorCell(product) {
-    const flavors = product.flavors || [];
-    if (!flavors.length) return `<small>${escapeHTML(flavorSummaryText(product))}</small>`;
-    const chips = flavors.map((flavor) => `
-      <button type="button" class="admin-flavor-chip${flavor.available === false ? " is-off" : ""}" data-toggle-flavor="${flavor.id}" aria-pressed="${flavor.available !== false}" title="${flavor.available === false ? "Agotado" : "Disponible"} - clic para cambiar">
-        ${escapeHTML(flavor.name)}
-      </button>`).join("");
-    return `<div class="admin-flavor-chips">${chips}</div>`;
+  function openSheet() { $("#adminSheet").classList.add("is-open"); }
+  function closeSheet() { $("#adminSheet").classList.remove("is-open"); }
+
+  async function logout() {
+    try { await window.supabaseClient.auth.signOut(); } catch (_) {}
+    window.location.href = "login.html";
+  }
+
+  /* ----------------------------- router ----------------------------- */
+  function go(key) {
+    const nav = NAV.find((n) => n.key === key) || NAV[0];
+    state.active = nav.key;
+    $("#adminTitle").textContent = nav.label;
+    $("#adminSubtitle").textContent = nav.subtitle;
+    $$(".ad-nav__item, .ad-tab").forEach((b) => {
+      b.classList.toggle("is-active", b.getAttribute("data-go") === nav.key);
+    });
+    const renderers = {
+      dashboard: renderDashboard, products: renderProducts, variants: renderVariants,
+      home: renderHome, categories: renderCategories, combos: renderCombos,
+      access: renderAccess, settings: renderSettings,
+    };
+    try {
+      (renderers[nav.key] || renderDashboard)();
+    } catch (error) {
+      console.error("Error al renderizar la sección", nav.key, error);
+      showViewError(error, nav.label);
+    }
+  }
+
+  // Pinta un error legible dentro de #adminView (en vez de dejar la vista en blanco).
+  function showViewError(error, where = "") {
+    const view = $("#adminView");
+    if (!view) return;
+    view.innerHTML = `<div class="ad-section"><div class="ad-error">
+      <h3>${ico("x")} No se pudo mostrar ${esc(where || "esta sección")}</h3>
+      <p>${esc(error && error.message ? error.message : error)}</p>
+      ${error && error.stack ? `<pre>${esc(error.stack)}</pre>` : ""}
+      <button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" onclick="location.reload()">Recargar</button>
+    </div></div>`;
+    if (window.javyIcons) window.javyIcons.enhance(view);
+  }
+
+  function setView(html) {
+    const view = $("#adminView");
+    view.innerHTML = `<div class="ad-section">${html}</div>`;
+    wireImageFallbacks(view);
+    if (window.javyIcons) window.javyIcons.enhance(view);
+    return view;
+  }
+
+  const imgTag = (src, cls = "") =>
+    `<img ${cls ? `class="${cls}" ` : ""}src="${esc(src || PLACEHOLDER)}" alt="" data-fallback loading="lazy" />`;
+
+  /* ============================ DASHBOARD ============================ */
+  function renderDashboard() {
+    const p = state.products;
+    const activeCount = p.filter(isAvailable).length;
+    const homeList = p.filter((x) => x.show_on_home);
+    const offers = p.filter(hasOffer);
+    const out = p.filter((x) => !isAvailable(x));
+    const stale = out.filter((x) => daysSince(x.updated_at) >= STALE_DAYS);
+
+    const stats = [
+      { key: "products", label: "Productos activos", value: activeCount, tone: "ok", icon: "layout-dashboard",
+        delta: `${p.length} en total`, dir: "flat" },
+      { key: "home", label: "En el inicio", value: homeList.length, tone: "blue", icon: "home",
+        delta: `${homeList.length} / ${HOME_MAX}`, dir: homeList.length >= HOME_MIN ? "flat" : "down" },
+      { key: "offers", label: "Ofertas activas", value: offers.length, tone: "blue", icon: "tags",
+        delta: "con descuento", dir: "up" },
+      { key: "out", label: "Agotados", value: out.length, tone: "bad", icon: "package",
+        delta: out.length ? "requieren acción" : "todo disponible", dir: out.length ? "down" : "flat" },
+    ];
+
+    const statCard = (s) => {
+      const dirIcon = s.dir === "up" ? "arrow-up" : s.dir === "down" ? "arrow-down" : "clock";
+      return `<button class="ad-stat ad-stat--${s.tone} ad-stat--link" type="button" data-stat="${s.key}">
+        <div class="ad-stat__top"><span class="ad-stat__label">${esc(s.label)}</span><span class="ad-stat__icon">${ico(s.icon)}</span></div>
+        <div class="ad-stat__value">${s.value}</div>
+        <span class="ad-stat__delta ad-delta--${s.dir}">${ico(dirIcon)}${esc(s.delta)}</span>
+      </button>`;
+    };
+
+    const opsAgotados = out.slice().sort((a, b) => daysSince(b.updated_at) - daysSince(a.updated_at)).slice(0, 4);
+    const opsOfertas = offers.slice(0, 4);
+    const attention = out.length;
+
+    const opsItem = (p2, right) => `
+      <div class="ad-ops__item ad-ops__item--link" data-edit="${esc(p2.id)}">
+        ${imgTag(p2.image)}
+        <div class="ad-ops__info"><strong>${esc(p2.name)}</strong><small>${esc(p2.brand || p2.category || "—")} · ${esc(agoLabel(p2.updated_at))}</small></div>
+        ${right}
+      </div>`;
+
+    const opsList = (arr, right, empty) =>
+      arr.length ? arr.map((x) => opsItem(x, right(x))).join("") : `<p class="ad-ops__empty">${esc(empty)}</p>`;
+
+    const recent = p.slice().sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)).slice(0, 6);
+
+    setView(`
+      <div class="ad-stats">${stats.map(statCard).join("")}</div>
+
+      <div class="ad-panel">
+        <div class="ad-ops__header">
+          <h2>Centro de operaciones</h2>
+          <span class="ad-ops__attention">${ico("package")}${attention} requieren acción</span>
+        </div>
+        <div class="ad-ops">
+          <div class="ad-ops__panel ad-ops__panel--alert">
+            <div class="ad-ops__panel-head"><h3>Agotados</h3><span class="ad-ops__count">${out.length}</span></div>
+            <div class="ad-ops__list">${opsList(opsAgotados, () => `<button class="ad-btn ad-btn--ghost ad-btn--sm" type="button">Reactivar</button>`, "Nada agotado 🎉")}</div>
+          </div>
+          <div class="ad-ops__panel">
+            <div class="ad-ops__panel-head"><h3>Ofertas activas</h3><span class="ad-ops__count">${offers.length}</span></div>
+            <div class="ad-ops__list">${opsList(opsOfertas, (x) => `<span class="ad-ops__discount">-${discountPct(x)}%</span>`, "Sin ofertas activas.")}</div>
+          </div>
+          <div class="ad-ops__panel">
+            <div class="ad-ops__panel-head"><h3>Agotado hace mucho</h3><span class="ad-ops__count">${stale.length}</span></div>
+            <div class="ad-ops__list">${opsList(stale.slice(0, 4), () => `<button class="ad-btn ad-btn--ghost ad-btn--sm" type="button">Revisar</button>`, "Nada pendiente.")}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ad-panel">
+        <div class="ad-panel__head"><div><p class="ad-kicker">Catálogo</p><h2>Últimos agregados</h2></div></div>
+        <div class="ad-recent">
+          ${recent.map((p2) => `
+            <div class="ad-recent__row">
+              ${imgTag(p2.image)}
+              <div class="ad-recent__info"><strong>${esc(p2.name)}</strong><small>${esc(p2.brand || "")}${p2.category ? " · " + esc(p2.category) : ""}</small></div>
+              <span class="ad-price">${esc(peso(p2.price))}</span>
+              <button class="ad-icon-btn" type="button" title="Editar" data-edit="${esc(p2.id)}">${ico("pencil")}</button>
+            </div>`).join("") || `<p class="ad-ops__empty">Aún no hay productos.</p>`}
+        </div>
+      </div>
+    `);
+
+    const view = $("#adminView");
+    view.querySelectorAll("[data-stat]").forEach((b) => b.addEventListener("click", () => {
+      const k = b.getAttribute("data-stat");
+      if (k === "home") return go("home");
+      if (k === "offers") { state.productFilter = "offers"; return go("products"); }
+      if (k === "out") { state.productFilter = "out"; return go("products"); }
+      state.productFilter = "all"; go("products");
+    }));
+    bindEditClicks(view);
+  }
+
+  function bindEditClicks(root) {
+    root.querySelectorAll("[data-edit]").forEach((el) => {
+      const id = el.getAttribute("data-edit");
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const product = state.products.find((p) => String(p.id) === String(id));
+        if (product) openProductDrawer(product);
+      });
+    });
+  }
+
+  /* ============================ PRODUCTS ============================ */
+  function filteredProducts() {
+    const f = state.productFilter;
+    const q = state.search;
+    return state.products.filter((p) => {
+      const byFilter =
+        f === "home" ? p.show_on_home :
+        f === "offers" ? hasOffer(p) :
+        f === "out" ? !isAvailable(p) : true;
+      const byQ = !q || (`${p.name} ${p.brand || ""} ${p.category || ""}`).toLowerCase().includes(q);
+      return byFilter && byQ;
+    });
   }
 
   function renderProducts() {
-    const filtered = getFilteredProducts();
-    const visible = filtered.slice(0, state.visibleCount);
+    const filters = [["all", "Todos"], ["home", "En inicio"], ["offers", "En oferta"], ["out", "Agotados"]];
+    const list = filteredProducts();
 
-    updateFilterCount();
-    if (els.productResultCount) {
-      els.productResultCount.textContent = `Mostrando ${visible.length} de ${filtered.length} productos`;
-    }
-    els.productsEmpty.hidden = Boolean(filtered.length);
-    els.loadMoreBtn.hidden = filtered.length <= state.visibleCount;
+    const pill = (p) => { const [tone, label] = stockTone(p); return `<span class="ad-pill ad-pill--${tone}">${label}</span>`; };
+    const priceCell = (p) => `<span class="ad-price">${hasOffer(p) ? `<s>${esc(peso(p.old_price))}</s>` : ""}${esc(peso(p.price))}</span>`;
 
-    els.tableWrap.innerHTML = `
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Imagen</th>
-            <th>Nombre</th>
-            <th>Categoria</th>
-            <th>Precio</th>
-            <th>Estado</th>
-            <th>Sabores</th>
-            <th>Inicio</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${visible.map((product) => `
-            <tr>
-              <td>
-                <div class="admin-product-image-cell">
-                  <img src="${escapeHTML(productImage(product))}" alt="" />
-                  ${!hasProductImage(product) ? '<span class="admin-image-warning">Sin imagen</span>' : ""}
-                </div>
-              </td>
-              <td>
-                <div class="admin-product-name">
-                  <strong>${escapeHTML(product.name)}</strong>
-                  <span>${escapeHTML(product.brand || "Marca pendiente")} ${product.presentation ? `- ${escapeHTML(product.presentation)}` : ""}</span>
-                </div>
-              </td>
-              <td>${escapeHTML(product.category || "Otros")}</td>
-              <td>${priceCell(product)}</td>
-              <td><div class="admin-status-stack">${productStatus(product)}${productReviewBadges(product)}</div></td>
-              <td>${flavorCell(product)}</td>
-              <td>${state.homeIds.includes(product.id) ? '<span class="admin-status admin-status--ok">Si</span>' : '<span class="admin-status admin-status--warn">No</span>'}</td>
-              <td>${productActions(product)}</td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
-    `;
+    const rows = list.map((p) => `
+      <tr>
+        <td><div class="ad-cell-prod">${imgTag(p.image)}<div><strong>${esc(p.name)}</strong><small>${esc(p.brand || "—")}</small></div></div></td>
+        <td><small style="color:var(--pb-muted)">${esc(p.category || "—")}</small></td>
+        <td>${priceCell(p)}</td>
+        <td><small style="color:var(--pb-muted)">${p.flavors.length} ${p.flavors.length === 1 ? "sabor" : "sabores"}</small></td>
+        <td><div style="display:flex;gap:6px;flex-wrap:wrap">${pill(p)}${p.show_on_home ? `<span class="ad-pill ad-pill--home">Inicio</span>` : ""}</div></td>
+        <td><div class="ad-row-actions">
+          <button class="ad-icon-btn" type="button" title="Editar" data-edit="${esc(p.id)}">${ico("pencil")}</button>
+          <button class="ad-icon-btn" type="button" title="Duplicar" data-dup="${esc(p.id)}">${ico("plus")}</button>
+          <button class="ad-icon-btn ad-icon-btn--danger" type="button" title="Eliminar" data-del="${esc(p.id)}">${ico("trash")}</button>
+        </div></td>
+      </tr>`).join("");
 
-    els.cardWrap.innerHTML = visible.map((product) => `
-      <article class="admin-product-card">
-        <img src="${escapeHTML(productImage(product))}" alt="" />
+    const cards = list.map((p) => `
+      <div class="ad-prod-card">
+        ${imgTag(p.image)}
         <div>
-          <h3>${escapeHTML(product.name)}</h3>
-          <p class="admin-card-price-row">${priceCell(product)} <span class="admin-card-cat">${escapeHTML(product.category || "Otros")}</span></p>
-          <div class="admin-card-meta">
-            ${productStatus(product)}
-            ${productReviewBadges(product)}
-            ${flavorSummaryBadge(product)}
-            ${state.homeIds.includes(product.id) ? '<span class="admin-status admin-status--ok">Inicio</span>' : ""}
+          <h3>${esc(p.name)}</h3>
+          <p class="ad-meta">${esc(p.brand || "")}${p.category ? " · " + esc(p.category) : ""}</p>
+          <div class="ad-card-tags">${pill(p)}${p.show_on_home ? `<span class="ad-pill ad-pill--home">Inicio</span>` : ""}<span class="ad-price" style="margin-left:auto">${hasOffer(p) ? `<s>${esc(peso(p.old_price))}</s>` : ""}${esc(peso(p.price))}</span></div>
+        </div>
+        <div class="ad-card-actions">
+          <button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-edit="${esc(p.id)}">Editar</button>
+          <button class="ad-icon-btn" type="button" title="Duplicar" data-dup="${esc(p.id)}">${ico("plus")}</button>
+          <button class="ad-icon-btn ad-icon-btn--danger" type="button" title="Eliminar" data-del="${esc(p.id)}">${ico("trash")}</button>
+        </div>
+      </div>`).join("");
+
+    const body = list.length === 0
+      ? `<div class="ad-empty"><span class="ad-empty__icon">${ico("search")}</span><h3>Sin resultados</h3><p>No hay productos que coincidan con el filtro o la búsqueda.</p></div>`
+      : `<div class="ad-table-wrap"><table class="ad-table">
+          <thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Sabores</th><th>Estado</th><th></th></tr></thead>
+          <tbody>${rows}</tbody></table></div>
+         <div class="ad-prod-cards">${cards}</div>`;
+
+    setView(`
+      <div class="ad-panel">
+        <div class="ad-toolbar">
+          <div class="ad-toolbar__filters">
+            ${filters.map(([k, label]) => `<button class="ad-chip${state.productFilter === k ? " is-active" : ""}" type="button" data-filter="${k}">${esc(label)}</button>`).join("")}
           </div>
-          ${(product.flavors || []).length ? `<div class="admin-flavor-chips">${(product.flavors || []).map((flavor) => `<button type="button" class="admin-flavor-chip${flavor.available === false ? " is-off" : ""}" data-toggle-flavor="${flavor.id}" aria-pressed="${flavor.available !== false}" title="${flavor.available === false ? "Agotado" : "Disponible"} - clic para cambiar">${escapeHTML(flavor.name)}</button>`).join("")}</div>` : ""}
-          <div class="admin-card-actions">${productMobileActions(product)}</div>
+          <span class="ad-result-count">${list.length} ${list.length === 1 ? "producto" : "productos"}</span>
         </div>
-      </article>
-    `).join("");
+        ${body}
+      </div>`);
+
+    const view = $("#adminView");
+    view.querySelectorAll("[data-filter]").forEach((b) => b.addEventListener("click", () => {
+      state.productFilter = b.getAttribute("data-filter");
+      renderProducts();
+    }));
+    view.querySelectorAll("[data-dup]").forEach((b) => b.addEventListener("click", () => duplicateProduct(b.getAttribute("data-dup"))));
+    view.querySelectorAll("[data-del]").forEach((b) => b.addEventListener("click", () => deleteProductFlow(b.getAttribute("data-del"))));
+    bindEditClicks(view);
   }
 
-  function renderVariantSelect() {
-    els.variantProductSelect.innerHTML = state.products.map((product) => `
-      <option value="${product.id}">${escapeHTML(product.name)}</option>
-    `).join("");
-
-    if (state.variantProductId) els.variantProductSelect.value = state.variantProductId;
+  async function duplicateProduct(id) {
+    const p = state.products.find((x) => String(x.id) === String(id));
+    if (!p) return;
+    openProductDrawer({ ...p, id: null, name: `${p.name} (copia)`, show_on_home: false, home_order: null, flavors: p.flavors.map((f) => ({ name: f.name, available: f.available })), updated_at: null }, { duplicateOf: p.name });
   }
 
-  function flavorRowMarkup(flavor) {
-    return `
-      <article class="admin-variant-row" data-flavor-id="${flavor.id}">
-        <input value="${escapeHTML(flavor.name)}" data-flavor-name aria-label="Nombre del sabor" placeholder="Nombre del sabor" />
-        <div class="admin-variant-actions">
-          <label class="admin-toggle">
-            <input type="checkbox" ${flavor.available !== false ? "checked" : ""} data-flavor-available />
-            Disponible
-          </label>
-          <button class="admin-chip-btn" type="button" data-save-flavor>${icon("save")}Guardar</button>
-          <button class="admin-chip-btn" type="button" data-delete-flavor>${icon("trash")}Eliminar</button>
-        </div>
-      </article>`;
+  async function deleteProductFlow(id) {
+    const p = state.products.find((x) => String(x.id) === String(id));
+    if (!p) return;
+    const ok = await confirmModal({ title: "Eliminar producto", body: `Se eliminará “${p.name}” de forma permanente. Esta acción no se puede deshacer.`, confirmLabel: "Eliminar", danger: true });
+    if (!ok) return;
+    try {
+      await window.catalogDb.deleteProduct(p.id);
+      await reloadProducts();
+      toast({ tone: "err", msg: "Producto eliminado", sub: p.name });
+      renderProducts();
+    } catch (e) { toast({ tone: "err", msg: "No se pudo eliminar", sub: e.message }); }
   }
 
-  function flavorToolbarMarkup(idPrefix, addBtnId) {
-    return `
-      <div class="admin-variant-toolbar">
-        <input id="${idPrefix}NameNew" placeholder="Ej: Chocolate" aria-label="Nombre del sabor nuevo" />
-        <button class="admin-primary" type="button" id="${addBtnId}">${icon("plus")}Agregar</button>
-      </div>`;
-  }
-
+  /* ============================ VARIANTS ============================ */
   function renderVariants() {
-    renderVariantSelect();
-    const product = state.products.find((item) => item.id === state.variantProductId);
-    if (!product) {
-      els.variantManager.innerHTML = `<p class="admin-help-text">Selecciona un producto para manejar sabores.</p>`;
-      return;
-    }
-
-    const flavors = product.flavors || [];
-    els.variantManager.innerHTML = `
-      ${flavorToolbarMarkup("variant", "addVariantBtn")}
-      <div class="admin-variant-list">
-        ${flavors.length ? flavors.map(flavorRowMarkup).join("") : `<p class="admin-help-text">Este producto no tiene sabores o variantes.</p>`}
-      </div>
-    `;
-  }
-
-  // Gestión de sabores DENTRO del drawer del producto (mismo patrón que la pestaña Sabores).
-  function renderDrawerFlavors() {
-    if (!els.drawerFlavors) return;
-    const product = state.selectedProductId ? getProductById(state.selectedProductId) : null;
-    if (!product) {
-      els.drawerFlavors.innerHTML = `<p class="admin-help-text">Guarda el producto para poder agregar y gestionar sus sabores.</p>`;
-      return;
-    }
-    const flavors = product.flavors || [];
-    els.drawerFlavors.innerHTML = `
-      ${flavorToolbarMarkup("drawerFlavor", "addDrawerFlavorBtn")}
-      <div class="admin-variant-list">
-        ${flavors.length ? flavors.map(flavorRowMarkup).join("") : `<p class="admin-help-text">Aún no hay sabores. Agrega el primero arriba.</p>`}
-      </div>
-    `;
-  }
-
-  function renderHomeProducts() {
-    const selected = state.homeIds
-      .map((id) => state.products.find((product) => product.id === id))
-      .filter(Boolean);
-    const pool = state.products.filter((product) => !state.homeIds.includes(product.id));
-
-    els.homeCounter.textContent = `${selected.length} de 8`;
-    els.homeCounter.classList.toggle("admin-status--bad", selected.length < 4 || selected.length > 8);
-
-    els.homeList.innerHTML = selected.length ? selected.map((product, index) => `
-      <article class="admin-home-card" data-home-id="${product.id}">
-        <img src="${escapeHTML(productImage(product))}" alt="" />
-        <div>
-          <h4>${index + 1}. ${escapeHTML(product.name)}</h4>
-          <p>${escapeHTML(product.brand || product.category || "Producto")} - ${formatPrice(product.price)}</p>
-          <div class="admin-home-actions">
-            <button class="admin-chip-btn" type="button" data-home-up="${product.id}" ${index === 0 ? "disabled" : ""}>${icon("arrow-up")}Subir</button>
-            <button class="admin-chip-btn" type="button" data-home-down="${product.id}" ${index === selected.length - 1 ? "disabled" : ""}>${icon("arrow-down")}Bajar</button>
-            <button class="admin-chip-btn" type="button" data-home-remove="${product.id}">${icon("trash")}Quitar</button>
+    const rows = state.products.map((p) => `
+      <div class="ad-row" style="grid-template-columns:46px minmax(0,1fr);align-items:start" data-prod="${esc(p.id)}">
+        ${imgTag(p.image, "ad-row__img")}
+        <div class="ad-row__main" style="display:grid;gap:8px">
+          <strong>${esc(p.name)}</strong>
+          <div class="ad-chips-input" data-chips>
+            ${p.flavors.map((f) => chipTag(f.name)).join("")}
+            <input type="text" placeholder="Agregar sabor" aria-label="Agregar sabor a ${esc(p.name)}" />
           </div>
         </div>
-      </article>
-    `).join("") : `<p class="admin-help-text">Selecciona al menos 4 productos para el inicio.</p>`;
+      </div>`).join("");
 
-    els.homePool.innerHTML = pool.length ? pool.slice(0, 60).map((product) => `
-      <article class="admin-home-card">
-        <img src="${escapeHTML(productImage(product))}" alt="" />
-        <div>
-          <h4>${escapeHTML(product.name)}</h4>
-          <p>${escapeHTML(product.category || "Otros")} - ${formatPrice(product.price)}</p>
-          <button class="admin-chip-btn" type="button" data-home-add="${product.id}" ${state.homeIds.length >= 8 ? "disabled" : ""}>${icon("plus")}Agregar</button>
+    setView(`
+      <div class="ad-section-intro">
+        <div><p class="ad-kicker">Variantes</p><p>Agregá o quitá sabores de cada producto. Enter para confirmar cada uno; los cambios se guardan al instante.</p></div>
+      </div>
+      <div class="ad-panel">${rows || `<p class="ad-ops__empty">No hay productos.</p>`}</div>`);
+
+    $$("[data-prod]", $("#adminView")).forEach((row) => {
+      const productId = row.getAttribute("data-prod");
+      bindChips(row.querySelector("[data-chips]"), {
+        onAdd: (name) => syncFlavorAdd(productId, name),
+        onRemove: (name) => syncFlavorRemove(productId, name),
+      });
+    });
+  }
+
+  function chipTag(name) {
+    return `<span class="ad-chip-tag">${esc(name)}<button type="button" aria-label="Quitar ${esc(name)}" data-chip-remove>${ico("x")}</button></span>`;
+  }
+
+  // Reusable chips input behaviour. onAdd/onRemove receive the flavor name.
+  function bindChips(container, { onAdd, onRemove }) {
+    if (!container) return;
+    const input = container.querySelector("input");
+    const addFromInput = () => {
+      const v = input.value.trim();
+      input.value = "";
+      if (!v) return;
+      const existing = $$(".ad-chip-tag", container).map((c) => c.textContent.trim().toLowerCase());
+      if (existing.includes(v.toLowerCase())) return;
+      const chip = document.createElement("span");
+      chip.className = "ad-chip-tag";
+      chip.innerHTML = `${esc(v)}<button type="button" aria-label="Quitar ${esc(v)}" data-chip-remove>${ico("x")}</button>`;
+      container.insertBefore(chip, input);
+      if (window.javyIcons) window.javyIcons.enhance(chip);
+      if (onAdd) onAdd(v);
+    };
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); addFromInput(); } });
+    input.addEventListener("blur", addFromInput);
+    container.addEventListener("click", (e) => {
+      const rm = e.target.closest("[data-chip-remove]");
+      if (!rm) return;
+      const chip = rm.closest(".ad-chip-tag");
+      const name = chip.textContent.trim();
+      chip.remove();
+      if (onRemove) onRemove(name);
+    });
+  }
+
+  async function syncFlavorAdd(productId, name) {
+    try {
+      const created = await window.catalogDb.createFlavor(productId, { name, available: true });
+      const p = state.products.find((x) => String(x.id) === String(productId));
+      if (p) p.flavors.push({ id: created.id, name: created.name, available: created.available !== false });
+      toast({ tone: "ok", msg: "Sabor agregado", sub: name });
+    } catch (e) { toast({ tone: "err", msg: "No se pudo agregar el sabor", sub: e.message }); }
+  }
+  async function syncFlavorRemove(productId, name) {
+    const p = state.products.find((x) => String(x.id) === String(productId));
+    if (!p) return;
+    const flavor = p.flavors.find((f) => f.name.toLowerCase() === name.toLowerCase());
+    if (!flavor || !flavor.id) { if (p) p.flavors = p.flavors.filter((f) => f !== flavor); return; }
+    try {
+      await window.catalogDb.deleteFlavor(flavor.id);
+      p.flavors = p.flavors.filter((f) => f.id !== flavor.id);
+      toast({ tone: "info", msg: "Sabor quitado", sub: name });
+    } catch (e) { toast({ tone: "err", msg: "No se pudo quitar el sabor", sub: e.message }); }
+  }
+
+  /* ============================ HOME (curación) ============================ */
+  function renderHome() {
+    let ids = state.products
+      .filter((p) => p.show_on_home)
+      .sort((a, b) => (a.home_order ?? 999) - (b.home_order ?? 999))
+      .map((p) => p.id);
+
+    const draw = () => {
+      const items = ids.map((id) => state.products.find((p) => p.id === id)).filter(Boolean);
+      const full = ids.length >= HOME_MAX;
+      const emptySlots = Math.max(0, HOME_MIN - ids.length);
+      const poolOptions = state.products
+        .filter((p) => !ids.includes(p.id))
+        .map((p) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("");
+
+      setView(`
+        <div class="ad-section-intro">
+          <div><p class="ad-kicker">Home</p><p>Curá los productos destacados que aparecen en la página principal. Ordená con las flechas. Entre ${HOME_MIN} y ${HOME_MAX} productos.</p></div>
+          <span class="ad-counter${full ? " ad-counter--full" : ""}"><strong>${ids.length}</strong> / ${HOME_MAX} en el inicio</span>
         </div>
-      </article>
-    `).join("") : `<p class="admin-help-text">Todos los productos visibles ya estan seleccionados.</p>`;
+        <div class="ad-panel">
+          <div class="ad-slots">
+            ${items.map((p, i) => `
+              <div class="ad-slot">
+                <span class="ad-slot__order">${i + 1}</span>
+                ${imgTag(p.image, "ad-slot__img")}
+                <div class="ad-slot__main"><strong>${esc(p.name)}</strong><small>${esc(p.brand || "")} · ${esc(peso(p.price))}</small></div>
+                <div class="ad-row__actions">
+                  <button class="ad-icon-btn" type="button" title="Subir" data-move="${i}|-1" ${i === 0 ? "disabled" : ""}>${ico("arrow-up")}</button>
+                  <button class="ad-icon-btn" type="button" title="Bajar" data-move="${i}|1" ${i === items.length - 1 ? "disabled" : ""}>${ico("arrow-down")}</button>
+                  <button class="ad-icon-btn" type="button" title="Editar" data-edit="${esc(p.id)}">${ico("pencil")}</button>
+                  <button class="ad-icon-btn ad-icon-btn--danger" type="button" title="Quitar del inicio" data-remove="${esc(p.id)}">${ico("x")}</button>
+                </div>
+              </div>`).join("")}
+            ${Array.from({ length: emptySlots }).map((_, i) => `
+              <div class="ad-slot ad-slot--empty"><span class="ad-slot__order">${ids.length + i + 1}</span><span>Espacio libre — agregá un producto destacado</span></div>`).join("")}
+          </div>
+          <div class="ad-field" style="margin-top:14px;max-width:420px">
+            <label class="ad-field__label">Agregar producto al inicio</label>
+            <div style="display:flex;gap:8px">
+              <select class="ad-select" data-pool ${full ? "disabled" : ""}><option value="">Elegir…</option>${poolOptions}</select>
+            </div>
+            ${full ? `<span class="ad-field__help">Cupo lleno (${HOME_MAX}). Quitá uno para agregar otro.</span>` : ""}
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+            <button class="ad-btn ad-btn--primary" type="button" data-save-home>${ico("save")}Guardar inicio</button>
+            <span class="ad-field__help" style="align-self:center">${ids.length < HOME_MIN ? `Necesitás al menos ${HOME_MIN} productos para guardar.` : "Listo para guardar."}</span>
+          </div>
+        </div>`);
+
+      const view = $("#adminView");
+      view.querySelectorAll("[data-move]").forEach((b) => b.addEventListener("click", () => {
+        const [i, dir] = b.getAttribute("data-move").split("|").map(Number);
+        const j = i + dir;
+        if (j < 0 || j >= ids.length) return;
+        [ids[i], ids[j]] = [ids[j], ids[i]];
+        draw();
+      }));
+      view.querySelectorAll("[data-remove]").forEach((b) => b.addEventListener("click", () => {
+        ids = ids.filter((id) => String(id) !== String(b.getAttribute("data-remove")));
+        draw();
+      }));
+      const pool = view.querySelector("[data-pool]");
+      if (pool) pool.addEventListener("change", () => {
+        if (pool.value && ids.length < HOME_MAX) { ids.push(pool.value); draw(); }
+      });
+      view.querySelector("[data-save-home]").addEventListener("click", () => saveHome(ids));
+      bindEditClicks(view);
+    };
+
+    draw();
   }
 
-  // ===== Combos (admin) =====
-  function getComboById(id) {
-    return state.combos.find((combo) => combo.id === id);
+  async function saveHome(ids) {
+    if (ids.length < HOME_MIN) { toast({ tone: "err", msg: `Elegí al menos ${HOME_MIN} productos.` }); return; }
+    if (ids.length > HOME_MAX) { toast({ tone: "err", msg: `Máximo ${HOME_MAX} productos.` }); return; }
+    try {
+      await window.catalogDb.updateHomeProducts(ids);
+      await reloadProducts();
+      toast({ tone: "ok", msg: "Inicio actualizado", sub: `${ids.length} productos destacados` });
+      renderHome();
+    } catch (e) { toast({ tone: "err", msg: "No se pudo guardar el inicio", sub: e.message }); }
   }
 
+  /* ============================ CATEGORIES ============================ */
+  function renderCategories() {
+    if (!state.categoriesSupported) {
+      setView(emptyFeature("Categorías no disponibles", "Aplicá la migración de categorías (Familia → Tipo) en Supabase para gestionarlas aquí."));
+      return;
+    }
+    const fams = families();
+    const productCountFor = (cat) => {
+      const childIds = typesOf(cat.id).map((t) => t.id);
+      const ids = [cat.id, ...childIds];
+      return state.products.filter((p) => ids.includes(p.category_id)).length;
+    };
+
+    const cards = fams.map((c, i) => `
+      <div class="ad-cat${c.is_active === false ? " is-hidden" : ""}" data-cat="${esc(c.id)}">
+        <div class="ad-cat__head">
+          <div class="ad-cat__title"><strong>${esc(c.name)}</strong><small>${productCountFor(c)} productos</small></div>
+          <div class="ad-row__actions">
+            <button class="ad-icon-btn" type="button" title="Subir" data-cat-move="${i}|-1" ${i === 0 ? "disabled" : ""}>${ico("arrow-up")}</button>
+            <button class="ad-icon-btn" type="button" title="Bajar" data-cat-move="${i}|1" ${i === fams.length - 1 ? "disabled" : ""}>${ico("arrow-down")}</button>
+            <button class="ad-icon-btn" type="button" title="Renombrar" data-cat-rename="${esc(c.id)}">${ico("pencil")}</button>
+            <button class="ad-icon-btn" type="button" title="${c.is_active === false ? "Mostrar" : "Ocultar"}" data-cat-hide="${esc(c.id)}">${ico("power")}</button>
+            <button class="ad-icon-btn ad-icon-btn--danger" type="button" title="Eliminar familia" data-cat-del="${esc(c.id)}">${ico("trash")}</button>
+          </div>
+        </div>
+        <div class="ad-cat__types">
+          ${typesOf(c.id).map((t) => `<span class="ad-type-chip">${esc(t.name)}<button type="button" aria-label="Eliminar tipo ${esc(t.name)}" data-type-del="${esc(t.id)}">${ico("x")}</button></span>`).join("")}
+          <button class="ad-type-chip ad-type-chip--add" type="button" data-type-add="${esc(c.id)}">${ico("plus")}Tipo</button>
+        </div>
+      </div>`).join("");
+
+    setView(`
+      <div class="ad-section-intro">
+        <div><p class="ad-kicker">Catálogo</p><p>Familias del catálogo y sus tipos. Reordená con las flechas u ocultá una familia sin borrar sus productos.</p></div>
+        <button class="ad-btn ad-btn--primary" type="button" data-fam-add>${ico("plus")}Nueva familia</button>
+      </div>
+      <div class="ad-panel">${cards || `<p class="ad-ops__empty">Todavía no hay familias. Creá la primera.</p>`}</div>`);
+
+    const view = $("#adminView");
+    view.querySelector("[data-fam-add]").addEventListener("click", addFamily);
+    view.querySelectorAll("[data-cat-move]").forEach((b) => b.addEventListener("click", () => moveFamily(b.getAttribute("data-cat-move"))));
+    view.querySelectorAll("[data-cat-rename]").forEach((b) => b.addEventListener("click", () => renameCategory(b.getAttribute("data-cat-rename"))));
+    view.querySelectorAll("[data-cat-hide]").forEach((b) => b.addEventListener("click", () => toggleCategoryHidden(b.getAttribute("data-cat-hide"))));
+    view.querySelectorAll("[data-cat-del]").forEach((b) => b.addEventListener("click", () => deleteFamily(b.getAttribute("data-cat-del"))));
+    view.querySelectorAll("[data-type-add]").forEach((b) => b.addEventListener("click", () => addType(b.getAttribute("data-type-add"))));
+    view.querySelectorAll("[data-type-del]").forEach((b) => b.addEventListener("click", () => deleteType(b.getAttribute("data-type-del"))));
+  }
+
+  async function addFamily() {
+    const name = await promptModal({ title: "Nueva familia", label: "Nombre de la familia (ej. Proteínas)" });
+    if (!name) return;
+    try {
+      const created = await window.catalogDb.createCategory({ name, parentId: null, sortOrder: families().length + 1 });
+      state.categories.push(created);
+      toast({ tone: "ok", msg: "Familia creada", sub: name });
+      renderCategories();
+    } catch (e) { toast({ tone: "err", msg: "No se pudo crear", sub: e.message }); }
+  }
+  async function addType(famId) {
+    const name = await promptModal({ title: "Nuevo tipo", label: "Nombre del tipo (ej. Whey)" });
+    if (!name) return;
+    try {
+      const created = await window.catalogDb.createCategory({ name, parentId: famId, sortOrder: typesOf(famId).length + 1 });
+      state.categories.push(created);
+      toast({ tone: "ok", msg: "Tipo creado", sub: name });
+      renderCategories();
+    } catch (e) { toast({ tone: "err", msg: "No se pudo crear", sub: e.message }); }
+  }
+  async function renameCategory(id) {
+    const cat = catById(id);
+    if (!cat) return;
+    const name = await promptModal({ title: "Renombrar", label: "Nuevo nombre", value: cat.name });
+    if (!name || name === cat.name) return;
+    try {
+      const updated = await window.catalogDb.updateCategory(id, { name });
+      Object.assign(cat, updated);
+      toast({ tone: "ok", msg: "Categoría renombrada", sub: name });
+      renderCategories();
+    } catch (e) { toast({ tone: "err", msg: "No se pudo renombrar", sub: e.message }); }
+  }
+  async function toggleCategoryHidden(id) {
+    const cat = catById(id);
+    if (!cat) return;
+    try {
+      const updated = await window.catalogDb.updateCategory(id, { is_active: cat.is_active === false });
+      Object.assign(cat, updated);
+      renderCategories();
+    } catch (e) { toast({ tone: "err", msg: "No se pudo actualizar", sub: e.message }); }
+  }
+  async function moveFamily(spec) {
+    const [i, dir] = spec.split("|").map(Number);
+    const fams = families();
+    const j = i + dir;
+    if (j < 0 || j >= fams.length) return;
+    const a = fams[i], b = fams[j];
+    try {
+      const ao = a.sort_order ?? (i + 1), bo = b.sort_order ?? (j + 1);
+      const [ua, ub] = await Promise.all([
+        window.catalogDb.updateCategory(a.id, { sort_order: bo }),
+        window.catalogDb.updateCategory(b.id, { sort_order: ao }),
+      ]);
+      Object.assign(a, ua); Object.assign(b, ub);
+      renderCategories();
+    } catch (e) { toast({ tone: "err", msg: "No se pudo reordenar", sub: e.message }); }
+  }
+  async function deleteFamily(id) {
+    const cat = catById(id);
+    if (!cat) return;
+    const childIds = typesOf(id).map((t) => t.id);
+    let count = 0;
+    try { count = await window.catalogDb.getCategoryProductCount(id, childIds); } catch (_) {}
+    if (count > 0) {
+      await confirmModal({ title: "No se puede eliminar", body: `“${cat.name}” tiene ${count} producto(s) asignado(s). Reasignalos a otra categoría antes de eliminarla.`, confirmLabel: "Entendido" });
+      return;
+    }
+    const ok = await confirmModal({ title: "Eliminar familia", body: `Se eliminará “${cat.name}” y sus tipos. Esta acción no se puede deshacer.`, confirmLabel: "Eliminar", danger: true });
+    if (!ok) return;
+    try {
+      for (const t of childIds) await window.catalogDb.deleteCategory(t);
+      await window.catalogDb.deleteCategory(id);
+      state.categories = state.categories.filter((c) => c.id !== id && !childIds.includes(c.id));
+      toast({ tone: "err", msg: "Familia eliminada", sub: cat.name });
+      renderCategories();
+    } catch (e) { toast({ tone: "err", msg: "No se pudo eliminar", sub: e.message }); }
+  }
+  async function deleteType(id) {
+    const cat = catById(id);
+    if (!cat) return;
+    let count = 0;
+    try { count = await window.catalogDb.getCategoryProductCount(id, []); } catch (_) {}
+    if (count > 0) {
+      await confirmModal({ title: "No se puede eliminar", body: `El tipo “${cat.name}” tiene ${count} producto(s). Reasignalos primero.`, confirmLabel: "Entendido" });
+      return;
+    }
+    const ok = await confirmModal({ title: "Eliminar tipo", body: `Se eliminará el tipo “${cat.name}”.`, confirmLabel: "Eliminar", danger: true });
+    if (!ok) return;
+    try {
+      await window.catalogDb.deleteCategory(id);
+      state.categories = state.categories.filter((c) => c.id !== id);
+      renderCategories();
+    } catch (e) { toast({ tone: "err", msg: "No se pudo eliminar", sub: e.message }); }
+  }
+
+  /* ============================ COMBOS ============================ */
   function renderCombos() {
-    if (!els.combosList) return;
-    if (!state.combos.length) {
-      els.combosList.innerHTML = `<p class="admin-help-text">Aún no hay combos. Crea el primero con "Nuevo combo".</p>`;
+    if (!state.combosSupported) {
+      setView(emptyFeature("Combos no disponibles", "Aplicá la migración de combos en Supabase para crear y gestionar paquetes."));
       return;
     }
-    els.combosList.innerHTML = state.combos.map((combo) => `
-      <article class="admin-combo-card${combo.is_active ? "" : " is-off"}">
-        <img src="${escapeHTML(combo.image)}" alt="" />
-        <div class="admin-combo-card__info">
-          <strong>${escapeHTML(combo.name)}</strong>
-          <small>${combo.items.length} producto(s) · ${formatPrice(combo.price)}${combo.show_on_home ? " · En inicio" : ""}</small>
-        </div>
-        <div class="admin-combo-card__actions">
-          ${availabilitySwitch({ on: combo.is_active, attr: "data-toggle-combo", id: combo.id, onLabel: "Activo", offLabel: "Inactivo" })}
-          <button class="admin-chip-btn" type="button" data-edit-combo="${combo.id}">${icon("pencil")}Editar</button>
-        </div>
-      </article>
-    `).join("");
-  }
+    const listPriceOf = (c) => c.items.reduce((s, it) => {
+      const p = state.products.find((x) => String(x.id) === String(it.product_id));
+      return s + (p ? Number(p.price || 0) : 0) * (it.quantity || 1);
+    }, 0);
 
-  function renderComboProductSelect() {
-    const select = $("#comboProductSelect");
-    if (!select) return;
-    select.innerHTML = state.products
-      .slice()
-      .sort((a, b) => (a.name || "").localeCompare(b.name || "", "es"))
-      .map((p) => `<option value="${p.id}">${escapeHTML(p.name)}</option>`)
-      .join("");
-    renderComboFlavorSelect(select.value);
-  }
-
-  function renderComboFlavorSelect(productId) {
-    const select = $("#comboFlavorSelect");
-    if (!select) return;
-    const product = getProductById(productId);
-    const flavors = product?.flavors || [];
-    select.innerHTML = [
-      `<option value="">Sin sabor específico</option>`,
-      ...flavors.map((f) => `<option value="${f.id}">${escapeHTML(f.name)}</option>`),
-    ].join("");
-    select.disabled = !flavors.length;
-  }
-
-  function renderComboItems() {
-    if (!els.comboItemsList) return;
-    if (!state.comboItems.length) {
-      els.comboItemsList.innerHTML = `<p class="admin-help-text">Agrega productos al combo arriba.</p>`;
-      return;
-    }
-    els.comboItemsList.innerHTML = state.comboItems.map((item, index) => `
-      <div class="admin-combo-item">
-        <span>${item.quantity} × ${escapeHTML(item.product_name)}${item.flavor_name ? ` <em>(${escapeHTML(item.flavor_name)})</em>` : ""}</span>
-        <button class="admin-chip-btn" type="button" data-remove-combo-item="${index}" aria-label="Quitar">${icon("trash", "")}</button>
-      </div>
-    `).join("");
-  }
-
-  function addComboItem() {
-    const productId = $("#comboProductSelect")?.value;
-    const flavorId = $("#comboFlavorSelect")?.value || null;
-    const qty = Math.max(1, parseInt($("#comboQtyInput")?.value, 10) || 1);
-    const product = getProductById(productId);
-    if (!product) {
-      showToast("Selecciona un producto.", "error");
-      return;
-    }
-    const flavor = (product.flavors || []).find((f) => f.id === flavorId);
-    state.comboItems.push({
-      product_id: productId,
-      flavor_id: flavorId,
-      quantity: qty,
-      product_name: product.name,
-      flavor_name: flavor?.name || null,
-    });
-    renderComboItems();
-  }
-
-  function removeComboItem(index) {
-    state.comboItems.splice(Number(index), 1);
-    renderComboItems();
-  }
-
-  function updateComboPriceHint() {
-    const hint = els.comboForm?.querySelector("[data-combo-price-hint]");
-    if (!hint) return;
-    const price = Number(els.comboForm.elements.price.value);
-    const oldPrice = Number(els.comboForm.elements.old_price.value);
-    if (price > 0 && oldPrice > price) {
-      hint.hidden = false;
-      hint.textContent = `Ahorro: -${Math.round((1 - price / oldPrice) * 100)}%`;
-    } else {
-      hint.hidden = true;
-      hint.textContent = "";
-    }
-  }
-
-  function updateComboImageState() {
-    const form = els.comboForm;
-    if (!form) return;
-    const stateEl = form.querySelector("[data-combo-image-state]");
-    const clearBtn = form.querySelector("[data-combo-clear-image]");
-    const pickLabel = form.querySelector("[data-combo-pick-label]");
-    const file = form.elements.image_file.files?.[0];
-    const url = form.elements.image_url.value.trim();
-    const hasUrl = url && url !== PLACEHOLDER_IMAGE;
-    if (file) {
-      stateEl.textContent = "Nueva imagen"; stateEl.dataset.tone = "new"; pickLabel.textContent = "Cambiar imagen";
-    } else if (hasUrl) {
-      stateEl.textContent = "Imagen actual"; stateEl.dataset.tone = "current"; pickLabel.textContent = "Cambiar imagen";
-    } else {
-      stateEl.textContent = "Sin imagen"; stateEl.dataset.tone = "empty"; pickLabel.textContent = "Subir imagen";
-    }
-    clearBtn.hidden = !(file || hasUrl);
-  }
-
-  function releaseComboImageObjectUrl() {
-    if (state.comboImageObjectUrl) {
-      URL.revokeObjectURL(state.comboImageObjectUrl);
-      state.comboImageObjectUrl = null;
-    }
-  }
-
-  async function clearComboImage() {
-    const ok = await confirmDialog({
-      title: "Quitar imagen",
-      message: "Se quitará la imagen del combo. El cambio se aplica al guardar.",
-      confirmText: "Quitar",
-      danger: true,
-    });
-    if (!ok) return;
-    const form = els.comboForm;
-    form.elements.image_file.value = "";
-    form.elements.image_url.value = "";
-    releaseComboImageObjectUrl();
-    els.comboImagePreview.src = PLACEHOLDER_IMAGE;
-    updateComboImageState();
-  }
-
-  function clearComboErrors() {
-    els.comboForm.querySelectorAll("[data-field-error]").forEach((el) => {
-      el.textContent = "";
-      el.classList.remove("is-error");
-    });
-  }
-  function setComboError(name, message) {
-    const target = els.comboForm.querySelector(`[data-field-error="${name}"]`);
-    if (target) { target.textContent = message; target.classList.add("is-error"); }
-  }
-  function setComboFormMessage(message = "", isError = false) {
-    if (!els.comboFormMessage) return;
-    els.comboFormMessage.textContent = message;
-    els.comboFormMessage.classList.toggle("is-error", Boolean(isError));
-  }
-
-  function openComboDrawer(comboId = null) {
-    state.comboLastFocused = document.activeElement;
-    state.selectedComboId = comboId;
-    const combo = comboId ? getComboById(comboId) : null;
-    const form = els.comboForm;
-    releaseComboImageObjectUrl();
-    form.reset();
-    clearComboErrors();
-    setComboFormMessage("");
-    els.comboDrawerTitle.textContent = combo ? "Editar combo" : "Nuevo combo";
-    els.deleteComboBtn.hidden = !combo;
-    setMetaLine(els.comboMetaLine, combo);
-    els.comboImagePreview.src = combo ? combo.image : PLACEHOLDER_IMAGE;
-
-    if (combo) {
-      form.elements.name.value = combo.name || "";
-      form.elements.description.value = combo.description || "";
-      form.elements.price.value = combo.price ?? "";
-      form.elements.old_price.value = combo.old_price ?? "";
-      form.elements.image_url.value = combo.image_url || "";
-      form.elements.is_active.checked = combo.is_active !== false;
-      form.elements.show_on_home.checked = Boolean(combo.show_on_home);
-      state.comboItems = combo.items.map((it) => ({ ...it }));
-    } else {
-      form.elements.is_active.checked = true;
-      form.elements.show_on_home.checked = false;
-      state.comboItems = [];
-    }
-
-    renderComboProductSelect();
-    renderComboItems();
-    updateComboPriceHint();
-    updateComboImageState();
-    els.comboDrawer.hidden = false;
-    els.comboDrawer.setAttribute("aria-hidden", "false");
-    form.elements.name.focus();
-  }
-
-  function closeComboDrawer() {
-    els.comboDrawer.hidden = true;
-    els.comboDrawer.setAttribute("aria-hidden", "true");
-    state.selectedComboId = null;
-    releaseComboImageObjectUrl();
-    state.comboLastFocused?.focus?.({ preventScroll: true });
-    state.comboLastFocused = null;
-  }
-
-  function handleComboDrawerKeydown(event) {
-    if (event.key === "Escape") { event.preventDefault(); closeComboDrawer(); return; }
-    if (event.key !== "Tab") return;
-    const focusables = Array.from(
-      els.comboDrawer.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')
-    ).filter((el) => el.offsetParent !== null);
-    if (!focusables.length) return;
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-  }
-
-  function validateComboForm(form) {
-    clearComboErrors();
-    let ok = true;
-    if (!form.elements.name.value.trim()) { setComboError("combo_name", "El nombre es obligatorio."); ok = false; }
-    const price = form.elements.price.value;
-    if (price === "" || !Number.isFinite(Number(price)) || Number(price) < 0) { setComboError("combo_price", "Precio inválido."); ok = false; }
-    if (!state.comboItems.length) { setComboError("combo_items", "Agrega al menos un producto."); ok = false; }
-    return ok;
-  }
-
-  async function handleComboSubmit(event) {
-    event.preventDefault();
-    const form = els.comboForm;
-    if (!validateComboForm(form)) { setComboFormMessage("Revisa los campos marcados.", true); return; }
-    const submitBtn = form.querySelector("button[type='submit']");
-    const imageFile = form.elements.image_file.files?.[0];
-    let uploadedImageUrl = "";
-    const data = {
-      name: form.elements.name.value.trim(),
-      description: form.elements.description.value.trim(),
-      price: form.elements.price.value,
-      old_price: form.elements.old_price.value,
-      image_url: form.elements.image_url.value.trim(),
-      is_active: form.elements.is_active.checked,
-      show_on_home: form.elements.show_on_home.checked,
-    };
-    try {
-      setButtonLoading(submitBtn, true);
-      setComboFormMessage("Guardando combo...");
-      if (imageFile) {
-        uploadedImageUrl = await window.catalogDb.uploadProductImage(imageFile);
-        data.image_url = uploadedImageUrl;
-      }
-      let comboId = state.selectedComboId;
-      if (comboId) {
-        await window.catalogDb.updateCombo(comboId, data);
-      } else {
-        const created = await window.catalogDb.createCombo(data);
-        comboId = created.id;
-      }
-      await window.catalogDb.saveComboItems(comboId, state.comboItems);
-      await refreshAfterMutation("Combo guardado correctamente.");
-      closeComboDrawer();
-    } catch (error) {
-      if (uploadedImageUrl) await window.catalogDb.removeProductImage(uploadedImageUrl);
-      setComboFormMessage(error.message, true);
-      showToast("Error al guardar el combo.", "error");
-    } finally {
-      setButtonLoading(submitBtn, false);
-    }
-  }
-
-  async function deleteSelectedCombo() {
-    const combo = getComboById(state.selectedComboId);
-    if (!combo) return;
-    const ok = await confirmDialog({ title: "Eliminar combo", message: `Se eliminará "${combo.name}".`, confirmText: "Eliminar", danger: true });
-    if (!ok) return;
-    try {
-      setButtonLoading(els.deleteComboBtn, true, "Eliminando...");
-      await window.catalogDb.deleteCombo(combo.id);
-      await refreshAfterMutation("Combo eliminado.");
-      closeComboDrawer();
-    } catch (error) {
-      showToast(error.message, "error");
-    } finally {
-      setButtonLoading(els.deleteComboBtn, false);
-    }
-  }
-
-  async function toggleComboActive(comboId) {
-    const combo = getComboById(comboId);
-    if (!combo) return;
-    try {
-      await window.catalogDb.setComboActive(comboId, combo.is_active === false);
-      await refreshAfterMutation("Combo actualizado.");
-    } catch (error) {
-      showToast(error.message, "error");
-    }
-  }
-
-  // ===== Accesos (admin_profiles) =====
-  function renderAccess() {
-    if (!els.accessList) return;
-    const profiles = state.adminProfiles || [];
-    if (!profiles.length) {
-      els.accessList.innerHTML = `<p class="admin-help-text">No hay perfiles admin para mostrar (o no se pudieron cargar).</p>`;
-      return;
-    }
-    els.accessList.innerHTML = profiles.map((p) => {
-      const isMe = p.user_id === state.currentUserId || (p.email && p.email === state.currentUserEmail);
-      const who = p.email || p.user_id;
+    const cards = state.combos.map((c) => {
+      const listPrice = listPriceOf(c);
+      const save = Math.max(0, listPrice - Number(c.price || 0));
       return `
-        <div class="admin-access-row${p.is_active === false ? " is-off" : ""}">
-          <div class="admin-access-row__info">
-            <strong>${escapeHTML(who)}${isMe ? " (tú)" : ""}</strong>
-            <small>${escapeHTML(p.role || "admin")} · ${p.is_active === false ? "inactivo" : "activo"}</small>
-          </div>
-          ${isMe
-            ? `<span class="admin-help-text">No puedes desactivarte</span>`
-            : availabilitySwitch({ on: p.is_active !== false, attr: "data-toggle-admin", id: p.id, onLabel: "Activo", offLabel: "Inactivo" })}
-        </div>`;
+      <div class="ad-combo-card${c.is_active ? "" : " is-inactive"}" data-combo="${esc(c.id)}">
+        <div class="ad-combo-card__head">
+          <h3>${esc(c.name)}</h3>
+          ${switchMarkup(c.is_active, "data-combo-active='" + esc(c.id) + "'")}
+        </div>
+        <div class="ad-combo-items">
+          ${c.items.map((it) => `
+            <div class="ad-combo-item">${imgTag(it.product_image)}<div><strong>${esc(it.product_name)}</strong>${it.flavor_name ? `<small>${esc(it.flavor_name)}</small>` : ""}</div><span class="ad-combo-item__qty">×${it.quantity || 1}</span></div>`).join("") || `<small style="color:var(--pb-muted)">Sin productos todavía</small>`}
+        </div>
+        <div class="ad-combo-card__price">
+          <span class="ad-price">${esc(peso(c.price))}</span>
+          ${listPrice > 0 ? `<s>${esc(peso(listPrice))}</s>` : ""}
+          ${save > 0 ? `<span class="ad-pill ad-pill--ok ad-combo-card__save">Ahorro ${esc(peso(save))}</span>` : ""}
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="ad-btn ad-btn--ghost ad-btn--sm ad-btn--block" type="button" data-combo-edit="${esc(c.id)}">${ico("pencil")}Editar</button>
+          <button class="ad-icon-btn ad-icon-btn--danger" type="button" title="Eliminar" data-combo-del="${esc(c.id)}">${ico("trash")}</button>
+        </div>
+      </div>`;
     }).join("");
+
+    setView(`
+      <div class="ad-section-intro">
+        <div><p class="ad-kicker">Paquetes</p><p>Combos de productos a precio especial. Cada combo muestra el ahorro frente al precio de lista.</p></div>
+        <button class="ad-btn ad-btn--primary" type="button" data-combo-new>${ico("plus")}Crear combo</button>
+      </div>
+      ${state.combos.length ? `<div class="ad-combos-grid">${cards}</div>` : `<div class="ad-panel"><p class="ad-ops__empty">Aún no hay combos. Creá el primero.</p></div>`}`);
+
+    const view = $("#adminView");
+    view.querySelector("[data-combo-new]").addEventListener("click", () => openComboDrawer(null));
+    view.querySelectorAll("[data-combo-edit]").forEach((b) => b.addEventListener("click", () => {
+      const combo = state.combos.find((c) => String(c.id) === String(b.getAttribute("data-combo-edit")));
+      if (combo) openComboDrawer(combo);
+    }));
+    view.querySelectorAll("[data-combo-del]").forEach((b) => b.addEventListener("click", () => deleteComboFlow(b.getAttribute("data-combo-del"))));
+    view.querySelectorAll("[data-combo-active]").forEach((input) => input.addEventListener("change", () => toggleCombo(input.getAttribute("data-combo-active"), input.checked)));
   }
 
-  async function toggleAdminActive(id) {
-    const profile = (state.adminProfiles || []).find((p) => p.id === id);
-    if (!profile) return;
-    if (profile.user_id === state.currentUserId) {
-      showToast("No puedes desactivar tu propio acceso.", "error");
-      return;
-    }
+  async function toggleCombo(id, active) {
     try {
-      await window.catalogDb.setAdminProfileActive(id, profile.is_active === false);
-      state.adminProfiles = await window.catalogDb.getAdminProfiles();
-      renderAccess();
-      showToast("Acceso actualizado.");
-    } catch (error) {
-      showToast(error.message, "error");
-    }
+      const updated = await window.catalogDb.setComboActive(id, active);
+      const combo = state.combos.find((c) => String(c.id) === String(id));
+      if (combo) Object.assign(combo, updated);
+      renderCombos();
+    } catch (e) { toast({ tone: "err", msg: "No se pudo actualizar el combo", sub: e.message }); }
   }
-
-  function renderAll() {
-    renderCategoryOptions();
-    renderDashboard();
-    renderProducts();
-    renderVariants();
-    renderDrawerFlavors();
-    renderHomeProducts();
-    renderCategoryManager();
-    renderCombos();
-    renderAccess();
-  }
-
-  function setSection(section) {
-    state.currentSection = section;
-    const titles = {
-      dashboard: "Dashboard",
-      products: "Productos",
-      variants: "Sabores y variantes",
-      home: "Productos del inicio",
-      categories: "Categorías",
-      combos: "Combos",
-      access: "Accesos",
-      settings: "Configuracion",
-    };
-
-    els.sectionTitle.textContent = titles[section] || "Dashboard";
-    document.querySelectorAll("[data-section-panel]").forEach((panel) => {
-      panel.classList.toggle("is-active", panel.dataset.sectionPanel === section);
-    });
-    els.navItems.forEach((button) => {
-      button.classList.toggle("is-active", button.dataset.adminSection === section);
-    });
-
-    els.contextActions.forEach((item) => {
-      const sections = (item.dataset.showSections || "").split(",").map((value) => value.trim());
-      item.hidden = !sections.includes(section);
-    });
-
-    if (section !== "products") setFilterPanelOpen(false);
-  }
-
-  function getProductById(id) {
-    return state.products.find((product) => product.id === id);
-  }
-
-  function updateDiscountHint() {
-    const hint = els.productForm?.querySelector("[data-price-hint]");
-    if (!hint) return;
-    const price = Number(els.productForm.elements.price.value);
-    const oldPrice = Number(els.productForm.elements.old_price.value);
-    if (price > 0 && oldPrice > price) {
-      hint.hidden = false;
-      hint.textContent = `Oferta: -${Math.round((1 - price / oldPrice) * 100)}% de descuento`;
-    } else {
-      hint.hidden = true;
-      hint.textContent = "";
-    }
-  }
-
-  function clearFieldErrors() {
-    els.productForm.querySelectorAll("[data-field-error]").forEach((item) => {
-      item.textContent = "";
-      item.classList.remove("is-error");
-    });
-  }
-
-  function setFieldError(name, message) {
-    const target = els.productForm.querySelector(`[data-field-error="${name}"]`);
-    if (!target) return;
-    target.textContent = message;
-    target.classList.add("is-error");
-  }
-
-  function validateProductForm(data) {
-    clearFieldErrors();
-    let isValid = true;
-
-    if (!data.name?.trim()) {
-      setFieldError("name", "El nombre es obligatorio.");
-      isValid = false;
-    }
-
-    if (!data.category_id) {
-      setFieldError("category", "Debes seleccionar una familia (y un tipo si aplica).");
-      isValid = false;
-    }
-
-    if (data.price === "" || data.price == null || Number(data.price) < 0) {
-      setFieldError("price", "El precio actual es obligatorio y no puede ser negativo.");
-      isValid = false;
-    }
-
-    if (data.old_price !== "" && data.old_price != null && Number(data.old_price) <= Number(data.price)) {
-      setFieldError("old_price", "El precio anterior debe ser mayor que el actual.");
-      isValid = false;
-    }
-
-    if (data.show_on_home && (!data.home_order || Number(data.home_order) < 1 || Number(data.home_order) > 8)) {
-      setFieldError("home_order", "Usa un orden entre 1 y 8 para productos del inicio.");
-      isValid = false;
-    }
-
-    return isValid;
-  }
-
-  function openProductDrawer(productId = null) {
-    state.lastFocused = document.activeElement;
-    state.selectedProductId = productId;
-    // El gestor de sabores del drawer opera sobre este producto.
-    if (productId) state.variantProductId = productId;
-    const product = productId ? getProductById(productId) : null;
-    // Snapshot para el guard de edición concurrente.
-    state.editingProductUpdatedAt = product?.updated_at || null;
-    setMetaLine(els.productMetaLine, product);
-    const form = els.productForm;
-
-    releaseImageObjectUrl();
-    form.reset();
-    clearFieldErrors();
-    setFormMessage("");
-    els.drawerTitle.textContent = product ? "Editar producto" : "Agregar producto";
-    els.deleteProductBtn.hidden = !product;
-    els.duplicateProductBtn.hidden = !product;
-    els.imagePreview.src = product ? productImage(product) : PLACEHOLDER_IMAGE;
-
-    if (product) {
-      form.elements.name.value = product.name || "";
-      form.elements.brand.value = product.brand || "";
-      form.elements.presentation.value = product.presentation || "";
-      form.elements.description_short.value = product.description_short || "";
-      form.elements.description_long.value = product.description_long || product.description || "";
-      form.elements.price.value = product.price || "";
-      form.elements.old_price.value = product.old_price || "";
-      // Imagen CRUDA de la BD (no la resuelta con fallback local), para no
-      // sobreescribir la URL real al guardar sin tocar la imagen.
-      const storedImage = product.stored_image_url ?? product.image_url;
-      form.elements.image_url.value = storedImage === PLACEHOLDER_IMAGE ? "" : storedImage || "";
-      form.elements.label.value = product.label || "";
-      form.elements.home_order.value = product.home_order || "";
-      form.elements.tags.value = listToInput(product.tags);
-      form.elements.goals.value = listToInput(product.goals);
-      form.elements.flavor_mode.value = getFlavorMode(product);
-      form.elements.is_available.checked = product.available !== false;
-      form.elements.is_featured.checked = Boolean(product.featured);
-      form.elements.show_on_home.checked = state.homeIds.includes(product.id) || Boolean(product.show_on_home);
-    } else {
-      form.elements.is_available.checked = true;
-      form.elements.is_featured.checked = false;
-      form.elements.show_on_home.checked = false;
-      form.elements.flavor_mode.value = "needs_review";
-    }
-
-    setCategoryCascade(product);
-    updateDiscountHint();
-    updateImageState();
-    renderDrawerFlavors();
-    els.drawer.hidden = false;
-    els.drawer.setAttribute("aria-hidden", "false");
-    form.elements.name.focus();
-  }
-
-  function releaseImageObjectUrl() {
-    if (state.imageObjectUrl) {
-      URL.revokeObjectURL(state.imageObjectUrl);
-      state.imageObjectUrl = null;
-    }
-  }
-
-  // Refleja el estado de la imagen: nueva (archivo elegido), actual (URL), o sin imagen.
-  function updateImageState() {
-    const form = els.productForm;
-    if (!form) return;
-    const stateEl = form.querySelector("[data-image-state]");
-    const filenameEl = form.querySelector("[data-image-filename]");
-    const clearBtn = form.querySelector("[data-clear-image]");
-    const pickLabel = form.querySelector("[data-pick-image-label]");
-    const file = form.elements.image_file.files?.[0];
-    const url = form.elements.image_url.value.trim();
-    const hasUrl = url && url !== PLACEHOLDER_IMAGE;
-
-    if (file) {
-      stateEl.textContent = "Nueva imagen";
-      stateEl.dataset.tone = "new";
-      filenameEl.hidden = false;
-      filenameEl.textContent = file.name;
-      pickLabel.textContent = "Cambiar imagen";
-    } else if (hasUrl) {
-      stateEl.textContent = "Imagen actual";
-      stateEl.dataset.tone = "current";
-      filenameEl.hidden = true;
-      filenameEl.textContent = "";
-      pickLabel.textContent = "Cambiar imagen";
-    } else {
-      stateEl.textContent = "Sin imagen";
-      stateEl.dataset.tone = "empty";
-      filenameEl.hidden = true;
-      filenameEl.textContent = "";
-      pickLabel.textContent = "Subir imagen";
-    }
-    clearBtn.hidden = !(file || hasUrl);
-  }
-
-  async function clearProductImage() {
-    const ok = await confirmDialog({
-      title: "Quitar imagen",
-      message: "Se quitará la imagen de este producto. El cambio se aplica al guardar.",
-      confirmText: "Quitar",
-      danger: true,
-    });
+  async function deleteComboFlow(id) {
+    const combo = state.combos.find((c) => String(c.id) === String(id));
+    if (!combo) return;
+    const ok = await confirmModal({ title: "Eliminar combo", body: `Se eliminará “${combo.name}”.`, confirmLabel: "Eliminar", danger: true });
     if (!ok) return;
-    const form = els.productForm;
-    form.elements.image_file.value = "";
-    form.elements.image_url.value = "";
-    releaseImageObjectUrl();
-    els.imagePreview.src = PLACEHOLDER_IMAGE;
-    updateImageState();
-  }
-
-  function closeProductDrawer() {
-    els.drawer.hidden = true;
-    els.drawer.setAttribute("aria-hidden", "true");
-    state.selectedProductId = null;
-    releaseImageObjectUrl();
-    // Restaurar el foco a quien abrió el drawer (a11y).
-    state.lastFocused?.focus?.({ preventScroll: true });
-    state.lastFocused = null;
-  }
-
-  // Abre el drawer como producto NUEVO precargado con los datos de otro (sin id).
-  // No copia posición de inicio ni "destacado" para evitar duplicar home_order.
-  function duplicateProduct() {
-    const source = getProductById(state.selectedProductId);
-    if (!source) return;
-    openProductDrawer(null);
-    const form = els.productForm;
-    form.elements.name.value = `${source.name || "Producto"} (copia)`;
-    form.elements.brand.value = source.brand || "";
-    form.elements.presentation.value = source.presentation || "";
-    form.elements.description_short.value = source.description_short || "";
-    form.elements.description_long.value = source.description_long || source.description || "";
-    form.elements.price.value = source.price || "";
-    form.elements.old_price.value = source.old_price || "";
-    const storedImage = source.stored_image_url ?? source.image_url;
-    form.elements.image_url.value = storedImage === PLACEHOLDER_IMAGE ? "" : storedImage || "";
-    form.elements.label.value = source.label || "";
-    form.elements.tags.value = listToInput(source.tags);
-    form.elements.goals.value = listToInput(source.goals);
-    form.elements.flavor_mode.value = getFlavorMode(source);
-    form.elements.is_available.checked = source.available !== false;
-    form.elements.is_featured.checked = false;
-    form.elements.show_on_home.checked = false;
-    form.elements.home_order.value = "";
-
-    els.drawerTitle.textContent = "Duplicar producto";
-    els.imagePreview.src = form.elements.image_url.value || PLACEHOLDER_IMAGE;
-    setCategoryCascade(source);
-    updateDiscountHint();
-    updateImageState();
-    form.elements.name.focus();
-    form.elements.name.select();
-  }
-
-  // Atrapa el foco dentro del drawer y cierra con Escape (patrón del panel de cotización).
-  function handleDrawerKeydown(event) {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      closeProductDrawer();
-      return;
-    }
-    if (event.key !== "Tab") return;
-    const focusables = Array.from(
-      els.drawer.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')
-    ).filter((el) => el.offsetParent !== null);
-    if (!focusables.length) return;
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  }
-
-  function collectProductFormData() {
-    const form = els.productForm;
-    // category_id = tipo elegido, o la familia si no hay tipo. category (texto) = su nombre.
-    const familyId = form.elements.family.value;
-    const typeId = form.elements.type.value;
-    const categoryId = typeId || familyId || null;
-    const categoryName = getCategoryById(categoryId)?.name || "";
-    return {
-      name: form.elements.name.value.trim(),
-      brand: form.elements.brand.value.trim(),
-      category: categoryName,
-      category_id: categoryId,
-      price: form.elements.price.value,
-      old_price: form.elements.old_price.value,
-      presentation: form.elements.presentation.value.trim(),
-      image_url: form.elements.image_url.value.trim(),
-      description_short: form.elements.description_short.value.trim(),
-      description_long: form.elements.description_long.value.trim(),
-      label: form.elements.label.value.trim(),
-      home_order: form.elements.home_order.value,
-      tags: parseList(form.elements.tags.value),
-      goals: parseList(form.elements.goals.value),
-      flavor_mode: form.elements.flavor_mode.value,
-      is_available: form.elements.is_available.checked,
-      available: form.elements.is_available.checked,
-      is_featured: form.elements.is_featured.checked,
-      featured: form.elements.is_featured.checked,
-      show_on_home: form.elements.show_on_home.checked,
-    };
-  }
-
-  async function refreshAfterMutation(message) {
-    await loadData();
-    renderAll();
-    if (message) showToast(message);
-  }
-
-  async function handleProductSubmit(event) {
-    event.preventDefault();
-    const submitBtn = els.productForm.querySelector("button[type='submit']");
-    const productData = collectProductFormData();
-    const imageFile = els.productForm.elements.image_file.files?.[0];
-
-    if (!validateProductForm(productData)) {
-      setFormMessage("Revisa los campos marcados.", true);
-      return;
-    }
-
-    // URL de una imagen subida en ESTE envío; si la mutación falla después,
-    // la borramos para no dejar basura huérfana en el bucket.
-    let uploadedImageUrl = "";
     try {
-      setButtonLoading(submitBtn, true);
-      setFormMessage("Guardando producto...");
+      await window.catalogDb.deleteCombo(id);
+      state.combos = state.combos.filter((c) => String(c.id) !== String(id));
+      toast({ tone: "err", msg: "Combo eliminado", sub: combo.name });
+      renderCombos();
+    } catch (e) { toast({ tone: "err", msg: "No se pudo eliminar", sub: e.message }); }
+  }
 
-      if (imageFile) {
-        uploadedImageUrl = await window.catalogDb.uploadProductImage(imageFile);
-        productData.image_url = uploadedImageUrl;
+  /* ============================ ACCESS ============================ */
+  function renderAccess() {
+    const initials = (s) => (s || "?").split(/[@.\s]+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
+    const rows = state.admins.map((a) => {
+      const isSelf = a.user_id === state.userId;
+      const label = a.email || "(sin email)";
+      return `
+      <div class="ad-row" style="${a.is_active ? "" : "opacity:.6"}">
+        <span class="ad-row__avatar">${esc(initials(a.email))}</span>
+        <div class="ad-row__main">
+          <strong>${esc(label)}${isSelf ? ` <span class="ad-pill ad-pill--home" style="margin-left:6px">Tú</span>` : ""}</strong>
+          <small>${esc(a.role || "admin")} · ${a.is_active ? "activo" : "inactivo"}</small>
+        </div>
+        <div class="ad-row__actions">
+          ${isSelf ? `<span class="ad-pill ad-pill--ok">Acceso total</span>` : switchMarkup(a.is_active, "data-admin-toggle='" + esc(a.id) + "'")}
+        </div>
+      </div>`;
+    }).join("");
+
+    setView(`
+      <div class="ad-section-intro">
+        <div><p class="ad-kicker">Equipo</p><p>Administradores con acceso al panel. Desactivá un acceso sin borrarlo. Crear un admin nuevo se hace en Supabase (Auth + admin_profiles).</p></div>
+      </div>
+      <div class="ad-panel">${rows || `<p class="ad-ops__empty">No hay administradores registrados.</p>`}</div>`);
+
+    $$("[data-admin-toggle]", $("#adminView")).forEach((input) => input.addEventListener("change", () => toggleAdmin(input.getAttribute("data-admin-toggle"), input.checked)));
+  }
+
+  async function toggleAdmin(id, active) {
+    try {
+      const updated = await window.catalogDb.setAdminProfileActive(id, active);
+      const a = state.admins.find((x) => String(x.id) === String(id));
+      if (a) Object.assign(a, updated);
+      toast({ tone: "ok", msg: active ? "Acceso activado" : "Acceso desactivado", sub: updated.email || "" });
+    } catch (e) { toast({ tone: "err", msg: "No se pudo actualizar", sub: e.message }); renderAccess(); }
+  }
+
+  /* ============================ SETTINGS ============================ */
+  function renderSettings() {
+    const wa = (typeof JAVY_WHATSAPP_NUMBER !== "undefined" && JAVY_WHATSAPP_NUMBER) || "—";
+    const cards = [
+      { label: "Base de datos", value: "Operativa", tone: "ok", hint: "Productos, categorías y combos en Supabase" },
+      { label: "WhatsApp cotizaciones", value: wa !== "—" ? "Conectado" : "Sin configurar", tone: wa !== "—" ? "ok" : "warn", hint: `Número: +${esc(wa)}` },
+      { label: "Almacenamiento de imágenes", value: "Activo", tone: "ok", hint: "Bucket product-images" },
+      { label: "Catálogo", value: `${state.products.length} productos`, tone: "ok", hint: `${state.combos.length} combos · ${families().length} familias` },
+    ];
+    setView(`
+      <div class="ad-section-intro">
+        <div><p class="ad-kicker">Sistema</p><p>Estado de los servicios que mantienen la tienda en línea. Solo informativo.</p></div>
+      </div>
+      <div class="ad-status-grid">
+        ${cards.map((s) => `
+          <div class="ad-status">
+            <div class="ad-status__top"><span class="ad-status__dot ad-status__dot--${s.tone}"></span><span class="ad-status__label">${esc(s.label)}</span></div>
+            <span class="ad-status__value">${s.value}</span>
+            <span class="ad-status__hint">${s.hint}</span>
+          </div>`).join("")}
+      </div>`);
+  }
+
+  function emptyFeature(title, body) {
+    return `<div class="ad-panel"><div class="ad-empty"><span class="ad-empty__icon">${ico("package")}</span><h3>${esc(title)}</h3><p>${esc(body)}</p></div></div>`;
+  }
+
+  function switchMarkup(checked, attrs = "") {
+    return `<label class="ad-switch"><input type="checkbox" ${checked ? "checked" : ""} ${attrs} /><span class="ad-switch__track"></span></label>`;
+  }
+
+  /* ============================ PRODUCT DRAWER ============================ */
+  function openProductDrawer(product, opts = {}) {
+    const isNew = !product || !product.id;
+    const data = {
+      id: product ? product.id : null,
+      name: product ? product.name || "" : "",
+      brand: product ? product.brand || "" : "",
+      category_id: product ? product.category_id || "" : "",
+      presentation: product ? product.presentation || "" : "",
+      price: product && product.price ? String(product.price) : "",
+      old_price: product && product.old_price ? String(product.old_price) : "",
+      image: product ? (product.stored_image_url || product.image || "") : "",
+      description_short: product ? product.description_short || "" : "",
+      description_long: product ? product.description_long || "" : "",
+      flavors: product ? (product.flavors || []).map((f) => f.name) : [],
+      tags: product ? [...(product.tags || [])] : [],
+      goals: product ? [...(product.goals || [])] : [],
+      available: product ? product.available !== false : true,
+      featured: product ? !!product.featured : false,
+      home: product ? !!product.show_on_home : false,
+      home_order: product && product.home_order ? String(product.home_order) : "",
+      updated_at: product ? product.updated_at : null,
+    };
+    // cascada: familia/tipo desde category_id
+    let famId = "", typeId = "";
+    if (data.category_id) {
+      const cat = catById(data.category_id);
+      if (cat) {
+        if (cat.parent_id) { typeId = cat.id; famId = cat.parent_id; }
+        else { famId = cat.id; }
       }
+    }
+    const draftImageFile = { file: null, cleared: false };
+    let touched = false;
 
-      const wasCreate = !state.selectedProductId;
-      if (state.selectedProductId) {
-        try {
-          await window.catalogDb.updateProduct(state.selectedProductId, productData, {
-            expectedUpdatedAt: state.editingProductUpdatedAt,
-          });
-        } catch (conflict) {
-          if (conflict.code !== "CONFLICT") throw conflict;
-          const overwrite = await confirmDialog({
-            title: "Cambios en conflicto",
-            message: "Otro admin modificó este producto mientras lo editabas. ¿Sobrescribir con tus cambios?",
-            confirmText: "Sobrescribir",
-            danger: true,
-          });
-          if (!overwrite) {
-            if (uploadedImageUrl) await window.catalogDb.removeProductImage(uploadedImageUrl);
-            await refreshAfterMutation("Se recargó el producto con los cambios recientes.");
-            openProductDrawer(state.selectedProductId);
-            return;
-          }
-          await window.catalogDb.updateProduct(state.selectedProductId, productData);
-        }
+    const host = $("#adminDrawerHost");
+    const overlay = document.createElement("div");
+    overlay.className = "ad-drawer-overlay";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    host.appendChild(overlay);
+
+    const metaLine = (!isNew && product.updated_by)
+      ? `${esc(product.brand || "")} · última edición por ${esc(product.updated_by)}`
+      : (isNew ? (opts.duplicateOf ? `Copia de ${esc(opts.duplicateOf)}` : "Completá los datos esenciales") : esc(product.brand || "Editar producto"));
+
+    function familyOptions() {
+      return `<option value="">Elegir…</option>` + families().map((f) => `<option value="${esc(f.id)}"${f.id === famId ? " selected" : ""}>${esc(f.name)}</option>`).join("");
+    }
+    function typeOptions() {
+      const ts = famId ? typesOf(famId) : [];
+      return `<option value="">${famId ? "Elegir…" : "—"}</option>` + ts.map((t) => `<option value="${esc(t.id)}"${t.id === typeId ? " selected" : ""}>${esc(t.name)}</option>`).join("");
+    }
+
+    overlay.innerHTML = `
+      <div class="ad-drawer__scrim" data-close></div>
+      <div class="ad-drawer">
+        <div class="ad-drawer__head">
+          <div><h2>${isNew ? "Nuevo producto" : "Editar producto"}</h2><p data-meta>${metaLine}</p></div>
+          <button class="ad-drawer__close" type="button" aria-label="Cerrar" data-close>${ico("x")}</button>
+        </div>
+        <div class="ad-drawer__body">
+          ${collapse("1", "Información esencial", true, `
+            ${field("Nombre del producto", true, `<input class="ad-input" data-f="name" value="${esc(data.name)}" placeholder="Ej. Isomorph 28 Whey Isolate" />`, "name")}
+            ${field("Marca", false, `<input class="ad-input" data-f="brand" value="${esc(data.brand)}" placeholder="Ej. APS Nutrition" />`)}
+            <div class="ad-field-row">
+              ${field("Familia", true, `<select class="ad-select" data-f="family">${familyOptions()}</select>`, "family")}
+              ${field("Tipo", false, `<select class="ad-select" data-f="type" ${famId ? "" : "disabled"}>${typeOptions()}</select>`)}
+            </div>
+            ${field("Presentación", false, `<input class="ad-input" data-f="presentation" value="${esc(data.presentation)}" placeholder="Ej. 5 lb · 300 g · 30 serv" />`)}
+          `)}
+          ${collapse("2", "Precio y oferta", false, `
+            <div class="ad-field-row">
+              ${field("Precio actual", true, affix(`<input class="ad-input" inputmode="decimal" data-f="price" value="${esc(data.price)}" placeholder="0.00" />`), "price")}
+              ${field("Precio anterior", false, affix(`<input class="ad-input" inputmode="decimal" data-f="old_price" value="${esc(data.old_price)}" placeholder="0.00" />`), "old_price", "Para mostrar oferta")}
+            </div>
+            <span class="ad-pill ad-pill--home" data-offer-pill style="justify-self:start;display:none"></span>
+          `)}
+          ${collapse("3", "Imagen", false, `<div data-image-slot></div>`)}
+          ${collapse("4", "Sabores / variantes", false, `
+            ${field("Sabores disponibles", false, `<div class="ad-chips-input" data-flavors>${data.flavors.map(chipTag).join("")}<input type="text" placeholder="Ej. Chocolate" /></div>`, null, "Enter para agregar cada sabor")}
+          `)}
+          ${collapse("5", "Descripción y etiquetas", false, `
+            ${field("Descripción corta", false, `<textarea class="ad-textarea" data-f="description_short" placeholder="Una línea que resuma el producto…">${esc(data.description_short)}</textarea>`)}
+            ${field("Tags", false, `<div class="ad-chips-input" data-tags>${data.tags.map(chipTag).join("")}<input type="text" placeholder="Ej. Energía" /></div>`, null, "Palabras clave para búsqueda")}
+            ${field("Objetivos", false, `<div style="display:flex;flex-wrap:wrap;gap:8px" data-goals>${GOAL_SUGGESTIONS.concat(data.goals.filter((g) => !GOAL_SUGGESTIONS.includes(g))).map((g) => `<button type="button" class="ad-chip-toggle${data.goals.includes(g) ? " is-active" : ""}" data-goal="${esc(g)}">${esc(g)}</button>`).join("")}</div>`)}
+          `)}
+          ${collapse("6", "Disponibilidad y visibilidad", true, `
+            <div>
+              ${switchRow("available", "Disponible", "Visible y cotizable en la tienda", data.available)}
+              ${switchRow("featured", "Destacado", "Resalta el producto en su categoría", data.featured)}
+              ${switchRow("home", "Mostrar en inicio", "Aparece entre los productos del home (máx. " + HOME_MAX + ")", data.home)}
+            </div>
+            <div data-home-order-slot>${data.home ? field("Orden en inicio", false, `<input class="ad-input" inputmode="numeric" data-f="home_order" value="${esc(data.home_order)}" placeholder="Ej. 1" style="max-width:120px" />`, null, "Posición entre los destacados del home") : ""}</div>
+          `)}
+        </div>
+        <div class="ad-drawer__foot">
+          <button class="ad-btn ad-btn--ghost" type="button" data-close>Cancelar</button>
+          <button class="ad-btn ad-btn--primary" type="button" data-save>${ico("save")}${isNew ? "Crear producto" : "Guardar cambios"}</button>
+        </div>
+      </div>`;
+
+    if (window.javyIcons) window.javyIcons.enhance(overlay);
+    document.body.style.overflow = "hidden";
+
+    const drawer = overlay.querySelector(".ad-drawer");
+    const get = (sel) => overlay.querySelector(sel);
+    const fEl = (name) => overlay.querySelector(`[data-f="${name}"]`);
+
+    // collapse toggles
+    overlay.querySelectorAll(".ad-collapse__head").forEach((head) => head.addEventListener("click", () => {
+      head.parentElement.classList.toggle("is-open");
+    }));
+
+    // close handlers
+    const close = () => {
+      document.body.style.overflow = "";
+      document.removeEventListener("keydown", onKey);
+      overlay.remove();
+    };
+    const onKey = (e) => { if (e.key === "Escape") close(); };
+    document.addEventListener("keydown", onKey);
+    overlay.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", close));
+
+    // cascade
+    fEl("family").addEventListener("change", (e) => {
+      famId = e.target.value; typeId = "";
+      const typeSel = fEl("type");
+      typeSel.innerHTML = typeOptions();
+      typeSel.disabled = !famId;
+      if (touched) validate();
+    });
+    fEl("type").addEventListener("change", (e) => { typeId = e.target.value; });
+
+    // offer pill live
+    const updateOfferPill = () => {
+      const price = Number(fEl("price").value);
+      const old = Number(fEl("old_price").value);
+      const pill = get("[data-offer-pill]");
+      if (price > 0 && old > price) {
+        pill.style.display = "inline-flex";
+        pill.textContent = `Oferta -${Math.round((1 - price / old) * 100)}%`;
+      } else { pill.style.display = "none"; }
+    };
+    fEl("price").addEventListener("input", () => { updateOfferPill(); if (touched) validate(); });
+    fEl("old_price").addEventListener("input", () => { updateOfferPill(); if (touched) validate(); });
+    updateOfferPill();
+
+    // image slot
+    const imageSlot = get("[data-image-slot]");
+    function renderImage() {
+      const showSrc = draftImageFile.file ? URL.createObjectURL(draftImageFile.file)
+        : (draftImageFile.cleared ? "" : data.image);
+      if (showSrc) {
+        imageSlot.innerHTML = `<div class="ad-drop ad-drop--filled"><div class="ad-drop__preview"><img src="${esc(showSrc)}" alt="" /><button type="button" class="ad-btn ad-btn--ghost ad-btn--sm ad-drop__change" data-img-change>${ico("upload")}Cambiar</button></div></div>
+          <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" data-img-clear style="margin-top:8px">${ico("trash")}Quitar imagen</button>
+          <input type="file" accept="image/*" data-img-input hidden />`;
       } else {
-        const created = await window.catalogDb.createProduct(productData);
-        state.selectedProductId = created.id;
+        imageSlot.innerHTML = `<label class="ad-drop">${ico("upload")}<strong>Subir imagen del producto</strong><small>PNG o WebP con fondo transparente · tocá para elegir</small><input type="file" accept="image/*" data-img-input hidden /></label>`;
       }
-
-      const savedId = state.selectedProductId;
-      await refreshAfterMutation(
-        wasCreate ? "Producto creado. Ahora puedes agregar sus sabores." : "Producto guardado correctamente."
-      );
-      // Al crear, reabre el drawer en modo edición para gestionar sabores ya con id.
-      if (wasCreate) {
-        openProductDrawer(savedId);
-      } else {
-        closeProductDrawer();
-      }
-    } catch (error) {
-      if (uploadedImageUrl) {
-        await window.catalogDb.removeProductImage(uploadedImageUrl);
-      }
-      setFormMessage(error.message, true);
-      showToast("Error al guardar el producto.", "error");
-    } finally {
-      setButtonLoading(submitBtn, false);
-    }
-  }
-
-  async function deleteSelectedProduct() {
-    const product = getProductById(state.selectedProductId);
-    if (!product) return;
-
-    const ok = await confirmDialog({
-      title: "Eliminar producto",
-      message: `Se eliminará "${product.name}" y todos sus sabores. Esta acción no se puede deshacer.`,
-      confirmText: "Eliminar",
-      danger: true,
-    });
-    if (!ok) return;
-
-    try {
-      setButtonLoading(els.deleteProductBtn, true, "Eliminando...");
-      await window.catalogDb.deleteProduct(product.id);
-      await refreshAfterMutation("Producto eliminado correctamente.");
-      closeProductDrawer();
-    } catch (error) {
-      showToast(error.message, "error");
-    } finally {
-      setButtonLoading(els.deleteProductBtn, false);
-    }
-  }
-
-  async function toggleProductAvailability(productId) {
-    const product = getProductById(productId);
-    if (!product) return;
-
-    try {
-      // Update parcial de solo disponibilidad: no reescribe imagen/slug/precio.
-      await window.catalogDb.setProductAvailability(productId, product.available === false);
-      await refreshAfterMutation("Disponibilidad actualizada.");
-    } catch (error) {
-      showToast(error.message, "error");
-    }
-  }
-
-  async function toggleFlavorAvailability(flavorId) {
-    const flavor = findFlavorById(flavorId);
-    if (!flavor) return;
-    try {
-      // Update parcial: solo cambia la disponibilidad del sabor.
-      await window.catalogDb.setFlavorAvailability(flavorId, flavor.available === false);
-      await refreshAfterMutation("Disponibilidad del sabor actualizada.");
-    } catch (error) {
-      showToast(error.message, "error");
-    }
-  }
-
-  async function removeProductOffer(productId) {
-    const product = getProductById(productId);
-    if (!product) return;
-    try {
-      // Update parcial de precio: mantiene el precio actual y limpia old_price.
-      await window.catalogDb.setProductPricing(productId, { price: product.price, oldPrice: null });
-      await refreshAfterMutation("Oferta retirada.");
-    } catch (error) {
-      showToast(error.message, "error");
-    }
-  }
-
-  // Campo inline: el precio se vuelve un input del mismo alto de la fila, con un
-  // solo boton de guardar. Sin capa flotante, no se puede romper por scroll/posicion.
-  function startPriceEdit(productId, button) {
-    const product = getProductById(productId);
-    if (!product || !button) return;
-
-    const editor = document.createElement("span");
-    editor.className = "admin-price-editor";
-    editor.innerHTML = `
-      <input type="number" min="0" step="0.01" value="${product.price ?? ""}" data-price-input aria-label="Nuevo precio" />
-      <button type="button" class="admin-price-save" data-save-price="${productId}" aria-label="Guardar precio">${icon("save", "")}</button>
-    `;
-    button.replaceWith(editor);
-
-    const input = editor.querySelector("[data-price-input]");
-    input.focus();
-    input.select();
-    input.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        savePriceEdit(productId, editor);
-      } else if (event.key === "Escape") {
-        event.preventDefault();
-        renderProducts();
-      }
-    });
-  }
-
-  async function savePriceEdit(productId, editor) {
-    const input = editor?.querySelector("[data-price-input]");
-    const value = input?.value;
-    if (value === "" || value == null || !Number.isFinite(Number(value)) || Number(value) < 0) {
-      showToast("Escribe un precio valido (0 o mayor).", "error");
-      input?.focus();
-      return;
-    }
-    try {
-      await window.catalogDb.setProductPricing(productId, { price: value });
-      await refreshAfterMutation("Precio actualizado.");
-    } catch (error) {
-      showToast(error.message, "error");
-    }
-  }
-
-  async function saveFlavor(flavorId, row) {
-    const name = row.querySelector("[data-flavor-name]").value.trim();
-    const available = row.querySelector("[data-flavor-available]").checked;
-    const product = getProductById(state.variantProductId);
-
-    if (!name) {
-      showToast("El nombre del sabor es obligatorio.", "error");
-      return;
-    }
-
-    const duplicated = product.flavors?.some((flavor) =>
-      flavor.id !== flavorId && normalizeText(flavor.name) === normalizeText(name)
-    );
-
-    if (duplicated) {
-      showToast("No puedes duplicar sabores dentro del mismo producto.", "error");
-      return;
-    }
-
-    await window.catalogDb.updateFlavor(flavorId, {
-      name,
-      available,
-      is_available: available,
-    });
-    await refreshAfterMutation("Sabor actualizado.");
-  }
-
-  // Crea un sabor leyendo el toolbar identificado por idPrefix (variant | drawerFlavor).
-  async function addFlavorFromInputs(idPrefix, productId) {
-    const product = getProductById(productId);
-    const nameInput = $(`#${idPrefix}NameNew`);
-    const name = nameInput?.value.trim();
-    if (!product || !name) {
-      showToast("Escribe el nombre del sabor.", "error");
-      nameInput?.focus();
-      return;
-    }
-
-    const duplicated = product.flavors?.some((flavor) => normalizeText(flavor.name) === normalizeText(name));
-    if (duplicated) {
-      showToast("Este sabor ya existe en el producto.", "error");
-      return;
-    }
-
-    try {
-      await window.catalogDb.createFlavor(product.id, {
-        name,
-        available: true,
-        is_available: true,
+      if (window.javyIcons) window.javyIcons.enhance(imageSlot);
+      const input = imageSlot.querySelector("[data-img-input]");
+      input.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) { draftImageFile.file = file; draftImageFile.cleared = false; renderImage(); }
       });
-      await refreshAfterMutation("Sabor agregado correctamente.");
-    } catch (error) {
-      showToast(error.message, "error");
-    }
-  }
-
-  function moveHomeProduct(productId, direction) {
-    const index = state.homeIds.indexOf(productId);
-    const nextIndex = index + direction;
-    if (index < 0 || nextIndex < 0 || nextIndex >= state.homeIds.length) return;
-    const [item] = state.homeIds.splice(index, 1);
-    state.homeIds.splice(nextIndex, 0, item);
-    renderHomeProducts();
-  }
-
-  async function saveHomeProducts() {
-    try {
-      if (state.homeIds.length < 4) {
-        showToast("No puedes mostrar menos de 4 productos en el inicio.", "error");
-        return;
-      }
-      if (state.homeIds.length > 8) {
-        showToast("No puedes mostrar mas de 8 productos en el inicio.", "error");
-        return;
-      }
-
-      setButtonLoading(els.saveHomeBtn, true);
-      await window.catalogDb.updateHomeProducts(state.homeIds);
-      await refreshAfterMutation("Productos del inicio guardados.");
-    } catch (error) {
-      showToast(error.message, "error");
-    } finally {
-      setButtonLoading(els.saveHomeBtn, false);
-    }
-  }
-
-  async function seedProducts() {
-    const ok = await confirmDialog({
-      title: "Migrar productos locales",
-      message: "Se migrarán los productos locales a Supabase, evitando duplicados por legacy_id.",
-      confirmText: "Migrar",
-    });
-    if (!ok) return;
-
-    try {
-      setButtonLoading(els.seedBtn, true, "Migrando...");
-      const result = await window.catalogDb.seedProductsFromLocalData();
-      await refreshAfterMutation(`Migracion lista. Creados: ${result.created}. Omitidos: ${result.skipped}. Sabores: ${result.flavorsCreated}.`);
-      if (result.errors?.length) {
-        showToast(`Errores: ${result.errors.slice(0, 2).join(" | ")}`, "error");
-      }
-    } catch (error) {
-      showToast(error.message, "error");
-    } finally {
-      setButtonLoading(els.seedBtn, false);
-    }
-  }
-
-  function bindEvents() {
-    els.navItems.forEach((button) => {
-      button.addEventListener("click", () => setSection(button.dataset.adminSection));
-    });
-
-    document.querySelectorAll("[data-admin-section-jump]").forEach((button) => {
-      button.addEventListener("click", () => setSection(button.dataset.adminSectionJump));
-    });
-
-    els.quickSearch?.addEventListener("input", () => {
-      state.filters.query = els.quickSearch.value;
-      state.visibleCount = PAGE_SIZE;
-      renderProducts();
-    });
-
-    const bindProductFilter = (element, filterName, resetPage = true) => {
-      const eventName = element?.tagName === "INPUT" ? "input" : "change";
-      element?.addEventListener(eventName, () => {
-        state.filters[filterName] = element.value;
-        if (resetPage) state.visibleCount = PAGE_SIZE;
-        renderProducts();
-      });
-    };
-
-    bindProductFilter(els.categoryFilter, "category");
-    bindProductFilter(els.availabilityFilter, "availability");
-    bindProductFilter(els.homeFilter, "home");
-    bindProductFilter(els.reviewFilter, "review");
-    bindProductFilter(els.sortFilter, "sort", false);
-
-    els.filterToggle?.addEventListener("click", () => setFilterPanelOpen(els.filterPanel.hidden));
-    els.filterClose?.addEventListener("click", () => setFilterPanelOpen(false));
-    els.filterBackdrop?.addEventListener("click", () => setFilterPanelOpen(false));
-    els.filterApply?.addEventListener("click", () => setFilterPanelOpen(false));
-    els.filterClear?.addEventListener("click", resetProductFilters);
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") setFilterPanelOpen(false);
-    });
-    window.addEventListener("resize", unlockFilterScrollIfNeeded);
-
-    els.loadMoreBtn?.addEventListener("click", () => {
-      state.visibleCount += PAGE_SIZE;
-      renderProducts();
-    });
-
-    els.newProductBtn?.addEventListener("click", () => openProductDrawer());
-    els.productForm?.addEventListener("submit", handleProductSubmit);
-    els.deleteProductBtn?.addEventListener("click", deleteSelectedProduct);
-    els.duplicateProductBtn?.addEventListener("click", duplicateProduct);
-    document.querySelector("[data-cat-add-family]")?.addEventListener("click", () => createCategoryFromManager(null));
-
-    // Combos
-    els.newComboBtn?.addEventListener("click", () => openComboDrawer());
-    els.comboForm?.addEventListener("submit", handleComboSubmit);
-    els.deleteComboBtn?.addEventListener("click", deleteSelectedCombo);
-    els.comboDrawer?.addEventListener("keydown", handleComboDrawerKeydown);
-    document.querySelectorAll("[data-close-combo-drawer]").forEach((item) => item.addEventListener("click", closeComboDrawer));
-    els.comboForm?.querySelector("[data-combo-pick-image]")?.addEventListener("click", () => els.comboForm.elements.image_file.click());
-    els.comboForm?.querySelector("[data-combo-clear-image]")?.addEventListener("click", clearComboImage);
-    els.comboForm?.elements.image_file.addEventListener("change", () => {
-      const file = els.comboForm.elements.image_file.files?.[0];
-      if (!file) return;
-      releaseComboImageObjectUrl();
-      state.comboImageObjectUrl = URL.createObjectURL(file);
-      els.comboImagePreview.src = state.comboImageObjectUrl;
-      updateComboImageState();
-    });
-    els.comboForm?.elements.price.addEventListener("input", updateComboPriceHint);
-    els.comboForm?.elements.old_price.addEventListener("input", updateComboPriceHint);
-    $("#comboProductSelect")?.addEventListener("change", (event) => renderComboFlavorSelect(event.target.value));
-    $("#comboAddItemBtn")?.addEventListener("click", addComboItem);
-    els.seedBtn?.addEventListener("click", seedProducts);
-    els.saveHomeBtn?.addEventListener("click", saveHomeProducts);
-
-    document.querySelectorAll("[data-close-product-drawer]").forEach((item) => {
-      item.addEventListener("click", closeProductDrawer);
-    });
-
-    els.drawer?.addEventListener("keydown", handleDrawerKeydown);
-
-    els.productForm?.elements.price.addEventListener("input", updateDiscountHint);
-    els.productForm?.elements.old_price.addEventListener("input", updateDiscountHint);
-
-    els.productForm?.querySelector("[data-pick-image]")?.addEventListener("click", () => {
-      els.productForm.elements.image_file.click();
-    });
-    els.productForm?.querySelector("[data-clear-image]")?.addEventListener("click", clearProductImage);
-
-    els.productForm?.elements.family.addEventListener("change", () => {
-      renderTypeOptions(els.productForm.elements.family.value);
-    });
-    els.productForm?.querySelector("[data-new-family]")?.addEventListener("click", () => createCategoryInline(null));
-    els.productForm?.querySelector("[data-new-type]")?.addEventListener("click", () => {
-      const familyId = els.productForm.elements.family.value;
-      if (!familyId) {
-        showToast("Primero elige una familia.", "error");
-        return;
-      }
-      createCategoryInline(familyId);
-    });
-
-    els.productForm?.elements.image_file.addEventListener("change", () => {
-      const file = els.productForm.elements.image_file.files?.[0];
-      if (!file) return;
-      // Revocar el object URL anterior antes de crear el siguiente (evita fuga).
-      releaseImageObjectUrl();
-      state.imageObjectUrl = URL.createObjectURL(file);
-      els.imagePreview.src = state.imageObjectUrl;
-      updateImageState();
-    });
-
-    els.logoutBtn?.addEventListener("click", async () => {
-      await supabaseClient.auth.signOut();
-      showToast("Sesion cerrada correctamente.");
-      window.setTimeout(() => { window.location.href = "index.html"; }, 500);
-    });
-
-    document.addEventListener("click", async (event) => {
-      const dashboardReview = event.target.closest("[data-products-review]");
-      if (dashboardReview) {
-        state.filters.review = dashboardReview.dataset.productsReview;
-        state.visibleCount = PAGE_SIZE;
-        syncFilterControls();
-        setSection("products");
-        renderProducts();
-        return;
-      }
-
-      const editButton = event.target.closest("[data-edit-product]");
-      if (editButton) {
-        openProductDrawer(editButton.dataset.editProduct);
-        return;
-      }
-
-      const variantButton = event.target.closest("[data-manage-variants]");
-      if (variantButton) {
-        state.variantProductId = variantButton.dataset.manageVariants;
-        setSection("variants");
-        renderVariants();
-        return;
-      }
-
-      const toggleButton = event.target.closest("[data-toggle-available]");
-      if (toggleButton) {
-        await toggleProductAvailability(toggleButton.dataset.toggleAvailable);
-        return;
-      }
-
-      const toggleFlavorBtn = event.target.closest("[data-toggle-flavor]");
-      if (toggleFlavorBtn) {
-        await toggleFlavorAvailability(toggleFlavorBtn.dataset.toggleFlavor);
-        return;
-      }
-
-      const removeOffer = event.target.closest("[data-remove-offer]");
-      if (removeOffer) {
-        await removeProductOffer(removeOffer.dataset.removeOffer);
-        return;
-      }
-
-      const editPrice = event.target.closest("[data-edit-price]");
-      if (editPrice) {
-        startPriceEdit(editPrice.dataset.editPrice, editPrice);
-        return;
-      }
-
-      const savePrice = event.target.closest("[data-save-price]");
-      if (savePrice) {
-        await savePriceEdit(savePrice.dataset.savePrice, savePrice.closest(".admin-price-editor"));
-        return;
-      }
-
-      const addHome = event.target.closest("[data-home-add]");
-      if (addHome) {
-        if (state.homeIds.length >= 8) {
-          showToast("No puedes mostrar mas de 8 productos en el inicio.", "error");
-          return;
-        }
-        state.homeIds.push(addHome.dataset.homeAdd);
-        renderAll();
-        return;
-      }
-
-      const removeHome = event.target.closest("[data-home-remove]");
-      if (removeHome) {
-        if (state.homeIds.length <= 4) {
-          showToast("No puedes mostrar menos de 4 productos en el inicio.", "error");
-          return;
-        }
-        state.homeIds = state.homeIds.filter((id) => id !== removeHome.dataset.homeRemove);
-        renderAll();
-        return;
-      }
-
-      const homeUp = event.target.closest("[data-home-up]");
-      if (homeUp) {
-        moveHomeProduct(homeUp.dataset.homeUp, -1);
-        return;
-      }
-
-      const homeDown = event.target.closest("[data-home-down]");
-      if (homeDown) {
-        moveHomeProduct(homeDown.dataset.homeDown, 1);
-        return;
-      }
-
-      const addVariantButton = event.target.closest("#addVariantBtn");
-      if (addVariantButton) {
-        await addFlavorFromInputs("variant", state.variantProductId);
-        return;
-      }
-
-      const addDrawerFlavorButton = event.target.closest("#addDrawerFlavorBtn");
-      if (addDrawerFlavorButton) {
-        await addFlavorFromInputs("drawerFlavor", state.selectedProductId);
-        return;
-      }
-
-      const catAddType = event.target.closest("[data-cat-add-type]");
-      if (catAddType) { await createCategoryFromManager(catAddType.dataset.catAddType); return; }
-      const catRename = event.target.closest("[data-cat-rename]");
-      if (catRename) { await renameCategoryEntry(catRename.dataset.catRename); return; }
-      const catToggle = event.target.closest("[data-cat-toggle]");
-      if (catToggle) { await toggleCategoryActive(catToggle.dataset.catToggle); return; }
-      const catDelete = event.target.closest("[data-cat-delete]");
-      if (catDelete) { await deleteCategoryEntry(catDelete.dataset.catDelete); return; }
-      const catUp = event.target.closest("[data-cat-up]");
-      if (catUp) { await moveCategoryEntry(catUp.dataset.catUp, -1); return; }
-      const catDown = event.target.closest("[data-cat-down]");
-      if (catDown) { await moveCategoryEntry(catDown.dataset.catDown, 1); return; }
-
-      const editCombo = event.target.closest("[data-edit-combo]");
-      if (editCombo) { openComboDrawer(editCombo.dataset.editCombo); return; }
-      const toggleCombo = event.target.closest("[data-toggle-combo]");
-      if (toggleCombo) { await toggleComboActive(toggleCombo.dataset.toggleCombo); return; }
-      const removeComboItemBtn = event.target.closest("[data-remove-combo-item]");
-      if (removeComboItemBtn) { removeComboItem(removeComboItemBtn.dataset.removeComboItem); return; }
-
-      const toggleAdmin = event.target.closest("[data-toggle-admin]");
-      if (toggleAdmin) { await toggleAdminActive(toggleAdmin.dataset.toggleAdmin); return; }
-
-      const flavorRow = event.target.closest("[data-flavor-id]");
-      if (flavorRow && event.target.closest("[data-save-flavor]")) {
-        try {
-          await saveFlavor(flavorRow.dataset.flavorId, flavorRow);
-        } catch (error) {
-          showToast(error.message, "error");
-        }
-        return;
-      }
-
-      if (flavorRow && event.target.closest("[data-delete-flavor]")) {
-        const ok = await confirmDialog({
-          title: "Eliminar sabor",
-          message: "Se eliminará este sabor del producto.",
-          confirmText: "Eliminar",
-          danger: true,
-        });
+      const changeBtn = imageSlot.querySelector("[data-img-change]");
+      if (changeBtn) changeBtn.addEventListener("click", () => input.click());
+      const clearBtn = imageSlot.querySelector("[data-img-clear]");
+      if (clearBtn) clearBtn.addEventListener("click", async () => {
+        const ok = await confirmModal({ title: "Quitar imagen", body: "La imagen se quitará al guardar. ¿Continuar?", confirmLabel: "Quitar" });
         if (!ok) return;
-        try {
-          await window.catalogDb.deleteFlavor(flavorRow.dataset.flavorId);
-          await refreshAfterMutation("Sabor eliminado.");
-        } catch (error) {
-          showToast(error.message, "error");
+        draftImageFile.file = null; draftImageFile.cleared = true; renderImage();
+      });
+    }
+    renderImage();
+
+    // chips (flavors, tags)
+    const flavorNames = [...data.flavors];
+    const tagNames = [...data.tags];
+    bindChips(get("[data-flavors]"), {
+      onAdd: (n) => flavorNames.push(n),
+      onRemove: (n) => { const i = flavorNames.findIndex((x) => x.toLowerCase() === n.toLowerCase()); if (i >= 0) flavorNames.splice(i, 1); },
+    });
+    bindChips(get("[data-tags]"), {
+      onAdd: (n) => tagNames.push(n),
+      onRemove: (n) => { const i = tagNames.findIndex((x) => x.toLowerCase() === n.toLowerCase()); if (i >= 0) tagNames.splice(i, 1); },
+    });
+
+    // goals toggles
+    const goalSet = new Set(data.goals);
+    get("[data-goals]").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-goal]");
+      if (!btn) return;
+      const g = btn.getAttribute("data-goal");
+      if (goalSet.has(g)) { goalSet.delete(g); btn.classList.remove("is-active"); }
+      else { goalSet.add(g); btn.classList.add("is-active"); }
+    });
+
+    // home switch reveals order field
+    const homeSwitch = overlay.querySelector('[data-sw="home"]');
+    homeSwitch.addEventListener("change", () => {
+      const slot = get("[data-home-order-slot]");
+      slot.innerHTML = homeSwitch.checked
+        ? field("Orden en inicio", false, `<input class="ad-input" inputmode="numeric" data-f="home_order" value="${esc(data.home_order)}" placeholder="Ej. 1" style="max-width:120px" />`, null, "Posición entre los destacados del home")
+        : "";
+    });
+
+    // validation
+    function errors() {
+      const price = fEl("price").value.trim();
+      const old = fEl("old_price").value.trim();
+      return {
+        name: !fEl("name").value.trim() ? "El nombre es obligatorio" : "",
+        family: !famId ? "Elegí una familia" : "",
+        price: !price ? "El precio es obligatorio" : (isNaN(+price) || +price <= 0) ? "Precio inválido" : "",
+        old_price: old && (isNaN(+old) || +old <= +price) ? "Debe ser mayor al precio actual" : "",
+      };
+    }
+    function validate() {
+      const errs = errors();
+      ["name", "family", "price", "old_price"].forEach((k) => {
+        const slot = overlay.querySelector(`[data-err="${k}"]`);
+        const inputName = k === "family" ? "family" : k;
+        const input = overlay.querySelector(`[data-f="${inputName}"]`);
+        if (slot) slot.innerHTML = errs[k] ? `${ico("x")}${esc(errs[k])}` : "";
+        if (input) input.classList.toggle(input.tagName === "SELECT" ? "ad-select--invalid" : "ad-input--invalid", !!errs[k]);
+      });
+      return Object.values(errs).every((v) => !v);
+    }
+
+    // save
+    get("[data-save]").addEventListener("click", async () => {
+      touched = true;
+      if (!validate()) {
+        // open the section with the first error
+        toast({ tone: "err", msg: "Revisá los campos marcados" });
+        return;
+      }
+      const saveBtn = get("[data-save]");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Guardando…";
+      try {
+        await saveProduct({
+          isNew, data, famId, typeId, draftImageFile,
+          values: {
+            name: fEl("name").value.trim(),
+            brand: fEl("brand").value.trim(),
+            presentation: fEl("presentation").value.trim(),
+            price: fEl("price").value.trim(),
+            old_price: fEl("old_price").value.trim(),
+            description_short: fEl("description_short").value.trim(),
+            description_long: data.description_long,
+            home_order: (overlay.querySelector('[data-f="home_order"]') || {}).value || "",
+            available: overlay.querySelector('[data-sw="available"]').checked,
+            featured: overlay.querySelector('[data-sw="featured"]').checked,
+            home: overlay.querySelector('[data-sw="home"]').checked,
+            flavors: flavorNames,
+            tags: tagNames,
+            goals: Array.from(goalSet),
+          },
+          originalFlavors: product ? (product.flavors || []) : [],
+        });
+        close();
+      } catch (e) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `${ico("save")}${isNew ? "Crear producto" : "Guardar cambios"}`;
+        if (window.javyIcons) window.javyIcons.enhance(saveBtn);
+        if (e.code === "CONFLICT") {
+          const force = await confirmModal({ title: "Otro admin editó esto", body: "Otro administrador modificó este producto mientras lo editabas. ¿Querés sobrescribir sus cambios con los tuyos?", confirmLabel: "Sobrescribir", danger: true });
+          if (force) { data.updated_at = null; get("[data-save]").click(); }
+        } else {
+          toast({ tone: "err", msg: "No se pudo guardar", sub: e.message });
         }
       }
     });
 
-    els.variantProductSelect?.addEventListener("change", () => {
-      state.variantProductId = els.variantProductSelect.value;
-      renderVariants();
-    });
+    // focus first input
+    setTimeout(() => { const f = fEl("name"); if (f) f.focus(); }, 30);
   }
 
-  async function init() {
-    cacheElements();
+  async function saveProduct(ctx) {
+    const { isNew, data, famId, typeId, draftImageFile, values, originalFlavors } = ctx;
+    const db = window.catalogDb;
 
+    // imagen
+    let imageUrl = data.image || "";
+    let uploadedUrl = null;
+    if (draftImageFile.file) {
+      uploadedUrl = await db.uploadProductImage(draftImageFile.file);
+      imageUrl = uploadedUrl;
+    } else if (draftImageFile.cleared) {
+      imageUrl = PLACEHOLDER;
+    }
+
+    // categoría: el tipo (hoja) si existe, si no la familia
+    const leafId = typeId || famId || null;
+    const leafCat = leafId ? catById(leafId) : null;
+
+    const payload = {
+      name: values.name,
+      brand: values.brand,
+      category: leafCat ? leafCat.name : (data.category || ""),
+      category_id: leafId,
+      price: values.price,
+      old_price: values.old_price === "" ? null : values.old_price,
+      presentation: values.presentation,
+      image_url: imageUrl,
+      description_short: values.description_short,
+      description_long: values.description_long,
+      available: values.available,
+      is_available: values.available,
+      featured: values.featured,
+      is_featured: values.featured,
+      show_on_home: values.home,
+      home_order: values.home ? (values.home_order || null) : null,
+      tags: values.tags,
+      goals: values.goals,
+    };
+
+    let saved;
     try {
-      const allowed = await protectAdminPage();
-      if (!allowed) return;
+      if (isNew) {
+        saved = await db.createProduct(payload);
+      } else {
+        saved = await db.updateProduct(data.id, payload, { expectedUpdatedAt: data.updated_at || undefined });
+      }
+    } catch (e) {
+      if (uploadedUrl) await db.removeProductImage(uploadedUrl); // limpiar huérfana
+      throw e;
+    }
 
-      bindEvents();
-      setGate("Cargando productos...");
-      await loadData();
-      renderAll();
-      setSection("dashboard");
-    } catch (error) {
-      const message = window.javyAuth?.getFriendlyAuthError?.(error) || error.message;
-      setGate(message, true);
-      showToast?.(message, "error");
+    // sincronizar sabores por nombre
+    await syncFlavorsOnSave(saved.id, originalFlavors, values.flavors);
+
+    await reloadProducts();
+    toast({ tone: "ok", msg: isNew ? "Producto creado" : "Cambios guardados", sub: values.name });
+    if (state.active === "products") renderProducts();
+    else if (state.active === "dashboard") renderDashboard();
+    else if (state.active === "home") renderHome();
+    else if (state.active === "variants") renderVariants();
+  }
+
+  async function syncFlavorsOnSave(productId, originalFlavors, desiredNames) {
+    const db = window.catalogDb;
+    const norm = (s) => s.trim().toLowerCase();
+    const desired = [...new Set(desiredNames.map((n) => n.trim()).filter(Boolean))];
+    const desiredLower = desired.map(norm);
+    const originalLower = originalFlavors.map((f) => norm(f.name));
+
+    // borrar los que ya no están
+    for (const f of originalFlavors) {
+      if (f.id && !desiredLower.includes(norm(f.name))) {
+        try { await db.deleteFlavor(f.id); } catch (_) {}
+      }
+    }
+    // crear los nuevos
+    for (const name of desired) {
+      if (!originalLower.includes(norm(name))) {
+        try { await db.createFlavor(productId, { name, available: true }); } catch (_) {}
+      }
     }
   }
 
-  document.addEventListener("DOMContentLoaded", init);
+  /* ============================ COMBO DRAWER (builder) ============================ */
+  function openComboDrawer(combo) {
+    const isNew = !combo;
+    const draft = {
+      id: combo ? combo.id : null,
+      name: combo ? combo.name : "",
+      description: combo ? combo.description : "",
+      price: combo && combo.price ? String(combo.price) : "",
+      old_price: combo && combo.old_price ? String(combo.old_price) : "",
+      image: combo ? (combo.image_url || "") : "",
+      is_active: combo ? combo.is_active !== false : true,
+      show_on_home: combo ? !!combo.show_on_home : false,
+      rows: combo ? combo.items.map((it) => ({ product_id: String(it.product_id), flavor_id: it.flavor_id ? String(it.flavor_id) : "", quantity: it.quantity || 1 })) : [{ product_id: "", flavor_id: "", quantity: 1 }],
+    };
+    const draftImageFile = { file: null, cleared: false };
+
+    const host = $("#adminDrawerHost");
+    const overlay = document.createElement("div");
+    overlay.className = "ad-drawer-overlay";
+    host.appendChild(overlay);
+
+    overlay.innerHTML = `
+      <div class="ad-drawer__scrim" data-close></div>
+      <div class="ad-drawer">
+        <div class="ad-drawer__head">
+          <div><h2>${isNew ? "Nuevo combo" : "Editar combo"}</h2><p>${combo && combo.updated_by ? "Última edición por " + esc(combo.updated_by) : "Paquete a precio especial"}</p></div>
+          <button class="ad-drawer__close" type="button" aria-label="Cerrar" data-close>${ico("x")}</button>
+        </div>
+        <div class="ad-drawer__body">
+          ${collapse("1", "Información", true, `
+            ${field("Nombre del combo", true, `<input class="ad-input" data-c="name" value="${esc(draft.name)}" placeholder="Ej. Pack Volumen Limpio" />`, "cname")}
+            ${field("Descripción", false, `<textarea class="ad-textarea" data-c="description" placeholder="Qué incluye y para quién es ideal">${esc(draft.description)}</textarea>`)}
+          `)}
+          ${collapse("2", "Productos del combo", true, `<div data-rows></div>
+            <button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-add-row style="justify-self:start;margin-top:4px">${ico("plus")}Agregar producto</button>
+            <div class="ad-builder-summary">
+              <div>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                  <span style="color:var(--pb-muted);font-size:.82rem">Precio de lista: <s data-list>$0</s></span>
+                  <span class="ad-pill ad-pill--ok" data-save-pill style="display:none"></span>
+                </div>
+                <div style="width:160px;margin-top:8px">
+                  ${field("Precio del combo", true, affix(`<input class="ad-input" inputmode="decimal" data-c="price" value="${esc(draft.price)}" placeholder="0.00" />`), "cprice")}
+                </div>
+              </div>
+              <div class="ad-builder-summary__totals"><span class="ad-price" data-total>$0</span></div>
+            </div>
+          `)}
+          ${collapse("3", "Imagen", false, `<div data-image-slot></div>`)}
+          ${collapse("4", "Visibilidad", true, `
+            ${switchRow("active", "Activo", "Visible en la web", draft.is_active)}
+            ${switchRow("chome", "Mostrar en inicio", "Aparece en la home", draft.show_on_home)}
+          `)}
+        </div>
+        <div class="ad-drawer__foot">
+          <button class="ad-btn ad-btn--ghost" type="button" data-close>Cancelar</button>
+          <button class="ad-btn ad-btn--primary" type="button" data-save>${ico("save")}${isNew ? "Crear combo" : "Guardar cambios"}</button>
+        </div>
+      </div>`;
+
+    if (window.javyIcons) window.javyIcons.enhance(overlay);
+    document.body.style.overflow = "hidden";
+
+    const get = (sel) => overlay.querySelector(sel);
+    overlay.querySelectorAll(".ad-collapse__head").forEach((head) => head.addEventListener("click", () => head.parentElement.classList.toggle("is-open")));
+
+    const close = () => { document.body.style.overflow = ""; document.removeEventListener("keydown", onKey); overlay.remove(); };
+    const onKey = (e) => { if (e.key === "Escape") close(); };
+    document.addEventListener("keydown", onKey);
+    overlay.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", close));
+
+    const productById = (id) => state.products.find((p) => String(p.id) === String(id));
+
+    function renderRows() {
+      const container = get("[data-rows]");
+      container.style.display = "grid";
+      container.style.gap = "10px";
+      container.innerHTML = draft.rows.map((r, i) => {
+        const p = r.product_id ? productById(r.product_id) : null;
+        const flavors = p ? p.flavors : [];
+        return `
+        <div class="ad-builder-row" data-row="${i}">
+          <img src="${esc(p ? p.image : PLACEHOLDER)}" alt="" data-fallback style="opacity:${p ? 1 : 0.3}" />
+          ${field(i === 0 ? "Producto" : "", false, `<select class="ad-select" data-rf="product"><option value="">Elegir producto…</option>${state.products.map((pp) => `<option value="${esc(pp.id)}"${String(pp.id) === String(r.product_id) ? " selected" : ""}>${esc(pp.name)}</option>`).join("")}</select>`)}
+          ${field(i === 0 ? "Sabor" : "", false, `<select class="ad-select" data-rf="flavor" ${p ? "" : "disabled"}><option value="">${p ? "Elegir…" : "—"}</option>${flavors.map((fl) => `<option value="${esc(fl.id)}"${String(fl.id) === String(r.flavor_id) ? " selected" : ""}>${esc(fl.name)}</option>`).join("")}</select>`)}
+          ${field(i === 0 ? "Cant." : "", false, `<input class="ad-input" inputmode="numeric" data-rf="qty" value="${esc(r.quantity)}" />`)}
+          <button class="ad-icon-btn ad-icon-btn--danger" type="button" title="Quitar" data-rf="del" ${draft.rows.length === 1 ? "disabled" : ""}>${ico("trash")}</button>
+        </div>`;
+      }).join("");
+      wireImageFallbacks(container);
+      if (window.javyIcons) window.javyIcons.enhance(container);
+
+      container.querySelectorAll("[data-row]").forEach((row) => {
+        const i = Number(row.getAttribute("data-row"));
+        row.querySelector('[data-rf="product"]').addEventListener("change", (e) => {
+          draft.rows[i].product_id = e.target.value; draft.rows[i].flavor_id = ""; renderRows(); updateSummary();
+        });
+        const flavorSel = row.querySelector('[data-rf="flavor"]');
+        if (flavorSel) flavorSel.addEventListener("change", (e) => { draft.rows[i].flavor_id = e.target.value; });
+        row.querySelector('[data-rf="qty"]').addEventListener("input", (e) => { draft.rows[i].quantity = Math.max(1, parseInt(e.target.value, 10) || 1); updateSummary(); });
+        const del = row.querySelector('[data-rf="del"]');
+        del.addEventListener("click", () => { draft.rows.splice(i, 1); renderRows(); updateSummary(); });
+      });
+    }
+
+    function listPrice() {
+      return draft.rows.reduce((s, r) => { const p = productById(r.product_id); return s + (p ? Number(p.price || 0) : 0) * (r.quantity || 1); }, 0);
+    }
+    function updateSummary() {
+      const lp = listPrice();
+      const price = Number(get('[data-c="price"]').value) || 0;
+      const save = draft.rows.filter((r) => r.product_id).length >= 2 ? Math.max(0, lp - price) : 0;
+      get("[data-list]").textContent = peso(lp);
+      get("[data-total]").textContent = peso(price);
+      const pill = get("[data-save-pill]");
+      if (save > 0) { pill.style.display = "inline-flex"; pill.textContent = `Ahorro ${peso(save)}`; }
+      else { pill.style.display = "none"; }
+    }
+
+    get("[data-add-row]").addEventListener("click", () => { draft.rows.push({ product_id: "", flavor_id: "", quantity: 1 }); renderRows(); updateSummary(); });
+    get('[data-c="price"]').addEventListener("input", updateSummary);
+    renderRows();
+    updateSummary();
+
+    // image
+    const imageSlot = get("[data-image-slot]");
+    function renderImage() {
+      const showSrc = draftImageFile.file ? URL.createObjectURL(draftImageFile.file) : (draftImageFile.cleared ? "" : draft.image);
+      imageSlot.innerHTML = showSrc
+        ? `<div class="ad-drop ad-drop--filled"><div class="ad-drop__preview"><img src="${esc(showSrc)}" alt="" /><button type="button" class="ad-btn ad-btn--ghost ad-btn--sm ad-drop__change" data-img-change>${ico("upload")}Cambiar</button></div></div><input type="file" accept="image/*" data-img-input hidden />`
+        : `<label class="ad-drop">${ico("upload")}<strong>Subir imagen del combo</strong><small>PNG o WebP · tocá para elegir</small><input type="file" accept="image/*" data-img-input hidden /></label>`;
+      if (window.javyIcons) window.javyIcons.enhance(imageSlot);
+      const input = imageSlot.querySelector("[data-img-input]");
+      input.addEventListener("change", (e) => { const f = e.target.files[0]; if (f) { draftImageFile.file = f; draftImageFile.cleared = false; renderImage(); } });
+      const ch = imageSlot.querySelector("[data-img-change]");
+      if (ch) ch.addEventListener("click", () => input.click());
+    }
+    renderImage();
+
+    get("[data-save]").addEventListener("click", async () => {
+      const name = get('[data-c="name"]').value.trim();
+      const price = Number(get('[data-c="price"]').value);
+      const validRows = draft.rows.filter((r) => r.product_id);
+      const lp = listPrice();
+      if (!name) { toast({ tone: "err", msg: "El nombre es obligatorio" }); return; }
+      if (validRows.length < 2) { toast({ tone: "err", msg: "Agregá al menos 2 productos" }); return; }
+      if (!(price > 0)) { toast({ tone: "err", msg: "Poné un precio válido" }); return; }
+      if (price >= lp) { toast({ tone: "err", msg: "El precio del combo debe ser menor al de lista" }); return; }
+
+      const saveBtn = get("[data-save]");
+      saveBtn.disabled = true; saveBtn.textContent = "Guardando…";
+      try {
+        let imageUrl = draft.image || "";
+        let uploaded = null;
+        if (draftImageFile.file) { uploaded = await window.catalogDb.uploadProductImage(draftImageFile.file); imageUrl = uploaded; }
+        const payload = {
+          name,
+          description: get('[data-c="description"]').value.trim(),
+          price: get('[data-c="price"]').value.trim(),
+          old_price: get('[data-c="old_price"]') ? get('[data-c="old_price"]').value.trim() : draft.old_price,
+          image_url: imageUrl,
+          is_active: overlay.querySelector('[data-sw="active"]').checked,
+          show_on_home: overlay.querySelector('[data-sw="chome"]').checked,
+        };
+        let savedCombo;
+        try {
+          savedCombo = isNew ? await window.catalogDb.createCombo(payload) : await window.catalogDb.updateCombo(draft.id, payload);
+        } catch (e) { if (uploaded) await window.catalogDb.removeProductImage(uploaded); throw e; }
+
+        await window.catalogDb.saveComboItems(savedCombo.id, validRows.map((r) => ({ product_id: r.product_id, flavor_id: r.flavor_id || null, quantity: r.quantity || 1 })));
+        state.combos = await window.catalogDb.getCombos({ audit: true }).catch(() => state.combos);
+        toast({ tone: "ok", msg: isNew ? "Combo creado" : "Combo actualizado", sub: name });
+        close();
+        renderCombos();
+      } catch (e) {
+        saveBtn.disabled = false; saveBtn.innerHTML = `${ico("save")}${isNew ? "Crear combo" : "Guardar cambios"}`;
+        if (window.javyIcons) window.javyIcons.enhance(saveBtn);
+        toast({ tone: "err", msg: "No se pudo guardar el combo", sub: e.message });
+      }
+    });
+
+    setTimeout(() => { const f = get('[data-c="name"]'); if (f) f.focus(); }, 30);
+  }
+
+  /* ----------------------------- form markup helpers ----------------------------- */
+  function collapse(num, title, open, inner) {
+    return `<div class="ad-collapse${open ? " is-open" : ""}">
+      <button type="button" class="ad-collapse__head">
+        <span class="ad-collapse__num">${num}</span><span class="ad-collapse__title">${esc(title)}</span>
+        <span class="ad-collapse__chev">${ico("arrow-down")}</span>
+      </button>
+      <div class="ad-collapse__body">${inner}</div>
+    </div>`;
+  }
+  function field(label, required, control, errKey, help) {
+    return `<div class="ad-field">
+      ${label ? `<label class="ad-field__label">${esc(label)}${required ? `<span class="ad-field__req" title="Obligatorio">*</span>` : ""}</label>` : ""}
+      ${control}
+      ${errKey ? `<span class="ad-field__error" data-err="${errKey === "cname" ? "cname" : errKey}"></span>` : ""}
+      ${help ? `<span class="ad-field__help">${esc(help)}</span>` : ""}
+    </div>`;
+  }
+  function affix(input) {
+    return `<div class="ad-input-affix"><span class="ad-input-affix__sign">$</span>${input}</div>`;
+  }
+  function switchRow(key, label, hint, checked) {
+    return `<label class="ad-switch ad-switch--row">
+      <span class="ad-switch__body"><span class="ad-switch__label">${esc(label)}</span><span class="ad-switch__hint">${esc(hint)}</span></span>
+      <input type="checkbox" data-sw="${key}" ${checked ? "checked" : ""} /><span class="ad-switch__track"></span>
+    </label>`;
+  }
+
+  /* ----------------------------- start ----------------------------- */
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
 })();

@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# guardar.sh — Guarda tus cambios: commit + push a TU rama de desarrollo.
+# Nunca toca 'main' (a producción solo se llega por Pull Request aprobado).
+# Uso: bash scripts/guardar.sh "descripción clara del cambio"
+set -u
+
+msg="${*:-}"
+rama="$(git branch --show-current 2>/dev/null || true)"
+
+if [ -z "$rama" ]; then
+  echo "❌ No estás en ninguna rama (HEAD suelto). No puedo guardar."
+  exit 1
+fi
+
+if [ "$rama" = "main" ]; then
+  echo "🚫 Estás en 'main'. A producción solo se llega por Pull Request aprobado."
+  echo "   Cambiá a tu rama de desarrollo (claude o codex) y volvé a intentar."
+  exit 1
+fi
+
+case "$rama" in
+  claude|codex) ;;
+  *)
+    echo "⚠️  Estás en la rama '$rama', que no es una rama de desarrollo conocida (claude/codex)."
+    printf "¿Guardar igual en '%s'? [s/N] " "$rama"
+    read -r resp
+    case "$resp" in
+      s|S|si|Si|SI|y|Y) ;;
+      *) echo "Cancelado."; exit 1 ;;
+    esac
+    ;;
+esac
+
+if [ -z "$msg" ]; then
+  echo "❌ Falta el mensaje de commit."
+  echo "   Uso: bash scripts/guardar.sh \"descripción clara del cambio\""
+  exit 1
+fi
+
+echo "→ Trayendo lo último de origin/$rama…"
+if ! git pull --ff-only origin "$rama"; then
+  echo "⚠️  La rama remota tiene cambios que no encajan directos (divergencia)."
+  echo "   Pedile a Claude/Codex que resuelva antes de guardar. No subí nada."
+  exit 1
+fi
+
+if git diff --quiet && git diff --cached --quiet; then
+  echo "ℹ️  No hay cambios para guardar. Nada que commitear."
+  exit 0
+fi
+
+git add -A
+git commit -m "$msg"
+
+echo "→ Subiendo a origin/$rama…"
+git push origin "$rama"
+echo "✅ Listo: guardado y subido a '$rama'."

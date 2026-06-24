@@ -1,141 +1,169 @@
-# Javy Supplements
+# Javy Suplementos
 
-Web para venta y cotizacion de suplementos. El proyecto incluye catalogo publico, paginas informativas, carrito de cotizacion por WhatsApp y panel administrativo conectado a Supabase.
+**Tienda de suplementos deportivos en San Miguelito, Panamá.** No es un e-commerce con pago
+online: el cliente arma una **cotización** y la envía por **WhatsApp**. El cierre de venta es
+manual, por chat.
 
-## Estado del proyecto
+> Este `README.md` es la **fuente de verdad** del contexto del proyecto. Los archivos `CLAUDE.md`
+> (para Claude Code) y `AGENTS.md` (para Codex) son envoltorios finos que apuntan aquí y solo
+> definen en qué rama trabaja cada herramienta.
 
-- Frontend en HTML, CSS y JavaScript vanilla.
-- No usa framework externo.
-- Supabase se usa para productos, sabores, perfiles admin e imagenes.
-- WhatsApp se usa como canal principal para cotizaciones.
-- La prioridad de UI es mobile primero, luego tablet y desktop.
+---
 
-## Funcionalidades principales
+## Stack y despliegue
 
-- Home con productos destacados.
-- Catalogo de suplementos con filtros y seleccion de sabores.
-- Pagina de detalle de producto.
-- Carrito/cotizacion por WhatsApp.
-- Pagina de contacto con mapa.
-- Pagina de testimonios.
-- Login de administrador.
-- Panel administrativo privado.
-- Gestion de productos.
-- Gestion de sabores y variantes.
-- Clasificacion de productos por tipo de sabor:
-  - Tiene sabores.
-  - Sin sabor.
-  - Pendiente.
-- Gestion de productos visibles en inicio.
-- Filtros administrativos para revisar productos incompletos.
+- **Frontend:** HTML + CSS + JavaScript vanilla. Sin frameworks, sin build, sin bundler.
+- **Backend:** Supabase (PostgreSQL + Auth + Storage de imágenes).
+- **Producción:** GitHub Pages → `https://carlosbazan28.github.io/javysuplementos`
+- **Previews:** Vercel despliega automáticamente las ramas de desarrollo (puede tener password
+  protection → da 401 al acceder desde afuera).
+- **Sin** linter, formatter, tests ni CI/CD.
+
+---
+
+## Modelo de ramas
+
+| Rama | Rol |
+|---|---|
+| `main` | **Producción** (GitHub Pages). Solo se llega por Pull Request aprobado. **Nunca** push directo. |
+| `claude` | Rama de desarrollo persistente para el trabajo con **Claude Code**. |
+| `codex` | Rama de desarrollo persistente para el trabajo con **Codex**. |
+
+- Cada herramienta **commitea y pushea solo a su rama** (con `/guardar`).
+- A producción: Pull Request `claude → main` o `codex → main`, aprobado por el dueño.
+- Para que las dos ramas de desarrollo no diverjan, después de cada merge a `main` conviene
+  actualizarlas con `git merge origin/main`. Usa `/estado-ramas` para ver cuánto está cada una
+  "detrás de main".
+
+---
+
+## Comandos del proyecto (slash commands)
+
+| Comando | Qué hace |
+|---|---|
+| `/guardar` | Commit + push a tu rama de desarrollo (bloquea `main`). |
+| `/estado-ramas` | Muestra el estado de cada rama: al día / por subir / por bajar / detrás de `main`. |
+| `/ver-sitio` | Levanta un servidor local para ver el sitio en vivo. |
+| `/agregar-producto` | Agrega un producto manteniendo Supabase y `product-data.js` sincronizados. |
+| `/aligerar-imagenes` | Convierte PNG pesados a WebP y actualiza las referencias. |
+| `/revisar-cambios` | Lanza en paralelo la revisión de diseño + lógica de tus cambios. |
+
+La lógica de `/guardar` y `/estado-ramas` vive en `scripts/guardar.sh` y `scripts/estado-ramas.sh`
+(usables también desde cualquier terminal, por Claude y por Codex).
+
+---
 
 ## Estructura de archivos
 
 ```text
-.
-|-- admin.html                  # Panel administrativo
-|-- contacto.html               # Pagina de contacto
-|-- index.html                  # Home
-|-- login.html                  # Login admin
-|-- product-page.html           # Detalle de producto
-|-- supplements-page.html       # Catalogo publico
-|-- testimonios.html            # Testimonios
-|-- css/
-|   |-- admin-dashboard.css     # Estilos del panel admin
-|   |-- base.css                # Base global
-|   |-- tokens.css              # Variables visuales
-|   |-- components/             # Componentes compartidos
-|   `-- pages/                  # Estilos por pagina
-|-- js/
-|   |-- admin-dashboard.js      # Logica principal del admin
-|   |-- auth.js                 # Autenticacion admin
-|   |-- cart.js                 # Carrito/cotizacion
-|   |-- db.js                   # Acceso a Supabase
-|   |-- icons.js                # Sistema de iconos
-|   |-- include-nav.js          # Navegacion reutilizable
-|   |-- product-page.js         # Logica detalle de producto
-|   |-- script.js               # Home
-|   |-- supplements.js          # Catalogo publico
-|   `-- supabase-config.js      # Configuracion publica de Supabase
-|-- img/
-|   |-- icons/                  # Logos, favicon e iconos
-|   `-- products/               # Imagenes de productos
-|-- Editables/
-|   `-- nav.html                # Navegacion compartida
-`-- supabase/
-    `-- schema.sql              # Referencia de esquema local
+/                      páginas .html (7)
+/css                   estilos
+  /components          nav, auth, cards, cart, buttons, footer (reutilizables)
+  /pages               home, supplements, products, contacto, login, testimonials
+  tokens.css           variables CSS de marca (--brand, --neon, etc.)
+  styles.css           global + hero
+  base.css             reset
+  admin-dashboard.css  estilos del panel admin
+/js                    lógica de cliente (ver "Módulos globales")
+/img                   /products, /images, /icons, /testimonials (preferir .webp)
+/scripts               estado-ramas.sh, guardar.sh (flujo de git)
+/supabase/schema.sql   esquema de la base de datos
+/Editables/nav.html    markup del nav compartido
 ```
 
-## Paginas principales
+---
 
-- `index.html`: experiencia inicial y productos destacados.
-- `supplements-page.html`: catalogo completo de suplementos.
-- `product-page.html`: detalle de producto seleccionado.
-- `contacto.html`: formulario de cotizacion, datos de contacto y mapa.
-- `testimonios.html`: cards de testimonios.
-- `login.html`: acceso de administrador.
-- `admin.html`: panel administrativo.
+## Páginas
+
+- `index.html` — home: hero, productos destacados, reels de Instagram, footer.
+- `supplements-page.html` — catálogo filtrable.
+- `product-page.html` — detalle de producto, carga por `?id=` (UUID o legacy_id).
+- `contacto.html` — formulario de contacto y mapa.
+- `testimonios.html` — testimonios de clientes.
+- `login.html` — login de admin (Supabase Auth). Lleva `noindex`.
+- `admin.html` — panel de gestión de productos (protegido). Lleva `noindex`.
+
+---
+
+## Módulos globales (`window.*`)
+
+Los scripts cargan con `defer` y se comunican por objetos en `window`:
+
+- `window.catalogDb` — `js/db.js`. CRUD de productos contra Supabase, con caché en memoria y
+  normalización de campos.
+- `window.consultation` (alias `window.cart`) — `js/cart.js`. La cotización: agregar/quitar items,
+  persistencia y mensaje de WhatsApp.
+- `window.javyAuth` — `js/auth.js`. Sesión de admin y verificación de perfil.
+- `window.javyIcons` — `js/icons.js`. Iconos SVG inline (`get`, `enhance`).
+- `window.navigateWithTransition` — `js/include-nav.js`. Inyecta el nav y hace transiciones con fade.
+- `window.PRODUCTS` — `js/product-data.js`. ~180 productos hardcodeados (fallback, ver abajo).
+
+Otros archivos de `js/`: `script.js` (home), `supplements.js` (catálogo + filtros),
+`product-page.js` (detalle + meta tags dinámicos), `admin-dashboard.js` (panel admin),
+`admin.js` (stub), `contacto.js`, `login.js`, `testimonials.js`, `testimonials-data.js`,
+`supabase-config.js`, `whatsapp-config.js`.
+
+---
+
+## Flujo de datos
+
+Lectura de productos: **Supabase → caché en memoria → `js/product-data.js` (fallback)**.
+Si Supabase no responde, el sitio sigue funcionando con los datos locales. Esto significa que los
+productos viven en **dos lugares** (Supabase y `product-data.js`) — mantenerlos sincronizados es
+deuda técnica conocida (usa `/agregar-producto` para no desincronizarlos).
+
+## Flujo de cotización
+
+1. Cliente agrega producto → `window.consultation.addItem()`.
+2. Se guarda en `localStorage` con clave `javy-consultation` (clave legacy: `cart`).
+3. `buildConsultationMessage()` arma el texto (nombre, zona, items, cantidades, precios).
+4. Se abre `https://wa.me/<numero>?text=...` con el mensaje. El número vive **solo** en
+   `js/whatsapp-config.js` (`JAVY_WHATSAPP_NUMBER`).
+
+---
 
 ## Panel administrativo
 
-El panel admin permite:
+1. Login en `login.html` con email + password (Supabase Auth).
+2. Se verifica que el usuario exista en `admin_profiles` con `role='admin'` e `is_active=true`; si
+   no, sign-out automático.
+3. `protectAdminPage()` valida sesión antes de mostrar el dashboard.
+4. CRUD de productos/sabores/categorías; las imágenes suben al bucket `product-images`.
+5. La seguridad real la impone **RLS en Supabase**, no la UI.
 
-- Crear, editar y eliminar productos.
-- Subir o definir URL de imagen de producto.
-- Marcar productos como disponibles o no disponibles.
-- Marcar productos como destacados.
-- Definir productos visibles en el home.
-- Gestionar sabores por producto.
-- Agregar precio, stock, presentacion y disponibilidad por sabor.
-- Clasificar productos como `Tiene sabores`, `Sin sabor` o `Pendiente`.
-- Filtrar productos por revision:
-  - Sin imagen.
-  - Sin sabor.
-  - Faltan sabores.
-  - Sin sabores activos.
-  - Revisar tipo de sabor.
-  - No disponibles.
-  - Precio vacio.
-  - Destacados.
+El panel cubre: Dashboard, Productos, Sabores/variantes, Inicio (curación del home), Categorías,
+Combos, Accesos y Ajustes, más el **drawer de edición de producto**. Filtros de revisión:
+sin imagen, sin sabor, faltan sabores, sin sabores activos, revisar tipo de sabor, no disponibles,
+precio vacío, destacados.
 
-## Supabase
+---
 
-La configuracion publica esta en:
+## Esquema de base de datos (`supabase/schema.sql`)
 
-```text
-js/supabase-config.js
-```
+- `products` — catálogo (tiene columnas redundantes: `name`/`nombre`, `price`/`precio_centavos`).
+- `product_flavors` — sabores/variantes de cada producto, con disponibilidad individual.
+- `categories` — categorías y tipos (Proteínas, Creatinas, Pre-entrenos, etc.).
+- `admin_profiles` — vincula usuarios de Auth con el rol admin.
+- `settings` — configuración tipo clave/valor (JSONB).
 
-Reglas importantes:
+**RLS activado** en todas las tablas: lectura pública, escritura solo para admins verificados vía
+la función `public.is_admin()`. En el frontend solo se usan claves públicas tipo `anon`
+(configuradas en `js/supabase-config.js`). **Nunca** guardar service role keys en el frontend.
 
-- Solo usar claves publicas tipo `anon`.
-- No guardar service role keys en el frontend.
-- Mantener reglas RLS y permisos del proyecto en Supabase.
-- Las imagenes nuevas se suben al bucket configurado para productos.
-- La tabla `products` guarda los datos principales.
-- La tabla `product_flavors` guarda sabores y variantes.
+---
 
-## Como correr localmente
+## Cómo correr localmente
 
-Este proyecto puede abrirse como archivos HTML, pero para evitar problemas de rutas es mejor usar un servidor local.
-
-Opcion con Node:
+Mejor usar un servidor local (evita problemas de rutas). Dentro de Claude/Codex: `/ver-sitio`.
+Manual:
 
 ```bash
-npx serve .
+python3 -m http.server 8080   # o:  npx serve .
 ```
 
-Luego abrir:
+Luego abrir `http://localhost:8080` (usar el puerto que indique la terminal si cambia).
 
-```text
-http://localhost:3000
-```
-
-Si el puerto cambia, usar el puerto que indique la terminal.
-
-## Comandos de verificacion
-
-Antes de hacer commit, ejecutar:
+## Comandos de verificación (antes de commitear)
 
 ```bash
 git status --short
@@ -146,7 +174,7 @@ node --check js/include-nav.js
 node --check js/icons.js
 ```
 
-Si se modifica una pagina publica, revisar tambien el archivo JS relacionado:
+Si modificas una página pública, revisa también su JS:
 
 ```bash
 node --check js/script.js
@@ -154,70 +182,36 @@ node --check js/supplements.js
 node --check js/product-page.js
 ```
 
-## Checklist visual antes de publicar
+> Nota: `node --check` no aplica a ES modules (`import`/`export`); esos se verifican abriendo la
+> página en el navegador y mirando la consola.
 
-- No hay scroll horizontal en mobile.
-- Header y navegacion funcionan en mobile y desktop.
-- Los botones principales mantienen el mismo estilo.
-- El catalogo carga productos correctamente.
-- Productos sin imagen muestran placeholder.
-- Productos sin sabor muestran `Sin sabor`.
-- Productos pendientes muestran texto de consulta cuando aplica.
-- El carrito genera mensaje correcto para WhatsApp.
-- Contacto muestra formulario, datos y mapa.
-- Admin carga despues del login.
-- Filtros del admin abren y cierran correctamente.
-- El modal de filtros se ve en mobile.
-- Gestion de sabores permite agregar, editar y eliminar.
+---
 
-## Convenciones del proyecto
+## Convenciones
 
-- Mantener HTML, CSS y JavaScript vanilla.
-- No agregar frameworks externos sin una razon fuerte.
-- Reutilizar clases y patrones existentes.
-- Priorizar mobile primero.
-- Mantener nombres de clases coherentes:
-  - `admin-*` para panel administrativo.
-  - `product-*` para productos.
-  - `cart-*` para carrito.
-- No redisenar el sitio completo para cambios pequenos.
-- No guardar secretos privados en archivos frontend.
-- Si se cambia CSS/JS con cache en navegador, actualizar el query string del archivo en HTML.
+- Mantener HTML, CSS y JavaScript **vanilla**. No agregar frameworks sin una razón fuerte.
+- **Sanitizar siempre** con `escapeHTML()` antes de insertar texto de usuario/BD en el DOM.
+- Imágenes nuevas en **WebP** cuando sea posible (hay PNG pesados sin optimizar).
+- El número de WhatsApp vive **solo** en `js/whatsapp-config.js` (`JAVY_WHATSAPP_NUMBER`).
+- Las URLs de SEO (canonical, og:url, og:image) apuntan al dominio de producción de **GitHub
+  Pages**, no a Vercel.
+- `admin.html` y `login.html` llevan `noindex`.
+- Productos: mantener sincronizados Supabase **y** `js/product-data.js`.
+- Reutilizar clases y patrones existentes. Prefijos coherentes: `admin-*` / `ad-*` (panel),
+  `product-*` (productos), `cart-*` (carrito).
+- Priorizar **mobile primero**.
+- Si cambias CSS/JS cacheado, actualiza el query string del archivo en el HTML (`?v=...`).
 
-## Flujo de trabajo recomendado
+---
 
-1. Revisar estado:
+## Deuda técnica conocida
 
-```bash
-git status --short --branch
-```
-
-2. Implementar cambios pequenos y enfocados.
-
-3. Validar sintaxis:
-
-```bash
-git diff --check
-node --check js/admin-dashboard.js
-```
-
-4. Probar visualmente mobile primero.
-
-5. Hacer commit con mensaje claro:
-
-```bash
-git add <archivos>
-git commit -m "Descripcion clara del cambio"
-git push origin carlos
-```
-
-## Pendientes recomendados
-
-- Agregar pruebas automatizadas basicas para carrito y filtros.
-- Documentar tablas de Supabase con mas detalle.
-- Crear guia corta para cargar productos nuevos.
-- Mejorar SEO por pagina.
-- Agregar analitica.
-- Conectar formularios a backend o automatizacion.
-- Crear historial o auditoria de cambios del admin.
-
+- `js/admin-dashboard.js` es monolítico (~1.600 líneas) → conviene dividirlo en módulos
+  (ES modules: `js/admin/`).
+- Helpers duplicados (`escapeHTML`, `slugify`, normalización) repartidos en varios archivos →
+  centralizar en un `js/utils.js`.
+- Productos duplicados entre Supabase y `product-data.js` → decidir una sola fuente de verdad.
+- Columnas redundantes en `schema.sql` (`nombre`/`name`, `price`/`precio_centavos`).
+- Imágenes PNG sin optimizar (algunas >1MB).
+- Sin tests, linter ni CI/CD.
+- SEO por página y analítica pendientes.

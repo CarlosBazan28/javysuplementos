@@ -200,8 +200,8 @@ function renderFeaturedProducts(productos) {
       <div class="product-card__info">
         <div class="product-card__meta">
           <span class="product-card__brand">${escapeHTML(product.brand || "Marca en revision")}</span>
-          <span class="product-card__status ${canQuote ? "is-available" : "is-unavailable"}">
-            ${canQuote ? "Disponible" : "Consultar stock"}
+          <span class="product-card__status ${canQuote ? "is-available" : "is-agotado"}">
+            ${canQuote ? "Disponible" : "Agotado"}
           </span>
         </div>
         <h3 class="product-card__name">${escapeHTML(product.name)}</h3>

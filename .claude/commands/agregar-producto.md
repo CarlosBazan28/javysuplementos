@@ -19,4 +19,4 @@ Pasos:
 3. Dame el `INSERT` de SQL para Supabase según `supabase/schema.sql`
    (producto + sus sabores).
 4. Si hay imagen nueva, recuérdame guardarla en `img/products/` en **WebP**.
-5. Al terminar, resúmeme qué cambió y recuérdame correr `/preview` para verlo.
+5. Al terminar, resúmeme qué cambió y recuérdame correr `/ver-sitio` para verlo.
