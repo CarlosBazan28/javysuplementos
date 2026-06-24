@@ -68,10 +68,13 @@ export function wireImageFallbacks(root) {
 
 export function isAvailable(p) { return p.available !== false; }
 
-// "Sin imagen" = no hay imagen real guardada en BD (stored_image_url vacío o el
-// placeholder). Mismo criterio que isPlaceholderImage() en js/db.js.
+// "Sin imagen" = el producto MUESTRA el placeholder (lo que ve el cliente y la
+// lista del admin), no solo que falte en la BD. Usa la imagen ya resuelta
+// `p.image` (que cae a una imagen local de product-data.js si hay match); así el
+// filtro, la lista y la web quedan coherentes. Mismo criterio que
+// isPlaceholderImage() en js/db.js.
 export function isMissingImage(p) {
-  const src = p.stored_image_url || "";
+  const src = p.image || "";
   return !src || src.includes("product-placeholder.svg");
 }
 

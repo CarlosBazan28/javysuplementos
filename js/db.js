@@ -214,12 +214,12 @@ function normalizeProductFromDb(product) {
     .filter((flavor) => flavor.name)
     .sort((a, b) => a.name.localeCompare(b.name, "es"));
 
-  const localProduct = findLocalProductMatch(product);
   const remoteImage = product.image_url || product.imagen_url || product.image || product.imagen || "";
-  const localImage = localProduct?.imagen || localProduct?.image || "";
-  const image = localImage && (isPlaceholderImage(remoteImage) || isLocalProductImage(remoteImage))
-    ? localImage
-    : remoteImage || localImage || DB_PLACEHOLDER_IMAGE;
+  // Sin fallback a la imagen local de product-data.js: si la BD no trae una imagen
+  // real, se muestra el placeholder (en web y admin). Catálogo honesto: lo que se
+  // ve es lo que está subido. (La caída total de Supabase sigue mostrando las
+  // imágenes locales porque normalizeLocalProduct las pasa como image_url.)
+  const image = isPlaceholderImage(remoteImage) ? DB_PLACEHOLDER_IMAGE : remoteImage;
   const available = product.is_available ?? product.available ?? product.is_active ?? product.disponible ?? true;
   const featured = product.is_featured ?? product.featured ?? product.destacado ?? false;
   const flavorMode = normalizeFlavorMode(product.flavor_mode || product.flavorMode, flavors);
