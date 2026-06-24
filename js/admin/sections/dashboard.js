@@ -3,7 +3,7 @@
    ============================================================================ */
 import { state } from "../state.js";
 import { STALE_DAYS, HOME_MAX, HOME_MIN } from "../config.js";
-import { $, esc, ico, imgTag, peso, isAvailable, hasOffer, discountPct, daysSince, agoLabel } from "../helpers.js";
+import { $, esc, ico, imgTag, peso, isAvailable, isMissingImage, hasOffer, discountPct, daysSince, agoLabel } from "../helpers.js";
 import { setView } from "../view.js";
 import { go, bindEditClicks } from "../shell.js";
 
@@ -14,6 +14,8 @@ export function renderDashboard() {
   const offers = p.filter(hasOffer);
   const out = p.filter((x) => !isAvailable(x));
   const stale = out.filter((x) => daysSince(x.updated_at) >= STALE_DAYS);
+  const noImg = p.filter(isMissingImage).length;
+  const activeCombos = state.combos.filter((c) => c.is_active).length;
 
   const stats = [
     { key: "products", label: "Productos activos", value: activeCount, tone: "ok", icon: "layout-dashboard",
@@ -24,6 +26,10 @@ export function renderDashboard() {
       delta: "con descuento", dir: "up" },
     { key: "out", label: "Agotados", value: out.length, tone: "bad", icon: "package",
       delta: out.length ? "requieren acción" : "todo disponible", dir: out.length ? "down" : "flat" },
+    { key: "noimg", label: "Sin imagen", value: noImg, tone: noImg ? "bad" : "ok", icon: "upload",
+      delta: noImg ? "faltan fotos" : "todas con foto", dir: noImg ? "down" : "flat" },
+    { key: "combos", label: "Combos activos", value: activeCombos, tone: "blue", icon: "package",
+      delta: `${state.combos.length} en total`, dir: "flat" },
   ];
 
   const statCard = (s) => {
@@ -93,8 +99,10 @@ export function renderDashboard() {
   view.querySelectorAll("[data-stat]").forEach((b) => b.addEventListener("click", () => {
     const k = b.getAttribute("data-stat");
     if (k === "home") return go("home");
+    if (k === "combos") return go("combos");
     if (k === "offers") { state.productFilter = "offers"; return go("products"); }
     if (k === "out") { state.productFilter = "out"; return go("products"); }
+    if (k === "noimg") { state.productFilter = "noimg"; return go("products"); }
     state.productFilter = "all"; go("products");
   }));
   bindEditClicks(view);

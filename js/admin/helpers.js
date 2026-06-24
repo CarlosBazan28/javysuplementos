@@ -68,6 +68,13 @@ export function wireImageFallbacks(root) {
 
 export function isAvailable(p) { return p.available !== false; }
 
+// "Sin imagen" = no hay imagen real guardada en BD (stored_image_url vacío o el
+// placeholder). Mismo criterio que isPlaceholderImage() en js/db.js.
+export function isMissingImage(p) {
+  const src = p.stored_image_url || "";
+  return !src || src.includes("product-placeholder.svg");
+}
+
 export function stockTone(p) {
   if (!isAvailable(p)) return ["out", "Agotado"];
   return ["ok", "Disponible"];

@@ -199,7 +199,7 @@ body.ad-body { min-height: 100vh; }
 @keyframes adIn { from { transform: translateY(8px); } to { transform: none; } }
 
 /* ---- stat cards ---- */
-.ad-stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
+.ad-stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
 .ad-stat {
   border: 1px solid var(--pb-line); border-radius: var(--ad-radius);
   background: linear-gradient(145deg, rgba(17,25,37,0.88), rgba(9,14,20,0.88));

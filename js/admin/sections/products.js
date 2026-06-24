@@ -2,7 +2,7 @@
    Sección Productos: tabla/cards con filtros, búsqueda y acciones por fila.
    ============================================================================ */
 import { state } from "../state.js";
-import { $, esc, ico, imgTag, peso, hasOffer, isAvailable, stockTone } from "../helpers.js";
+import { $, esc, ico, imgTag, peso, hasOffer, isAvailable, isMissingImage, stockTone } from "../helpers.js";
 import { setView } from "../view.js";
 import { bindEditClicks } from "../shell.js";
 import { confirmModal, toast } from "../ui.js";
@@ -16,14 +16,15 @@ function filteredProducts() {
     const byFilter =
       f === "home" ? p.show_on_home :
       f === "offers" ? hasOffer(p) :
-      f === "out" ? !isAvailable(p) : true;
+      f === "out" ? !isAvailable(p) :
+      f === "noimg" ? isMissingImage(p) : true;
     const byQ = !q || (`${p.name} ${p.brand || ""} ${p.category || ""}`).toLowerCase().includes(q);
     return byFilter && byQ;
   });
 }
 
 export function renderProducts() {
-  const filters = [["all", "Todos"], ["home", "En inicio"], ["offers", "En oferta"], ["out", "Agotados"]];
+  const filters = [["all", "Todos"], ["home", "En inicio"], ["offers", "En oferta"], ["out", "Agotados"], ["noimg", "Sin imagen"]];
   const list = filteredProducts();
 
   const pill = (p) => { const [tone, label] = stockTone(p); return `<span class="ad-pill ad-pill--${tone}">${label}</span>`; };
