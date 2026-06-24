@@ -75,8 +75,8 @@ export function openProductDrawer(product, opts = {}) {
           ${field("Nombre del producto", true, `<input class="ad-input" data-f="name" value="${esc(data.name)}" placeholder="Ej. Isomorph 28 Whey Isolate" />`, "name")}
           ${field("Marca", false, `<input class="ad-input" data-f="brand" value="${esc(data.brand)}" placeholder="Ej. APS Nutrition" />`)}
           <div class="ad-field-row">
-            ${field("Familia", true, `<select class="ad-select" data-f="family">${familyOptions()}</select>`, "family")}
-            ${field("Tipo", false, `<select class="ad-select" data-f="type" ${famId ? "" : "disabled"}>${typeOptions()}</select>`)}
+            ${field("Categoría", true, `<select class="ad-select" data-f="family" aria-label="Categoría">${familyOptions()}</select>`, "family")}
+            ${field("Subcategoría", false, `<select class="ad-select" data-f="type" aria-label="Subcategoría" ${famId ? "" : "disabled"}>${typeOptions()}</select>`)}
           </div>
           ${field("Presentación", false, `<input class="ad-input" data-f="presentation" value="${esc(data.presentation)}" placeholder="Ej. 5 lb · 300 g · 30 serv" />`)}
         `)}
@@ -112,6 +112,7 @@ export function openProductDrawer(product, opts = {}) {
     </div>`;
 
   if (window.javyIcons) window.javyIcons.enhance(overlay);
+  if (window.javyDropdown) window.javyDropdown.enhanceSelects(overlay);
   document.body.style.overflow = "hidden";
 
   const get = (sel) => overlay.querySelector(sel);
@@ -124,11 +125,14 @@ export function openProductDrawer(product, opts = {}) {
 
   // close handlers
   const close = () => {
+    if (window.javyDropdown) window.javyDropdown.destroy(overlay);
     document.body.style.overflow = "";
     document.removeEventListener("keydown", onKey);
     overlay.remove();
   };
-  const onKey = (e) => { if (e.key === "Escape") close(); };
+  const onKey = (e) => {
+    if (e.key === "Escape" && !document.querySelector(".jdd.is-open")) close();
+  };
   document.addEventListener("keydown", onKey);
   overlay.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", close));
 
@@ -138,6 +142,7 @@ export function openProductDrawer(product, opts = {}) {
     const typeSel = fEl("type");
     typeSel.innerHTML = typeOptions();
     typeSel.disabled = !famId;
+    if (window.javyDropdown) window.javyDropdown.refresh(typeSel); // re-sincroniza el dropdown
     if (touched) validate();
   });
   fEl("type").addEventListener("change", (e) => { typeId = e.target.value; });

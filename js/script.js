@@ -154,6 +154,7 @@ function syncAddButton(card, product) {
       const inCart = window.consultation?.hasItem?.(product.id, f.name) ? " ✓" : "";
       opt.textContent = `${f.name}${unavailable}${inCart}`;
     });
+    window.javyDropdown?.refresh?.(select);
   }
 }
 
@@ -220,7 +221,7 @@ function renderFeaturedProducts(productos) {
             <span class="product-card__qty-value" data-qty-value aria-live="polite">1</span>
             <button type="button" class="product-card__qty-btn product-card__qty-btn--plus" data-qty-inc aria-label="Aumentar">+</button>
           </div>
-          <select class="product-card__qty-select" data-qty-select aria-label="Cantidad">
+          <select class="product-card__qty-select" data-qty-select data-jdd-skip aria-label="Cantidad">
             ${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}
           </select>
         </div>
@@ -282,6 +283,7 @@ function renderFeaturedProducts(productos) {
     });
 
     lista.appendChild(card);
+    if (window.javyDropdown) window.javyDropdown.enhanceSelects(card);
   });
 }
 

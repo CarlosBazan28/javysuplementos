@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s /b)",
+      "Bash(find . -type d -not -path '*/\\\\.git*')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/index.html)",
+      "Bash(node --check js/product-page.js)",
+      "Bash(ls -la img/images/javi.webp)",
+      "Bash(node --check js/script.js)",
+      "Bash(node --check js/supplements.js)",
+      "Bash(grep -nA1 'product-card__flavor-label\" for=\"\\\\${selectId}\">Sabor' js/script.js js/supplements.js)",
+      "Bash(git rev-list *)",
+      "Bash(node --check js/db.js)",
+      "Bash(node --check js/admin-dashboard.js)",
+      "Bash(bash scripts/estado-ramas.sh)",
+      "Bash(git ls-remote *)",
+      "Bash(cat .gitignore)",
+      "Bash(du -sh \".codex-tmp\" \".codex\" \".claude/worktrees\" \"outputs\" \".agents\" \"P-Boom Supplements Design System\" \"P-Boom Supplements Design System.zip\")"
+    ]
+  }
+}

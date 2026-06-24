@@ -379,6 +379,7 @@ function getQuoteMethod() {
 function renderQuoteFields(method) {
   const container = document.getElementById("quoteFields");
   if (!container) return;
+  if (window.javyDropdown) window.javyDropdown.destroy(container);
 
   const config = QUOTE_METHODS[method] || QUOTE_METHODS.retiro;
   container.innerHTML = config.fields.map((field) => {
@@ -402,6 +403,7 @@ function renderQuoteFields(method) {
     return `<div class="consultation-field">${labelHtml}
       <input id="${field.id}" type="${field.type}" placeholder="${escapeHTML(field.placeholder || "")}"${field.autocomplete ? ` autocomplete="${field.autocomplete}"` : ""}${field.required ? " required" : ""} /></div>`;
   }).join("");
+  if (window.javyDropdown) window.javyDropdown.enhanceSelects(container);
 }
 
 function getMissingQuoteFields() {
@@ -587,6 +589,7 @@ function closePanel() {
   const overlay = document.getElementById("consultationOverlay");
   if (!panel || !overlay) return;
 
+  if (window.javyDropdown) window.javyDropdown.closeAll();
   hideClearConfirm(false);
   panel.classList.remove("is-open");
   panel.setAttribute("aria-hidden", "true");
@@ -675,6 +678,7 @@ function createConsultationPanel() {
   window.javyIcons?.enhance?.(panel);
 
   renderQuoteFields(getQuoteMethod());
+  if (window.javyDropdown) window.javyDropdown.enhance(panel.querySelector("#quoteMethod"));
 
   overlay.addEventListener("click", closePanel);
   panel.querySelector(".consultation-panel__close")?.addEventListener("click", closePanel);
@@ -699,6 +703,7 @@ function createConsultationPanel() {
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
+    if (document.querySelector(".jdd.is-open")) return;
     // Esc cierra primero el aviso de vaciar; si no, cierra el panel.
     if (isClearConfirmOpen()) hideClearConfirm();
     else closePanel();

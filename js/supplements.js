@@ -305,6 +305,7 @@ function syncAddButton(card, product) {
       const inCart = window.consultation?.hasItem?.(product.id, f.name) ? " ✓" : "";
       opt.textContent = `${f.name}${unavailable}${inCart}`;
     });
+    window.javyDropdown?.refresh?.(select);
   }
 }
 
@@ -441,7 +442,9 @@ function renderFacets() {
   ].join("");
 
   catalogFacets.hidden = !html.trim();
+  if (window.javyDropdown) window.javyDropdown.destroy(catalogFacets);
   catalogFacets.innerHTML = html;
+  if (window.javyDropdown) window.javyDropdown.enhanceSelects(catalogFacets);
 }
 
 function renderFilters() {
@@ -496,7 +499,7 @@ function renderProductCard(product) {
           <span class="product-card__qty-value" data-qty-value aria-live="polite">1</span>
           <button type="button" class="product-card__qty-btn product-card__qty-btn--plus" data-qty-inc aria-label="Aumentar">+</button>
         </div>
-        <select class="product-card__qty-select" data-qty-select aria-label="Cantidad">
+        <select class="product-card__qty-select" data-qty-select data-jdd-skip aria-label="Cantidad">
           ${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}
         </select>
       </div>
@@ -559,12 +562,14 @@ function renderCatalog() {
   if (!supplementsList || !catalogCount || !catalogEmpty) return;
 
   const results = getFilteredProducts();
+  if (window.javyDropdown) window.javyDropdown.destroy(supplementsList);
   supplementsList.innerHTML = "";
   bindConsultationSync();
 
   results.forEach((product) => {
     supplementsList.appendChild(renderProductCard(product));
   });
+  if (window.javyDropdown) window.javyDropdown.enhanceSelects(supplementsList);
 
   const label = results.length === 1 ? "producto encontrado" : "productos encontrados";
   catalogCount.textContent = `${results.length} ${label}`;
@@ -671,7 +676,10 @@ function readStateFromURL() {
 
   if (searchInput) searchInput.value = catalogState.query;
   if (searchClear) searchClear.hidden = !catalogState.query;
-  if (catalogSort) catalogSort.value = catalogState.sort;
+  if (catalogSort) {
+    catalogSort.value = catalogState.sort;
+    if (window.javyDropdown) window.javyDropdown.refresh(catalogSort);
+  }
 }
 
 searchForm?.addEventListener("submit", (event) => {
@@ -699,6 +707,7 @@ catalogSort?.addEventListener("change", () => {
   catalogState.sort = catalogSort.value;
   commitState();
 });
+if (window.javyDropdown && catalogSort) window.javyDropdown.enhance(catalogSort);
 
 function commitWithFilters() {
   renderFilters();

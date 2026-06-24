@@ -2,7 +2,7 @@
    Sección Productos: barra de búsqueda + filtros (familia + estado) y la
    tabla/cards con acciones por fila.
    ============================================================================ */
-import { state, families, catById } from "../state.js";
+import { state, families, typesOf, catById } from "../state.js";
 import { $, esc, ico, imgTag, peso, hasOffer, isAvailable, isMissingImage, stockTone, wireImageFallbacks } from "../helpers.js";
 import { setView } from "../view.js";
 import { bindEditClicks } from "../shell.js";
@@ -14,12 +14,15 @@ const STATUS_FILTERS = [
   ["all", "Todos"], ["home", "En inicio"], ["offers", "En oferta"], ["out", "Agotados"], ["noimg", "Sin imagen"],
 ];
 
-// El producto pertenece a la familia si su categoría ES la familia o un tipo (hijo) de ella.
-function matchesFamily(p) {
-  const fam = state.productFamily;
-  if (fam === "all") return true;
+// Filtro por categoría (familia) y, si hay, subcategoría (tipo) exacta.
+function matchesCategory(p) {
+  const c = state.productCategory, s = state.productSubcategory;
+  if (c === "all") return true;
   const cat = catById(p.category_id);
-  return !!cat && (cat.id === fam || cat.parent_id === fam);
+  if (!cat) return false;
+  const inCat = cat.id === c || cat.parent_id === c;
+  if (!inCat) return false;
+  return s === "all" ? true : String(p.category_id) === String(s);
 }
 
 function filteredProducts() {
@@ -32,12 +35,13 @@ function filteredProducts() {
       f === "out" ? !isAvailable(p) :
       f === "noimg" ? isMissingImage(p) : true;
     const byQ = !q || (`${p.name} ${p.brand || ""} ${p.category || ""}`).toLowerCase().includes(q);
-    return byFilter && byQ && matchesFamily(p);
+    return byFilter && byQ && matchesCategory(p);
   });
 }
 
 const hasActiveFilters = () =>
-  state.productFilter !== "all" || state.productFamily !== "all" || !!state.search;
+  state.productFilter !== "all" || state.productCategory !== "all" ||
+  state.productSubcategory !== "all" || !!state.search;
 
 const countLabel = (list) => `${list.length} ${list.length === 1 ? "producto" : "productos"}`;
 
@@ -85,12 +89,28 @@ function resultsHTML(list) {
 }
 
 export function renderProducts() {
+
+  const cats = [{ id: "all", name: "Todas las categorías" }, ...families()];
+  if (!cats.some((cat) => String(cat.id) === String(state.productCategory))) {
+    state.productCategory = "all";
+    state.productSubcategory = "all";
+  }
+  const catSel = state.productCategory;
+  const validSubs = catSel === "all" ? [] : typesOf(catSel);
+  if (state.productSubcategory !== "all" &&
+      !validSubs.some((sub) => String(sub.id) === String(state.productSubcategory))) {
+    state.productSubcategory = "all";
+  }
   const list = filteredProducts();
-  const famOptions = [{ id: "all", name: "Todas las familias" }, ...families()];
-  const famSel = state.productFamily;
-  const famLabel = (famOptions.find((o) => o.id === famSel) || famOptions[0]).name;
-  const famMenu = famOptions.map((o) =>
-    `<button type="button" role="option" class="ad-dd__opt${o.id === famSel ? " is-active" : ""}" data-fam="${esc(o.id)}" aria-selected="${o.id === famSel}">${esc(o.name)}</button>`).join("");
+  const catOpts = cats.map((o) => `<option value="${esc(o.id)}"${o.id === catSel ? " selected" : ""}>${esc(o.name)}</option>`).join("");
+
+  const subs = validSubs;
+  const subDisabled = catSel === "all" || subs.length === 0;
+  const subSel = state.productSubcategory;
+  const subOpts = subDisabled
+    ? `<option value="all">Subcategoría</option>`
+    : `<option value="all">Todas las subcategorías</option>` +
+      subs.map((o) => `<option value="${esc(o.id)}"${o.id === subSel ? " selected" : ""}>${esc(o.name)}</option>`).join("");
 
   setView(`
     <div class="ad-panel">
@@ -100,13 +120,8 @@ export function renderProducts() {
             ${ico("search")}
             <input type="search" data-search placeholder="Buscar producto" aria-label="Buscar producto" value="${esc(state.search)}" />
           </div>
-          <div class="ad-dd ad-filterbar__family" data-family-dd>
-            <button class="ad-dd__btn" type="button" data-dd-toggle aria-haspopup="listbox" aria-expanded="false" aria-label="Filtrar por familia">
-              <span class="ad-dd__value">${esc(famLabel)}</span>
-              <span class="ad-dd__chev">${ico("arrow-down")}</span>
-            </button>
-            <div class="ad-dd__menu" role="listbox" hidden>${famMenu}</div>
-          </div>
+          <div class="ad-filterbar__sel"><select class="ad-select" data-cat aria-label="Filtrar por categoría">${catOpts}</select></div>
+          <div class="ad-filterbar__sel"><select class="ad-select" data-sub aria-label="Filtrar por subcategoría" ${subDisabled ? "disabled" : ""}>${subOpts}</select></div>
         </div>
         <div class="ad-filterbar__row ad-filterbar__row--chips">
           <div class="ad-toolbar__filters">
@@ -132,8 +147,22 @@ export function renderProducts() {
     updateResults(view);
   });
 
-  // Familia: dropdown propio (no el <select> nativo que ocupa toda la pantalla).
-  wireFamilyDropdown(view);
+  // Categoría → Subcategoría en cascada (setView ya embelleció los <select>).
+  view.querySelector("[data-cat]").addEventListener("change", (e) => {
+    state.productCategory = e.target.value;
+    state.productSubcategory = "all"; // al cambiar categoría se resetea la subcategoría
+    renderProducts();
+    window.requestAnimationFrame(() => {
+      $("#adminView")?.querySelector("[data-cat]")?._jdd?._btn?.focus({ preventScroll: true });
+    });
+  });
+  view.querySelector("[data-sub]").addEventListener("change", (e) => {
+    state.productSubcategory = e.target.value;
+    renderProducts();
+    window.requestAnimationFrame(() => {
+      $("#adminView")?.querySelector("[data-sub]")?._jdd?._btn?.focus({ preventScroll: true });
+    });
+  });
 
   // Estado: re-render completo (no hay foco de tecleo que preservar).
   view.querySelectorAll("[data-filter]").forEach((b) => b.addEventListener("click", () => {
@@ -141,7 +170,7 @@ export function renderProducts() {
     renderProducts();
   }));
   view.querySelector("[data-clear]").addEventListener("click", () => {
-    state.productFilter = "all"; state.productFamily = "all"; state.search = "";
+    state.productFilter = "all"; state.productCategory = "all"; state.productSubcategory = "all"; state.search = "";
     const topbar = $("#adminSearch");
     if (topbar) topbar.value = "";
     renderProducts();
@@ -162,42 +191,6 @@ function updateResults(view) {
   const clear = view.querySelector("[data-clear]");
   if (clear) clear.hidden = !hasActiveFilters();
   wireRowActions(view);
-}
-
-// Dropdown propio de Familia: panel anclado bajo el botón, con clic-fuera y Escape.
-function wireFamilyDropdown(view) {
-  const dd = view.querySelector("[data-family-dd]");
-  if (!dd) return;
-  const btn = dd.querySelector("[data-dd-toggle]");
-  const menu = dd.querySelector("[role='listbox']");
-  let onDoc = null;
-  const onKey = (e) => { if (e.key === "Escape") close(); };
-
-  function close() {
-    dd.classList.remove("is-open");
-    btn.setAttribute("aria-expanded", "false");
-    menu.hidden = true;
-    if (onDoc) { document.removeEventListener("click", onDoc); onDoc = null; }
-    document.removeEventListener("keydown", onKey);
-  }
-  function open() {
-    dd.classList.add("is-open");
-    btn.setAttribute("aria-expanded", "true");
-    menu.hidden = false;
-    onDoc = (e) => { if (!e.target.closest("[data-family-dd]")) close(); };
-    document.addEventListener("click", onDoc);
-    document.addEventListener("keydown", onKey);
-  }
-
-  btn.addEventListener("click", (e) => {
-    e.stopPropagation(); // evita que el clic-fuera recién montado lo cierre
-    dd.classList.contains("is-open") ? close() : open();
-  });
-  menu.querySelectorAll("[data-fam]").forEach((opt) => opt.addEventListener("click", () => {
-    state.productFamily = opt.getAttribute("data-fam");
-    close();
-    renderProducts();
-  }));
 }
 
 function wireRowActions(view) {

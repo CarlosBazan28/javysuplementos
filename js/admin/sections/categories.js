@@ -27,21 +27,21 @@ export function renderCategories() {
           <button class="ad-icon-btn" type="button" title="Bajar" data-cat-move="${i}|1" ${i === fams.length - 1 ? "disabled" : ""}>${ico("arrow-down")}</button>
           <button class="ad-icon-btn" type="button" title="Renombrar" data-cat-rename="${esc(c.id)}">${ico("pencil")}</button>
           <button class="ad-icon-btn" type="button" title="${c.is_active === false ? "Mostrar" : "Ocultar"}" data-cat-hide="${esc(c.id)}">${ico("power")}</button>
-          <button class="ad-icon-btn ad-icon-btn--danger" type="button" title="Eliminar familia" data-cat-del="${esc(c.id)}">${ico("trash")}</button>
+          <button class="ad-icon-btn ad-icon-btn--danger" type="button" title="Eliminar categoría" data-cat-del="${esc(c.id)}">${ico("trash")}</button>
         </div>
       </div>
       <div class="ad-cat__types">
-        ${typesOf(c.id).map((t) => `<span class="ad-type-chip">${esc(t.name)}<button type="button" aria-label="Eliminar tipo ${esc(t.name)}" data-type-del="${esc(t.id)}">${ico("x")}</button></span>`).join("")}
-        <button class="ad-type-chip ad-type-chip--add" type="button" data-type-add="${esc(c.id)}">${ico("plus")}Tipo</button>
+        ${typesOf(c.id).map((t) => `<span class="ad-type-chip">${esc(t.name)}<button type="button" aria-label="Eliminar subcategoría ${esc(t.name)}" data-type-del="${esc(t.id)}">${ico("x")}</button></span>`).join("")}
+        <button class="ad-type-chip ad-type-chip--add" type="button" data-type-add="${esc(c.id)}">${ico("plus")}Subcategoría</button>
       </div>
     </div>`).join("");
 
   setView(`
     <div class="ad-section-intro">
-      <div><p class="ad-kicker">Catálogo</p><p>Familias del catálogo y sus tipos. Reordená con las flechas u ocultá una familia sin borrar sus productos.</p></div>
-      <button class="ad-btn ad-btn--primary" type="button" data-fam-add>${ico("plus")}Nueva familia</button>
+      <div><p class="ad-kicker">Catálogo</p><p>Categorías del catálogo y sus subcategorías. Reordená con las flechas u ocultá una categoría sin borrar sus productos.</p></div>
+      <button class="ad-btn ad-btn--primary" type="button" data-fam-add>${ico("plus")}Nueva categoría</button>
     </div>
-    <div class="ad-panel">${cards || `<p class="ad-ops__empty">Todavía no hay familias. Creá la primera.</p>`}</div>`);
+    <div class="ad-panel">${cards || `<p class="ad-ops__empty">Todavía no hay categorías. Creá la primera.</p>`}</div>`);
 
   const view = $("#adminView");
   view.querySelector("[data-fam-add]").addEventListener("click", addFamily);
@@ -54,22 +54,22 @@ export function renderCategories() {
 }
 
 async function addFamily() {
-  const name = await promptModal({ title: "Nueva familia", label: "Nombre de la familia (ej. Proteínas)" });
+  const name = await promptModal({ title: "Nueva categoría", label: "Nombre de la categoría (ej. Proteínas)" });
   if (!name) return;
   try {
     const created = await window.catalogDb.createCategory({ name, parentId: null, sortOrder: families().length + 1 });
     state.categories.push(created);
-    toast({ tone: "ok", msg: "Familia creada", sub: name });
+    toast({ tone: "ok", msg: "Categoría creada", sub: name });
     renderCategories();
   } catch (e) { toast({ tone: "err", msg: "No se pudo crear", sub: e.message }); }
 }
 async function addType(famId) {
-  const name = await promptModal({ title: "Nuevo tipo", label: "Nombre del tipo (ej. Whey)" });
+  const name = await promptModal({ title: "Nueva subcategoría", label: "Nombre de la subcategoría (ej. Whey)" });
   if (!name) return;
   try {
     const created = await window.catalogDb.createCategory({ name, parentId: famId, sortOrder: typesOf(famId).length + 1 });
     state.categories.push(created);
-    toast({ tone: "ok", msg: "Tipo creado", sub: name });
+    toast({ tone: "ok", msg: "Subcategoría creada", sub: name });
     renderCategories();
   } catch (e) { toast({ tone: "err", msg: "No se pudo crear", sub: e.message }); }
 }
@@ -120,13 +120,13 @@ async function deleteFamily(id) {
     await confirmModal({ title: "No se puede eliminar", body: `“${cat.name}” tiene ${count} producto(s) asignado(s). Reasignalos a otra categoría antes de eliminarla.`, confirmLabel: "Entendido" });
     return;
   }
-  const ok = await confirmModal({ title: "Eliminar familia", body: `Se eliminará “${cat.name}” y sus tipos. Esta acción no se puede deshacer.`, confirmLabel: "Eliminar", danger: true });
+  const ok = await confirmModal({ title: "Eliminar categoría", body: `Se eliminará “${cat.name}” y sus subcategorías. Esta acción no se puede deshacer.`, confirmLabel: "Eliminar", danger: true });
   if (!ok) return;
   try {
     for (const t of childIds) await window.catalogDb.deleteCategory(t);
     await window.catalogDb.deleteCategory(id);
     state.categories = state.categories.filter((c) => c.id !== id && !childIds.includes(c.id));
-    toast({ tone: "err", msg: "Familia eliminada", sub: cat.name });
+    toast({ tone: "err", msg: "Categoría eliminada", sub: cat.name });
     renderCategories();
   } catch (e) { toast({ tone: "err", msg: "No se pudo eliminar", sub: e.message }); }
 }
@@ -136,10 +136,10 @@ async function deleteType(id) {
   let count = 0;
   try { count = await window.catalogDb.getCategoryProductCount(id, []); } catch (_) {}
   if (count > 0) {
-    await confirmModal({ title: "No se puede eliminar", body: `El tipo “${cat.name}” tiene ${count} producto(s). Reasignalos primero.`, confirmLabel: "Entendido" });
+    await confirmModal({ title: "No se puede eliminar", body: `La subcategoría “${cat.name}” tiene ${count} producto(s). Reasignalos primero.`, confirmLabel: "Entendido" });
     return;
   }
-  const ok = await confirmModal({ title: "Eliminar tipo", body: `Se eliminará el tipo “${cat.name}”.`, confirmLabel: "Eliminar", danger: true });
+  const ok = await confirmModal({ title: "Eliminar subcategoría", body: `Se eliminará la subcategoría “${cat.name}”.`, confirmLabel: "Eliminar", danger: true });
   if (!ok) return;
   try {
     await window.catalogDb.deleteCategory(id);
