@@ -18,23 +18,35 @@ export function renderCategories() {
     return state.products.filter((p) => ids.includes(p.category_id)).length;
   };
 
-  const cards = fams.map((c, i) => `
+  const cards = fams.map((c, i) => {
+    const subs = typesOf(c.id);
+    return `
     <div class="ad-cat${c.is_active === false ? " is-hidden" : ""}" data-cat="${esc(c.id)}">
       <div class="ad-cat__head">
         <div class="ad-cat__title"><strong>${esc(c.name)}</strong><small>${productCountFor(c)} productos</small></div>
-        <div class="ad-row__actions">
+        <div class="ad-cat__actions">
           <button class="ad-icon-btn" type="button" title="Subir" data-cat-move="${i}|-1" ${i === 0 ? "disabled" : ""}>${ico("arrow-up")}</button>
           <button class="ad-icon-btn" type="button" title="Bajar" data-cat-move="${i}|1" ${i === fams.length - 1 ? "disabled" : ""}>${ico("arrow-down")}</button>
           <button class="ad-icon-btn" type="button" title="Renombrar" data-cat-rename="${esc(c.id)}">${ico("pencil")}</button>
-          <button class="ad-icon-btn" type="button" title="${c.is_active === false ? "Mostrar" : "Ocultar"}" data-cat-hide="${esc(c.id)}">${ico("power")}</button>
-          <button class="ad-icon-btn ad-icon-btn--danger" type="button" title="Eliminar categoría" data-cat-del="${esc(c.id)}">${ico("trash")}</button>
+          <div class="ad-menu" data-menu>
+            <button class="ad-icon-btn" type="button" data-menu-toggle title="Más opciones" aria-haspopup="menu" aria-expanded="false">${ico("more-horizontal")}</button>
+            <div class="ad-menu__panel" role="menu" hidden>
+              <button class="ad-menu__item" type="button" role="menuitem" data-cat-hide="${esc(c.id)}">${ico("power")}${c.is_active === false ? "Mostrar" : "Ocultar"}</button>
+              <button class="ad-menu__item ad-menu__item--danger" type="button" role="menuitem" data-cat-del="${esc(c.id)}">${ico("trash")}Eliminar</button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="ad-cat__types">
-        ${typesOf(c.id).map((t) => `<span class="ad-type-chip">${esc(t.name)}<button type="button" aria-label="Eliminar subcategoría ${esc(t.name)}" data-type-del="${esc(t.id)}">${ico("x")}</button></span>`).join("")}
-        <button class="ad-type-chip ad-type-chip--add" type="button" data-type-add="${esc(c.id)}">${ico("plus")}Subcategoría</button>
+        <span class="ad-cat__sublabel">Subcategorías</span>
+        <div class="ad-cat__chips">
+          ${subs.map((t) => `<span class="ad-type-chip">${esc(t.name)}<button type="button" aria-label="Eliminar subcategoría ${esc(t.name)}" data-type-del="${esc(t.id)}">${ico("x")}</button></span>`).join("")}
+          ${subs.length ? "" : `<span class="ad-cat__empty">Aún sin subcategorías.</span>`}
+          <button class="ad-type-chip ad-type-chip--add" type="button" data-type-add="${esc(c.id)}">${ico("plus")}Añadir</button>
+        </div>
       </div>
-    </div>`).join("");
+    </div>`;
+  }).join("");
 
   setView(`
     <div class="ad-section-intro">
@@ -51,6 +63,39 @@ export function renderCategories() {
   view.querySelectorAll("[data-cat-del]").forEach((b) => b.addEventListener("click", () => deleteFamily(b.getAttribute("data-cat-del"))));
   view.querySelectorAll("[data-type-add]").forEach((b) => b.addEventListener("click", () => addType(b.getAttribute("data-type-add"))));
   view.querySelectorAll("[data-type-del]").forEach((b) => b.addEventListener("click", () => deleteType(b.getAttribute("data-type-del"))));
+  ensureMenuListeners();
+}
+
+/* Menú "⋯" de cada categoría: delegado en document (se cablea una sola vez). */
+function closeAllMenus() {
+  document.querySelectorAll(".ad-menu.is-open").forEach((m) => {
+    m.classList.remove("is-open");
+    m.querySelector("[data-menu-toggle]")?.setAttribute("aria-expanded", "false");
+    const panel = m.querySelector(".ad-menu__panel");
+    if (panel) panel.hidden = true;
+  });
+}
+let menusWired = false;
+function ensureMenuListeners() {
+  if (menusWired) return;
+  menusWired = true;
+  document.addEventListener("click", (e) => {
+    const toggle = e.target.closest("[data-menu-toggle]");
+    if (toggle) {
+      const menu = toggle.closest(".ad-menu");
+      const willOpen = !menu.classList.contains("is-open");
+      closeAllMenus();
+      if (willOpen) {
+        menu.classList.add("is-open");
+        toggle.setAttribute("aria-expanded", "true");
+        menu.querySelector(".ad-menu__panel").hidden = false;
+      }
+      return;
+    }
+    // clic fuera del panel cierra (un clic en un ítem lo maneja su propia acción)
+    if (!e.target.closest(".ad-menu__panel")) closeAllMenus();
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAllMenus(); });
 }
 
 async function addFamily() {
