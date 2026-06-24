@@ -299,10 +299,45 @@ body.ad-body { min-height: 100vh; }
 .ad-filterbar .ad-chip:focus-visible, .ad-link-btn:focus-visible { outline: 2px solid var(--ad-blue); outline-offset: 2px; }
 /* ocultar la "x" nativa de WebKit (ya tenemos "Limpiar") */
 .ad-filterbar .ad-search input::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+/* permitir que los items flex se encojan y no desborden la pantalla */
+.ad-filterbar__row > * { min-width: 0; }
+
+/* ---- dropdown propio (Familia): popover anclado, no el <select> nativo ---- */
+.ad-dd { position: relative; }
+.ad-dd__btn {
+  width: 100%; min-height: 40px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 0 12px; border: 1px solid var(--pb-line); border-radius: var(--ad-radius-sm);
+  background: var(--pb-surface-2); color: #fff; font: inherit; font-size: 0.95rem; cursor: pointer; text-align: left;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.ad-dd__btn:hover { border-color: rgba(90,180,233,0.45); }
+.ad-dd.is-open .ad-dd__btn, .ad-dd__btn:focus-visible {
+  border-color: rgba(90,180,233,0.7); box-shadow: 0 0 0 3px rgba(90,180,233,0.14); outline: none;
+}
+.ad-dd__value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ad-dd__chev { display: inline-flex; flex: 0 0 auto; color: var(--pb-muted); transition: transform .18s ease; }
+.ad-dd__chev .ad-ico { width: 18px; height: 18px; }
+.ad-dd.is-open .ad-dd__chev { transform: rotate(180deg); }
+.ad-dd__menu {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 50;
+  background: var(--pb-surface-3); border: 1px solid var(--pb-line-strong); border-radius: var(--ad-radius-sm);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.45); padding: 6px; display: grid; gap: 2px;
+  max-height: 320px; overflow-y: auto;
+}
+.ad-dd__opt {
+  display: flex; align-items: center; min-height: 40px; padding: 0 12px; width: 100%;
+  border: 0; border-radius: 9px; background: transparent; color: var(--pb-text);
+  font: inherit; font-size: 0.92rem; text-align: left; cursor: pointer;
+}
+.ad-dd__opt:hover { background: var(--pb-white-06); }
+.ad-dd__opt.is-active { background: var(--pb-blue-tint-12); color: #fff; font-weight: 700; }
+.ad-dd__opt:focus-visible { outline: 2px solid var(--ad-blue); outline-offset: -2px; }
 
 @media (max-width: 760px) {
   .ad-filterbar .ad-search { flex: 1 1 100%; }
   .ad-filterbar .ad-filterbar__family { width: 100%; flex: 1 1 100%; }
+  /* chips envuelven en vez de salirse de la pantalla */
+  .ad-filterbar .ad-toolbar__filters { flex-wrap: wrap; overflow-x: visible; padding-bottom: 0; }
   .ad-filterbar__row--chips { flex-direction: column; align-items: stretch; gap: 10px; }
   .ad-filterbar__meta { justify-content: flex-end; }
 }

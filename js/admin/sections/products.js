@@ -86,8 +86,11 @@ function resultsHTML(list) {
 
 export function renderProducts() {
   const list = filteredProducts();
-  const familyOpts = `<option value="all">Todas las familias</option>` +
-    families().map((fam) => `<option value="${esc(fam.id)}"${state.productFamily === fam.id ? " selected" : ""}>${esc(fam.name)}</option>`).join("");
+  const famOptions = [{ id: "all", name: "Todas las familias" }, ...families()];
+  const famSel = state.productFamily;
+  const famLabel = (famOptions.find((o) => o.id === famSel) || famOptions[0]).name;
+  const famMenu = famOptions.map((o) =>
+    `<button type="button" role="option" class="ad-dd__opt${o.id === famSel ? " is-active" : ""}" data-fam="${esc(o.id)}" aria-selected="${o.id === famSel}">${esc(o.name)}</button>`).join("");
 
   setView(`
     <div class="ad-panel">
@@ -97,7 +100,13 @@ export function renderProducts() {
             ${ico("search")}
             <input type="search" data-search placeholder="Buscar producto" aria-label="Buscar producto" value="${esc(state.search)}" />
           </div>
-          <select class="ad-select ad-filterbar__family" data-family aria-label="Filtrar por familia">${familyOpts}</select>
+          <div class="ad-dd ad-filterbar__family" data-family-dd>
+            <button class="ad-dd__btn" type="button" data-dd-toggle aria-haspopup="listbox" aria-expanded="false" aria-label="Filtrar por familia">
+              <span class="ad-dd__value">${esc(famLabel)}</span>
+              <span class="ad-dd__chev">${ico("arrow-down")}</span>
+            </button>
+            <div class="ad-dd__menu" role="listbox" hidden>${famMenu}</div>
+          </div>
         </div>
         <div class="ad-filterbar__row ad-filterbar__row--chips">
           <div class="ad-toolbar__filters">
@@ -123,11 +132,10 @@ export function renderProducts() {
     updateResults(view);
   });
 
-  // Familia y estado: re-render completo (no hay foco de tecleo que preservar).
-  view.querySelector("[data-family]").addEventListener("change", (e) => {
-    state.productFamily = e.target.value;
-    renderProducts();
-  });
+  // Familia: dropdown propio (no el <select> nativo que ocupa toda la pantalla).
+  wireFamilyDropdown(view);
+
+  // Estado: re-render completo (no hay foco de tecleo que preservar).
   view.querySelectorAll("[data-filter]").forEach((b) => b.addEventListener("click", () => {
     state.productFilter = b.getAttribute("data-filter");
     renderProducts();
@@ -154,6 +162,42 @@ function updateResults(view) {
   const clear = view.querySelector("[data-clear]");
   if (clear) clear.hidden = !hasActiveFilters();
   wireRowActions(view);
+}
+
+// Dropdown propio de Familia: panel anclado bajo el botón, con clic-fuera y Escape.
+function wireFamilyDropdown(view) {
+  const dd = view.querySelector("[data-family-dd]");
+  if (!dd) return;
+  const btn = dd.querySelector("[data-dd-toggle]");
+  const menu = dd.querySelector("[role='listbox']");
+  let onDoc = null;
+  const onKey = (e) => { if (e.key === "Escape") close(); };
+
+  function close() {
+    dd.classList.remove("is-open");
+    btn.setAttribute("aria-expanded", "false");
+    menu.hidden = true;
+    if (onDoc) { document.removeEventListener("click", onDoc); onDoc = null; }
+    document.removeEventListener("keydown", onKey);
+  }
+  function open() {
+    dd.classList.add("is-open");
+    btn.setAttribute("aria-expanded", "true");
+    menu.hidden = false;
+    onDoc = (e) => { if (!e.target.closest("[data-family-dd]")) close(); };
+    document.addEventListener("click", onDoc);
+    document.addEventListener("keydown", onKey);
+  }
+
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation(); // evita que el clic-fuera recién montado lo cierre
+    dd.classList.contains("is-open") ? close() : open();
+  });
+  menu.querySelectorAll("[data-fam]").forEach((opt) => opt.addEventListener("click", () => {
+    state.productFamily = opt.getAttribute("data-fam");
+    close();
+    renderProducts();
+  }));
 }
 
 function wireRowActions(view) {
