@@ -1,13 +1,26 @@
 /* ============================================================================
-   Sección Productos: tabla/cards con filtros, búsqueda y acciones por fila.
+   Sección Productos: barra de búsqueda + filtros (familia + estado) y la
+   tabla/cards con acciones por fila.
    ============================================================================ */
-import { state } from "../state.js";
-import { $, esc, ico, imgTag, peso, hasOffer, isAvailable, isMissingImage, stockTone } from "../helpers.js";
+import { state, families, catById } from "../state.js";
+import { $, esc, ico, imgTag, peso, hasOffer, isAvailable, isMissingImage, stockTone, wireImageFallbacks } from "../helpers.js";
 import { setView } from "../view.js";
 import { bindEditClicks } from "../shell.js";
 import { confirmModal, toast } from "../ui.js";
 import { reloadProducts } from "../data.js";
 import { openProductDrawer } from "../drawers/product-drawer.js";
+
+const STATUS_FILTERS = [
+  ["all", "Todos"], ["home", "En inicio"], ["offers", "En oferta"], ["out", "Agotados"], ["noimg", "Sin imagen"],
+];
+
+// El producto pertenece a la familia si su categoría ES la familia o un tipo (hijo) de ella.
+function matchesFamily(p) {
+  const fam = state.productFamily;
+  if (fam === "all") return true;
+  const cat = catById(p.category_id);
+  return !!cat && (cat.id === fam || cat.parent_id === fam);
+}
 
 function filteredProducts() {
   const f = state.productFilter;
@@ -19,17 +32,23 @@ function filteredProducts() {
       f === "out" ? !isAvailable(p) :
       f === "noimg" ? isMissingImage(p) : true;
     const byQ = !q || (`${p.name} ${p.brand || ""} ${p.category || ""}`).toLowerCase().includes(q);
-    return byFilter && byQ;
+    return byFilter && byQ && matchesFamily(p);
   });
 }
 
-export function renderProducts() {
-  const filters = [["all", "Todos"], ["home", "En inicio"], ["offers", "En oferta"], ["out", "Agotados"], ["noimg", "Sin imagen"]];
-  const list = filteredProducts();
+const hasActiveFilters = () =>
+  state.productFilter !== "all" || state.productFamily !== "all" || !!state.search;
 
-  const pill = (p) => { const [tone, label] = stockTone(p); return `<span class="ad-pill ad-pill--${tone}">${label}</span>`; };
-  const priceCell = (p) => `<span class="ad-price">${hasOffer(p) ? `<s>${esc(peso(p.old_price))}</s>` : ""}${esc(peso(p.price))}</span>`;
+const countLabel = (list) => `${list.length} ${list.length === 1 ? "producto" : "productos"}`;
 
+const pill = (p) => { const [tone, label] = stockTone(p); return `<span class="ad-pill ad-pill--${tone}">${label}</span>`; };
+const priceCell = (p) => `<span class="ad-price">${hasOffer(p) ? `<s>${esc(peso(p.old_price))}</s>` : ""}${esc(peso(p.price))}</span>`;
+
+// Tabla (desktop) + cards (móvil) o estado vacío. Es lo único que se re-renderiza al teclear.
+function resultsHTML(list) {
+  if (list.length === 0) {
+    return `<div class="ad-empty"><span class="ad-empty__icon">${ico("search")}</span><h3>Sin resultados</h3><p>No hay productos que coincidan. Probá con otra búsqueda o tocá “Limpiar”.</p></div>`;
+  }
   const rows = list.map((p) => `
     <tr>
       <td><div class="ad-cell-prod">${imgTag(p.image)}<div><strong>${esc(p.name)}</strong><small>${esc(p.brand || "—")}</small></div></div></td>
@@ -59,29 +78,85 @@ export function renderProducts() {
       </div>
     </div>`).join("");
 
-  const body = list.length === 0
-    ? `<div class="ad-empty"><span class="ad-empty__icon">${ico("search")}</span><h3>Sin resultados</h3><p>No hay productos que coincidan con el filtro o la búsqueda.</p></div>`
-    : `<div class="ad-table-wrap"><table class="ad-table">
-        <thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Sabores</th><th>Estado</th><th></th></tr></thead>
-        <tbody>${rows}</tbody></table></div>
-       <div class="ad-prod-cards">${cards}</div>`;
+  return `<div class="ad-table-wrap"><table class="ad-table">
+      <thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Sabores</th><th>Estado</th><th></th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+     <div class="ad-prod-cards">${cards}</div>`;
+}
+
+export function renderProducts() {
+  const list = filteredProducts();
+  const familyOpts = `<option value="all">Todas las familias</option>` +
+    families().map((fam) => `<option value="${esc(fam.id)}"${state.productFamily === fam.id ? " selected" : ""}>${esc(fam.name)}</option>`).join("");
 
   setView(`
     <div class="ad-panel">
-      <div class="ad-toolbar">
-        <div class="ad-toolbar__filters">
-          ${filters.map(([k, label]) => `<button class="ad-chip${state.productFilter === k ? " is-active" : ""}" type="button" data-filter="${k}">${esc(label)}</button>`).join("")}
+      <div class="ad-filterbar">
+        <div class="ad-filterbar__row">
+          <div class="ad-search">
+            ${ico("search")}
+            <input type="search" data-search placeholder="Buscar producto" aria-label="Buscar producto" value="${esc(state.search)}" />
+          </div>
+          <select class="ad-select ad-filterbar__family" data-family aria-label="Filtrar por familia">${familyOpts}</select>
         </div>
-        <span class="ad-result-count">${list.length} ${list.length === 1 ? "producto" : "productos"}</span>
+        <div class="ad-filterbar__row ad-filterbar__row--chips">
+          <div class="ad-toolbar__filters">
+            ${STATUS_FILTERS.map(([k, label]) => `<button class="ad-chip${state.productFilter === k ? " is-active" : ""}" type="button" data-filter="${k}">${esc(label)}</button>`).join("")}
+          </div>
+          <div class="ad-filterbar__meta">
+            <button class="ad-link-btn" type="button" data-clear ${hasActiveFilters() ? "" : "hidden"}>${ico("x")}Limpiar</button>
+            <span class="ad-result-count" data-count>${countLabel(list)}</span>
+          </div>
+        </div>
       </div>
-      ${body}
+      <div data-results>${resultsHTML(list)}</div>
     </div>`);
 
   const view = $("#adminView");
+
+  // Búsqueda: actualización PARCIAL (solo resultados) para no perder el foco al teclear.
+  const searchInput = view.querySelector("[data-search]");
+  searchInput.addEventListener("input", () => {
+    state.search = searchInput.value.trim().toLowerCase();
+    const topbar = $("#adminSearch");
+    if (topbar) topbar.value = searchInput.value; // mantener en sync con la búsqueda global
+    updateResults(view);
+  });
+
+  // Familia y estado: re-render completo (no hay foco de tecleo que preservar).
+  view.querySelector("[data-family]").addEventListener("change", (e) => {
+    state.productFamily = e.target.value;
+    renderProducts();
+  });
   view.querySelectorAll("[data-filter]").forEach((b) => b.addEventListener("click", () => {
     state.productFilter = b.getAttribute("data-filter");
     renderProducts();
   }));
+  view.querySelector("[data-clear]").addEventListener("click", () => {
+    state.productFilter = "all"; state.productFamily = "all"; state.search = "";
+    const topbar = $("#adminSearch");
+    if (topbar) topbar.value = "";
+    renderProducts();
+  });
+
+  wireRowActions(view);
+}
+
+// Re-renderiza solo la lista de resultados + conteo + visibilidad de "Limpiar".
+function updateResults(view) {
+  const list = filteredProducts();
+  const results = view.querySelector("[data-results]");
+  results.innerHTML = resultsHTML(list);
+  wireImageFallbacks(results);
+  if (window.javyIcons) window.javyIcons.enhance(results);
+  const count = view.querySelector("[data-count]");
+  if (count) count.textContent = countLabel(list);
+  const clear = view.querySelector("[data-clear]");
+  if (clear) clear.hidden = !hasActiveFilters();
+  wireRowActions(view);
+}
+
+function wireRowActions(view) {
   view.querySelectorAll("[data-dup]").forEach((b) => b.addEventListener("click", () => duplicateProduct(b.getAttribute("data-dup"))));
   view.querySelectorAll("[data-del]").forEach((b) => b.addEventListener("click", () => deleteProductFlow(b.getAttribute("data-del"))));
   bindEditClicks(view);
