@@ -11,6 +11,7 @@ export const state = {
   userEmail: null,
   active: "dashboard",
   productFilter: "all",
+  productFamily: "all",
   search: "",
   combosSupported: true,
   categoriesSupported: true,
