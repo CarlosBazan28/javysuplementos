@@ -205,12 +205,14 @@ body.ad-body { min-height: 100vh; }
   background: linear-gradient(145deg, rgba(17,25,37,0.88), rgba(9,14,20,0.88));
   box-shadow: 0 12px 30px rgba(0,0,0,0.28);
   padding: 16px; display: grid; gap: 8px;
+  /* es un <button>: sin esto hereda el color de sistema ButtonText (negro) */
+  color: var(--pb-text);
 }
 .ad-stat__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .ad-stat__label { color: var(--pb-muted); font-size: 0.8rem; font-weight: 700; }
 .ad-stat__icon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: var(--pb-white-06); color: var(--pb-text); }
 .ad-stat__icon .ad-ico { width: 18px; height: 18px; }
-.ad-stat__value { font-family: var(--font-heading); font-weight: 900; font-size: 2.1rem; line-height: 1; }
+.ad-stat__value { font-family: var(--font-heading); font-weight: 900; font-size: 2.1rem; line-height: 1; color: var(--pb-text-strong); }
 .ad-stat__delta { display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; font-weight: 700; }
 .ad-stat__delta .ad-ico { width: 14px; height: 14px; }
 .ad-stat--ok .ad-stat__icon { background: rgba(0,230,118,0.16); color: #93f8bd; }
@@ -578,7 +580,8 @@ body.ad-body { min-height: 100vh; }
   .ad-search { flex: 1 1 100%; }
   .ad-search input { width: 100%; }
 
-  .ad-recent__row { grid-template-columns: 50px minmax(0,1fr) auto; }
+  /* 4 columnas (img · info · precio · botón) para que Editar no caiga a otra fila */
+  .ad-recent__row { grid-template-columns: 50px minmax(0,1fr) auto auto; gap: 8px; }
 
   .ad-table-wrap { display: none; }
   .ad-prod-cards { display: grid; }

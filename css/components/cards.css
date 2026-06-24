@@ -194,6 +194,12 @@
   color: #ffb300;
 }
 
+.product-card__status.is-agotado {
+  background: rgba(255,46,99,0.14);
+  border: 1px solid rgba(255,46,99,0.4);
+  color: #ff6b89; /* aclarado vs --hot para pasar contraste AA en texto pequeño */
+}
+
 .product-card__name {
   color: var(--blanco);
   font-weight: 700;

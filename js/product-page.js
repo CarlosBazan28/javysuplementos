@@ -155,8 +155,8 @@ async function initProductPage() {
   document.getElementById("prod-category").textContent = category;
 
   document.querySelectorAll("[data-status-pill]").forEach((pill) => {
-    pill.textContent = canQuote ? "Disponible" : "Consultar stock";
-    pill.classList.toggle("is-unavailable", !canQuote);
+    pill.textContent = canQuote ? "Disponible" : "Agotado";
+    pill.classList.toggle("is-agotado", !canQuote);
   });
 
   renderFlavorField(product);
