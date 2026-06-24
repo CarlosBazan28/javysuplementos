@@ -1,0 +1,149 @@
+/* ============================================================================
+   Sección Categorías: familias y tipos (jerarquía), orden, ocultar y borrar.
+   ============================================================================ */
+import { state, families, typesOf, catById } from "../state.js";
+import { $, esc, ico } from "../helpers.js";
+import { setView } from "../view.js";
+import { emptyFeature, promptModal, confirmModal, toast } from "../ui.js";
+
+export function renderCategories() {
+  if (!state.categoriesSupported) {
+    setView(emptyFeature("Categorías no disponibles", "Aplicá la migración de categorías (Familia → Tipo) en Supabase para gestionarlas aquí."));
+    return;
+  }
+  const fams = families();
+  const productCountFor = (cat) => {
+    const childIds = typesOf(cat.id).map((t) => t.id);
+    const ids = [cat.id, ...childIds];
+    return state.products.filter((p) => ids.includes(p.category_id)).length;
+  };
+
+  const cards = fams.map((c, i) => `
+    <div class="ad-cat${c.is_active === false ? " is-hidden" : ""}" data-cat="${esc(c.id)}">
+      <div class="ad-cat__head">
+        <div class="ad-cat__title"><strong>${esc(c.name)}</strong><small>${productCountFor(c)} productos</small></div>
+        <div class="ad-row__actions">
+          <button class="ad-icon-btn" type="button" title="Subir" data-cat-move="${i}|-1" ${i === 0 ? "disabled" : ""}>${ico("arrow-up")}</button>
+          <button class="ad-icon-btn" type="button" title="Bajar" data-cat-move="${i}|1" ${i === fams.length - 1 ? "disabled" : ""}>${ico("arrow-down")}</button>
+          <button class="ad-icon-btn" type="button" title="Renombrar" data-cat-rename="${esc(c.id)}">${ico("pencil")}</button>
+          <button class="ad-icon-btn" type="button" title="${c.is_active === false ? "Mostrar" : "Ocultar"}" data-cat-hide="${esc(c.id)}">${ico("power")}</button>
+          <button class="ad-icon-btn ad-icon-btn--danger" type="button" title="Eliminar familia" data-cat-del="${esc(c.id)}">${ico("trash")}</button>
+        </div>
+      </div>
+      <div class="ad-cat__types">
+        ${typesOf(c.id).map((t) => `<span class="ad-type-chip">${esc(t.name)}<button type="button" aria-label="Eliminar tipo ${esc(t.name)}" data-type-del="${esc(t.id)}">${ico("x")}</button></span>`).join("")}
+        <button class="ad-type-chip ad-type-chip--add" type="button" data-type-add="${esc(c.id)}">${ico("plus")}Tipo</button>
+      </div>
+    </div>`).join("");
+
+  setView(`
+    <div class="ad-section-intro">
+      <div><p class="ad-kicker">Catálogo</p><p>Familias del catálogo y sus tipos. Reordená con las flechas u ocultá una familia sin borrar sus productos.</p></div>
+      <button class="ad-btn ad-btn--primary" type="button" data-fam-add>${ico("plus")}Nueva familia</button>
+    </div>
+    <div class="ad-panel">${cards || `<p class="ad-ops__empty">Todavía no hay familias. Creá la primera.</p>`}</div>`);
+
+  const view = $("#adminView");
+  view.querySelector("[data-fam-add]").addEventListener("click", addFamily);
+  view.querySelectorAll("[data-cat-move]").forEach((b) => b.addEventListener("click", () => moveFamily(b.getAttribute("data-cat-move"))));
+  view.querySelectorAll("[data-cat-rename]").forEach((b) => b.addEventListener("click", () => renameCategory(b.getAttribute("data-cat-rename"))));
+  view.querySelectorAll("[data-cat-hide]").forEach((b) => b.addEventListener("click", () => toggleCategoryHidden(b.getAttribute("data-cat-hide"))));
+  view.querySelectorAll("[data-cat-del]").forEach((b) => b.addEventListener("click", () => deleteFamily(b.getAttribute("data-cat-del"))));
+  view.querySelectorAll("[data-type-add]").forEach((b) => b.addEventListener("click", () => addType(b.getAttribute("data-type-add"))));
+  view.querySelectorAll("[data-type-del]").forEach((b) => b.addEventListener("click", () => deleteType(b.getAttribute("data-type-del"))));
+}
+
+async function addFamily() {
+  const name = await promptModal({ title: "Nueva familia", label: "Nombre de la familia (ej. Proteínas)" });
+  if (!name) return;
+  try {
+    const created = await window.catalogDb.createCategory({ name, parentId: null, sortOrder: families().length + 1 });
+    state.categories.push(created);
+    toast({ tone: "ok", msg: "Familia creada", sub: name });
+    renderCategories();
+  } catch (e) { toast({ tone: "err", msg: "No se pudo crear", sub: e.message }); }
+}
+async function addType(famId) {
+  const name = await promptModal({ title: "Nuevo tipo", label: "Nombre del tipo (ej. Whey)" });
+  if (!name) return;
+  try {
+    const created = await window.catalogDb.createCategory({ name, parentId: famId, sortOrder: typesOf(famId).length + 1 });
+    state.categories.push(created);
+    toast({ tone: "ok", msg: "Tipo creado", sub: name });
+    renderCategories();
+  } catch (e) { toast({ tone: "err", msg: "No se pudo crear", sub: e.message }); }
+}
+async function renameCategory(id) {
+  const cat = catById(id);
+  if (!cat) return;
+  const name = await promptModal({ title: "Renombrar", label: "Nuevo nombre", value: cat.name });
+  if (!name || name === cat.name) return;
+  try {
+    const updated = await window.catalogDb.updateCategory(id, { name });
+    Object.assign(cat, updated);
+    toast({ tone: "ok", msg: "Categoría renombrada", sub: name });
+    renderCategories();
+  } catch (e) { toast({ tone: "err", msg: "No se pudo renombrar", sub: e.message }); }
+}
+async function toggleCategoryHidden(id) {
+  const cat = catById(id);
+  if (!cat) return;
+  try {
+    const updated = await window.catalogDb.updateCategory(id, { is_active: cat.is_active === false });
+    Object.assign(cat, updated);
+    renderCategories();
+  } catch (e) { toast({ tone: "err", msg: "No se pudo actualizar", sub: e.message }); }
+}
+async function moveFamily(spec) {
+  const [i, dir] = spec.split("|").map(Number);
+  const fams = families();
+  const j = i + dir;
+  if (j < 0 || j >= fams.length) return;
+  const a = fams[i], b = fams[j];
+  try {
+    const ao = a.sort_order ?? (i + 1), bo = b.sort_order ?? (j + 1);
+    const [ua, ub] = await Promise.all([
+      window.catalogDb.updateCategory(a.id, { sort_order: bo }),
+      window.catalogDb.updateCategory(b.id, { sort_order: ao }),
+    ]);
+    Object.assign(a, ua); Object.assign(b, ub);
+    renderCategories();
+  } catch (e) { toast({ tone: "err", msg: "No se pudo reordenar", sub: e.message }); }
+}
+async function deleteFamily(id) {
+  const cat = catById(id);
+  if (!cat) return;
+  const childIds = typesOf(id).map((t) => t.id);
+  let count = 0;
+  try { count = await window.catalogDb.getCategoryProductCount(id, childIds); } catch (_) {}
+  if (count > 0) {
+    await confirmModal({ title: "No se puede eliminar", body: `“${cat.name}” tiene ${count} producto(s) asignado(s). Reasignalos a otra categoría antes de eliminarla.`, confirmLabel: "Entendido" });
+    return;
+  }
+  const ok = await confirmModal({ title: "Eliminar familia", body: `Se eliminará “${cat.name}” y sus tipos. Esta acción no se puede deshacer.`, confirmLabel: "Eliminar", danger: true });
+  if (!ok) return;
+  try {
+    for (const t of childIds) await window.catalogDb.deleteCategory(t);
+    await window.catalogDb.deleteCategory(id);
+    state.categories = state.categories.filter((c) => c.id !== id && !childIds.includes(c.id));
+    toast({ tone: "err", msg: "Familia eliminada", sub: cat.name });
+    renderCategories();
+  } catch (e) { toast({ tone: "err", msg: "No se pudo eliminar", sub: e.message }); }
+}
+async function deleteType(id) {
+  const cat = catById(id);
+  if (!cat) return;
+  let count = 0;
+  try { count = await window.catalogDb.getCategoryProductCount(id, []); } catch (_) {}
+  if (count > 0) {
+    await confirmModal({ title: "No se puede eliminar", body: `El tipo “${cat.name}” tiene ${count} producto(s). Reasignalos primero.`, confirmLabel: "Entendido" });
+    return;
+  }
+  const ok = await confirmModal({ title: "Eliminar tipo", body: `Se eliminará el tipo “${cat.name}”.`, confirmLabel: "Eliminar", danger: true });
+  if (!ok) return;
+  try {
+    await window.catalogDb.deleteCategory(id);
+    state.categories = state.categories.filter((c) => c.id !== id);
+    renderCategories();
+  } catch (e) { toast({ tone: "err", msg: "No se pudo eliminar", sub: e.message }); }
+}
