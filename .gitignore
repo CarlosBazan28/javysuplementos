@@ -1,1 +1,18 @@
+# Servidor de preview local
 .preview-server.js
+
+# Worktrees de git (cada uno es una copia del repo, no se versiona)
+.claude/worktrees/
+
+# Material de referencia local (handoff de diseño P-Boom)
+P-Boom Supplements Design System/
+P-Boom Supplements Design System.zip
+
+# Salidas locales (screenshots, exports, builds temporales)
+outputs/
+
+# Temporales de Codex (incluye node_modules)
+.codex-tmp/
+
+# Dependencias
+node_modules/

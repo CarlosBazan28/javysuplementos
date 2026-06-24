@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Plan de mejoras — Panel administrativo · Javy Suplementos</title>
+<style>
+  :root{
+    --ink:#0f1722; --muted:#5b6b80; --line:#e2e8f0; --soft:#f5f8fc;
+    --brand:#0191c6; --green:#0a9d54; --crit:#d11a4b; --high:#e06a00;
+    --med:#b8860b; --low:#3a7d44;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  body{
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink); margin:0; font-size:11.2px; line-height:1.55;
+  }
+  @page{ size:A4; margin:16mm 15mm 16mm 15mm; }
+
+  /* ---- Portada ---- */
+  .cover{
+    height:calc(297mm - 32mm);
+    display:flex; flex-direction:column; justify-content:center;
+    page-break-after:always;
+  }
+  .cover .kicker{
+    color:var(--brand); font-weight:700; letter-spacing:.18em;
+    text-transform:uppercase; font-size:11px; margin-bottom:18px;
+  }
+  .cover h1{ font-size:34px; line-height:1.12; margin:0 0 14px; letter-spacing:-.5px;}
+  .cover .sub{ color:var(--muted); font-size:14px; max-width:62ch;}
+  .cover .meta{ margin-top:40px; border-top:2px solid var(--line); padding-top:16px;
+    color:var(--muted); font-size:11px; display:flex; gap:34px; flex-wrap:wrap;}
+  .cover .meta b{ color:var(--ink); display:block; font-size:12.5px; margin-top:2px;}
+  .cover .verdict{
+    margin-top:30px; background:var(--soft); border:1px solid var(--line);
+    border-left:4px solid var(--green); border-radius:8px; padding:16px 18px;
+  }
+  .cover .verdict h3{ margin:0 0 6px; font-size:13px;}
+  .cover .verdict p{ margin:0; color:var(--muted); font-size:11.5px;}
+
+  /* ---- Tipografía de secciones ---- */
+  h2{ font-size:18px; margin:30px 0 4px; letter-spacing:-.3px; padding-bottom:6px;
+    border-bottom:2px solid var(--ink);}
+  h2 .n{ color:var(--brand); }
+  .lead{ color:var(--muted); margin:6px 0 16px; font-size:11.4px;}
+  h3.batch{ font-size:14px; margin:22px 0 2px;}
+  section{ page-break-inside:avoid; }
+
+  /* ---- Tarjetas de hallazgo ---- */
+  .card{ border:1px solid var(--line); border-radius:9px; padding:13px 15px;
+    margin:11px 0; page-break-inside:avoid; background:#fff;}
+  .card .top{ display:flex; align-items:baseline; gap:9px; margin-bottom:6px;}
+  .badge{ font-size:9px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+    padding:2px 7px; border-radius:999px; color:#fff; white-space:nowrap;}
+  .b-crit{background:var(--crit);} .b-high{background:var(--high);}
+  .b-med{background:var(--med);} .b-low{background:var(--low);}
+  .card .id{ font-weight:800; color:var(--ink);}
+  .card .ttl{ font-weight:700; font-size:12.2px;}
+  .card p{ margin:5px 0;}
+  .card .label{ font-weight:700; color:var(--ink);}
+  .file{ font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
+    font-size:10px; background:var(--soft); border:1px solid var(--line);
+    border-radius:4px; padding:1px 5px; color:#1d3a52; white-space:nowrap;}
+  .fix{ background:#f3faf6; border-left:3px solid var(--green); padding:7px 11px;
+    border-radius:0 6px 6px 0; margin-top:7px;}
+  .fix .label{ color:var(--green);}
+
+  /* ---- Tablas ---- */
+  table{ border-collapse:collapse; width:100%; margin:10px 0; font-size:10.4px;}
+  th,td{ border:1px solid var(--line); padding:7px 9px; text-align:left; vertical-align:top;}
+  th{ background:var(--ink); color:#fff; font-size:9.5px; letter-spacing:.04em; text-transform:uppercase;}
+  tbody tr:nth-child(even){ background:var(--soft);}
+
+  /* ---- Listas / callouts ---- */
+  ul{ margin:6px 0 6px 0; padding-left:18px;} li{ margin:3px 0;}
+  ol{ margin:6px 0 6px 18px;}
+  .note{ background:#fff8ec; border:1px solid #f0d9a8; border-left:4px solid var(--high);
+    border-radius:0 8px 8px 0; padding:12px 15px; margin:14px 0; page-break-inside:avoid;}
+  .note b{ color:var(--high);}
+  .ok{ background:#f3faf6; border:1px solid #c7e8d4; border-left:4px solid var(--green);
+    border-radius:0 8px 8px 0; padding:12px 15px; margin:14px 0;}
+  .pill{ display:inline-block; font-size:9px; font-weight:800; padding:2px 8px; border-radius:999px;
+    border:1px solid var(--line); color:var(--muted); background:#fff; margin-left:6px;}
+  .front{ border-color:#bfe3f3; color:var(--brand); background:#f0f9fe;}
+  .db{ border-color:#f3c7a8; color:var(--high); background:#fff5ee;}
+  .footer-note{ color:var(--muted); font-size:10px; margin-top:6px;}
+  .step-grid{ }
+  .batch-card{ border:1px solid var(--line); border-radius:9px; padding:0; margin:12px 0;
+    page-break-inside:avoid; overflow:hidden;}
+  .batch-card .head{ background:var(--soft); padding:10px 14px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:10px;}
+  .batch-card .head .tag{ font-weight:800; font-size:13px;}
+  .batch-card .body{ padding:11px 14px;}
+  .batch-card .body p{ margin:5px 0;}
+  .kbd{ font-family:Consolas,monospace; font-size:10px; background:#eef3f8; border:1px solid var(--line);
+    border-radius:4px; padding:1px 5px;}
+</style>
+</head>
+<body>
+
+<!-- ===================== PORTADA ===================== -->
+<div class="cover">
+  <div class="kicker">Javy Suplementos · Auditoría técnica</div>
+  <h1>Plan de mejoras del<br>Panel Administrativo</h1>
+  <p class="sub">Análisis de deficiencias y guía de ejecución para corregirlas de forma segura,
+  ordenada y sin romper datos en producción. Cubre diseño/UX, lógica, seguridad y mantenibilidad.</p>
+
+  <div class="verdict">
+    <h3>Veredicto de seguridad: sólido ✓</h3>
+    <p>El render sanitiza con <span class="file">escapeHTML()</span> de forma consistente, la escritura
+    descansa en RLS de Supabase (no en la UI) y la clave del cliente es la <i>publishable</i>.
+    <b>No hay XSS ni credenciales filtradas.</b> Los problemas reales son de correctitud / pérdida de
+    datos y de consistencia de marca y accesibilidad.</p>
+  </div>
+
+  <div class="meta">
+    <div>Proyecto<b>Javy Suplementos</b></div>
+    <div>Alcance<b>admin.html · login · dashboard JS/CSS · db.js · auth.js</b></div>
+    <div>Rama de trabajo<b>claude → main (vía PR)</b></div>
+    <div>Total de hallazgos<b>15 + pulido</b></div>
+  </div>
+</div>
+
+<!-- ===================== 1. RESUMEN ===================== -->
+<section>
+<h2><span class="n">1.</span> Mapa de los hallazgos</h2>
+<p class="lead">15 puntos priorizados por impacto. La columna clave es <b>dónde vive el arreglo</b>:
+lo que es <span class="pill front">solo frontend</span> es seguro y desplegable ya; lo que toca
+<span class="pill db">base de datos</span> requiere aplicar SQL en Supabase y decisiones de producto.</p>
+
+<table>
+  <thead><tr><th style="width:34px">#</th><th>Deficiencia</th><th style="width:60px">Severidad</th><th style="width:92px">Vive en</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>"Guardar inicio" no es atómico → puede borrar destacados/inicio</td><td>Crítico</td><td>Base de datos</td></tr>
+    <tr><td>2</td><td>"Pausar/Activar" reescribe la imagen con una ruta local</td><td>Crítico</td><td>Frontend</td></tr>
+    <tr><td>3</td><td>El estado "Guardando…" borra el icono del botón (permanente)</td><td>Crítico</td><td>Frontend</td></tr>
+    <tr><td>4</td><td>Drawer de producto sin semántica de diálogo ni foco</td><td>Alto</td><td>Frontend</td></tr>
+    <tr><td>5</td><td>El CTA primario no usa el verde de marca</td><td>Alto</td><td>Frontend</td></tr>
+    <tr><td>6</td><td>Subida de imágenes sin validar tipo ni tamaño</td><td>Alto</td><td>Frontend</td></tr>
+    <tr><td>7</td><td>Imagen huérfana en storage si falla el guardado</td><td>Alto</td><td>Frontend</td></tr>
+    <tr><td>8</td><td>Dos fuentes de verdad para "inicio" (formulario vs. sección)</td><td>Medio</td><td>Base de datos</td></tr>
+    <tr><td>9</td><td>Barra de guardado y toasts tapados por la tab-bar en mobile</td><td>Medio</td><td>Frontend</td></tr>
+    <tr><td>10</td><td>Errores crudos de Postgres mostrados al usuario</td><td>Medio</td><td>Frontend</td></tr>
+    <tr><td>11</td><td>Doble-submit en variantes/sabores</td><td>Medio</td><td>Frontend</td></tr>
+    <tr><td>12</td><td>Fuga de memoria con <span class="file">createObjectURL</span></td><td>Medio</td><td>Frontend</td></tr>
+    <tr><td>13</td><td>Refs sin <span class="file">?.</span> pueden romper el init</td><td>Medio</td><td>Frontend</td></tr>
+    <tr><td>14</td><td><span class="file">css/admin.css</span> es CSS muerto y contradictorio</td><td>Medio</td><td>Frontend</td></tr>
+    <tr><td>15</td><td>Tablet (~768px) cae al modo mobile innecesariamente</td><td>Medio</td><td>Frontend</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- ===================== 2. CRÍTICOS ===================== -->
+<section>
+<h2><span class="n">2.</span> Hallazgos críticos</h2>
+<p class="lead">Corrupción de datos o feedback roto. Son la prioridad real.</p>
+
+<div class="card">
+  <div class="top"><span class="badge b-crit">Crítico</span><span class="id">#1</span>
+    <span class="ttl">"Guardar inicio" puede borrar datos (operación no atómica)</span></div>
+  <p><span class="file">js/db.js:514-533</span></p>
+  <p>Primero hace un UPDATE masivo a <b>todas</b> las filas poniendo
+  <span class="file">show_on_home=false, home_order=null, is_featured=false, featured=false</span>,
+  y luego, en un bucle, pone <span class="file">true</span> a los seleccionados (una query por producto).</p>
+  <ul>
+    <li><span class="label">No es atómico:</span> si una query del bucle falla tras el reset (red, RLS, timeout),
+    quedan <b>todos los destacados e inicio borrados</b> y solo algunos restaurados, sin rollback.</li>
+    <li><span class="label">Mezcla conceptos:</span> apaga <span class="file">featured/is_featured</span> de todo el
+    catálogo, aunque "destacado" es un flag independiente con su propio checkbox.</li>
+  </ul>
+  <div class="fix"><span class="label">Cómo arreglarlo:</span> mover la operación a una función RPC/transacción en
+  Postgres (un solo <span class="file">update … set show_on_home = (id = any($1))</span> con
+  <span class="file">home_order</span> vía <span class="file">array_position</span>) y dejar de tocar
+  <span class="file">featured/is_featured</span> aquí (desacoplar "inicio" de "destacado").</div>
+</div>
+
+<div class="card">
+  <div class="top"><span class="badge b-crit">Crítico</span><span class="id">#2</span>
+    <span class="ttl">Un simple "Pausar/Activar" reescribe la imagen con una ruta local</span></div>
+  <p><span class="file">js/admin-dashboard.js:888-902</span> + <span class="file">js/db.js:196-200</span></p>
+  <p><span class="file">normalizeProductFromDb</span> sustituye <span class="file">image_url</span> por una imagen local de
+  <span class="file">product-data.js</span>. <span class="file">toggleProductAvailability</span> hace
+  <span class="file">{ ...product }</span> con ese objeto normalizado y lo persiste → reescribe la imagen
+  (y recalcula slug, <span class="file">precio_centavos</span>, etc.) en Supabase. Lo mismo al precargar el formulario.</p>
+  <div class="fix"><span class="label">Cómo arreglarlo:</span> en el admin trabajar con el registro <b>crudo</b> de la BD;
+  para el toggle, enviar un update <b>parcial</b> <span class="file">{ is_available, available }</span> en vez de reescribir
+  todo el producto. <i>(Solo frontend — no requiere migración.)</i></div>
+</div>
+
+<div class="card">
+  <div class="top"><span class="badge b-crit">Crítico</span><span class="id">#3</span>
+    <span class="ttl">El estado "Guardando…" se come el icono del botón (permanente)</span></div>
+  <p><span class="file">js/admin-dashboard.js:270-281</span></p>
+  <p><span class="file">setButtonLoading</span> guarda/restaura con <span class="file">button.textContent</span>, pero el botón
+  contiene <span class="file">&lt;span class="btn-icon"&gt;…SVG…&lt;/span&gt;</span>. Tras el primer guardado, el icono
+  del disquete desaparece para siempre mientras el drawer siga montado.</p>
+  <div class="fix"><span class="label">Cómo arreglarlo:</span> usar un <span class="file">&lt;span&gt;</span> de texto dedicado
+  dentro del botón + una clase <span class="file">is-loading</span> (igual que el login con
+  <span class="file">.login-spinner</span>), sin tocar el <span class="file">textContent</span> del botón completo.</div>
+</div>
+</section>
+
+<!-- ===================== 3. ALTOS ===================== -->
+<section>
+<h2><span class="n">3.</span> Hallazgos de severidad alta</h2>
+
+<div class="card">
+  <div class="top"><span class="badge b-high">Alto</span><span class="id">#4</span>
+    <span class="ttl">Drawer de producto sin semántica de diálogo ni manejo de foco</span></div>
+  <p><span class="file">admin.html:266</span> · <span class="file">js/admin-dashboard.js:796, 1051</span></p>
+  <p>El formulario CRUD principal no tiene <span class="file">role="dialog"</span>,
+  <span class="file">aria-modal</span> ni <span class="file">aria-labelledby</span> (el panel de filtros <b>sí</b>).
+  Escape no lo cierra, no hay focus-trap, y al cerrar no devuelve el foco al botón que lo abrió.</p>
+  <div class="fix"><span class="label">Cómo arreglarlo:</span> replicar el patrón que <b>ya funciona</b> en el panel de
+  filtros: semántica de diálogo, cierre con Escape, trampa de foco y restaurar foco al disparador. Reutilizar, no inventar.</div>
+</div>
+
+<div class="card">
+  <div class="top"><span class="badge b-high">Alto</span><span class="id">#5</span>
+    <span class="ttl">El CTA primario no usa el verde de marca</span></div>
+  <p><span class="file">css/admin-dashboard.css:10</span> vs <span class="file">css/tokens.css:27</span></p>
+  <p>El admin define <span class="file">--admin-green:#08e063</span> en paralelo en vez de usar
+  <span class="file">--cta:#00e676</span>. "Guardar"/"Agregar" no combinan con el sitio público. En el login el botón
+  principal es <b>gris translúcido</b>: solo se pone verde en éxito.</p>
+  <div class="fix"><span class="label">Cómo arreglarlo:</span> mapear las variables locales a los tokens
+  (<span class="file">--admin-green: var(--cta)</span>, etc.) y dar color de marca al CTA del login.</div>
+</div>
+
+<div class="card">
+  <div class="top"><span class="badge b-high">Alto</span><span class="id">#6</span>
+    <span class="ttl">Subida de imágenes sin validar tipo ni tamaño</span></div>
+  <p><span class="file">js/db.js:539-558</span></p>
+  <p>No valida <span class="file">file.type</span> ni <span class="file">file.size</span>; la extensión sale del nombre
+  (falsificable) y el bucket es público. Un admin puede subir 50 MB o un no-imagen sin feedback.</p>
+  <div class="fix"><span class="label">Cómo arreglarlo:</span> validar <span class="file">image/*</span> y un límite (~5 MB)
+  antes de subir, mostrando el error en <span class="file">setFormMessage</span>.</div>
+</div>
+
+<div class="card">
+  <div class="top"><span class="badge b-high">Alto</span><span class="id">#7</span>
+    <span class="ttl">Imagen huérfana en storage si falla el guardado</span></div>
+  <p><span class="file">js/admin-dashboard.js:848-857</span></p>
+  <p>Sube la imagen primero; si <span class="file">createProduct/updateProduct</span> falla después, queda basura en
+  el bucket sin referencia.</p>
+  <div class="fix"><span class="label">Cómo arreglarlo:</span> intentar <span class="file">storage.remove()</span> del path si
+  la mutación falla, o subir la imagen al final del flujo.</div>
+</div>
+</section>
+
+<!-- ===================== 4. MEDIOS ===================== -->
+<section>
+<h2><span class="n">4.</span> Hallazgos de severidad media</h2>
+
+<div class="card">
+  <div class="top"><span class="badge b-med">Medio</span><span class="id">#8</span>
+    <span class="ttl">Dos fuentes de verdad para "inicio"</span></div>
+  <p><span class="file">js/admin-dashboard.js:746-749</span> + <span class="file">js/db.js:340</span></p>
+  <p>El límite de 4–8 solo se valida en la sección Inicio; vía el formulario se puede marcar
+  <span class="file">show_on_home</span> sin límite y <span class="file">getHomeProducts</span> corta a 8 arbitrariamente.</p>
+  <div class="fix"><span class="label">Cómo arreglarlo:</span> unificar la gestión de inicio en un solo flujo / validar el conteo al guardar el formulario.</div>
+</div>
+
+<div class="card">
+  <div class="top"><span class="badge b-med">Medio</span><span class="id">#9</span>
+    <span class="ttl">Barra de guardado y toasts tapados por la tab-bar en mobile</span></div>
+  <p><span class="file">css/admin-dashboard.css:837-846, 1042-1050</span></p>
+  <p>En ≤860px el sidebar pasa a tab-bar fija inferior (~64px), que solapa la barra sticky de guardado y los toasts
+  — justo el feedback que más importa al guardar.</p>
+  <div class="fix"><span class="label">Cómo arreglarlo:</span> en ≤860px subir <span class="file">bottom</span> por encima de la tab-bar (~78–84px).</div>
+</div>
+
+<div class="card">
+  <div class="top"><span class="badge b-med">Medio</span><span class="id">#10</span>
+    <span class="ttl">Errores crudos de Postgres mostrados al usuario</span></div>
+  <p><span class="file">js/admin-dashboard.js:862, 882, 899, 1007</span></p>
+  <p>Se muestra <span class="file">error.message</span> directo: constraints o RLS aparecen como texto técnico en inglés.</p>
+  <div class="fix"><span class="label">Cómo arreglarlo:</span> extender el helper <span class="file">getFriendlyAuthError</span>
+  (ya existe en <span class="file">auth.js</span>) a errores de BD/duplicados.</div>
+</div>
+
+<div class="card">
+  <div class="top"><span class="badge b-med">Medio</span><span class="id">#11</span>
+    <span class="ttl">Doble-submit en variantes/sabores</span></div>
+  <p><span class="file">js/admin-dashboard.js:904-966</span></p>
+  <p><span class="file">addVariant</span>/<span class="file">saveFlavor</span> no deshabilitan su botón durante el
+  <span class="file">await</span>. El índice único frena el duplicado, pero genera errores visibles.</p>
+  <div class="fix"><span class="label">Cómo arreglarlo:</span> deshabilitar el botón mientras la promesa está pendiente.</div>
+</div>
+
+<div class="card">
+  <div class="top"><span class="badge b-med">Medio</span><span class="id">#12</span>
+    <span class="ttl">Fuga de memoria con createObjectURL</span></div>
+  <p><span class="file">js/admin-dashboard.js:1078</span></p>
+  <p>Cada cambio de archivo crea un object URL que nunca se revoca.</p>
+  <div class="fix"><span class="label">Cómo arreglarlo:</span> <span class="file">revokeObjectURL()</span> antes de crear el siguiente y al cerrar el drawer.</div>
+</div>
+
+<div class="card">
+  <div class="top"><span class="badge b-med">Medio</span><span class="id">#13</span>
+    <span class="ttl">Refs sin <span class="file">?.</span> que pueden romper el init</span></div>
+  <p><span class="file">js/admin-dashboard.js:1056, 1062-1065, 1181</span></p>
+  <p>Varios <span class="file">els.*.addEventListener</span> sin guarda opcional; si falta un nodo, <span class="file">init()</span>
+  lanza y deja el panel a medio inicializar.</p>
+  <div class="fix"><span class="label">Cómo arreglarlo:</span> uniformar con <span class="file">?.</span>.</div>
+</div>
+
+<div class="card">
+  <div class="top"><span class="badge b-med">Medio</span><span class="id">#14</span>
+    <span class="ttl"><span class="file">css/admin.css</span> es CSS muerto y contradictorio</span></div>
+  <p>No está referenciado por ningún HTML y usa azul <span class="file">#5ab4e9</span> como primario (contradice el verde actual).
+  Riesgo de editar el archivo equivocado.</p>
+  <div class="fix"><span class="label">Cómo arreglarlo:</span> eliminarlo (y su mención en CLAUDE.md).</div>
+</div>
+
+<div class="card">
+  <div class="top"><span class="badge b-med">Medio</span><span class="id">#15</span>
+    <span class="ttl">Tablet (~768px) cae al modo mobile innecesariamente</span></div>
+  <p><span class="file">css/admin-dashboard.css:1114</span></p>
+  <p>Colapsa a tab-bar + tarjetas ya en ≤860px; en tablet vertical se desaprovecha el ancho.</p>
+  <div class="fix"><span class="label">Cómo arreglarlo:</span> breakpoint intermedio que mantenga tabla/sidebar entre 768–1023px.</div>
+</div>
+
+<div class="ok">
+  <b>Pulido (severidad baja):</b> variantes nuevas sin <span class="file">aria-label</span> ·
+  campos obligatorios sin indicador visual · sin skeleton de carga ni distinción "0 productos" vs "sin resultados" ·
+  toggle de filtros a 42px (rompe el mínimo táctil de 44px) · paleta de error fuera de tokens ·
+  helpers duplicados (centralizar en <span class="file">utils.js</span>) · <span class="file">seedProductsFromLocalData</span> N+1.
+</div>
+</section>
+
+<!-- ===================== 5. CÓMO TRABAJARLO ===================== -->
+<section>
+<h2><span class="n">5.</span> Cómo trabajarlo correctamente</h2>
+<p class="lead">Reglas que manda este proyecto: sin tests ni CI (se verifica a mano con <span class="kbd">/ver-sitio</span>),
+rama <b>claude</b> (nunca push a main), datos reales en Supabase, y algunos arreglos necesitan SQL que solo el dueño aplica.</p>
+
+<div class="note">
+  <b>Principio rector:</b> separar lo <i>solo-frontend</i> (seguro, desplegable ya) de lo que <i>toca la base de datos</i>
+  (requiere migración + decisión de producto). Y nunca mezclar refactor con bugfix en el mismo PR.
+</div>
+
+<h3 class="batch">Lotes de trabajo (cada lote = 1 PR revisable)</h3>
+
+<div class="batch-card">
+  <div class="head"><span class="tag">Lote A · Quick wins seguros</span><span class="pill front">solo frontend</span></div>
+  <div class="body">
+    <p><b>Incluye:</b> #3 icono de loading · #5 tokens de marca · #9 solapamiento mobile · #14 borrar CSS muerto · ajustes táctiles 44px.</p>
+    <p><b>Por qué primero:</b> cero backend, cambios visibles, bajo riesgo. Calienta el terreno.</p>
+    <p><b>Verificar:</b> <span class="kbd">/ver-sitio</span> en mobile y desktop; guardar un producto y ver icono y toasts correctos.</p>
+  </div>
+</div>
+
+<div class="batch-card">
+  <div class="head"><span class="tag">Lote B · Integridad de datos sin migración</span><span class="pill front">solo frontend</span></div>
+  <div class="body">
+    <p><b>Incluye:</b> #2 toggle con update parcial · precarga del formulario con registro crudo · #13 guardas <span class="file">?.</span>.</p>
+    <p><b>Por qué importa:</b> resuelve el grueso del riesgo de <b>corrupción de datos</b> sin tocar Supabase.</p>
+    <p><b>Verificar:</b> pausar/activar un producto de prueba y confirmar en la tabla de Supabase que <span class="file">image_url</span> <b>no cambió</b>.</p>
+  </div>
+</div>
+
+<div class="batch-card">
+  <div class="head"><span class="tag">Lote C · Subida de imágenes</span><span class="pill front">solo frontend</span></div>
+  <div class="body">
+    <p><b>Incluye:</b> #6 validar tipo/tamaño · #7 limpiar imagen huérfana · #12 <span class="file">revokeObjectURL</span>.</p>
+    <p><b>Verificar:</b> subir un no-imagen y un archivo grande (deben rechazarse con mensaje) y forzar un fallo de guardado para confirmar que no queda basura en storage.</p>
+  </div>
+</div>
+
+<div class="batch-card">
+  <div class="head"><span class="tag">Lote D · Accesibilidad del drawer</span><span class="pill front">solo frontend</span></div>
+  <div class="body">
+    <p><b>Incluye:</b> #4 replicar en el drawer el patrón del panel de filtros (role=dialog, aria-modal, Escape, focus-trap, restaurar foco).</p>
+    <p><b>Verificar:</b> abrir y cerrar el drawer usando <b>solo el teclado</b>.</p>
+  </div>
+</div>
+
+<div class="batch-card">
+  <div class="head"><span class="tag">Lote E · Integridad de "inicio"</span><span class="pill db">base de datos</span></div>
+  <div class="body">
+    <p><b>Incluye:</b> #1 función RPC/transacción atómica · #8 una sola fuente de verdad · #10 errores amigables de BD.</p>
+    <p><b>Requiere decisión del dueño antes de codear:</b></p>
+    <ul>
+      <li>¿"destacado" e "inicio" son flags independientes? <i>(recomendado: sí, desacoplar)</i></li>
+      <li>¿El límite 4–8 es duro también desde el formulario?</li>
+    </ul>
+    <p><b>Gate de despliegue:</b> el PR <b>no se mergea a main</b> hasta que el dueño aplique la migración SQL en Supabase, o el RPC falla en producción.</p>
+    <p class="footer-note">Mitigación intermedia sin migración: dejar de tocar <span class="file">featured/is_featured</span> en
+    <span class="file">updateHomeProducts</span> reduce el daño aunque no da atomicidad total.</p>
+  </div>
+</div>
+
+<div class="batch-card">
+  <div class="head"><span class="tag">Lote F · Deuda y pulido</span><span class="pill front">solo frontend</span></div>
+  <div class="body">
+    <p><b>Incluye (PR aparte):</b> centralizar helpers en <span class="file">utils.js</span> · indicador de campos obligatorios ·
+    skeleton / estado vacío diferenciado · paleta de error en tokens · breakpoint de tablet.</p>
+  </div>
+</div>
+
+<h3 class="batch">Por qué este orden (y no "severidad primero")</h3>
+<p>El instinto sería atacar #1 de una, pero es justo el que necesita decisión de producto + migración del dueño:
+arrancar ahí bloquea. Con <b>A → B → C → D</b> se entrega valor real y seguro de inmediato —incluido el grueso del riesgo
+de datos en B, que <b>no</b> depende de la BD— mientras se definen en paralelo las preguntas del Lote E.</p>
+
+<h3 class="batch">Checklist antes de cada PR</h3>
+<ol>
+  <li>Probado en <span class="kbd">/ver-sitio</span> (mobile + desktop donde aplique).</li>
+  <li>Lotes con datos: verificado el estado en Supabase <b>antes y después</b>.</li>
+  <li>Sin errores en consola.</li>
+  <li>Commit enfocado, mensaje claro, en la rama <b>claude</b>.</li>
+  <li>PR <b>claude → main</b> para aprobación del dueño; los de BD, gateados a la migración.</li>
+</ol>
+</section>
+
+<p class="footer-note" style="margin-top:24px; border-top:1px solid var(--line); padding-top:8px;">
+Documento generado a partir de la auditoría de los agentes <i>diseñador</i> y <i>lógica</i> del proyecto,
+con verificación manual de los hallazgos críticos en el código fuente. · Javy Suplementos
+</p>
+
+</body>
+</html>
