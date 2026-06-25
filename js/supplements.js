@@ -277,9 +277,11 @@ function syncAddButton(card, product) {
   const button = card.querySelector(".product-card__btn--buy");
   if (!button) return;
 
-  const selected = getSelectedFlavor(card, product, false);
-  const flavorName = selected ? selected.flavor : "";
-  setAddButtonState(button, !!window.consultation?.hasItem?.(product.id, flavorName));
+  // La card ya no tiene selector de sabor: marca "en cotización" si hay CUALQUIER
+  // variante de este producto agregada (con o sin sabor).
+  const inQuote = (window.consultation?.getAddedFlavors?.(product.id)?.length || 0) > 0
+    || !!window.consultation?.hasItem?.(product.id, "");
+  setAddButtonState(button, inQuote);
 
   // Nota: "En tu cotización: Chocolate, Vainilla"
   const note = card.querySelector("[data-added-note]");
@@ -320,7 +322,10 @@ function bindConsultationSync() {
   if (consultationSyncBound) return;
   consultationSyncBound = true;
   // Un único listener por página evita fugas al re-filtrar el catálogo.
-  document.addEventListener("consultation:change", syncAllAddButtons);
+  document.addEventListener("consultation:change", () => {
+    syncAllAddButtons();
+    updateFloatingQuoteVisibility(); // cubre el alta desde el modal
+  });
 }
 
 function getCardQuantity(card) {
@@ -491,66 +496,27 @@ function renderProductCard(product) {
         </span>
         ${product.presentation ? `<span class="product-card__pres">${escapeHTML(product.presentation)}</span>` : ""}
       </div>
-      ${renderFlavorOptions(product)}
-      <div class="product-card__qty">
-        <span class="product-card__qty-label">Cantidad</span>
-        <div class="product-card__stepper" role="group" aria-label="Cantidad">
-          <button type="button" class="product-card__qty-btn" data-qty-dec aria-label="Disminuir">−</button>
-          <span class="product-card__qty-value" data-qty-value aria-live="polite">1</span>
-          <button type="button" class="product-card__qty-btn product-card__qty-btn--plus" data-qty-inc aria-label="Aumentar">+</button>
-        </div>
-        <select class="product-card__qty-select" data-qty-select data-jdd-skip aria-label="Cantidad">
-          ${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}
-        </select>
-      </div>
-      <p class="product-card__added-note" data-added-note hidden></p>
     </div>
 
-    <div class="product-card__actions product-card__actions--catalog">
+    <div class="product-card__actions">
       ${canQuote
         ? '<button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>'
         : '<button class="product-card__btn product-card__btn--quote" type="button">Consultar disponibilidad</button>'
       }
-      <a class="product-card__btn product-card__btn--info" href="${detailUrl}">Ver detalles</a>
+      <a class="product-card__detail-link" href="${detailUrl}">Ver detalles</a>
     </div>
   `;
 
-  wireQuantityStepper(card);
   card._javyProduct = product;
 
-  const addBtn = card.querySelector(".product-card__btn--buy");
-  const quoteBtn = card.querySelector(".product-card__btn--quote");
-
-  addBtn?.addEventListener("click", () => {
-    const selectedFlavor = getSelectedFlavor(card, product);
-    if (product.flavors?.length && !selectedFlavor) {
-      addBtn.textContent = "Elige sabor";
-      window.setTimeout(() => { syncAddButton(card, product); }, 1200);
-      return;
-    }
-
-    const flavorName = selectedFlavor?.flavor || "";
-    if (window.consultation?.hasItem?.(product.id, flavorName)) {
-      window.consultation?.toast?.(flavorName ? "Ese sabor ya está en tu cotización" : "Ya está en tu cotización");
-      return;
-    }
-
-    const quantity = getCardQuantity(card);
-    window.consultation?.addItem?.(product, { ...(selectedFlavor || {}), quantity });
-    syncAddButton(card, product);
-    updateFloatingQuoteVisibility();
+  // "Agregar" abre el modal de selección (sabor + cantidad); la card ya no trae selects.
+  card.querySelector(".product-card__btn--buy")?.addEventListener("click", () => {
+    window.consultation?.openAddModal?.(product);
   });
-
-  // El estado del botón depende del sabor elegido: re-sincroniza al cambiarlo.
-  card.querySelector("[data-flavor-select]")?.addEventListener("change", () => {
-    syncAddButton(card, product);
-  });
-  syncAddButton(card, product);
-
-  // El botón "Consultar disponibilidad" solo se renderiza cuando !canQuote
-  quoteBtn?.addEventListener("click", () => {
+  card.querySelector(".product-card__btn--quote")?.addEventListener("click", () => {
     window.consultation?.askAvailability?.(product, {});
   });
+  syncAddButton(card, product);
 
   // "Ver detalles" y la imagen/nombre son <a href> reales; la transición la aplica
   // el handler global de include-nav.js.

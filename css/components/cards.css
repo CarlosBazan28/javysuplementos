@@ -548,6 +548,25 @@
   background: rgba(90,180,233,0.24);
 }
 
+/* "Ver detalles" como link de texto secundario (card slim, sin sabor/cantidad inline) */
+.product-card__detail-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: color .18s ease;
+}
+.product-card__detail-link:hover { color: var(--accent); }
+.product-card__detail-link:focus-visible {
+  outline: 2px solid rgba(1,145,198,0.7);
+  outline-offset: 2px;
+}
+
 @media (max-width: 767px) {
   .top-products__list {
     grid-template-columns: repeat(auto-fit, minmax(min(136px, 100%), 180px));
@@ -664,5 +683,10 @@
     padding: 0 6px;
     border-radius: 10px;
     font-size: 0.72rem;
+  }
+
+  .product-card__detail-link {
+    font-size: 0.72rem;
+    min-height: 28px;
   }
 }
