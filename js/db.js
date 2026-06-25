@@ -714,6 +714,28 @@ async function updateHomeProducts(productIds = []) {
   return getHomeProducts();
 }
 
+// Convierte/redimensiona una imagen a WebP en el navegador antes de subirla,
+// para que pese poco en todo el sitio. Devuelve un Blob webp o null si falla
+// (navegador viejo, formato no rasterizable) -> en ese caso se sube el original.
+async function compressImageToWebp(file, maxSide = 800, quality = 0.82) {
+  if (typeof document === "undefined" || typeof createImageBitmap !== "function") return null;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext("2d").drawImage(bitmap, 0, 0, width, height);
+    bitmap.close?.();
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", quality));
+    return blob && blob.type === "image/webp" ? blob : null;
+  } catch (_) {
+    return null;
+  }
+}
+
 async function uploadProductImage(file) {
   ensureSupabaseForWrite();
   if (!file) return "";
@@ -727,15 +749,26 @@ async function uploadProductImage(file) {
     throw new Error("La imagen supera el límite de 5 MB. Optimízala antes de subirla.");
   }
 
-  const extension = file.name.split(".").pop()?.toLowerCase() || "webp";
+  // Optimizar a WebP; si la conversión no aplica o no achica, subir el original.
+  let body = file;
+  let extension = file.name.split(".").pop()?.toLowerCase() || "webp";
+  let contentType = file.type;
+  const webp = await compressImageToWebp(file);
+  if (webp && webp.size < file.size) {
+    body = webp;
+    extension = "webp";
+    contentType = "image/webp";
+  }
+
   const safeName = createSlug(file.name.replace(/\.[^.]+$/, "")) || "producto";
   const path = `${Date.now()}-${safeName}.${extension}`;
 
   const { error } = await supabaseClient.storage
     .from(PRODUCT_IMAGE_BUCKET)
-    .upload(path, file, {
+    .upload(path, body, {
       cacheControl: "3600",
       upsert: false,
+      contentType,
     });
 
   if (error) throw error;
