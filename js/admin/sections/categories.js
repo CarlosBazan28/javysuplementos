@@ -102,7 +102,9 @@ async function addFamily() {
   const name = await promptModal({ title: "Nueva categoría", label: "Nombre de la categoría (ej. Proteínas)" });
   if (!name) return;
   try {
-    const created = await window.catalogDb.createCategory({ name, parentId: null, sortOrder: families().length + 1 });
+    // max(sort_order)+1: cae al final sin chocar con valores existentes (p. ej. 100)
+    const sortOrder = families().reduce((m, c) => Math.max(m, c.sort_order ?? 0), 0) + 1;
+    const created = await window.catalogDb.createCategory({ name, parentId: null, sortOrder });
     state.categories.push(created);
     toast({ tone: "ok", msg: "Categoría creada", sub: name });
     renderCategories();
@@ -144,16 +146,28 @@ async function moveFamily(spec) {
   const fams = families();
   const j = i + dir;
   if (j < 0 || j >= fams.length) return;
-  const a = fams[i], b = fams[j];
+
+  // Reordenar y NORMALIZAR todo el sort_order a 1..N (no solo intercambiar dos):
+  // así se evita el no-op cuando hay valores duplicados (p. ej. varias en 100).
+  const ordered = fams.slice();
+  [ordered[i], ordered[j]] = [ordered[j], ordered[i]];
+  const changed = [];
+  ordered.forEach((cat, idx) => {
+    const newOrder = idx + 1;
+    if (cat.sort_order !== newOrder) { cat.sort_order = newOrder; changed.push(cat); }
+  });
+
+  renderCategories(); // optimista: el nuevo orden se ve al instante
+
   try {
-    const ao = a.sort_order ?? (i + 1), bo = b.sort_order ?? (j + 1);
-    const [ua, ub] = await Promise.all([
-      window.catalogDb.updateCategory(a.id, { sort_order: bo }),
-      window.catalogDb.updateCategory(b.id, { sort_order: ao }),
-    ]);
-    Object.assign(a, ua); Object.assign(b, ub);
+    await Promise.all(changed.map((cat) =>
+      window.catalogDb.updateCategory(cat.id, { sort_order: cat.sort_order })));
+  } catch (e) {
+    toast({ tone: "err", msg: "No se pudo reordenar", sub: e.message });
+    // resincronizar desde la BD para no quedar desfasados
+    try { state.categories = await window.catalogDb.getAllCategories(); } catch (_) {}
     renderCategories();
-  } catch (e) { toast({ tone: "err", msg: "No se pudo reordenar", sub: e.message }); }
+  }
 }
 async function deleteFamily(id) {
   const cat = catById(id);
