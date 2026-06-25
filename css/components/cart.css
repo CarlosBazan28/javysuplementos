@@ -608,7 +608,7 @@
 .quick-add__field { display: grid; gap: 8px; }
 .quick-add__label { font-size: 0.82rem; font-weight: 600; color: var(--muted); }
 .quick-add__stepper {
-  display: inline-flex; align-items: center; gap: 4px; align-self: start;
+  display: inline-flex; align-items: center; gap: 4px; justify-self: start;
   border: 1px solid var(--line); border-radius: 10px; padding: 4px; background: rgba(255,255,255,0.04);
 }
 .quick-add__qty-btn {
