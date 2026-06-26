@@ -44,16 +44,17 @@ function renderFlavorField(product) {
 
   if (!product.flavors?.length) {
     flavorsEl.innerHTML = `
-      <select id="prod-flavor-select" class="pdp__select" disabled>
+      <select id="prod-flavor-select" class="pdp__select" aria-label="Sabor" disabled>
         <option>Sin sabor</option>
       </select>
     `;
+    if (window.javyDropdown) window.javyDropdown.enhanceSelects(flavorsEl);
     return;
   }
 
   const enabled = productCanBeQuoted(product);
   flavorsEl.innerHTML = `
-    <select id="prod-flavor-select" class="pdp__select" ${enabled ? "" : "disabled"}>
+    <select id="prod-flavor-select" class="pdp__select" aria-label="Sabor" ${enabled ? "" : "disabled"}>
       <option value="">Elegir sabor (${product.flavors.length})</option>
       ${product.flavors.map((flavor) => `
         <option value="${escapeHTML(flavor.id)}" ${flavor.available === false ? "disabled" : ""}>
@@ -62,6 +63,7 @@ function renderFlavorField(product) {
       `).join("")}
     </select>
   `;
+  if (window.javyDropdown) window.javyDropdown.enhanceSelects(flavorsEl);
 }
 
 function wireQuantityStepper(onChange) {
@@ -227,6 +229,7 @@ async function initProductPage() {
           const inCart = window.consultation?.hasItem?.(product.id, f.name) ? " ✓" : "";
           opt.textContent = `${f.name}${unavailable}${inCart}`;
         });
+        window.javyDropdown?.refresh?.(select);
       }
     };
 

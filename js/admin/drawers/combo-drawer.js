@@ -73,8 +73,15 @@ export function openComboDrawer(combo) {
   const get = (sel) => overlay.querySelector(sel);
   overlay.querySelectorAll(".ad-collapse__head").forEach((head) => head.addEventListener("click", () => head.parentElement.classList.toggle("is-open")));
 
-  const close = () => { document.body.style.overflow = ""; document.removeEventListener("keydown", onKey); overlay.remove(); };
-  const onKey = (e) => { if (e.key === "Escape") close(); };
+  const close = () => {
+    if (window.javyDropdown) window.javyDropdown.destroy(overlay);
+    document.body.style.overflow = "";
+    document.removeEventListener("keydown", onKey);
+    overlay.remove();
+  };
+  const onKey = (e) => {
+    if (e.key === "Escape" && !document.querySelector(".jdd.is-open")) close();
+  };
   document.addEventListener("keydown", onKey);
   overlay.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", close));
 
@@ -82,6 +89,7 @@ export function openComboDrawer(combo) {
 
   function renderRows() {
     const container = get("[data-rows]");
+    if (window.javyDropdown) window.javyDropdown.destroy(container);
     container.style.display = "grid";
     container.style.gap = "10px";
     container.innerHTML = draft.rows.map((r, i) => {
@@ -90,19 +98,23 @@ export function openComboDrawer(combo) {
       return `
       <div class="ad-builder-row" data-row="${i}">
         <img src="${esc(p ? p.image : PLACEHOLDER)}" alt="" data-fallback style="opacity:${p ? 1 : 0.3}" />
-        ${field(i === 0 ? "Producto" : "", false, `<select class="ad-select" data-rf="product"><option value="">Elegir producto…</option>${state.products.map((pp) => `<option value="${esc(pp.id)}"${String(pp.id) === String(r.product_id) ? " selected" : ""}>${esc(pp.name)}</option>`).join("")}</select>`)}
-        ${field(i === 0 ? "Sabor" : "", false, `<select class="ad-select" data-rf="flavor" ${p ? "" : "disabled"}><option value="">${p ? "Elegir…" : "—"}</option>${flavors.map((fl) => `<option value="${esc(fl.id)}"${String(fl.id) === String(r.flavor_id) ? " selected" : ""}>${esc(fl.name)}</option>`).join("")}</select>`)}
+        ${field(i === 0 ? "Producto" : "", false, `<select class="ad-select" data-rf="product" aria-label="Producto ${i + 1}"><option value="">Elegir producto…</option>${state.products.map((pp) => `<option value="${esc(pp.id)}"${String(pp.id) === String(r.product_id) ? " selected" : ""}>${esc(pp.name)}</option>`).join("")}</select>`)}
+        ${field(i === 0 ? "Sabor" : "", false, `<select class="ad-select" data-rf="flavor" aria-label="Sabor del producto ${i + 1}" ${p ? "" : "disabled"}><option value="">${p ? "Elegir…" : "—"}</option>${flavors.map((fl) => `<option value="${esc(fl.id)}"${String(fl.id) === String(r.flavor_id) ? " selected" : ""}>${esc(fl.name)}</option>`).join("")}</select>`)}
         ${field(i === 0 ? "Cant." : "", false, `<input class="ad-input" inputmode="numeric" data-rf="qty" value="${esc(r.quantity)}" />`)}
         <button class="ad-icon-btn ad-icon-btn--danger" type="button" title="Quitar" data-rf="del" ${draft.rows.length === 1 ? "disabled" : ""}>${ico("trash")}</button>
       </div>`;
     }).join("");
     wireImageFallbacks(container);
     if (window.javyIcons) window.javyIcons.enhance(container);
+    if (window.javyDropdown) window.javyDropdown.enhanceSelects(container);
 
     container.querySelectorAll("[data-row]").forEach((row) => {
       const i = Number(row.getAttribute("data-row"));
       row.querySelector('[data-rf="product"]').addEventListener("change", (e) => {
         draft.rows[i].product_id = e.target.value; draft.rows[i].flavor_id = ""; renderRows(); updateSummary();
+        window.requestAnimationFrame(() => {
+          get(`[data-row="${i}"] [data-rf="flavor"]`)?._jdd?._btn?.focus({ preventScroll: true });
+        });
       });
       const flavorSel = row.querySelector('[data-rf="flavor"]');
       if (flavorSel) flavorSel.addEventListener("change", (e) => { draft.rows[i].flavor_id = e.target.value; });

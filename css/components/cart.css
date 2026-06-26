@@ -564,3 +564,80 @@
     transform: translate(-50%, 0);
   }
 }
+
+/* ============================================================================
+   Modal "Agregar a cotización" (sabor + cantidad) — reemplaza los selectores
+   inline de las cards. Centrado en desktop, bottom-sheet en móvil.
+   ============================================================================ */
+.quick-add-overlay {
+  position: fixed; inset: 0; z-index: 960;
+  display: grid; place-items: center; padding: 20px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  animation: quickAddFade .18s ease;
+}
+@keyframes quickAddFade { from { opacity: 0; } to { opacity: 1; } }
+.quick-add {
+  position: relative; width: min(380px, 100%);
+  background: linear-gradient(180deg, var(--surface-1, #111925), var(--surface-2, #0c141d));
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  padding: 22px;
+  display: grid; gap: 16px;
+  color: var(--text);
+  animation: quickAddIn .22s cubic-bezier(.4,0,.2,1);
+}
+@keyframes quickAddIn { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+.quick-add__close {
+  position: absolute; top: 12px; right: 12px;
+  display: grid; place-items: center; width: 34px; height: 34px;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: rgba(255,255,255,0.04); color: #fff; cursor: pointer;
+}
+.quick-add__close:hover { background: rgba(255,255,255,0.08); }
+.quick-add__close .btn-icon { width: 16px; height: 16px; }
+.quick-add__head { display: flex; gap: 12px; align-items: center; padding-right: 40px; }
+.quick-add__img {
+  width: 60px; height: 60px; border-radius: 12px; object-fit: contain; flex: 0 0 auto;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+}
+.quick-add__headinfo { min-width: 0; display: grid; gap: 3px; }
+.quick-add__name { font-size: 1rem; font-weight: 700; line-height: 1.2; }
+.quick-add__meta { color: var(--muted); font-size: 0.85rem; }
+.quick-add__field { display: grid; gap: 8px; }
+.quick-add__label { font-size: 0.82rem; font-weight: 600; color: var(--muted); }
+.quick-add__stepper {
+  display: inline-flex; align-items: center; gap: 4px; justify-self: start;
+  border: 1px solid var(--line); border-radius: 10px; padding: 4px; background: rgba(255,255,255,0.04);
+}
+.quick-add__qty-btn {
+  width: 38px; height: 38px; border: 0; border-radius: 8px;
+  background: rgba(255,255,255,0.06); color: #fff; font-size: 1.2rem; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.quick-add__qty-btn:hover { background: rgba(255,255,255,0.12); }
+.quick-add__qty-btn--plus { color: var(--cta); }
+.quick-add__qty { min-width: 40px; text-align: center; font-weight: 700; font-size: 1.05rem; }
+.quick-add__submit {
+  min-height: 48px; border: 0; border-radius: 12px; cursor: pointer;
+  background: linear-gradient(135deg, var(--cta-strong) 0%, var(--cta) 100%);
+  color: #000; font-weight: 700; font-size: 0.95rem;
+  box-shadow: 0 4px 14px rgba(0,200,83,0.3);
+  transition: box-shadow .2s ease, transform .15s ease;
+}
+.quick-add__submit:hover { box-shadow: 0 6px 20px rgba(0,200,83,0.4); }
+.quick-add__submit:active { transform: translateY(1px); }
+.quick-add__close:focus-visible,
+.quick-add__qty-btn:focus-visible,
+.quick-add__submit:focus-visible { outline: 2px solid var(--Cyan); outline-offset: 2px; }
+
+@media (max-width: 767px) {
+  .quick-add-overlay { place-items: end stretch; padding: 0; }
+  .quick-add {
+    width: 100%; border-radius: 18px 18px 0 0;
+    padding: 20px 18px calc(20px + env(safe-area-inset-bottom, 0px));
+    animation: quickAddSheet .24s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes quickAddSheet { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+}

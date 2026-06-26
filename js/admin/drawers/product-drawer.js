@@ -6,9 +6,13 @@
 import { state, catById, families, typesOf } from "../state.js";
 import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js";
 import { $, esc, ico } from "../helpers.js";
-import { collapse, field, affix, switchRow, chipTag, bindChips, confirmModal, toast } from "../ui.js";
+import { collapse, field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js";
 import { requestRerender } from "../shell.js";
 import { reloadProducts } from "../data.js";
+
+// Arreglos de texto (beneficios/uso/descripción) ⇄ textarea (una línea por ítem).
+const linesToText = (v) => Array.isArray(v) ? v.join("\n") : (v || "");
+const textToLines = (v) => String(v || "").split("\n").map((s) => s.trim()).filter(Boolean);
 
 export function openProductDrawer(product, opts = {}) {
   const isNew = !product || !product.id;
@@ -23,7 +27,10 @@ export function openProductDrawer(product, opts = {}) {
     image: product ? (product.stored_image_url || product.image || "") : "",
     description_short: product ? product.description_short || "" : "",
     description_long: product ? product.description_long || "" : "",
-    flavors: product ? (product.flavors || []).map((f) => f.name) : [],
+    beneficios: product ? linesToText(product.beneficios) : "",
+    uso: product ? linesToText(product.uso) : "",
+    flavors: product ? (product.flavors || []).map((f) => ({ id: f.id || null, name: f.name, available: f.available !== false })) : [],
+    noFlavor: product ? product.flavor_mode === "no_flavor" : false,
     tags: product ? [...(product.tags || [])] : [],
     goals: product ? [...(product.goals || [])] : [],
     available: product ? product.available !== false : true,
@@ -43,6 +50,8 @@ export function openProductDrawer(product, opts = {}) {
   }
   const draftImageFile = { file: null, cleared: false };
   let touched = false;
+  let dirty = false;
+  const markDirty = () => { dirty = true; };
 
   const host = $("#adminDrawerHost");
   const overlay = document.createElement("div");
@@ -75,8 +84,8 @@ export function openProductDrawer(product, opts = {}) {
           ${field("Nombre del producto", true, `<input class="ad-input" data-f="name" value="${esc(data.name)}" placeholder="Ej. Isomorph 28 Whey Isolate" />`, "name")}
           ${field("Marca", false, `<input class="ad-input" data-f="brand" value="${esc(data.brand)}" placeholder="Ej. APS Nutrition" />`)}
           <div class="ad-field-row">
-            ${field("Familia", true, `<select class="ad-select" data-f="family">${familyOptions()}</select>`, "family")}
-            ${field("Tipo", false, `<select class="ad-select" data-f="type" ${famId ? "" : "disabled"}>${typeOptions()}</select>`)}
+            ${field("Categoría", true, `<select class="ad-select" data-f="family" aria-label="Categoría">${familyOptions()}</select>`, "family")}
+            ${field("Subcategoría", false, `<select class="ad-select" data-f="type" aria-label="Subcategoría" ${famId ? "" : "disabled"}>${typeOptions()}</select>`)}
           </div>
           ${field("Presentación", false, `<input class="ad-input" data-f="presentation" value="${esc(data.presentation)}" placeholder="Ej. 5 lb · 300 g · 30 serv" />`)}
         `)}
@@ -89,10 +98,22 @@ export function openProductDrawer(product, opts = {}) {
         `)}
         ${collapse("3", "Imagen", false, `<div data-image-slot></div>`)}
         ${collapse("4", "Sabores / variantes", false, `
-          ${field("Sabores disponibles", false, `<div class="ad-chips-input" data-flavors>${data.flavors.map(chipTag).join("")}<input type="text" placeholder="Ej. Chocolate" /></div>`, null, "Enter para agregar cada sabor")}
+          ${switchRow("noflavor", "Este producto no tiene sabores", "Se cotiza sin pedir sabor", data.noFlavor)}
+          <div data-flavor-section${data.noFlavor ? " hidden" : ""}>
+            ${field("Sabores", false, `
+              <div class="ad-flavors" data-flavor-list></div>
+              <div class="ad-flavor-add">
+                <input class="ad-input" type="text" data-flavor-add placeholder="Agregar sabor (ej. Chocolate)" />
+                <button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-flavor-add-btn>${ico("plus")}Agregar</button>
+              </div>
+            `, null, "Marcá cada sabor como disponible o agotado")}
+          </div>
         `)}
         ${collapse("5", "Descripción y etiquetas", false, `
           ${field("Descripción corta", false, `<textarea class="ad-textarea" data-f="description_short" placeholder="Una línea que resuma el producto…">${esc(data.description_short)}</textarea>`)}
+          ${field("Descripción larga (detalle)", false, `<textarea class="ad-textarea" data-f="description_long" placeholder="Texto completo para la página de detalle…">${esc(data.description_long)}</textarea>`)}
+          ${field("Beneficios", false, `<textarea class="ad-textarea" data-f="beneficios" placeholder="Un beneficio por línea…">${esc(data.beneficios)}</textarea>`, null, "Una línea por beneficio")}
+          ${field("Modo de uso", false, `<textarea class="ad-textarea" data-f="uso" placeholder="Una indicación por línea…">${esc(data.uso)}</textarea>`, null, "Una línea por indicación")}
           ${field("Tags", false, `<div class="ad-chips-input" data-tags>${data.tags.map(chipTag).join("")}<input type="text" placeholder="Ej. Energía" /></div>`, null, "Palabras clave para búsqueda")}
           ${field("Objetivos", false, `<div style="display:flex;flex-wrap:wrap;gap:8px" data-goals>${GOAL_SUGGESTIONS.concat(data.goals.filter((g) => !GOAL_SUGGESTIONS.includes(g))).map((g) => `<button type="button" class="ad-chip-toggle${data.goals.includes(g) ? " is-active" : ""}" data-goal="${esc(g)}">${esc(g)}</button>`).join("")}</div>`)}
         `)}
@@ -107,11 +128,13 @@ export function openProductDrawer(product, opts = {}) {
       </div>
       <div class="ad-drawer__foot">
         <button class="ad-btn ad-btn--ghost" type="button" data-close>Cancelar</button>
+        ${isNew ? `<button class="ad-btn ad-btn--ghost" type="button" data-save-new title="Guardar y crear otro">${ico("plus")}Y otro</button>` : ""}
         <button class="ad-btn ad-btn--primary" type="button" data-save>${ico("save")}${isNew ? "Crear producto" : "Guardar cambios"}</button>
       </div>
     </div>`;
 
   if (window.javyIcons) window.javyIcons.enhance(overlay);
+  if (window.javyDropdown) window.javyDropdown.enhanceSelects(overlay);
   document.body.style.overflow = "hidden";
 
   const get = (sel) => overlay.querySelector(sel);
@@ -122,15 +145,26 @@ export function openProductDrawer(product, opts = {}) {
     head.parentElement.classList.toggle("is-open");
   }));
 
-  // close handlers
-  const close = () => {
+  // close handlers — pide confirmación si hay cambios sin guardar
+  function destroy() {
+    if (window.javyDropdown) window.javyDropdown.destroy(overlay);
     document.body.style.overflow = "";
     document.removeEventListener("keydown", onKey);
     overlay.remove();
+  }
+  async function close() {
+    if (dirty && !(await confirmModal({ title: "Descartar cambios", body: "Tenés cambios sin guardar. ¿Querés descartarlos?", confirmLabel: "Descartar", danger: true }))) return;
+    destroy();
+  }
+  const onKey = (e) => {
+    if (e.key === "Escape" && !document.querySelector(".jdd.is-open")) close();
   };
-  const onKey = (e) => { if (e.key === "Escape") close(); };
   document.addEventListener("keydown", onKey);
   overlay.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", close));
+
+  // cualquier cambio en el formulario marca el drawer como "sucio"
+  overlay.querySelector(".ad-drawer__body").addEventListener("input", markDirty);
+  overlay.querySelector(".ad-drawer__body").addEventListener("change", markDirty);
 
   // cascade
   fEl("family").addEventListener("change", (e) => {
@@ -138,6 +172,7 @@ export function openProductDrawer(product, opts = {}) {
     const typeSel = fEl("type");
     typeSel.innerHTML = typeOptions();
     typeSel.disabled = !famId;
+    if (window.javyDropdown) window.javyDropdown.refresh(typeSel); // re-sincroniza el dropdown
     if (touched) validate();
   });
   fEl("type").addEventListener("change", (e) => { typeId = e.target.value; });
@@ -185,13 +220,45 @@ export function openProductDrawer(product, opts = {}) {
   }
   renderImage();
 
-  // chips (flavors, tags)
-  const flavorNames = [...data.flavors];
+  // sabores con disponibilidad por sabor
+  const flavorRows = data.flavors.map((f) => ({ id: f.id, name: f.name, available: f.available }));
+  const flavorListEl = get("[data-flavor-list]");
+  function renderFlavors() {
+    flavorListEl.innerHTML = flavorRows.length
+      ? flavorRows.map((f, i) => `
+        <div class="ad-flavor-row">
+          <span class="ad-flavor-row__name">${esc(f.name)}</span>
+          ${switchMarkup(f.available, `data-flavor-toggle="${i}" aria-label="Disponible: ${esc(f.name)}"`)}
+          <button class="ad-icon-btn ad-icon-btn--danger" type="button" data-flavor-del="${i}" title="Quitar">${ico("trash")}</button>
+        </div>`).join("")
+      : `<p class="ad-flavor-empty">Sin sabores todavía. Agregá uno abajo.</p>`;
+    if (window.javyIcons) window.javyIcons.enhance(flavorListEl);
+    flavorListEl.querySelectorAll("[data-flavor-toggle]").forEach((cb) => cb.addEventListener("change", () => {
+      flavorRows[+cb.getAttribute("data-flavor-toggle")].available = cb.checked; markDirty();
+    }));
+    flavorListEl.querySelectorAll("[data-flavor-del]").forEach((b) => b.addEventListener("click", () => {
+      flavorRows.splice(+b.getAttribute("data-flavor-del"), 1); renderFlavors(); markDirty();
+    }));
+  }
+  renderFlavors();
+  const addFlavorInput = get("[data-flavor-add]");
+  function addFlavor() {
+    const v = addFlavorInput.value.trim();
+    addFlavorInput.value = "";
+    if (!v) return;
+    if (flavorRows.some((f) => f.name.toLowerCase() === v.toLowerCase())) { addFlavorInput.focus(); return; }
+    flavorRows.push({ id: null, name: v, available: true });
+    renderFlavors(); markDirty(); addFlavorInput.focus();
+  }
+  get("[data-flavor-add-btn]").addEventListener("click", addFlavor);
+  addFlavorInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); addFlavor(); } });
+
+  // "sin sabor": oculta la lista de sabores
+  const noFlavorSwitch = overlay.querySelector('[data-sw="noflavor"]');
+  noFlavorSwitch.addEventListener("change", () => { get("[data-flavor-section]").hidden = noFlavorSwitch.checked; });
+
+  // tags
   const tagNames = [...data.tags];
-  bindChips(get("[data-flavors]"), {
-    onAdd: (n) => flavorNames.push(n),
-    onRemove: (n) => { const i = flavorNames.findIndex((x) => x.toLowerCase() === n.toLowerCase()); if (i >= 0) flavorNames.splice(i, 1); },
-  });
   bindChips(get("[data-tags]"), {
     onAdd: (n) => tagNames.push(n),
     onRemove: (n) => { const i = tagNames.findIndex((x) => x.toLowerCase() === n.toLowerCase()); if (i >= 0) tagNames.splice(i, 1); },
@@ -205,6 +272,7 @@ export function openProductDrawer(product, opts = {}) {
     const g = btn.getAttribute("data-goal");
     if (goalSet.has(g)) { goalSet.delete(g); btn.classList.remove("is-active"); }
     else { goalSet.add(g); btn.classList.add("is-active"); }
+    markDirty();
   });
 
   // home switch reveals order field
@@ -240,16 +308,24 @@ export function openProductDrawer(product, opts = {}) {
   }
 
   // save
-  get("[data-save]").addEventListener("click", async () => {
+  async function doSave(createAnother) {
     touched = true;
     if (!validate()) {
-      // open the section with the first error
       toast({ tone: "err", msg: "Revisá los campos marcados" });
       return;
     }
+    // aviso de duplicado al crear (mismo nombre + marca)
+    if (isNew) {
+      const n = fEl("name").value.trim().toLowerCase();
+      const b = fEl("brand").value.trim().toLowerCase();
+      const dup = state.products.find((p) => (p.name || "").toLowerCase() === n && (p.brand || "").toLowerCase() === b);
+      if (dup && !(await confirmModal({ title: "Producto duplicado", body: `Ya existe “${dup.name}”${dup.brand ? " de " + dup.brand : ""}. ¿Crear de todos modos?`, confirmLabel: "Crear igual" }))) return;
+    }
     const saveBtn = get("[data-save]");
-    saveBtn.disabled = true;
+    const newBtn = get("[data-save-new]");
+    saveBtn.disabled = true; if (newBtn) newBtn.disabled = true;
     saveBtn.textContent = "Guardando…";
+    const noFlavor = noFlavorSwitch.checked;
     try {
       await saveProduct({
         isNew, data, famId, typeId, draftImageFile,
@@ -260,30 +336,38 @@ export function openProductDrawer(product, opts = {}) {
           price: fEl("price").value.trim(),
           old_price: fEl("old_price").value.trim(),
           description_short: fEl("description_short").value.trim(),
-          description_long: data.description_long,
+          description_long: fEl("description_long").value.trim(),
+          beneficios: textToLines(fEl("beneficios").value),
+          uso: textToLines(fEl("uso").value),
           home_order: (overlay.querySelector('[data-f="home_order"]') || {}).value || "",
           available: overlay.querySelector('[data-sw="available"]').checked,
           featured: overlay.querySelector('[data-sw="featured"]').checked,
           home: overlay.querySelector('[data-sw="home"]').checked,
-          flavors: flavorNames,
+          flavors: noFlavor ? [] : flavorRows.map((f) => ({ name: f.name, available: f.available })),
+          flavor_mode: noFlavor ? "no_flavor" : (flavorRows.length ? "has_flavors" : "needs_review"),
           tags: tagNames,
           goals: Array.from(goalSet),
         },
         originalFlavors: product ? (product.flavors || []) : [],
       });
-      close();
+      dirty = false;
+      if (createAnother) { destroy(); openProductDrawer(null); }
+      else close();
     } catch (e) {
-      saveBtn.disabled = false;
+      saveBtn.disabled = false; if (newBtn) newBtn.disabled = false;
       saveBtn.innerHTML = `${ico("save")}${isNew ? "Crear producto" : "Guardar cambios"}`;
       if (window.javyIcons) window.javyIcons.enhance(saveBtn);
       if (e.code === "CONFLICT") {
         const force = await confirmModal({ title: "Otro admin editó esto", body: "Otro administrador modificó este producto mientras lo editabas. ¿Querés sobrescribir sus cambios con los tuyos?", confirmLabel: "Sobrescribir", danger: true });
-        if (force) { data.updated_at = null; get("[data-save]").click(); }
+        if (force) { data.updated_at = null; doSave(createAnother); }
       } else {
         toast({ tone: "err", msg: "No se pudo guardar", sub: e.message });
       }
     }
-  });
+  }
+  get("[data-save]").addEventListener("click", () => doSave(false));
+  const saveNewBtn = get("[data-save-new]");
+  if (saveNewBtn) saveNewBtn.addEventListener("click", () => doSave(true));
 
   // focus first input
   setTimeout(() => { const f = fEl("name"); if (f) f.focus(); }, 30);
@@ -318,6 +402,9 @@ async function saveProduct(ctx) {
     image_url: imageUrl,
     description_short: values.description_short,
     description_long: values.description_long,
+    beneficios: values.beneficios,
+    uso: values.uso,
+    flavor_mode: values.flavor_mode,
     available: values.available,
     is_available: values.available,
     featured: values.featured,
@@ -349,23 +436,35 @@ async function saveProduct(ctx) {
   requestRerender();
 }
 
-async function syncFlavorsOnSave(productId, originalFlavors, desiredNames) {
+async function syncFlavorsOnSave(productId, originalFlavors, desiredFlavors) {
   const db = window.catalogDb;
-  const norm = (s) => s.trim().toLowerCase();
-  const desired = [...new Set(desiredNames.map((n) => n.trim()).filter(Boolean))];
-  const desiredLower = desired.map(norm);
-  const originalLower = originalFlavors.map((f) => norm(f.name));
+  const norm = (s) => String(s || "").trim().toLowerCase();
 
-  // borrar los que ya no están
+  // de-duplicar deseados por nombre, conservando disponibilidad
+  const seen = new Set();
+  const desired = [];
+  for (const f of desiredFlavors || []) {
+    const name = String(f.name || "").trim();
+    if (!name || seen.has(norm(name))) continue;
+    seen.add(norm(name));
+    desired.push({ name, available: f.available !== false });
+  }
+  const desiredLower = desired.map((f) => norm(f.name));
+  const origByName = new Map(originalFlavors.map((f) => [norm(f.name), f]));
+
+  // borrar los quitados
   for (const f of originalFlavors) {
     if (f.id && !desiredLower.includes(norm(f.name))) {
       try { await db.deleteFlavor(f.id); } catch (_) {}
     }
   }
-  // crear los nuevos
-  for (const name of desired) {
-    if (!originalLower.includes(norm(name))) {
-      try { await db.createFlavor(productId, { name, available: true }); } catch (_) {}
+  // crear nuevos / actualizar disponibilidad de los que siguen
+  for (const f of desired) {
+    const existing = origByName.get(norm(f.name));
+    if (!existing) {
+      try { await db.createFlavor(productId, { name: f.name, available: f.available }); } catch (_) {}
+    } else if (existing.id && (existing.available !== false) !== f.available) {
+      try { await db.setFlavorAvailability(existing.id, f.available); } catch (_) {}
     }
   }
 }

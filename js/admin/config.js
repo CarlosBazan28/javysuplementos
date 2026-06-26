@@ -21,7 +21,7 @@ export const NAV = [
   { key: "home", label: "Inicio", icon: "home", primary: true,
     subtitle: "Productos destacados en el inicio" },
   { key: "categories", label: "Categorías", icon: "tags", primary: false,
-    subtitle: "Familias y tipos del catálogo" },
+    subtitle: "Categorías y subcategorías del catálogo" },
   { key: "combos", label: "Combos", icon: "package", primary: false,
     subtitle: "Paquetes con precio especial" },
   { key: "access", label: "Accesos", icon: "log-in", primary: false,

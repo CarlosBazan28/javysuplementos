@@ -1,0 +1,79 @@
+/* ============================================================================
+   javyDropdown — estilos del dropdown propio sobre <select>. Compartido por el
+   admin y el sitio público (paleta oscura, casi idéntica en ambos). Usa vars
+   --dd-* con fallback a hex, así no depende de qué tokens cargue cada página.
+   ============================================================================ */
+.jdd, .jdd__menu {
+  --dd-field: var(--pb-surface-2, var(--surface-2, #0c141d));
+  --dd-surface: var(--pb-surface-3, var(--surface-1, #141c2a));
+  --dd-text: var(--pb-text, var(--text, #e9eef7));
+  --dd-muted: var(--pb-muted, var(--muted, #a9b4c6));
+  --dd-accent: var(--pb-brand-bright, var(--accent, #5ab4e9));
+  --dd-hover: var(--pb-white-06, rgba(255,255,255,0.06));
+  --dd-active: var(--pb-blue-tint-12, rgba(90,180,233,0.16));
+}
+.jdd { position: relative; display: block; width: 100%; }
+
+/* el <select> nativo queda oculto pero presente (fuente de verdad/accesible) */
+.jdd > select {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.jdd__btn {
+  width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 0 12px; border: 1px solid var(--dd-line, rgba(255,255,255,0.14));
+  border-radius: var(--dd-radius, 12px);
+  background: var(--dd-field); color: var(--dd-text);
+  font: inherit; font-size: 0.92rem; text-align: left; cursor: pointer;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.jdd__btn:hover { border-color: var(--dd-accent-soft, rgba(90,180,233,0.45)); }
+.jdd__btn:disabled { opacity: .55; cursor: not-allowed; }
+.jdd.is-open .jdd__btn, .jdd__btn:focus-visible {
+  border-color: var(--dd-accent, rgba(90,180,233,0.7));
+  box-shadow: 0 0 0 3px var(--dd-ring, rgba(90,180,233,0.14)); outline: none;
+}
+.jdd__value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jdd__chev { display: inline-flex; flex: 0 0 auto; color: var(--dd-muted); transition: transform .18s ease; }
+.jdd__chev .jdd__ico, .jdd__chev svg { width: 18px; height: 18px; }
+.jdd.is-open .jdd__chev { transform: rotate(180deg); }
+
+.jdd__menu {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 90;
+  background: var(--dd-surface); border: 1px solid var(--dd-line-strong, rgba(255,255,255,0.16));
+  border-radius: var(--dd-radius, 12px); box-shadow: 0 18px 40px rgba(0,0,0,0.5);
+  padding: 6px; display: grid; gap: 2px; max-height: 320px; overflow-y: auto; overscroll-behavior: contain;
+}
+.jdd__menu[hidden] { display: none; }
+.jdd__opt {
+  display: flex; align-items: center; min-height: 40px; padding: 0 12px; width: 100%;
+  border: 0; border-radius: 9px; background: transparent; color: var(--dd-text);
+  font: inherit; font-size: 0.9rem; text-align: left; cursor: pointer;
+}
+.jdd__opt:hover { background: var(--dd-hover); }
+.jdd__opt.is-active { background: var(--dd-active); color: var(--dd-text); font-weight: 700; }
+.jdd__opt:disabled { opacity: .45; cursor: default; }
+.jdd__option-group { display: grid; gap: 2px; }
+.jdd__group { padding: 8px 12px 4px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--dd-muted); }
+.jdd__opt:focus-visible { outline: 2px solid var(--dd-accent); outline-offset: -2px; }
+
+/* facetas / orden del catálogo público: en línea, ancho por contenido */
+.catalog-facet .jdd, .catalog-sort .jdd { display: inline-flex; width: auto; min-width: 150px; vertical-align: middle; }
+.catalog-facet .jdd__btn, .catalog-sort .jdd__btn, .ad-filterbar__sel .jdd__btn { min-height: 40px; }
+
+/* la tarjeta con un dropdown abierto pasa por encima de las vecinas */
+.product-card:has(.jdd.is-open) { z-index: 20; }
+
+/* reflejar estados que el código pone en el <select> nativo (sin tocar JS) */
+.jdd:has(> select.needs-selection) .jdd__btn { border-color: #ffb300; box-shadow: 0 0 0 3px rgba(255,179,0,0.18); }
+.jdd:has(> select.ad-select--invalid) .jdd__btn { border-color: rgba(255,79,118,0.7); }
+
+@media (max-width: 767px) {
+  .catalog-facet, .catalog-sort { min-width: 0; }
+  .catalog-facet .jdd, .catalog-sort .jdd { width: 100%; min-width: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jdd__btn, .jdd__chev { transition: none; }
+}

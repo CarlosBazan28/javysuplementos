@@ -379,6 +379,7 @@ function getQuoteMethod() {
 function renderQuoteFields(method) {
   const container = document.getElementById("quoteFields");
   if (!container) return;
+  if (window.javyDropdown) window.javyDropdown.destroy(container);
 
   const config = QUOTE_METHODS[method] || QUOTE_METHODS.retiro;
   container.innerHTML = config.fields.map((field) => {
@@ -402,6 +403,7 @@ function renderQuoteFields(method) {
     return `<div class="consultation-field">${labelHtml}
       <input id="${field.id}" type="${field.type}" placeholder="${escapeHTML(field.placeholder || "")}"${field.autocomplete ? ` autocomplete="${field.autocomplete}"` : ""}${field.required ? " required" : ""} /></div>`;
   }).join("");
+  if (window.javyDropdown) window.javyDropdown.enhanceSelects(container);
 }
 
 function getMissingQuoteFields() {
@@ -587,11 +589,122 @@ function closePanel() {
   const overlay = document.getElementById("consultationOverlay");
   if (!panel || !overlay) return;
 
+  if (window.javyDropdown) window.javyDropdown.closeAll();
   hideClearConfirm(false);
   panel.classList.remove("is-open");
   panel.setAttribute("aria-hidden", "true");
   overlay.hidden = true;
   unlockConsultationScroll();
+}
+
+/* ----------------------------------------------------------------------------
+   Modal de "Agregar": elige sabor (si hay) + cantidad antes de sumar a la
+   cotización. Reemplaza los selectores inline de las cards para acortarlas.
+   ---------------------------------------------------------------------------- */
+let addModalEl = null;
+let addModalOpener = null;
+function addModalOnKey(e) { if (e.key === "Escape") closeAddModal(); }
+function closeAddModal() {
+  if (!addModalEl) return;
+  if (window.javyDropdown && window.javyDropdown.closeAll) window.javyDropdown.closeAll();
+  document.removeEventListener("keydown", addModalOnKey);
+  addModalEl.remove();
+  addModalEl = null;
+  unlockConsultationScroll();
+  addModalOpener?.focus?.({ preventScroll: true }); // devolver el foco a quien lo abrió
+  addModalOpener = null;
+}
+
+function openAddModal(productOrId) {
+  const product = typeof productOrId === "string" ? getLegacyProductSnapshot(productOrId) : productOrId;
+  if (!product) return;
+  closeAddModal();
+  addModalOpener = document.activeElement; // para devolver el foco al cerrar
+
+  const flavors = (product.flavors || []).filter(Boolean);
+  const hasFlavors = flavors.length > 0;
+  const name = product.name || product.nombre || "Producto";
+  const brand = product.brand || product.marca || "";
+  const image = product.image || product.imagen || "img/icons/logo.png";
+  const price = Number(product.price ?? product.precio ?? 0);
+
+  const flavorField = hasFlavors ? `
+    <div class="quick-add__field">
+      <label class="quick-add__label" for="quickAddFlavor">Sabor</label>
+      <select id="quickAddFlavor" class="quick-add__select" data-qa-flavor>
+        <option value="">Elegir sabor</option>
+        ${flavors.map((f) => `<option value="${escapeHTML(f.id)}"${f.available === false ? " disabled" : ""}>${escapeHTML(f.name)}${f.available === false ? " — No disponible" : ""}</option>`).join("")}
+      </select>
+    </div>` : "";
+
+  const overlay = document.createElement("div");
+  overlay.className = "quick-add-overlay";
+  overlay.innerHTML = `
+    <div class="quick-add" role="dialog" aria-modal="true" aria-label="Agregar ${escapeHTML(name)} a la cotización">
+      <button class="quick-add__close" type="button" aria-label="Cerrar" data-qa-close>
+        <span class="btn-icon" data-javy-icon="x" aria-hidden="true"></span>
+      </button>
+      <div class="quick-add__head">
+        <img class="quick-add__img" src="${escapeHTML(image)}" alt="" />
+        <div class="quick-add__headinfo">
+          <strong class="quick-add__name">${escapeHTML(name)}</strong>
+          <span class="quick-add__meta">${brand ? escapeHTML(brand) + " · " : ""}${escapeHTML(formatPrice(price))}</span>
+        </div>
+      </div>
+      ${flavorField}
+      <div class="quick-add__field">
+        <span class="quick-add__label">Cantidad</span>
+        <div class="quick-add__stepper" role="group" aria-label="Cantidad">
+          <button type="button" class="quick-add__qty-btn" data-qa-dec aria-label="Disminuir">−</button>
+          <span class="quick-add__qty" data-qa-qty aria-live="polite">1</span>
+          <button type="button" class="quick-add__qty-btn quick-add__qty-btn--plus" data-qa-inc aria-label="Aumentar">+</button>
+        </div>
+      </div>
+      <button class="quick-add__submit" type="button" data-qa-add>Agregar a cotización</button>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  addModalEl = overlay;
+  window.javyIcons?.enhance?.(overlay);
+  if (window.javyDropdown) window.javyDropdown.enhanceSelects(overlay);
+  lockConsultationScroll();
+  document.addEventListener("keydown", addModalOnKey);
+
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) closeAddModal(); });
+  overlay.querySelector("[data-qa-close]").addEventListener("click", closeAddModal);
+
+  let qty = 1;
+  const qtyEl = overlay.querySelector("[data-qa-qty]");
+  overlay.querySelector("[data-qa-dec]").addEventListener("click", () => { qty = Math.max(1, qty - 1); qtyEl.textContent = qty; });
+  overlay.querySelector("[data-qa-inc]").addEventListener("click", () => { qty = Math.min(99, qty + 1); qtyEl.textContent = qty; });
+
+  const flavorSelect = overlay.querySelector("[data-qa-flavor]");
+  overlay.querySelector("[data-qa-add]").addEventListener("click", () => {
+    const opts = { quantity: qty };
+    if (hasFlavors) {
+      const val = flavorSelect.value;
+      if (!val) {
+        flavorSelect.classList.add("needs-selection");
+        window.setTimeout(() => flavorSelect.classList.remove("needs-selection"), 1200);
+        showToast("Elegí un sabor");
+        return;
+      }
+      const f = flavors.find((x) => String(x.id) === String(val));
+      if (f) { opts.flavor = f.name; opts.flavor_id = f.id; }
+    }
+    if (hasItem(product.id, opts.flavor || "")) {
+      showToast(opts.flavor ? "Ese sabor ya está en tu cotización" : "Ya está en tu cotización");
+      closeAddModal();
+      return;
+    }
+    addItem(product, opts);
+    showToast("Agregado a tu cotización");
+    closeAddModal();
+  });
+
+  window.setTimeout(() => {
+    (overlay.querySelector("[data-qa-flavor]") || overlay.querySelector("[data-qa-add]"))?.focus?.();
+  }, 40);
 }
 
 function createConsultationPanel() {
@@ -675,6 +788,7 @@ function createConsultationPanel() {
   window.javyIcons?.enhance?.(panel);
 
   renderQuoteFields(getQuoteMethod());
+  if (window.javyDropdown) window.javyDropdown.enhance(panel.querySelector("#quoteMethod"));
 
   overlay.addEventListener("click", closePanel);
   panel.querySelector(".consultation-panel__close")?.addEventListener("click", closePanel);
@@ -699,6 +813,7 @@ function createConsultationPanel() {
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
+    if (document.querySelector(".jdd.is-open")) return;
     // Esc cierra primero el aviso de vaciar; si no, cierra el panel.
     if (isClearConfirmOpen()) hideClearConfirm();
     else closePanel();
@@ -735,6 +850,7 @@ window.consultation = {
   openWhatsApp,
   openPanel,
   closePanel,
+  openAddModal,
   renderPanel: renderConsultationPanel,
   quoteSingleProduct,
   askAvailability,

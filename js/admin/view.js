@@ -5,9 +5,11 @@ import { $, esc, ico, wireImageFallbacks } from "./helpers.js";
 
 export function setView(html) {
   const view = $("#adminView");
+  if (window.javyDropdown) window.javyDropdown.destroy(view);
   view.innerHTML = `<div class="ad-section">${html}</div>`;
   wireImageFallbacks(view);
   if (window.javyIcons) window.javyIcons.enhance(view);
+  if (window.javyDropdown) window.javyDropdown.enhanceSelects(view);
   return view;
 }
 

@@ -48,7 +48,7 @@ export function renderHome() {
         <div class="ad-field" style="margin-top:14px;max-width:420px">
           <label class="ad-field__label">Agregar producto al inicio</label>
           <div style="display:flex;gap:8px">
-            <select class="ad-select" data-pool ${full ? "disabled" : ""}><option value="">Elegir…</option>${poolOptions}</select>
+            <select class="ad-select" data-pool aria-label="Agregar producto al inicio" ${full ? "disabled" : ""}><option value="">Elegir…</option>${poolOptions}</select>
           </div>
           ${full ? `<span class="ad-field__help">Cupo lleno (${HOME_MAX}). Quitá uno para agregar otro.</span>` : ""}
         </div>
