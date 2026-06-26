@@ -465,6 +465,68 @@ async function auditStamp(includeCreated = false) {
   return includeCreated ? { created_by: email, updated_by: email } : { updated_by: email };
 }
 
+// ===== Historial de actividad (Fase 6) =====
+// ¿Existe la tabla activity_log? Se detecta una vez. Si la migración fase6 no se
+// aplicó, todo sigue funcionando sin registrar historial.
+let activityLogEnabledFlag;
+async function activityLogEnabled() {
+  if (activityLogEnabledFlag !== undefined) return activityLogEnabledFlag;
+  if (!hasSupabaseClient()) return (activityLogEnabledFlag = false);
+  try {
+    const { error } = await supabaseClient.from("activity_log").select("id").limit(1);
+    activityLogEnabledFlag = !error;
+  } catch (error) {
+    activityLogEnabledFlag = false;
+  }
+  return activityLogEnabledFlag;
+}
+
+// Formato de precio para los textos del historial ("de $50 a $60").
+function priceLabel(value) {
+  const n = Number(value || 0);
+  if (!(n > 0)) return "—";
+  return "$" + (Number.isInteger(n) ? n : n.toFixed(2).replace(/\.0+$/, ""));
+}
+
+// Registra una acción en el historial. Fire-and-forget: NUNCA rompe la escritura
+// que la originó (si falla el log, solo se avisa por consola).
+async function logActivity(entry) {
+  try {
+    if (!(await activityLogEnabled())) return;
+    await supabaseClient.from("activity_log").insert({
+      actor_email: await getCurrentUserEmail(),
+      action: entry.action,
+      entity_type: entry.entity_type,
+      entity_id: entry.entity_id ?? null,
+      entity_name: entry.entity_name ?? null,
+      field: entry.field ?? null,
+      old_value: entry.old_value == null ? null : String(entry.old_value),
+      new_value: entry.new_value == null ? null : String(entry.new_value),
+      summary: entry.summary ?? null,
+    });
+  } catch (error) {
+    console.warn("No se pudo registrar la actividad:", error?.message || error);
+  }
+}
+
+// Lee el historial (más reciente primero) con filtros y paginación opcionales.
+async function getActivityLog(options = {}) {
+  if (!(await activityLogEnabled())) return [];
+  const { limit = 50, offset = 0, entityType, actor, action, since } = options;
+  let query = supabaseClient
+    .from("activity_log")
+    .select("id, created_at, actor_email, action, entity_type, entity_id, entity_name, field, old_value, new_value, summary")
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+  if (entityType) query = query.eq("entity_type", entityType);
+  if (actor) query = query.eq("actor_email", actor);
+  if (action) query = query.eq("action", action);
+  if (since) query = query.gte("created_at", since);
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+}
+
 async function getProductsWithFlavors(options = {}) {
   const useCache = options.cache !== false;
   const allowFallback = options.fallback !== false;
@@ -577,6 +639,7 @@ async function createCategory({ name, parentId = null, sortOrder = 100 }) {
     .single();
 
   if (error) throw error;
+  await logActivity({ action: "create", entity_type: "category", entity_id: data.id, entity_name: data.name, summary: `creó la categoría «${data.name}»` });
   return data;
 }
 
@@ -596,6 +659,13 @@ async function updateCategory(id, changes = {}) {
     .single();
 
   if (error) throw error;
+  // Solo registramos cambios significativos (nombre/activación), no los reordenamientos.
+  const parts = [];
+  if (changes.name !== undefined) parts.push(`renombrada a «${data.name}»`);
+  if (changes.is_active !== undefined) parts.push(changes.is_active ? "activada" : "desactivada");
+  if (parts.length) {
+    await logActivity({ action: "update", entity_type: "category", entity_id: id, entity_name: data.name, summary: `categoría «${data.name}»: ${parts.join(", ")}` });
+  }
   return data;
 }
 
@@ -614,8 +684,14 @@ async function getCategoryProductCount(categoryId, childIds = []) {
 
 async function deleteCategory(id) {
   ensureSupabaseForWrite();
+  let name = null;
+  try {
+    const { data: prev } = await supabaseClient.from("categories").select("name").eq("id", id).maybeSingle();
+    name = prev?.name;
+  } catch (_) { /* el historial es opcional */ }
   const { error } = await supabaseClient.from("categories").delete().eq("id", id);
   if (error) throw error;
+  await logActivity({ action: "delete", entity_type: "category", entity_id: id, entity_name: name, summary: `eliminó la categoría «${name || id}»` });
 }
 
 async function getAdminProfile(userId) {
@@ -656,6 +732,11 @@ async function setAdminProfileActive(id, active) {
     .single();
 
   if (error) throw error;
+  await logActivity({
+    action: "availability", entity_type: "admin", entity_id: data.user_id || null, entity_name: data.email,
+    new_value: data.is_active ? "activo" : "inactivo",
+    summary: `${data.is_active ? "activó" : "desactivó"} el acceso de ${data.email || "un administrador"}`,
+  });
   return data;
 }
 
@@ -805,7 +886,9 @@ async function createProduct(productData) {
 
   if (error) throw error;
   productsCache = null;
-  return normalizeProductFromDb(data);
+  const result = normalizeProductFromDb(data);
+  await logActivity({ action: "create", entity_type: "product", entity_id: result.id, entity_name: result.name, summary: `creó el producto «${result.name}»` });
+  return result;
 }
 
 // `options.expectedUpdatedAt`: si se pasa, sólo actualiza si el updated_at en BD
@@ -831,6 +914,17 @@ async function updateProduct(id, productData, options = {}) {
     }
   }
 
+  // Estado anterior, para describir el cambio en el historial (antes → después).
+  let prevRow = null;
+  try {
+    const { data: prev } = await supabaseClient
+      .from("products")
+      .select("name, price, old_price, available")
+      .eq("id", id)
+      .maybeSingle();
+    prevRow = prev;
+  } catch (_) { /* el historial es opcional */ }
+
   const payload = mapProductToDb(productData);
   delete payload.legacy_id;
   Object.assign(payload, await auditStamp());
@@ -844,7 +938,20 @@ async function updateProduct(id, productData, options = {}) {
 
   if (error) throw error;
   productsCache = null;
-  return normalizeProductFromDb(data);
+  const result = normalizeProductFromDb(data);
+
+  const changes = [];
+  if (prevRow) {
+    if ((prevRow.name || "") !== (result.name || "")) changes.push(`nombre «${prevRow.name}» → «${result.name}»`);
+    if (Number(prevRow.price || 0) !== Number(result.price || 0)) changes.push(`precio ${priceLabel(prevRow.price)} → ${priceLabel(result.price)}`);
+    if (Number(prevRow.old_price || 0) !== Number(result.old_price || 0)) changes.push(`oferta ${priceLabel(prevRow.old_price)} → ${priceLabel(result.old_price)}`);
+    if ((prevRow.available !== false) !== (result.available !== false)) changes.push(result.available !== false ? "marcado disponible" : "marcado agotado");
+  }
+  await logActivity({
+    action: "update", entity_type: "product", entity_id: id, entity_name: result.name,
+    summary: changes.length ? `editó «${result.name}»: ${changes.join(", ")}` : `editó «${result.name}»`,
+  });
+  return result;
 }
 
 // Update parcial: toca SOLO las columnas de disponibilidad. No pasa por
@@ -867,7 +974,13 @@ async function setProductAvailability(id, available) {
 
   if (error) throw error;
   productsCache = null;
-  return normalizeProductFromDb(data);
+  const result = normalizeProductFromDb(data);
+  await logActivity({
+    action: "availability", entity_type: "product", entity_id: id, entity_name: result.name,
+    field: "disponibilidad", new_value: isAvailable ? "disponible" : "agotado",
+    summary: `marcó «${result.name}» como ${isAvailable ? "disponible" : "agotado"}`,
+  });
+  return result;
 }
 
 // Update parcial de precio: toca SOLO las columnas de precio. No pasa por
@@ -875,6 +988,12 @@ async function setProductAvailability(id, available) {
 // `oldPrice` undefined = no tocar la oferta; null o "" = quitar la oferta.
 async function setProductPricing(id, { price, oldPrice } = {}) {
   ensureSupabaseForWrite();
+  // Precio anterior, para el texto del historial ("de $50 a $60").
+  let prevPrice = null;
+  try {
+    const { data: prev } = await supabaseClient.from("products").select("price").eq("id", id).maybeSingle();
+    prevPrice = prev?.price;
+  } catch (_) { /* el historial es opcional */ }
   const numericPrice = price === "" || price == null ? null : Number(price);
   if (numericPrice != null && !Number.isFinite(numericPrice)) {
     throw new Error("El precio no es un número válido.");
@@ -901,7 +1020,13 @@ async function setProductPricing(id, { price, oldPrice } = {}) {
 
   if (error) throw error;
   productsCache = null;
-  return normalizeProductFromDb(data);
+  const result = normalizeProductFromDb(data);
+  await logActivity({
+    action: "price", entity_type: "product", entity_id: id, entity_name: result.name,
+    field: "precio", old_value: priceLabel(prevPrice), new_value: priceLabel(result.price),
+    summary: `cambió el precio de «${result.name}» de ${priceLabel(prevPrice)} a ${priceLabel(result.price)}`,
+  });
+  return result;
 }
 
 // Update parcial de disponibilidad de un sabor: no reescribe nombre/precio/stock.
@@ -917,14 +1042,27 @@ async function setFlavorAvailability(id, available) {
 
   if (error) throw error;
   productsCache = null;
-  return normalizeFlavor(data);
+  const result = normalizeFlavor(data);
+  await logActivity({
+    action: "availability", entity_type: "flavor", entity_id: id, entity_name: result.name,
+    field: "disponibilidad", new_value: isAvailable ? "disponible" : "agotado",
+    summary: `marcó el sabor «${result.name}» como ${isAvailable ? "disponible" : "agotado"}`,
+  });
+  return result;
 }
 
 async function deleteProduct(id) {
   ensureSupabaseForWrite();
+  // Nombre antes de borrar, para que el historial sea legible.
+  let name = null;
+  try {
+    const { data: prev } = await supabaseClient.from("products").select("name").eq("id", id).maybeSingle();
+    name = prev?.name;
+  } catch (_) { /* el historial es opcional */ }
   const { error } = await supabaseClient.from("products").delete().eq("id", id);
   if (error) throw error;
   productsCache = null;
+  await logActivity({ action: "delete", entity_type: "product", entity_id: id, entity_name: name, summary: `eliminó el producto «${name || id}»` });
 }
 
 async function createFlavor(productId, flavorData) {
@@ -943,7 +1081,9 @@ async function createFlavor(productId, flavorData) {
 
   if (error) throw error;
   productsCache = null;
-  return normalizeFlavor(data);
+  const result = normalizeFlavor(data);
+  await logActivity({ action: "create", entity_type: "flavor", entity_id: result.id, entity_name: result.name, summary: `agregó el sabor «${result.name}»` });
+  return result;
 }
 
 async function updateFlavor(id, flavorData) {
@@ -962,14 +1102,22 @@ async function updateFlavor(id, flavorData) {
 
   if (error) throw error;
   productsCache = null;
-  return normalizeFlavor(data);
+  const result = normalizeFlavor(data);
+  await logActivity({ action: "update", entity_type: "flavor", entity_id: id, entity_name: result.name, summary: `editó el sabor «${result.name}»` });
+  return result;
 }
 
 async function deleteFlavor(id) {
   ensureSupabaseForWrite();
+  let name = null;
+  try {
+    const { data: prev } = await supabaseClient.from("product_flavors").select("name").eq("id", id).maybeSingle();
+    name = prev?.name;
+  } catch (_) { /* el historial es opcional */ }
   const { error } = await supabaseClient.from("product_flavors").delete().eq("id", id);
   if (error) throw error;
   productsCache = null;
+  await logActivity({ action: "delete", entity_type: "flavor", entity_id: id, entity_name: name, summary: `eliminó el sabor «${name || id}»` });
 }
 
 async function seedProductsFromLocalData() {
@@ -1117,16 +1265,36 @@ async function createCombo(data) {
   Object.assign(payload, await auditStamp(true));
   const { data: row, error } = await supabaseClient.from("combos").insert(payload).select(COMBO_SELECT).single();
   if (error) throw error;
-  return normalizeCombo(row);
+  const result = normalizeCombo(row);
+  await logActivity({ action: "create", entity_type: "combo", entity_id: result.id, entity_name: result.name, summary: `creó el combo «${result.name}»` });
+  return result;
 }
 
 async function updateCombo(id, data) {
   ensureSupabaseForWrite();
+  let prevRow = null;
+  try {
+    const { data: prev } = await supabaseClient.from("combos").select("name, price, old_price, is_active").eq("id", id).maybeSingle();
+    prevRow = prev;
+  } catch (_) { /* el historial es opcional */ }
   const payload = mapComboToDb(data);
   Object.assign(payload, await auditStamp());
   const { data: row, error } = await supabaseClient.from("combos").update(payload).eq("id", id).select(COMBO_SELECT).single();
   if (error) throw error;
-  return normalizeCombo(row);
+  const result = normalizeCombo(row);
+
+  const changes = [];
+  if (prevRow) {
+    if ((prevRow.name || "") !== (result.name || "")) changes.push(`nombre «${prevRow.name}» → «${result.name}»`);
+    if (Number(prevRow.price || 0) !== Number(result.price || 0)) changes.push(`precio ${priceLabel(prevRow.price)} → ${priceLabel(result.price)}`);
+    if (Number(prevRow.old_price || 0) !== Number(result.old_price || 0)) changes.push(`oferta ${priceLabel(prevRow.old_price)} → ${priceLabel(result.old_price)}`);
+    if ((prevRow.is_active !== false) !== (result.is_active !== false)) changes.push(result.is_active !== false ? "activado" : "desactivado");
+  }
+  await logActivity({
+    action: "update", entity_type: "combo", entity_id: id, entity_name: result.name,
+    summary: changes.length ? `editó el combo «${result.name}»: ${changes.join(", ")}` : `editó el combo «${result.name}»`,
+  });
+  return result;
 }
 
 // Update parcial: solo activa/desactiva el combo.
@@ -1139,13 +1307,25 @@ async function setComboActive(id, active) {
     .select(COMBO_SELECT)
     .single();
   if (error) throw error;
-  return normalizeCombo(data);
+  const result = normalizeCombo(data);
+  await logActivity({
+    action: "availability", entity_type: "combo", entity_id: id, entity_name: result.name,
+    field: "estado", new_value: active ? "activo" : "inactivo",
+    summary: `${active ? "activó" : "desactivó"} el combo «${result.name}»`,
+  });
+  return result;
 }
 
 async function deleteCombo(id) {
   ensureSupabaseForWrite();
+  let name = null;
+  try {
+    const { data: prev } = await supabaseClient.from("combos").select("name").eq("id", id).maybeSingle();
+    name = prev?.name;
+  } catch (_) { /* el historial es opcional */ }
   const { error } = await supabaseClient.from("combos").delete().eq("id", id);
   if (error) throw error;
+  await logActivity({ action: "delete", entity_type: "combo", entity_id: id, entity_name: name, summary: `eliminó el combo «${name || id}»` });
 }
 
 // Reemplaza por completo los items de un combo.
@@ -1203,5 +1383,6 @@ window.catalogDb = {
   normalizeProductFromDb,
   seedProductsFromLocalData,
   getProductsCacheSource,
+  getActivityLog,
   isUuid,
 };

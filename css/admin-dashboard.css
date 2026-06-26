@@ -705,3 +705,70 @@ body.ad-body { min-height: 100vh; }
 @media (prefers-reduced-motion: reduce) {
   .ad-app *, .ad-app *::before, .ad-app *::after { animation: none !important; transition: none !important; }
 }
+
+/* ============================ AJUSTES: pestañas ============================ */
+.ad-subtabs { display: flex; gap: 6px; border-bottom: 1px solid var(--pb-line); margin-bottom: 16px; flex-wrap: wrap; }
+.ad-subtab {
+  display: inline-flex; align-items: center; gap: 7px;
+  border: 0; border-bottom: 2px solid transparent; background: transparent;
+  color: var(--pb-muted); font: inherit; font-weight: 700; font-size: 0.9rem;
+  padding: 9px 12px; margin-bottom: -1px; cursor: pointer;
+  transition: color .16s ease, border-color .16s ease;
+}
+.ad-subtab .ad-ico { width: 17px; height: 17px; }
+.ad-subtab:hover { color: var(--pb-text); }
+.ad-subtab.is-active { color: #fff; border-bottom-color: var(--ad-blue); }
+
+/* ============================ HISTORIAL ============================ */
+.ad-filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.ad-filters__ico { display: inline-grid; place-items: center; color: var(--pb-muted); }
+.ad-filters__ico .ad-ico { width: 18px; height: 18px; }
+.ad-filters .ad-select { min-width: 150px; }
+
+.ad-feed { display: flex; flex-direction: column; gap: 8px; }
+.ad-feed__item {
+  display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 12px; align-items: start;
+  border: 1px solid var(--pb-line); border-radius: var(--ad-radius-sm); background: var(--pb-white-04); padding: 12px 14px;
+}
+.ad-feed__icon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: var(--pb-white-06); color: var(--pb-text); }
+.ad-feed__icon .ad-ico { width: 18px; height: 18px; }
+.ad-feed__icon--ok { background: rgba(0,230,118,0.16); color: #93f8bd; }
+.ad-feed__icon--blue { background: rgba(90,180,233,0.18); color: #d2ecff; }
+.ad-feed__icon--amber { background: rgba(255,179,0,0.16); color: #ffe0a3; }
+.ad-feed__icon--bad { background: rgba(255,79,118,0.16); color: #ffc1ce; }
+.ad-feed__body { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.ad-feed__text { font-size: 0.9rem; line-height: 1.35; word-break: break-word; }
+.ad-feed__text strong { color: #fff; }
+.ad-feed__meta { color: var(--pb-muted-2); font-size: 0.76rem; }
+.ad-feed__more { margin-top: 14px; display: flex; justify-content: center; }
+.ad-feed__loading, .ad-feed__end { color: var(--pb-muted); font-size: 0.85rem; text-align: center; padding: 12px; }
+
+/* ============================ INFORMES ============================ */
+.ad-rep-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.ad-rep-card {
+  display: flex; flex-direction: column; gap: 8px; align-items: flex-start;
+  border: 1px solid var(--pb-line); border-radius: var(--ad-radius-sm); background: var(--pb-white-04); padding: 16px;
+}
+.ad-rep-card__icon { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: var(--pb-blue-tint-12); color: #d2ecff; }
+.ad-rep-card__icon .ad-ico { width: 20px; height: 20px; }
+.ad-rep-card h3 { font-size: 1rem; font-weight: 800; }
+.ad-rep-card p { color: var(--pb-muted); font-size: 0.82rem; line-height: 1.35; flex: 1; }
+.ad-rep-card .ad-select { width: 100%; }
+.ad-rep-card .ad-btn { margin-top: 2px; }
+
+.ad-rep-result { margin-top: 16px; }
+.ad-rep-result:empty { margin-top: 0; }
+.ad-rep-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.ad-rep-head h2 { font-family: var(--font-heading); font-weight: 900; font-size: 1.15rem; }
+.ad-rep-meta { color: var(--pb-muted); font-size: 0.8rem; margin-top: 3px; }
+.ad-rep-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.ad-rep-scroll { overflow-x: auto; }
+.ad-rep-empty { color: var(--pb-muted); font-size: 0.9rem; padding: 8px 0; }
+
+@media (max-width: 760px) {
+  .ad-subtabs { flex-wrap: nowrap; overflow-x: auto; }
+  .ad-subtab { white-space: nowrap; }
+  .ad-filters .ad-select { flex: 1 1 140px; min-width: 0; }
+  /* las tablas de informe SÍ se muestran en móvil (con scroll), a diferencia de .ad-table-wrap */
+  .ad-rep-scroll .ad-table { min-width: 640px; }
+}
