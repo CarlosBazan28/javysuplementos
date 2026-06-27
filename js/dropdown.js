@@ -17,11 +17,24 @@
   "use strict";
 
   let dropdownId = 0;
+  const SEARCH_THRESHOLD = 8;   // a partir de cuántas opciones se muestra el buscador
 
   function esc(s) {
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+
+  // minúsculas + sin acentos, para buscar "limon" y encontrar "Limón"
+  function norm(s) {
+    return String(s == null ? "" : s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  }
+
+  // ¿este select muestra buscador? Por atributo explícito o por tener muchas opciones.
+  function searchEnabled(select) {
+    if (select.hasAttribute("data-jdd-no-search")) return false;
+    if (select.hasAttribute("data-jdd-search")) return true;
+    return select.querySelectorAll("option").length > SEARCH_THRESHOLD;
   }
 
   function chevron() {
@@ -60,8 +73,20 @@
 
   function sync(dd) {
     const select = dd._select;
-    dd._value.textContent = selectedLabel(select);
-    dd._menu.innerHTML = buildMenu(select);
+    if (dd._search) {
+      const opt = select.options[select.selectedIndex];
+      if (opt && opt.value === "") {
+        dd._input.value = "";
+        dd._input.placeholder = opt.textContent.trim();
+      } else {
+        dd._input.value = selectedLabel(select);
+        dd._input.placeholder = dd._label || "";
+      }
+      dd._menu.innerHTML = buildMenu(select) + `<p class="jdd__empty" hidden>Sin resultados</p>`;
+    } else {
+      dd._value.textContent = selectedLabel(select);
+      dd._menu.innerHTML = buildMenu(select);
+    }
     dd._btn.disabled = select.disabled;
     dd._btn.setAttribute("aria-disabled", select.disabled ? "true" : "false");
     if (dd._label) {
@@ -70,7 +95,7 @@
   }
 
   function positionMenu(dd) {
-    const r = dd._btn.getBoundingClientRect();
+    const r = (dd._field || dd._btn).getBoundingClientRect();
     const menu = dd._menu, gap = 6, padding = 8;
     const viewportWidth = document.documentElement.clientWidth || window.innerWidth;
     const width = Math.min(Math.round(r.width), Math.max(0, viewportWidth - padding * 2));
@@ -98,7 +123,24 @@
   }
 
   function enabledOptions(dd) {
-    return Array.from(dd._menu.querySelectorAll(".jdd__opt:not(:disabled)"));
+    return Array.from(dd._menu.querySelectorAll(".jdd__opt:not(:disabled):not([hidden])"));
+  }
+
+  // Filtra visualmente las opciones del menú según lo escrito en el buscador.
+  function filterMenu(dd, query) {
+    const q = norm(query).trim();
+    let visible = 0;
+    dd._menu.querySelectorAll(".jdd__opt").forEach((opt) => {
+      const match = !q || norm(opt.textContent).includes(q);
+      opt.hidden = !match;
+      if (match) visible++;
+    });
+    // ocultar grupos que quedaron sin opciones visibles
+    dd._menu.querySelectorAll(".jdd__option-group").forEach((group) => {
+      group.hidden = !group.querySelector(".jdd__opt:not([hidden])");
+    });
+    const empty = dd._menu.querySelector(".jdd__empty");
+    if (empty) empty.hidden = visible > 0;
   }
 
   function focusOption(dd, index) {
@@ -129,6 +171,11 @@
     }
     window.clearTimeout(dd._typeaheadTimer);
     dd._typeahead = "";
+    if (dd._search && dd._input) {
+      // descartar lo tipeado: volver a mostrar la opción elegida
+      const opt = dd._select.options[dd._select.selectedIndex];
+      dd._input.value = (opt && opt.value === "") ? "" : selectedLabel(dd._select);
+    }
     if (restoreFocus) dd._btn.focus({ preventScroll: true });
   }
 
@@ -141,9 +188,15 @@
     document.body.appendChild(menu);     // portal: escapa overflow/clipping de ancestros
     menu.hidden = false;
     positionMenu(dd);
-    const items = enabledOptions(dd);
-    const activeIndex = items.findIndex((item) => item.classList.contains("is-active"));
-    focusOption(dd, preferredIndex == null ? Math.max(activeIndex, 0) : preferredIndex);
+    if (dd._search) {
+      filterMenu(dd, "");                         // arrancar con la lista completa
+      if (preferredIndex != null) focusOption(dd, preferredIndex);
+      // sin preferredIndex el foco queda en el input (no se mueve)
+    } else {
+      const items = enabledOptions(dd);
+      const activeIndex = items.findIndex((item) => item.classList.contains("is-active"));
+      focusOption(dd, preferredIndex == null ? Math.max(activeIndex, 0) : preferredIndex);
+    }
     dd._onDoc = (e) => { if (!dd.contains(e.target) && !menu.contains(e.target)) close(dd); };
     dd._onKey = (e) => {
       if (e.key !== "Escape") return;
@@ -217,25 +270,45 @@
 
     const aria = labelText(select);
     dd._label = aria;
+    dd._search = searchEnabled(select);
     const menuId = `jdd-menu-${++dropdownId}`;
-    dd.innerHTML =
-      `<button type="button" class="jdd__btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="${menuId}"` +
-        (aria ? ` aria-label="${esc(aria)}"` : "") + '>' +
-        '<span class="jdd__value"></span>' +
-        '<span class="jdd__chev">' + chevron() + '</span>' +
-      '</button>' +
-      `<div class="jdd__menu" id="${menuId}" role="listbox" tabindex="-1" hidden></div>`;
+    const ariaAttr = aria ? ` aria-label="${esc(aria)}"` : "";
+    if (dd._search) {
+      // combobox editable: el campo es un input donde se escribe para filtrar
+      dd.innerHTML =
+        '<div class="jdd__combo">' +
+          `<input type="text" class="jdd__input" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-autocomplete="list" autocomplete="off" aria-controls="${menuId}"${ariaAttr} />` +
+          '<button type="button" class="jdd__toggle" tabindex="-1" aria-label="Abrir lista">' + chevron() + '</button>' +
+        '</div>' +
+        `<div class="jdd__menu" id="${menuId}" role="listbox" tabindex="-1" hidden></div>`;
+    } else {
+      dd.innerHTML =
+        `<button type="button" class="jdd__btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="${menuId}"${ariaAttr}>` +
+          '<span class="jdd__value"></span>' +
+          '<span class="jdd__chev">' + chevron() + '</span>' +
+        '</button>' +
+        `<div class="jdd__menu" id="${menuId}" role="listbox" tabindex="-1" hidden></div>`;
+    }
 
     select.parentNode.insertBefore(dd, select);
     dd.appendChild(select);              // el select queda dentro del wrapper, oculto por CSS
     select.setAttribute("tabindex", "-1");
     select.setAttribute("aria-hidden", "true");
 
-    dd._btn = dd.querySelector(".jdd__btn");
     dd._menu = dd.querySelector(".jdd__menu");
-    dd._value = dd.querySelector(".jdd__value");
     dd._typeahead = "";
     dd._typeaheadTimer = null;
+    if (dd._search) {
+      dd._input = dd.querySelector(".jdd__input");
+      dd._toggle = dd.querySelector(".jdd__toggle");
+      dd._btn = dd._input;               // el resto del código trata dd._btn como "trigger"
+      dd._field = dd.querySelector(".jdd__combo");
+      dd._value = null;
+    } else {
+      dd._btn = dd.querySelector(".jdd__btn");
+      dd._value = dd.querySelector(".jdd__value");
+      dd._field = dd._btn;
+    }
     sync(dd);
 
     Array.from(select.labels || []).forEach((label) => {
@@ -246,19 +319,56 @@
       });
     });
 
-    dd._btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (select.disabled) return;
-      dd.classList.contains("is-open") ? close(dd) : open(dd);
-    });
-    dd._btn.addEventListener("keydown", (e) => {
-      if (select.disabled || !["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
-      e.preventDefault();
-      const items = enabledOptions(dd);
-      const target = e.key === "ArrowUp" || e.key === "End" ? Math.max(items.length - 1, 0) : 0;
-      if (!dd.classList.contains("is-open")) open(dd, target);
-      else focusOption(dd, target);
-    });
+    if (dd._search) {
+      const input = dd._input;
+      input.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (select.disabled) return;
+        if (!dd.classList.contains("is-open")) open(dd);
+        input.select();
+      });
+      input.addEventListener("input", () => {
+        if (select.disabled) return;
+        const q = input.value;
+        if (!dd.classList.contains("is-open")) { open(dd); input.value = q; }
+        filterMenu(dd, q);
+      });
+      input.addEventListener("keydown", (e) => {
+        if (select.disabled) return;
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          if (!dd.classList.contains("is-open")) open(dd);
+          const items = enabledOptions(dd);
+          focusOption(dd, e.key === "ArrowUp" ? Math.max(items.length - 1, 0) : 0);
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          const first = enabledOptions(dd)[0];
+          if (first) first.click();
+        } else if (e.key === "Escape" && dd.classList.contains("is-open")) {
+          e.preventDefault(); e.stopPropagation(); close(dd, true);
+        }
+      });
+      dd._toggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (select.disabled) return;
+        if (dd.classList.contains("is-open")) close(dd, true);
+        else { open(dd); input.focus({ preventScroll: true }); input.select(); }
+      });
+    } else {
+      dd._btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (select.disabled) return;
+        dd.classList.contains("is-open") ? close(dd) : open(dd);
+      });
+      dd._btn.addEventListener("keydown", (e) => {
+        if (select.disabled || !["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
+        e.preventDefault();
+        const items = enabledOptions(dd);
+        const target = e.key === "ArrowUp" || e.key === "End" ? Math.max(items.length - 1, 0) : 0;
+        if (!dd.classList.contains("is-open")) open(dd, target);
+        else focusOption(dd, target);
+      });
+    }
     dd._menu.addEventListener("click", (e) => {
       const opt = e.target.closest(".jdd__opt");
       if (!opt || opt.disabled) return;
@@ -273,6 +383,8 @@
       if (document.body.contains(dd)) sync(dd);
     });
     dd._menu.addEventListener("keydown", (e) => {
+      // los eventos del buscador los maneja su propio listener, no la navegación de opciones
+      if (e.target.classList && e.target.classList.contains("jdd__search-input")) return;
       const items = enabledOptions(dd);
       if (!items.length) return;
       const current = items.indexOf(document.activeElement);

@@ -16,8 +16,6 @@ export const NAV = [
     subtitle: "Resumen de la tienda y acciones pendientes" },
   { key: "products", label: "Productos", icon: "package", primary: true,
     subtitle: "Gestiona el catálogo, precios y disponibilidad" },
-  { key: "variants", label: "Sabores", icon: "tags", primary: true,
-    subtitle: "Sabores y variantes por producto" },
   { key: "home", label: "Inicio", icon: "home", primary: true,
     subtitle: "Productos destacados en el inicio" },
   { key: "categories", label: "Categorías", icon: "tags", primary: false,

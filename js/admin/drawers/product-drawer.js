@@ -6,7 +6,7 @@
 import { state, catById, families, typesOf } from "../state.js";
 import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js";
 import { $, esc, ico } from "../helpers.js";
-import { collapse, field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js";
+import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js";
 import { requestRerender } from "../shell.js";
 import { reloadProducts } from "../data.js";
 
@@ -55,9 +55,7 @@ export function openProductDrawer(product, opts = {}) {
 
   const host = $("#adminDrawerHost");
   const overlay = document.createElement("div");
-  overlay.className = "ad-drawer-overlay";
-  overlay.setAttribute("role", "dialog");
-  overlay.setAttribute("aria-modal", "true");
+  overlay.className = "ad-modal-overlay";
   host.appendChild(overlay);
 
   const metaLine = (!isNew && product.updated_by)
@@ -72,63 +70,89 @@ export function openProductDrawer(product, opts = {}) {
     return `<option value="">${famId ? "Elegir…" : "—"}</option>` + ts.map((t) => `<option value="${esc(t.id)}"${t.id === typeId ? " selected" : ""}>${esc(t.name)}</option>`).join("");
   }
 
+  // Secciones del modal: [key, número, etiqueta corta (índice), título largo (encabezado)].
+  const SECS = [
+    ["esencial", 1, "Esencial", "Información esencial"],
+    ["precio", 2, "Precio", "Precio y oferta"],
+    ["imagen", 3, "Imagen", "Imagen"],
+    ["sabores", 4, "Sabores", "Sabores / variantes"],
+    ["descripcion", 5, "Descripción", "Descripción y etiquetas"],
+    ["visibilidad", 6, "Visibilidad", "Disponibilidad y visibilidad"],
+  ];
+  const railItem = ([key, num, short]) => `
+    <button class="ad-modal__rail-item${num === 1 ? " is-active" : ""}" type="button" data-go-sec="${key}">
+      <span class="ad-modal__rail-num">${num}</span><span>${esc(short)}</span><span class="ad-modal__rail-dot"></span>
+    </button>`;
+  const sec = (key, body) => {
+    const [, num, , title] = SECS.find((s) => s[0] === key);
+    return `<section class="ad-modal__sec" data-sec="${key}">
+      <h3 class="ad-modal__sec-title"><span class="ad-modal__sec-num">${num}</span>${esc(title)}</h3>
+      <div class="ad-modal__sec-body">${body}</div>
+    </section>`;
+  };
+
   overlay.innerHTML = `
-    <div class="ad-drawer__scrim" data-close></div>
-    <div class="ad-drawer">
-      <div class="ad-drawer__head">
+    <div class="ad-modal__scrim" data-close></div>
+    <div class="ad-modal" role="dialog" aria-modal="true">
+      <div class="ad-modal__head">
         <div><h2>${isNew ? "Nuevo producto" : "Editar producto"}</h2><p data-meta>${metaLine}</p></div>
-        <button class="ad-drawer__close" type="button" aria-label="Cerrar" data-close>${ico("x")}</button>
+        <button class="ad-modal__close" type="button" aria-label="Cerrar" data-close>${ico("x")}</button>
       </div>
-      <div class="ad-drawer__body">
-        ${collapse("1", "Información esencial", true, `
-          ${field("Nombre del producto", true, `<input class="ad-input" data-f="name" value="${esc(data.name)}" placeholder="Ej. Isomorph 28 Whey Isolate" />`, "name")}
-          ${field("Marca", false, `<input class="ad-input" data-f="brand" value="${esc(data.brand)}" placeholder="Ej. APS Nutrition" />`)}
-          <div class="ad-field-row">
-            ${field("Categoría", true, `<select class="ad-select" data-f="family" aria-label="Categoría">${familyOptions()}</select>`, "family")}
-            ${field("Subcategoría", false, `<select class="ad-select" data-f="type" aria-label="Subcategoría" ${famId ? "" : "disabled"}>${typeOptions()}</select>`)}
-          </div>
-          ${field("Presentación", false, `<input class="ad-input" data-f="presentation" value="${esc(data.presentation)}" placeholder="Ej. 5 lb · 300 g · 30 serv" />`)}
-        `)}
-        ${collapse("2", "Precio y oferta", false, `
-          <div class="ad-field-row">
-            ${field("Precio actual", true, affix(`<input class="ad-input" inputmode="decimal" data-f="price" value="${esc(data.price)}" placeholder="0.00" />`), "price")}
-            ${field("Precio anterior", false, affix(`<input class="ad-input" inputmode="decimal" data-f="old_price" value="${esc(data.old_price)}" placeholder="0.00" />`), "old_price", "Para mostrar oferta")}
-          </div>
-          <span class="ad-pill ad-pill--home" data-offer-pill style="justify-self:start;display:none"></span>
-        `)}
-        ${collapse("3", "Imagen", false, `<div data-image-slot></div>`)}
-        ${collapse("4", "Sabores / variantes", false, `
-          ${switchRow("noflavor", "Este producto no tiene sabores", "Se cotiza sin pedir sabor", data.noFlavor)}
-          <div data-flavor-section${data.noFlavor ? " hidden" : ""}>
-            ${field("Sabores", false, `
-              <div class="ad-flavors" data-flavor-list></div>
-              <div class="ad-flavor-add">
-                <input class="ad-input" type="text" data-flavor-add placeholder="Agregar sabor (ej. Chocolate)" />
-                <button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-flavor-add-btn>${ico("plus")}Agregar</button>
-              </div>
-            `, null, "Marcá cada sabor como disponible o agotado")}
-          </div>
-        `)}
-        ${collapse("5", "Descripción y etiquetas", false, `
-          ${field("Descripción corta", false, `<textarea class="ad-textarea" data-f="description_short" placeholder="Una línea que resuma el producto…">${esc(data.description_short)}</textarea>`)}
-          ${field("Descripción larga (detalle)", false, `<textarea class="ad-textarea" data-f="description_long" placeholder="Texto completo para la página de detalle…">${esc(data.description_long)}</textarea>`)}
-          ${field("Beneficios", false, `<textarea class="ad-textarea" data-f="beneficios" placeholder="Un beneficio por línea…">${esc(data.beneficios)}</textarea>`, null, "Una línea por beneficio")}
-          ${field("Modo de uso", false, `<textarea class="ad-textarea" data-f="uso" placeholder="Una indicación por línea…">${esc(data.uso)}</textarea>`, null, "Una línea por indicación")}
-          ${field("Tags", false, `<div class="ad-chips-input" data-tags>${data.tags.map(chipTag).join("")}<input type="text" placeholder="Ej. Energía" /></div>`, null, "Palabras clave para búsqueda")}
-          ${field("Objetivos", false, `<div style="display:flex;flex-wrap:wrap;gap:8px" data-goals>${GOAL_SUGGESTIONS.concat(data.goals.filter((g) => !GOAL_SUGGESTIONS.includes(g))).map((g) => `<button type="button" class="ad-chip-toggle${data.goals.includes(g) ? " is-active" : ""}" data-goal="${esc(g)}">${esc(g)}</button>`).join("")}</div>`)}
-        `)}
-        ${collapse("6", "Disponibilidad y visibilidad", true, `
-          <div>
-            ${switchRow("available", "Disponible", "Visible y cotizable en la tienda", data.available)}
-            ${switchRow("featured", "Destacado", "Resalta el producto en su categoría", data.featured)}
-            ${switchRow("home", "Mostrar en inicio", "Aparece entre los productos del home (máx. " + HOME_MAX + ")", data.home)}
-          </div>
-          <div data-home-order-slot>${data.home ? field("Orden en inicio", false, `<input class="ad-input" inputmode="numeric" data-f="home_order" value="${esc(data.home_order)}" placeholder="Ej. 1" style="max-width:120px" />`, null, "Posición entre los destacados del home") : ""}</div>
-        `)}
+      <div class="ad-modal__main">
+        <nav class="ad-modal__rail" aria-label="Secciones del formulario">${SECS.map(railItem).join("")}</nav>
+        <div class="ad-modal__content">
+          ${sec("esencial", `
+            ${field("Nombre del producto", true, `<input class="ad-input" data-f="name" value="${esc(data.name)}" placeholder="Ej. Isomorph 28 Whey Isolate" />`, "name")}
+            <div class="ad-form-grid">
+              ${field("Marca", false, `<input class="ad-input" data-f="brand" value="${esc(data.brand)}" placeholder="Ej. APS Nutrition" />`)}
+              ${field("Presentación", false, `<input class="ad-input" data-f="presentation" value="${esc(data.presentation)}" placeholder="Ej. 5 lb · 300 g · 30 serv" />`)}
+              ${field("Categoría", true, `<select class="ad-select" data-f="family" aria-label="Categoría">${familyOptions()}</select>`, "family")}
+              ${field("Subcategoría", false, `<select class="ad-select" data-f="type" aria-label="Subcategoría" ${famId ? "" : "disabled"}>${typeOptions()}</select>`)}
+            </div>
+          `)}
+          ${sec("precio", `
+            <div class="ad-form-grid">
+              ${field("Precio actual", true, affix(`<input class="ad-input" inputmode="decimal" data-f="price" value="${esc(data.price)}" placeholder="0.00" />`), "price")}
+              ${field("Precio anterior", false, affix(`<input class="ad-input" inputmode="decimal" data-f="old_price" value="${esc(data.old_price)}" placeholder="0.00" />`), "old_price", "Para mostrar oferta")}
+            </div>
+            <span class="ad-pill ad-pill--home" data-offer-pill style="justify-self:start;display:none"></span>
+          `)}
+          ${sec("imagen", `<div data-image-slot></div>`)}
+          ${sec("sabores", `
+            ${switchRow("noflavor", "Este producto no tiene sabores", "Se cotiza sin pedir sabor", data.noFlavor)}
+            <div data-flavor-section${data.noFlavor ? " hidden" : ""}>
+              ${field("Sabores", false, `
+                <div class="ad-flavors" data-flavor-list></div>
+                <div class="ad-flavor-add">
+                  <input class="ad-input" type="text" data-flavor-add placeholder="Agregar sabor (ej. Chocolate)" />
+                  <button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-flavor-add-btn>${ico("plus")}Agregar</button>
+                </div>
+                <span class="ad-field__error" data-flavor-msg></span>
+              `, null, "Marcá cada sabor como disponible o agotado")}
+            </div>
+          `)}
+          ${sec("descripcion", `
+            ${field("Descripción corta", false, `<textarea class="ad-textarea" data-f="description_short" placeholder="Una línea que resuma el producto…">${esc(data.description_short)}</textarea>`)}
+            ${field("Descripción larga (detalle)", false, `<textarea class="ad-textarea" data-f="description_long" placeholder="Texto completo para la página de detalle…">${esc(data.description_long)}</textarea>`)}
+            <div class="ad-form-grid">
+              ${field("Beneficios", false, `<textarea class="ad-textarea" data-f="beneficios" placeholder="Un beneficio por línea…">${esc(data.beneficios)}</textarea>`, null, "Una línea por beneficio")}
+              ${field("Modo de uso", false, `<textarea class="ad-textarea" data-f="uso" placeholder="Una indicación por línea…">${esc(data.uso)}</textarea>`, null, "Una línea por indicación")}
+            </div>
+            ${field("Tags", false, `<div class="ad-chips-input" data-tags>${data.tags.map(chipTag).join("")}<input type="text" placeholder="Ej. Energía" /></div>`, null, "Palabras clave para búsqueda")}
+            ${field("Objetivos", false, `<div style="display:flex;flex-wrap:wrap;gap:8px" data-goals>${GOAL_SUGGESTIONS.concat(data.goals.filter((g) => !GOAL_SUGGESTIONS.includes(g))).map((g) => `<button type="button" class="ad-chip-toggle${data.goals.includes(g) ? " is-active" : ""}" data-goal="${esc(g)}">${esc(g)}</button>`).join("")}</div>`)}
+          `)}
+          ${sec("visibilidad", `
+            <div>
+              ${switchRow("available", "Disponible", "Visible y cotizable en la tienda", data.available)}
+              ${switchRow("featured", "Destacado", "Resalta el producto en su categoría", data.featured)}
+              ${switchRow("home", "Mostrar en inicio", "Aparece entre los productos del home (máx. " + HOME_MAX + ")", data.home)}
+            </div>
+            <div data-home-order-slot>${data.home ? field("Orden en inicio", false, `<input class="ad-input" inputmode="numeric" data-f="home_order" value="${esc(data.home_order)}" placeholder="Ej. 1" style="max-width:120px" />`, null, "Posición entre los destacados del home") : ""}</div>
+          `)}
+        </div>
       </div>
-      <div class="ad-drawer__foot">
+      <div class="ad-modal__foot">
         <button class="ad-btn ad-btn--ghost" type="button" data-close>Cancelar</button>
-        ${isNew ? `<button class="ad-btn ad-btn--ghost" type="button" data-save-new title="Guardar y crear otro">${ico("plus")}Y otro</button>` : ""}
         <button class="ad-btn ad-btn--primary" type="button" data-save>${ico("save")}${isNew ? "Crear producto" : "Guardar cambios"}</button>
       </div>
     </div>`;
@@ -140,10 +164,25 @@ export function openProductDrawer(product, opts = {}) {
   const get = (sel) => overlay.querySelector(sel);
   const fEl = (name) => overlay.querySelector(`[data-f="${name}"]`);
 
-  // collapse toggles
-  overlay.querySelectorAll(".ad-collapse__head").forEach((head) => head.addEventListener("click", () => {
-    head.parentElement.classList.toggle("is-open");
+  // navegación por secciones: índice lateral + scroll-spy (resalta la sección visible)
+  const content = get(".ad-modal__content");
+  const railItems = [...overlay.querySelectorAll("[data-go-sec]")];
+  const secEls = [...overlay.querySelectorAll(".ad-modal__sec")];
+  const setActiveSec = (key) => railItems.forEach((b) => b.classList.toggle("is-active", b.getAttribute("data-go-sec") === key));
+  railItems.forEach((b) => b.addEventListener("click", () => {
+    const key = b.getAttribute("data-go-sec");
+    const el = overlay.querySelector(`.ad-modal__sec[data-sec="${key}"]`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    setActiveSec(key);
   }));
+  // El que scrollea es .ad-modal__content (desktop) o .ad-modal__main (mobile): escuchamos ambos.
+  const onScrollSpy = () => {
+    const ref = content.getBoundingClientRect().top + 80;
+    let current = secEls[0];
+    for (const s of secEls) { if (s.getBoundingClientRect().top <= ref) current = s; }
+    if (current) setActiveSec(current.getAttribute("data-sec"));
+  };
+  [content, get(".ad-modal__main")].forEach((sc) => sc && sc.addEventListener("scroll", onScrollSpy, { passive: true }));
 
   // close handlers — pide confirmación si hay cambios sin guardar
   function destroy() {
@@ -158,13 +197,14 @@ export function openProductDrawer(product, opts = {}) {
   }
   const onKey = (e) => {
     if (e.key === "Escape" && !document.querySelector(".jdd.is-open")) close();
+    if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S")) { e.preventDefault(); doSave(); }
   };
   document.addEventListener("keydown", onKey);
   overlay.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", close));
 
-  // cualquier cambio en el formulario marca el drawer como "sucio"
-  overlay.querySelector(".ad-drawer__body").addEventListener("input", markDirty);
-  overlay.querySelector(".ad-drawer__body").addEventListener("change", markDirty);
+  // cualquier cambio en el formulario marca el modal como "sucio"
+  content.addEventListener("input", markDirty);
+  content.addEventListener("change", markDirty);
 
   // cascade
   fEl("family").addEventListener("change", (e) => {
@@ -236,17 +276,28 @@ export function openProductDrawer(product, opts = {}) {
     flavorListEl.querySelectorAll("[data-flavor-toggle]").forEach((cb) => cb.addEventListener("change", () => {
       flavorRows[+cb.getAttribute("data-flavor-toggle")].available = cb.checked; markDirty();
     }));
-    flavorListEl.querySelectorAll("[data-flavor-del]").forEach((b) => b.addEventListener("click", () => {
-      flavorRows.splice(+b.getAttribute("data-flavor-del"), 1); renderFlavors(); markDirty();
+    flavorListEl.querySelectorAll("[data-flavor-del]").forEach((b) => b.addEventListener("click", async () => {
+      const i = +b.getAttribute("data-flavor-del");
+      const f = flavorRows[i];
+      if (!f) return;
+      // Si el sabor ya está guardado, pedir confirmación (al guardar se borra de verdad).
+      if (f.id && !(await confirmModal({ title: "Quitar sabor", body: `Se eliminará el sabor «${f.name}» al guardar los cambios.`, confirmLabel: "Quitar", danger: true }))) return;
+      flavorRows.splice(i, 1); renderFlavors(); markDirty();
     }));
   }
   renderFlavors();
   const addFlavorInput = get("[data-flavor-add]");
+  const flavorMsg = get("[data-flavor-msg]");
   function addFlavor() {
+    if (flavorMsg) flavorMsg.textContent = "";
     const v = addFlavorInput.value.trim();
+    if (!v) { addFlavorInput.value = ""; return; }
+    if (flavorRows.some((f) => f.name.toLowerCase() === v.toLowerCase())) {
+      if (flavorMsg) { flavorMsg.innerHTML = `${ico("x")}Ese sabor ya está en la lista`; if (window.javyIcons) window.javyIcons.enhance(flavorMsg); }
+      addFlavorInput.focus(); addFlavorInput.select();
+      return;
+    }
     addFlavorInput.value = "";
-    if (!v) return;
-    if (flavorRows.some((f) => f.name.toLowerCase() === v.toLowerCase())) { addFlavorInput.focus(); return; }
     flavorRows.push({ id: null, name: v, available: true });
     renderFlavors(); markDirty(); addFlavorInput.focus();
   }
@@ -304,13 +355,20 @@ export function openProductDrawer(product, opts = {}) {
       if (slot) slot.innerHTML = errs[k] ? `${ico("x")}${esc(errs[k])}` : "";
       if (input) input.classList.toggle(input.tagName === "SELECT" ? "ad-select--invalid" : "ad-input--invalid", !!errs[k]);
     });
+    // punto rojo en el índice de las secciones con errores
+    const SEC_OF = { name: "esencial", family: "esencial", price: "precio", old_price: "precio" };
+    const secWithError = {};
+    Object.keys(errs).forEach((k) => { if (errs[k]) secWithError[SEC_OF[k]] = true; });
+    railItems.forEach((b) => b.classList.toggle("has-error", !!secWithError[b.getAttribute("data-go-sec")]));
     return Object.values(errs).every((v) => !v);
   }
 
   // save
-  async function doSave(createAnother) {
+  async function doSave() {
     touched = true;
     if (!validate()) {
+      const firstErr = railItems.find((b) => b.classList.contains("has-error"));
+      if (firstErr) firstErr.click();
       toast({ tone: "err", msg: "Revisá los campos marcados" });
       return;
     }
@@ -322,8 +380,7 @@ export function openProductDrawer(product, opts = {}) {
       if (dup && !(await confirmModal({ title: "Producto duplicado", body: `Ya existe “${dup.name}”${dup.brand ? " de " + dup.brand : ""}. ¿Crear de todos modos?`, confirmLabel: "Crear igual" }))) return;
     }
     const saveBtn = get("[data-save]");
-    const newBtn = get("[data-save-new]");
-    saveBtn.disabled = true; if (newBtn) newBtn.disabled = true;
+    saveBtn.disabled = true;
     saveBtn.textContent = "Guardando…";
     const noFlavor = noFlavorSwitch.checked;
     try {
@@ -351,23 +408,20 @@ export function openProductDrawer(product, opts = {}) {
         originalFlavors: product ? (product.flavors || []) : [],
       });
       dirty = false;
-      if (createAnother) { destroy(); openProductDrawer(null); }
-      else close();
+      close();
     } catch (e) {
-      saveBtn.disabled = false; if (newBtn) newBtn.disabled = false;
+      saveBtn.disabled = false;
       saveBtn.innerHTML = `${ico("save")}${isNew ? "Crear producto" : "Guardar cambios"}`;
       if (window.javyIcons) window.javyIcons.enhance(saveBtn);
       if (e.code === "CONFLICT") {
         const force = await confirmModal({ title: "Otro admin editó esto", body: "Otro administrador modificó este producto mientras lo editabas. ¿Querés sobrescribir sus cambios con los tuyos?", confirmLabel: "Sobrescribir", danger: true });
-        if (force) { data.updated_at = null; doSave(createAnother); }
+        if (force) { data.updated_at = null; doSave(); }
       } else {
         toast({ tone: "err", msg: "No se pudo guardar", sub: e.message });
       }
     }
   }
-  get("[data-save]").addEventListener("click", () => doSave(false));
-  const saveNewBtn = get("[data-save-new]");
-  if (saveNewBtn) saveNewBtn.addEventListener("click", () => doSave(true));
+  get("[data-save]").addEventListener("click", () => doSave());
 
   // focus first input
   setTimeout(() => { const f = fEl("name"); if (f) f.focus(); }, 30);
