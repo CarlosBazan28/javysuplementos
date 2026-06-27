@@ -1,17 +1,18 @@
 /* ============================================================================
    Pestaña Informes (dentro de Ajustes): genera informes del catálogo y de la
-   actividad, con fecha de generación, vista en pantalla, impresión a PDF y CSV.
+   actividad, con fecha de generación, vista en pantalla, impresión y PDF
+   (guardar en el dispositivo o compartir).
    ============================================================================ */
 import { state, catById } from "../state.js";
 import { esc, ico, peso, hasOffer, discountPct, isAvailable, agoLabel } from "../helpers.js";
 import { paint } from "../view.js";
 import { toast } from "../ui.js";
-import { buildTable, downloadCSV, printReport, slugify } from "../export.js";
+import { buildTable, printReport, slugify, buildReportPDF, saveOrShare } from "../export.js";
 
 export function renderReportsTab(container) {
   paint(container, `
     <div class="ad-section-intro">
-      <div><p class="ad-kicker">Informes</p><p>Genera un resumen del catálogo o de la actividad. Cada informe muestra su fecha de generación y puede imprimirse (PDF) o descargarse (CSV).</p></div>
+      <div><p class="ad-kicker">Informes</p><p>Genera un resumen del catálogo o de la actividad. Cada informe muestra su fecha de generación y puede imprimirse o guardarse y compartirse en PDF.</p></div>
     </div>
     <div class="ad-rep-grid">
       ${card("precios", "file-text", "Lista de precios", "Todos los productos con su precio actual, oferta y estado.")}
@@ -137,15 +138,29 @@ function renderResult(result, rep) {
     <div class="ad-rep-head">
       <div><p class="ad-kicker">Informe</p><h2>${esc(rep.title)}</h2><p class="ad-rep-meta">${esc(meta)}</p></div>
       <div class="ad-rep-actions">
-        <button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-rep-print>${ico("printer")}Imprimir / PDF</button>
-        <button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-rep-csv>${ico("download")}CSV</button>
+        <button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-rep-print>${ico("printer")}Imprimir</button>
+        <button class="ad-btn ad-btn--primary ad-btn--sm" type="button" data-rep-save>${ico("share-2")}Guardar / Compartir</button>
       </div>
     </div>
     <div class="ad-rep-scroll">${buildTable(rep.columns, rep.rows, "ad-table")}</div>
   </div>`);
 
-  result.querySelector("[data-rep-csv]").addEventListener("click", () => {
-    downloadCSV(`${slugify(rep.title)}.csv`, rep.columns, rep.rows);
+  result.querySelector("[data-rep-save]").addEventListener("click", async (e) => {
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    try {
+      const blob = buildReportPDF(rep.title, meta, rep.columns, rep.rows);
+      const mode = await saveOrShare(`${slugify(rep.title)}.pdf`, blob, {
+        title: rep.title,
+        text: `${rep.title} — ${meta}`,
+      });
+      if (mode === "shared") toast({ tone: "ok", msg: "Informe compartido" });
+      else if (mode === "saved" || mode === "downloaded") toast({ tone: "ok", msg: "Informe guardado", sub: "Se descargó el PDF del informe." });
+    } catch (error) {
+      toast({ tone: "err", msg: "No se pudo generar el PDF", sub: error.message || String(error) });
+    } finally {
+      btn.disabled = false;
+    }
   });
   result.querySelector("[data-rep-print]").addEventListener("click", () => {
     if (!printReport(rep.title, meta, rep.columns, rep.rows)) {
