@@ -10,6 +10,7 @@ export const state = {
   userId: null,
   userEmail: null,
   active: "dashboard",
+  settingsTab: "estado",
   productFilter: "all",
   productCategory: "all",
   productSubcategory: "all",

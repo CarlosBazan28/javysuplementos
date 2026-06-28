@@ -7,8 +7,8 @@
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#050709" />
     <link rel="icon" href="img/icons/logo-16x16.png" type="image/png" />
-    <link rel="stylesheet" href="css/admin-dashboard.css?v=handoff-redesign-8" />
-    <link rel="stylesheet" href="css/dropdown.css?v=2" />
+    <link rel="stylesheet" href="css/admin-dashboard.css?v=fase7-modal-1" />
+    <link rel="stylesheet" href="css/dropdown.css?v=4" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,11 +21,14 @@
     <script src="js/supabase-config.js" defer></script>
     <script src="js/whatsapp-config.js" defer></script>
     <script src="js/product-data.js" defer></script>
-    <script src="js/db.js?v=no-img-fallback" defer></script>
+    <script src="js/db.js?v=fase6-actividad" defer></script>
     <script src="js/auth.js?v=session-state" defer></script>
-    <script src="js/icons.js?v=icons-2" defer></script>
-    <script src="js/dropdown.js?v=2" defer></script>
-    <script type="module" src="js/admin/main.js?v=handoff-redesign"></script>
+    <script src="js/icons.js?v=icons-4" defer></script>
+    <script src="js/dropdown.js?v=4" defer></script>
+    <!-- Generación de PDF de los informes (vendorizado, sin depender de CDN en vivo) -->
+    <script src="js/vendor/jspdf.umd.min.js?v=1" defer></script>
+    <script src="js/vendor/jspdf.plugin.autotable.min.js?v=1" defer></script>
+    <script type="module" src="js/admin/main.js?v=fase8-borrar-1"></script>
   </head>
   <body class="ad-body">
     <div class="ad-app" data-anim="on" id="adminApp">
@@ -59,16 +62,6 @@
             <div class="ad-topbar__title">
               <h1 id="adminTitle">Dashboard</h1>
               <p id="adminSubtitle">Resumen de la tienda y acciones pendientes</p>
-            </div>
-            <div class="ad-topbar__actions">
-              <div class="ad-search">
-                <span class="ad-ico" data-javy-icon="search" aria-hidden="true"></span>
-                <input type="search" id="adminSearch" placeholder="Buscar producto" aria-label="Buscar producto" />
-              </div>
-              <button class="ad-btn ad-btn--primary" id="adminAddBtn" type="button">
-                <span class="ad-ico" data-javy-icon="plus" aria-hidden="true"></span>
-                Agregar producto
-              </button>
             </div>
           </header>
 

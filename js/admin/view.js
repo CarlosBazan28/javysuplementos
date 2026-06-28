@@ -13,6 +13,18 @@ export function setView(html) {
   return view;
 }
 
+// Pinta HTML dentro de un contenedor cualquiera (sub-vistas, pestañas) y aplica
+// los mismos realces que setView: íconos, selects embellecidos y fallback de imgs.
+export function paint(container, html) {
+  if (!container) return container;
+  if (window.javyDropdown) window.javyDropdown.destroy(container);
+  container.innerHTML = html;
+  wireImageFallbacks(container);
+  if (window.javyIcons) window.javyIcons.enhance(container);
+  if (window.javyDropdown) window.javyDropdown.enhanceSelects(container);
+  return container;
+}
+
 // Pinta un error legible dentro de #adminView (en vez de dejar la vista en blanco).
 export function showViewError(error, where = "") {
   const view = $("#adminView");

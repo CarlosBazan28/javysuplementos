@@ -11,7 +11,6 @@ import { $, $$, esc, ico } from "./helpers.js";
 import { showViewError } from "./view.js";
 import { renderDashboard } from "./sections/dashboard.js";
 import { renderProducts } from "./sections/products.js";
-import { renderVariants } from "./sections/variants.js";
 import { renderHome } from "./sections/home.js";
 import { renderCategories } from "./sections/categories.js";
 import { renderCombos } from "./sections/combos.js";
@@ -20,7 +19,7 @@ import { renderSettings } from "./sections/settings.js";
 import { openProductDrawer } from "./drawers/product-drawer.js";
 
 const renderers = {
-  dashboard: renderDashboard, products: renderProducts, variants: renderVariants,
+  dashboard: renderDashboard, products: renderProducts,
   home: renderHome, categories: renderCategories, combos: renderCombos,
   access: renderAccess, settings: renderSettings,
 };
@@ -61,13 +60,6 @@ export function buildChrome() {
     if (e.target.closest("[data-logout]") || e.target.closest("#adminLogoutBtn")) { logout(); return; }
   });
 
-  const search = $("#adminSearch");
-  search.addEventListener("input", () => {
-    state.search = search.value.trim().toLowerCase();
-    if (state.active !== "products") go("products");
-    else renderProducts();
-  });
-  $("#adminAddBtn").addEventListener("click", () => openProductDrawer(null));
 }
 
 function navItem(n) {

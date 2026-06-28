@@ -5,7 +5,7 @@
 import { state } from "../state.js";
 import { PLACEHOLDER } from "../config.js";
 import { $, esc, ico, peso, wireImageFallbacks } from "../helpers.js";
-import { collapse, field, affix, switchRow, toast } from "../ui.js";
+import { field, affix, switchRow, toast } from "../ui.js";
 import { requestRerender } from "../shell.js";
 
 export function openComboDrawer(combo) {
@@ -25,43 +25,64 @@ export function openComboDrawer(combo) {
 
   const host = $("#adminDrawerHost");
   const overlay = document.createElement("div");
-  overlay.className = "ad-drawer-overlay";
+  overlay.className = "ad-modal-overlay";
   host.appendChild(overlay);
 
+  const SECS = [
+    ["info", 1, "Información", "Información"],
+    ["productos", 2, "Productos", "Productos del combo"],
+    ["imagen", 3, "Imagen", "Imagen"],
+    ["visibilidad", 4, "Visibilidad", "Visibilidad"],
+  ];
+  const railItem = ([key, num, short]) => `
+    <button class="ad-modal__rail-item${num === 1 ? " is-active" : ""}" type="button" data-go-sec="${key}">
+      <span class="ad-modal__rail-num">${num}</span><span>${esc(short)}</span><span class="ad-modal__rail-dot"></span>
+    </button>`;
+  const sec = (key, body) => {
+    const [, num, , title] = SECS.find((s) => s[0] === key);
+    return `<section class="ad-modal__sec" data-sec="${key}">
+      <h3 class="ad-modal__sec-title"><span class="ad-modal__sec-num">${num}</span>${esc(title)}</h3>
+      <div class="ad-modal__sec-body">${body}</div>
+    </section>`;
+  };
+
   overlay.innerHTML = `
-    <div class="ad-drawer__scrim" data-close></div>
-    <div class="ad-drawer">
-      <div class="ad-drawer__head">
+    <div class="ad-modal__scrim" data-close></div>
+    <div class="ad-modal" role="dialog" aria-modal="true">
+      <div class="ad-modal__head">
         <div><h2>${isNew ? "Nuevo combo" : "Editar combo"}</h2><p>${combo && combo.updated_by ? "Última edición por " + esc(combo.updated_by) : "Paquete a precio especial"}</p></div>
-        <button class="ad-drawer__close" type="button" aria-label="Cerrar" data-close>${ico("x")}</button>
+        <button class="ad-modal__close" type="button" aria-label="Cerrar" data-close>${ico("x")}</button>
       </div>
-      <div class="ad-drawer__body">
-        ${collapse("1", "Información", true, `
-          ${field("Nombre del combo", true, `<input class="ad-input" data-c="name" value="${esc(draft.name)}" placeholder="Ej. Pack Volumen Limpio" />`, "cname")}
-          ${field("Descripción", false, `<textarea class="ad-textarea" data-c="description" placeholder="Qué incluye y para quién es ideal">${esc(draft.description)}</textarea>`)}
-        `)}
-        ${collapse("2", "Productos del combo", true, `<div data-rows></div>
-          <button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-add-row style="justify-self:start;margin-top:4px">${ico("plus")}Agregar producto</button>
-          <div class="ad-builder-summary">
-            <div>
-              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-                <span style="color:var(--pb-muted);font-size:.82rem">Precio de lista: <s data-list>$0</s></span>
-                <span class="ad-pill ad-pill--ok" data-save-pill style="display:none"></span>
+      <div class="ad-modal__main">
+        <nav class="ad-modal__rail" aria-label="Secciones del formulario">${SECS.map(railItem).join("")}</nav>
+        <div class="ad-modal__content">
+          ${sec("info", `
+            ${field("Nombre del combo", true, `<input class="ad-input" data-c="name" value="${esc(draft.name)}" placeholder="Ej. Pack Volumen Limpio" />`, "cname")}
+            ${field("Descripción", false, `<textarea class="ad-textarea" data-c="description" placeholder="Qué incluye y para quién es ideal">${esc(draft.description)}</textarea>`)}
+          `)}
+          ${sec("productos", `<div data-rows></div>
+            <button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-add-row style="justify-self:start;margin-top:4px">${ico("plus")}Agregar producto</button>
+            <div class="ad-builder-summary">
+              <div>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                  <span style="color:var(--pb-muted);font-size:.82rem">Precio de lista: <s data-list>$0</s></span>
+                  <span class="ad-pill ad-pill--ok" data-save-pill style="display:none"></span>
+                </div>
+                <div style="width:160px;margin-top:8px">
+                  ${field("Precio del combo", true, affix(`<input class="ad-input" inputmode="decimal" data-c="price" value="${esc(draft.price)}" placeholder="0.00" />`), "cprice")}
+                </div>
               </div>
-              <div style="width:160px;margin-top:8px">
-                ${field("Precio del combo", true, affix(`<input class="ad-input" inputmode="decimal" data-c="price" value="${esc(draft.price)}" placeholder="0.00" />`), "cprice")}
-              </div>
+              <div class="ad-builder-summary__totals"><span class="ad-price" data-total>$0</span></div>
             </div>
-            <div class="ad-builder-summary__totals"><span class="ad-price" data-total>$0</span></div>
-          </div>
-        `)}
-        ${collapse("3", "Imagen", false, `<div data-image-slot></div>`)}
-        ${collapse("4", "Visibilidad", true, `
-          ${switchRow("active", "Activo", "Visible en la web", draft.is_active)}
-          ${switchRow("chome", "Mostrar en inicio", "Aparece en la home", draft.show_on_home)}
-        `)}
+          `)}
+          ${sec("imagen", `<div data-image-slot></div>`)}
+          ${sec("visibilidad", `
+            ${switchRow("active", "Activo", "Visible en la web", draft.is_active)}
+            ${switchRow("chome", "Mostrar en inicio", "Aparece en la home", draft.show_on_home)}
+          `)}
+        </div>
       </div>
-      <div class="ad-drawer__foot">
+      <div class="ad-modal__foot">
         <button class="ad-btn ad-btn--ghost" type="button" data-close>Cancelar</button>
         <button class="ad-btn ad-btn--primary" type="button" data-save>${ico("save")}${isNew ? "Crear combo" : "Guardar cambios"}</button>
       </div>
@@ -71,7 +92,25 @@ export function openComboDrawer(combo) {
   document.body.style.overflow = "hidden";
 
   const get = (sel) => overlay.querySelector(sel);
-  overlay.querySelectorAll(".ad-collapse__head").forEach((head) => head.addEventListener("click", () => head.parentElement.classList.toggle("is-open")));
+
+  // navegación por secciones: índice lateral + scroll-spy (resalta la sección visible)
+  const content = get(".ad-modal__content");
+  const railItems = [...overlay.querySelectorAll("[data-go-sec]")];
+  const secEls = [...overlay.querySelectorAll(".ad-modal__sec")];
+  const setActiveSec = (key) => railItems.forEach((b) => b.classList.toggle("is-active", b.getAttribute("data-go-sec") === key));
+  railItems.forEach((b) => b.addEventListener("click", () => {
+    const key = b.getAttribute("data-go-sec");
+    const el = overlay.querySelector(`.ad-modal__sec[data-sec="${key}"]`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    setActiveSec(key);
+  }));
+  const onScrollSpy = () => {
+    const ref = content.getBoundingClientRect().top + 80;
+    let current = secEls[0];
+    for (const s of secEls) { if (s.getBoundingClientRect().top <= ref) current = s; }
+    if (current) setActiveSec(current.getAttribute("data-sec"));
+  };
+  [content, get(".ad-modal__main")].forEach((sc) => sc && sc.addEventListener("scroll", onScrollSpy, { passive: true }));
 
   const close = () => {
     if (window.javyDropdown) window.javyDropdown.destroy(overlay);
@@ -81,6 +120,7 @@ export function openComboDrawer(combo) {
   };
   const onKey = (e) => {
     if (e.key === "Escape" && !document.querySelector(".jdd.is-open")) close();
+    if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S")) { e.preventDefault(); get("[data-save]").click(); }
   };
   document.addEventListener("keydown", onKey);
   overlay.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", close));

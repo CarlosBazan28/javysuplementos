@@ -44,12 +44,15 @@ if ! git pull --ff-only origin "$rama"; then
   exit 1
 fi
 
-if git diff --quiet && git diff --cached --quiet; then
+# Preparamos todo (modificados, nuevos y borrados) y RECIÉN ahí comprobamos si
+# hay algo que commitear. Hacerlo antes con `git diff` dejaba fuera los archivos
+# nuevos sin rastrear (git diff no los ve) y creía que "no había cambios".
+git add -A
+if git diff --cached --quiet; then
   echo "ℹ️  No hay cambios para guardar. Nada que commitear."
   exit 0
 fi
 
-git add -A
 git commit -m "$msg"
 
 echo "→ Subiendo a origin/$rama…"

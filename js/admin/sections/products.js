@@ -122,6 +122,7 @@ export function renderProducts() {
           </div>
           <div class="ad-filterbar__sel"><select class="ad-select" data-cat aria-label="Filtrar por categoría">${catOpts}</select></div>
           <div class="ad-filterbar__sel"><select class="ad-select" data-sub aria-label="Filtrar por subcategoría" ${subDisabled ? "disabled" : ""}>${subOpts}</select></div>
+          <button class="ad-btn ad-btn--primary" type="button" data-add>${ico("plus")}Agregar producto</button>
         </div>
         <div class="ad-filterbar__row ad-filterbar__row--chips">
           <div class="ad-toolbar__filters">
@@ -142,10 +143,11 @@ export function renderProducts() {
   const searchInput = view.querySelector("[data-search]");
   searchInput.addEventListener("input", () => {
     state.search = searchInput.value.trim().toLowerCase();
-    const topbar = $("#adminSearch");
-    if (topbar) topbar.value = searchInput.value; // mantener en sync con la búsqueda global
     updateResults(view);
   });
+
+  // Alta de producto desde la propia sección.
+  view.querySelector("[data-add]").addEventListener("click", () => openProductDrawer(null));
 
   // Categoría → Subcategoría en cascada (setView ya embelleció los <select>).
   view.querySelector("[data-cat]").addEventListener("change", (e) => {
@@ -171,8 +173,6 @@ export function renderProducts() {
   }));
   view.querySelector("[data-clear]").addEventListener("click", () => {
     state.productFilter = "all"; state.productCategory = "all"; state.productSubcategory = "all"; state.search = "";
-    const topbar = $("#adminSearch");
-    if (topbar) topbar.value = "";
     renderProducts();
   });
 
