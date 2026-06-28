@@ -123,10 +123,19 @@
     try {
       setLoading(true);
 
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
+      // Turnstile: si el widget cargó, mandamos el token. La validación real la hace
+      // Supabase (Auth → captcha). Si el script no cargó, no bloqueamos el login para no
+      // dejar al admin afuera; el captcha se vuelve obligatorio cuando se activa en Supabase.
+      let captchaToken = "";
+      try { captchaToken = window.turnstile?.getResponse?.() || ""; } catch (_) {}
+
+      const credentials = {
         email: emailInput.value.trim(),
         password: passwordInput.value,
-      });
+      };
+      if (captchaToken) credentials.options = { captchaToken };
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword(credentials);
 
       if (error) throw error;
 
@@ -141,6 +150,8 @@
         window.location.href = "admin.html";
       }, 900);
     } catch (error) {
+      // Un token de Turnstile es de un solo uso: reiniciamos el widget para el reintento.
+      try { window.turnstile?.reset?.(); } catch (_) {}
       setGeneralError(window.javyAuth.getFriendlyAuthError(error));
       setLoading(false);
       passwordInput.value = "";

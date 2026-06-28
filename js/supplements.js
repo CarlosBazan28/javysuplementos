@@ -29,8 +29,8 @@ const catalogScrollTop = document.getElementById("catalogScrollTop");
 let lastCatalogScrollY = window.scrollY || 0;
 let scrollTopIsVisible = false;
 
-// URLs de producción (GitHub Pages) para SEO/JSON-LD, nunca el preview de Vercel
-const SITE_BASE = "https://carlosbazan28.github.io/javysuplementos/";
+// URLs de producción (Cloudflare) para SEO/JSON-LD, nunca el preview de Vercel
+const SITE_BASE = "https://javysuplementos.com/";
 
 function debounce(fn, wait = 160) {
   let timer = null;

@@ -12,6 +12,7 @@ import { showViewError } from "./view.js";
 import { renderDashboard } from "./sections/dashboard.js";
 import { renderProducts } from "./sections/products.js";
 import { renderHome } from "./sections/home.js";
+import { renderLeads } from "./sections/leads.js";
 import { renderCategories } from "./sections/categories.js";
 import { renderCombos } from "./sections/combos.js";
 import { renderAccess } from "./sections/access.js";
@@ -20,7 +21,7 @@ import { openProductDrawer } from "./drawers/product-drawer.js";
 
 const renderers = {
   dashboard: renderDashboard, products: renderProducts,
-  home: renderHome, categories: renderCategories, combos: renderCombos,
+  home: renderHome, leads: renderLeads, categories: renderCategories, combos: renderCombos,
   access: renderAccess, settings: renderSettings,
 };
 

@@ -14,7 +14,8 @@ manual, por chat.
 
 - **Frontend:** HTML + CSS + JavaScript vanilla. Sin frameworks, sin build, sin bundler.
 - **Backend:** Supabase (PostgreSQL + Auth + Storage de imágenes).
-- **Producción:** GitHub Pages → `https://carlosbazan28.github.io/javysuplementos`
+- **Producción:** GitHub Pages servido tras **Cloudflare** (proxy) → `https://javysuplementos.com`
+  (DNS, cabeceras de seguridad, rate-limit y Turnstile en [`docs/seguridad-cloudflare.md`](docs/seguridad-cloudflare.md)).
 - **Previews:** Vercel despliega automáticamente las ramas de desarrollo (puede tener password
   protection → da 401 al acceder desde afuera).
 - **Sin** linter, formatter, tests ni CI/CD.
@@ -108,9 +109,11 @@ Otros archivos de `js/`: `script.js` (home), `supplements.js` (catálogo + filtr
 ## Flujo de datos
 
 Lectura de productos: **Supabase → caché en memoria → `js/product-data.js` (fallback)**.
-Si Supabase no responde, el sitio sigue funcionando con los datos locales. Esto significa que los
-productos viven en **dos lugares** (Supabase y `product-data.js`) — mantenerlos sincronizados es
-deuda técnica conocida (usa `/agregar-producto` para no desincronizarlos).
+Si Supabase no responde, el sitio sigue funcionando con los datos locales. **Supabase es la fuente
+de verdad**; `js/product-data.js` es un artefacto **generado** desde Supabase con
+`node scripts/export-product-data.mjs` y **no se edita a mano** (revisar el `git diff` antes de
+commitear). Para el sentido inverso (sembrar Supabase desde el fallback la primera vez) está
+`seedProductsFromLocalData()` en Ajustes del panel.
 
 ## Flujo de cotización
 
@@ -131,8 +134,9 @@ deuda técnica conocida (usa `/agregar-producto` para no desincronizarlos).
 4. CRUD de productos/sabores/categorías; las imágenes suben al bucket `product-images`.
 5. La seguridad real la impone **RLS en Supabase**, no la UI.
 
-El panel cubre: Dashboard, Productos, Sabores/variantes, Inicio (curación del home), Categorías,
-Combos, Accesos y Ajustes, más el **drawer de edición de producto**. Filtros de revisión:
+El panel cubre: Dashboard, Productos, Sabores/variantes, Inicio (curación del home), Mensajes
+(leads del formulario de contacto), Categorías, Combos, Accesos y Ajustes, más el **drawer de
+edición de producto**. Filtros de revisión:
 sin imagen, sin sabor, faltan sabores, sin sabores activos, revisar tipo de sabor, no disponibles,
 precio vacío, destacados.
 
@@ -145,6 +149,8 @@ precio vacío, destacados.
 - `categories` — categorías y tipos (Proteínas, Creatinas, Pre-entrenos, etc.).
 - `admin_profiles` — vincula usuarios de Auth con el rol admin.
 - `settings` — configuración tipo clave/valor (JSONB).
+- `leads` — solicitudes del formulario de contacto (anon **inserta**, solo admins **leen/gestionan**
+  vía RLS). Migración: `supabase/migrations/fase7-leads.sql`.
 
 **RLS activado** en todas las tablas: lectura pública, escritura solo para admins verificados vía
 la función `public.is_admin()`. En el frontend solo se usan claves públicas tipo `anon`
@@ -201,6 +207,9 @@ node --check js/product-page.js
   `product-*` (productos), `cart-*` (carrito).
 - Priorizar **mobile primero**.
 - Si cambias CSS/JS cacheado, actualiza el query string del archivo en el HTML (`?v=...`).
+- Si agregas un recurso externo (script, fuente, iframe, API), actualiza la **CSP** en el `<meta>`
+  de la página **y** en las reglas de Cloudflare ([`docs/seguridad-cloudflare.md`](docs/seguridad-cloudflare.md)),
+  o el navegador lo bloqueará.
 
 ---
 
@@ -214,4 +223,7 @@ node --check js/product-page.js
 - Columnas redundantes en `schema.sql` (`nombre`/`name`, `price`/`precio_centavos`).
 - Imágenes PNG sin optimizar (algunas >1MB).
 - Sin tests, linter ni CI/CD.
-- SEO por página y analítica pendientes.
+- Faltan iconos PWA en tamaños 192×192 y 512×512 (el `site.webmanifest` usa `logo.png` con
+  `sizes:"any"`). Generarlos con `/aligerar-imagenes` para Lighthouse PWA al 100%.
+- Columnas redundantes del schema (`name`/`nombre`, `price`/`precio_centavos`): pendiente migración
+  para dejar una sola canónica; mientras tanto `js/db.js` las consolida en lectura.

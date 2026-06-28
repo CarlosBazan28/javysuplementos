@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Seguridad: CSP baseline versionada (ver docs/seguridad-cloudflare.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com" />
+
+    <title>Página no encontrada | Javy Suplementos</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="/img/icons/logo-16x16.png" type="image/png" />
+
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/css/pages/login.css?v=silent-session" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="login-page">
+    <main class="login-shell">
+      <section class="login-card" aria-labelledby="notFoundTitle">
+        <a class="login-logo" href="/index.html" aria-label="Volver al inicio">
+          <img src="/img/icons/logo.png" alt="Javy Supplements" />
+        </a>
+
+        <div class="login-heading">
+          <h1 id="notFoundTitle">404</h1>
+          <p>No encontramos esta página. Puede que el enlace esté roto o que el producto ya no exista.</p>
+        </div>
+
+        <section class="login-form-wrap">
+          <a class="login-submit login-submit--link" href="/index.html">Ir al inicio</a>
+          <a class="login-submit login-submit--link" href="/supplements-page.html">Ver el catálogo</a>
+        </section>
+
+        <a class="login-back" href="/index.html">Volver al inicio</a>
+      </section>
+    </main>
+  </body>
+</html>
