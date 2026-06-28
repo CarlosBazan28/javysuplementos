@@ -3,9 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Seguridad: CSP baseline versionada. El enforce real + frame-ancestors lo aplica Cloudflare (ver docs/seguridad-cloudflare.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com" />
     <title>Iniciar sesión | Javy Suplementos</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" href="img/icons/logo-16x16.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/img/icons/logo.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#050709" />
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/tokens.css" />
     <link rel="stylesheet" href="css/pages/login.css?v=silent-session" />
@@ -18,10 +24,11 @@
     />
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <script src="js/supabase-config.js" defer></script>
     <script src="js/auth.js?v=session-state" defer></script>
     <script src="js/icons.js?v=icons" defer></script>
-    <script src="js/login.js?v=silent-session" defer></script>
+    <script src="js/login.js?v=turnstile" defer></script>
   </head>
   <body class="login-page">
     <main class="login-shell">
@@ -64,6 +71,10 @@
               <input id="loginPassword" name="password" type="password" autocomplete="current-password" required />
               <small id="loginPasswordError"></small>
             </label>
+
+            <!-- Turnstile (anti fuerza bruta). Site key público de Cloudflare; la verificación
+                 real la hace Supabase Auth con la secret key. Ver docs/seguridad-cloudflare.md. -->
+            <div class="cf-turnstile login-turnstile" data-sitekey="0x4AAAAAADscMJ6jq_yXhCKY" data-theme="dark"></div>
 
             <button class="login-submit" id="loginSubmit" type="submit">
               <span class="btn-icon" data-javy-icon="log-in" aria-hidden="true"></span>

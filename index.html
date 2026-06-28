@@ -3,18 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Seguridad: CSP baseline versionada. El enforce real + frame-ancestors lo aplica Cloudflare (ver docs/seguridad-cloudflare.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.instagram.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co https://*.cdninstagram.com https://*.fbcdn.net https://www.instagram.com; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com; frame-src https://www.instagram.com" />
     <title>Javy Suplementos | Suplementos originales en Panamá</title>
 
     <!-- SEO -->
     <meta name="description" content="Suplementos deportivos 100% originales en Panamá. Mirá los precios, armá tu cotización y enviala directo por WhatsApp. Proteínas, creatinas, quemadores y más.">
-    <link rel="canonical" href="https://carlosbazan28.github.io/javysuplementos/index.html">
+    <link rel="canonical" href="https://javysuplementos.com/index.html">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://carlosbazan28.github.io/javysuplementos/index.html">
+    <meta property="og:url" content="https://javysuplementos.com/index.html">
     <meta property="og:title" content="Javy Suplementos | Suplementos originales en Panamá">
     <meta property="og:description" content="Suplementos deportivos 100% originales en Panamá. Mirá los precios, armá tu cotización y enviala directo por WhatsApp.">
-    <meta property="og:image" content="https://carlosbazan28.github.io/javysuplementos/img/images/javi.webp">
+    <meta property="og:image" content="https://javysuplementos.com/img/images/javi.webp">
     <meta property="og:locale" content="es_PA">
     <meta property="og:site_name" content="Javy Suplementos">
 
@@ -22,9 +25,12 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Javy Suplementos | Suplementos originales en Panamá">
     <meta name="twitter:description" content="Suplementos deportivos 100% originales en Panamá. Mirá los precios, armá tu cotización y enviala directo por WhatsApp.">
-    <meta name="twitter:image" content="https://carlosbazan28.github.io/javysuplementos/img/images/javi.webp">
+    <meta name="twitter:image" content="https://javysuplementos.com/img/images/javi.webp">
 
     <link rel="icon" href="img/icons/logo-16x16.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/img/icons/logo.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#050709" />
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/components/nav.css?v=admin-auth">
     <link rel="stylesheet" href="css/components/auth.css?v=session-state">

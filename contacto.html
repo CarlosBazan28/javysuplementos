@@ -3,18 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Seguridad: CSP baseline versionada. El enforce real + frame-ancestors lo aplica Cloudflare (ver docs/seguridad-cloudflare.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com; frame-src https://www.google.com" />
     <title>Contacto | Javy Suplementos</title>
 
     <!-- SEO -->
     <meta name="description" content="Contactanos por WhatsApp o formulario. Cotizaciones, asesoría personalizada y consultas sobre suplementos. Lunes a Sábado, 8am–8pm.">
-    <link rel="canonical" href="https://carlosbazan28.github.io/javysuplementos/contacto.html">
+    <link rel="canonical" href="https://javysuplementos.com/contacto.html">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://carlosbazan28.github.io/javysuplementos/contacto.html">
+    <meta property="og:url" content="https://javysuplementos.com/contacto.html">
     <meta property="og:title" content="Contacto | Javy Suplementos">
     <meta property="og:description" content="Contactanos por WhatsApp o formulario. Cotizaciones, asesoría personalizada y consultas sobre suplementos.">
-    <meta property="og:image" content="https://carlosbazan28.github.io/javysuplementos/img/images/javi.webp">
+    <meta property="og:image" content="https://javysuplementos.com/img/images/javi.webp">
     <meta property="og:locale" content="es_PA">
     <meta property="og:site_name" content="Javy Suplementos">
 
@@ -22,9 +25,12 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Contacto | Javy Suplementos">
     <meta name="twitter:description" content="Contactanos por WhatsApp o formulario. Cotizaciones, asesoría personalizada y consultas sobre suplementos.">
-    <meta name="twitter:image" content="https://carlosbazan28.github.io/javysuplementos/img/images/javi.webp">
+    <meta name="twitter:image" content="https://javysuplementos.com/img/images/javi.webp">
 
     <link rel="icon" href="img/icons/logo-16x16.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/img/icons/logo.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#050709" />
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/tokens.css">
     <link rel="stylesheet" href="css/components/nav.css?v=admin-auth">
@@ -47,7 +53,7 @@
     <script src="js/icons.js?v=icons" defer></script>
     <script src="js/dropdown.js?v=4" defer></script>
     <script src="js/cart.js" defer></script>
-    <script src="js/contacto.js" defer></script>
+    <script src="js/contacto.js?v=leads" defer></script>
     <script src="js/include-nav.js?v=admin-auth" defer></script>
   </head>
   <body>
@@ -98,6 +104,13 @@
             <textarea id="contactMessage" name="message" rows="5" aria-describedby="contactMessageError" placeholder="Ej: quiero saber sabores disponibles, entrega a domicilio o recomendaciones"></textarea>
             <small id="contactMessageError" role="alert"></small>
           </label>
+
+          <!-- Honeypot anti-spam: oculto para humanos. Si llega con valor, se ignora el envío. -->
+          <div class="contact-hp" hidden aria-hidden="true">
+            <label>No llenar este campo
+              <input type="text" name="company" tabindex="-1" autocomplete="off" />
+            </label>
+          </div>
 
           <p class="contact-form__notice" id="contactFormNotice" hidden aria-live="polite"></p>
 

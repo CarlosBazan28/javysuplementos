@@ -527,6 +527,39 @@ async function getActivityLog(options = {}) {
   return data || [];
 }
 
+// Leads del formulario de contacto (más reciente primero). Solo admins (RLS).
+async function getLeads(options = {}) {
+  ensureSupabaseForWrite();
+  const { limit = 100, offset = 0, status } = options;
+  let query = supabaseClient
+    .from("leads")
+    .select("id, created_at, name, email, phone, product, message, status, source")
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+  if (status) query = query.eq("status", status);
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+}
+
+// Cambia el estado de un lead ('nuevo' | 'atendido' | 'archivado').
+async function updateLeadStatus(id, status) {
+  ensureSupabaseForWrite();
+  const { data, error } = await supabaseClient
+    .from("leads")
+    .update({ status })
+    .eq("id", id)
+    .select("id, name, status")
+    .single();
+  if (error) throw error;
+  await logActivity({
+    action: "update", entity_type: "lead", entity_id: id, entity_name: data.name,
+    new_value: status,
+    summary: `marcó el mensaje de ${data.name || "un cliente"} como ${status}`,
+  });
+  return data;
+}
+
 async function getProductsWithFlavors(options = {}) {
   const useCache = options.cache !== false;
   const allowFallback = options.fallback !== false;
@@ -1384,5 +1417,7 @@ window.catalogDb = {
   seedProductsFromLocalData,
   getProductsCacheSource,
   getActivityLog,
+  getLeads,
+  updateLeadStatus,
   isUuid,
 };

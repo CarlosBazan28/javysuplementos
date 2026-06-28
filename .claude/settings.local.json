@@ -15,7 +15,18 @@
       "Bash(bash scripts/estado-ramas.sh)",
       "Bash(git ls-remote *)",
       "Bash(cat .gitignore)",
-      "Bash(du -sh \".codex-tmp\" \".codex\" \".claude/worktrees\" \"outputs\" \".agents\" \"P-Boom Supplements Design System\" \"P-Boom Supplements Design System.zip\")"
+      "Bash(du -sh \".codex-tmp\" \".codex\" \".claude/worktrees\" \"outputs\" \".agents\" \"P-Boom Supplements Design System\" \"P-Boom Supplements Design System.zip\")",
+      "Bash(ls -1 *.html *.txt *.xml *.webmanifest *.json)",
+      "Bash(ls -1 robots.txt sitemap.xml 404.html site.webmanifest manifest.json)",
+      "Bash(grep -l \"canonical\\\\|og:image\\\\|sitemap\" *.html)",
+      "Bash(grep -rn \"service_role\\\\|service-role\\\\|SUPABASE_SERVICE\" js/)",
+      "Bash(node --check js/login.js)",
+      "Bash(command -v magick)",
+      "Bash(command -v convert)",
+      "Bash(command -v cwebp)",
+      "Bash(node -e \"require\\('sharp'\\)\")",
+      "Bash(curl -sI --max-time 20 https://javysuplementos.com/)",
+      "Bash(curl -sI --max-time 20 https://javysuplementos.com/admin.html)"
     ]
   }
 }

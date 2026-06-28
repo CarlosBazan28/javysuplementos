@@ -3,18 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Seguridad: CSP baseline versionada. El enforce real + frame-ancestors lo aplica Cloudflare (ver docs/seguridad-cloudflare.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com" />
     <title>Javy Suplementos</title>
 
     <!-- SEO -->
     <meta name="description" content="Mirá el precio, las características y agregá este suplemento a tu cotización. Enviala por WhatsApp en segundos con Javy Suplementos.">
-    <link rel="canonical" href="https://carlosbazan28.github.io/javysuplementos/product-page.html">
+    <link rel="canonical" href="https://javysuplementos.com/product-page.html">
 
     <!-- Open Graph (se actualizan dinámicamente por JS cuando carga el producto) -->
     <meta property="og:type" content="product">
-    <meta property="og:url" content="https://carlosbazan28.github.io/javysuplementos/product-page.html">
+    <meta property="og:url" content="https://javysuplementos.com/product-page.html">
     <meta property="og:title" content="Javy Suplementos">
     <meta property="og:description" content="Mirá el precio, las características y agregá este suplemento a tu cotización. Enviala por WhatsApp en segundos.">
-    <meta property="og:image" content="https://carlosbazan28.github.io/javysuplementos/img/images/javi.webp">
+    <meta property="og:image" content="https://javysuplementos.com/img/images/javi.webp">
     <meta property="og:locale" content="es_PA">
     <meta property="og:site_name" content="Javy Suplementos">
 
@@ -22,9 +25,12 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Javy Suplementos">
     <meta name="twitter:description" content="Mirá el precio, las características y agregá este suplemento a tu cotización. Enviala por WhatsApp en segundos.">
-    <meta name="twitter:image" content="https://carlosbazan28.github.io/javysuplementos/img/images/javi.webp">
+    <meta name="twitter:image" content="https://javysuplementos.com/img/images/javi.webp">
 
     <link rel="icon" href="img/icons/logo-16x16.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/img/icons/logo.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#050709" />
     <link rel="stylesheet" href="css/styles.css" />
         <link rel="stylesheet" href="css/components/nav.css?v=admin-auth" />
     <link rel="stylesheet" href="css/components/auth.css?v=session-state" />

@@ -102,8 +102,8 @@ async function initProductPage() {
 
   document.title = `${product.name} | Javy Suplementos`;
 
-  // URLs de SEO siempre al dominio de producción (GitHub Pages), nunca al preview de Vercel
-  const SITE_BASE = "https://carlosbazan28.github.io/javysuplementos/";
+  // URLs de SEO siempre al dominio de producción (Cloudflare), nunca al preview de Vercel
+  const SITE_BASE = "https://javysuplementos.com/";
   const DEFAULT_IMAGE = SITE_BASE + "img/images/javi.webp";
   const toAbsoluteUrl = (path) => {
     if (!path) return DEFAULT_IMAGE;

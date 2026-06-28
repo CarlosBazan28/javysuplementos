@@ -132,6 +132,28 @@
     notice.hidden = false;
   }
 
+  // Honeypot anti-spam: campo oculto que un humano nunca ve ni llena.
+  const honeypot = form.elements.company;
+
+  // Guarda el lead en Supabase (best-effort). NUNCA bloquea el flujo de WhatsApp:
+  // si la tabla no existe (falta la migración) o falla la red, el cliente igual
+  // llega por WhatsApp. La lectura de leads queda restringida a admins por RLS.
+  async function saveLead() {
+    if (!window.supabaseClient) return;
+    try {
+      await window.supabaseClient.from("leads").insert({
+        name: getValue("name"),
+        email: getValue("email"),
+        phone: getValue("phone"),
+        product: getValue("product"),
+        message: getValue("message") || null,
+        source: "contacto",
+      });
+    } catch (error) {
+      console.warn("No se pudo guardar el lead:", error?.message || error);
+    }
+  }
+
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     if (notice) notice.hidden = true;
@@ -143,6 +165,15 @@
     }
 
     const message = buildMessage();
+
+    // Honeypot lleno = bot: fingimos éxito sin guardar ni abrir WhatsApp.
+    if (honeypot && honeypot.value) {
+      showNotice("Solicitud lista. Te responderemos por WhatsApp.");
+      form.reset();
+      return;
+    }
+
+    saveLead();
     const win = openWhatsapp(message);
 
     if (win) {

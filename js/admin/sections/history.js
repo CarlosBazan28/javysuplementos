@@ -10,7 +10,7 @@ import { emptyFeature } from "../ui.js";
 
 const PAGE = 30;
 
-const ENTITY_LABELS = { product: "Producto", flavor: "Sabor", category: "Categoría", combo: "Combo", admin: "Acceso" };
+const ENTITY_LABELS = { product: "Producto", flavor: "Sabor", category: "Categoría", combo: "Combo", admin: "Acceso", lead: "Mensaje" };
 const ACTION_META = {
   create: { icon: "plus", tone: "ok" },
   update: { icon: "pencil", tone: "blue" },
