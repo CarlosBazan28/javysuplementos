@@ -85,12 +85,26 @@
     return { session, profile };
   }
 
+  // Suscribe un callback que se dispara cuando la sesión se pierde (logout en otra
+  // pestaña, token vencido/revocado). Ignora INITIAL_SESSION para no redirigir al
+  // cargar. Devuelve una función para cancelar la suscripción.
+  function watchSession(onSignedOut) {
+    if (!hasSupabase()) return () => {};
+    const { data } = supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || (event !== "INITIAL_SESSION" && !session)) {
+        onSignedOut();
+      }
+    });
+    return () => data?.subscription?.unsubscribe();
+  }
+
   window.javyAuth = {
     hasSupabase,
     isValidEmail,
     getAdminProfile,
     getCurrentAdminSession,
     requireAdminSession,
+    watchSession,
     getFriendlyAuthError,
   };
 })();

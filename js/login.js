@@ -82,7 +82,7 @@
     return valid;
   }
 
-  async function checkExistingSession() {
+  async function checkExistingSession(noSessionMessage = "") {
     if (!window.javyAuth?.hasSupabase?.()) {
       showForm("Supabase no está disponible. Revisa la conexión o el CDN.");
       return;
@@ -94,7 +94,7 @@
 
       const session = data?.session || null;
       if (!session?.user?.id) {
-        showForm();
+        showForm(noSessionMessage);
         return;
       }
 
@@ -181,7 +181,12 @@
   passwordInput?.addEventListener("input", () => setFieldError(passwordInput, passwordError, ""));
 
   document.addEventListener("DOMContentLoaded", () => {
-    showForm();
-    checkExistingSession();
+    // Si volvimos aquí por cierre de sesión por inactividad, avisamos.
+    const params = new URLSearchParams(window.location.search);
+    const idleMessage = params.get("expired") === "idle"
+      ? "Tu sesión se cerró por inactividad. Vuelve a iniciar sesión."
+      : "";
+    showForm(idleMessage);
+    checkExistingSession(idleMessage);
   });
 })();
