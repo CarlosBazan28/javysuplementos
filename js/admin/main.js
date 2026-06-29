@@ -10,6 +10,7 @@ import { setGate } from "./ui.js";
 import { showViewError } from "./view.js";
 import { loadAll } from "./data.js";
 import { buildChrome, go } from "./shell.js";
+import { startIdleGuard } from "./session.js";
 
 async function boot() {
   if (!window.javyAuth || !window.javyAuth.hasSupabase()) {
@@ -30,6 +31,14 @@ async function boot() {
     $("#adminGate").hidden = true;
     $("#adminShell").hidden = false;
     go("dashboard");
+
+    // Guardias de sesión: redirige si la sesión muere (logout en otra pestaña,
+    // token revocado) y cierra por inactividad con aviso de cuenta regresiva.
+    window.javyAuth.watchSession(() => { window.location.href = "login.html"; });
+    startIdleGuard({ onLogout: async () => {
+      try { await window.supabaseClient.auth.signOut(); } catch (_) {}
+      window.location.href = "login.html?expired=idle";
+    } });
   } catch (error) {
     console.error(error);
     // El gate puede estar oculto si ya mostramos el shell; mostrar el error
