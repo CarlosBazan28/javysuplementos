@@ -10,14 +10,21 @@
   "theme_color": "#050709",
   "icons": [
     {
-      "src": "/img/icons/logo-16x16.png",
-      "sizes": "16x16",
+      "src": "/img/icons/javy-favicon-32x32.png",
+      "sizes": "32x32",
       "type": "image/png"
     },
     {
-      "src": "/img/icons/logo.png",
-      "sizes": "any",
-      "type": "image/png"
+      "src": "/img/icons/javy-web-app-icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/icons/javy-web-app-icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
