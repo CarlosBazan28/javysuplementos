@@ -2,7 +2,7 @@
    Carga de datos desde window.catalogDb (Supabase) hacia el estado central.
    Degradación elegante: si una fuente falla, marca el feature como no soportado.
    ============================================================================ */
-import { state } from "./state.js";
+import { state } from "./state.js?v=adm1";
 
 export async function loadAll() {
   const db = window.catalogDb;

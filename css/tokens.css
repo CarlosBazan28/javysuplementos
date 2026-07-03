@@ -2,8 +2,8 @@
   --bg: #000;
   --surface: rgba(24, 24, 24, 0.7);
   --blanco: #fff;
-  --Cyan: rgb(1 145 198);
-  --grisClaro: #b3b3b3;
+  --Cyan: var(--brand); /* alias histórico: usar --brand en código nuevo */
+  --grisClaro: var(--muted); /* alias: unificado con --muted (texto secundario) */
   /* Base negra en capas */
   --bg-0: #050709; /* body/background absoluto (negro realista) */
   --bg-1: #0a0f14; /* secciones principales (ligeramente más claras) */
@@ -21,15 +21,27 @@
 
   /* Marca / acentos */
   --brand: rgb(1 145 198); /* tu azul */
+  --on-brand: #08141c; /* texto/íconos oscuros sobre fondos --brand */
   --neon: #00cfff; /* azul neón para glow */
   --hot: #ff2e63; /* acento cálido pequeño (badges/hover) */
   --accent: #5ab4e9; /* cyan de acento (precio, links de marca) */
   --cta: #00e676; /* verde de llamada a la acción (botones agregar) */
   --cta-strong: #00c853; /* verde CTA en hover/activo */
+  --cta-soft: #69f0ae; /* verde aclarado: pasa contraste AA en texto pequeño sobre fondo oscuro */
 
   /* Sombras/blur */
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
   --ring: 0 0 0 3px rgba(1, 146, 198, 0.25);
+
+  /* Radios (usar en código nuevo en vez de valores sueltos) */
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
+
+  /* Superficie de inputs/selects (search, sort, formularios del carrito) */
+  --surface-input: #101724;
 
   --footer-bg: #050709;
     --footer-surface: #0B1017;

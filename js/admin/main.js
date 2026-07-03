@@ -4,13 +4,13 @@
    El controlador está dividido en módulos bajo js/admin/:
    config · state · helpers · ui · view · data · shell · sections/* · drawers/*
    ============================================================================ */
-import { state } from "./state.js";
-import { $ } from "./helpers.js";
-import { setGate } from "./ui.js";
-import { showViewError } from "./view.js";
-import { loadAll } from "./data.js";
-import { buildChrome, go } from "./shell.js";
-import { startIdleGuard } from "./session.js";
+import { state } from "./state.js?v=adm1";
+import { $ } from "./helpers.js?v=adm1";
+import { setGate } from "./ui.js?v=adm1";
+import { showViewError } from "./view.js?v=adm1";
+import { loadAll } from "./data.js?v=adm1";
+import { buildChrome, go } from "./shell.js?v=adm1";
+import { startIdleGuard } from "./session.js?v=adm1";
 
 async function boot() {
   if (!window.javyAuth || !window.javyAuth.hasSupabase()) {

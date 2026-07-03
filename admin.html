@@ -34,7 +34,11 @@
     <!-- Generación de PDF de los informes (vendorizado, sin depender de CDN en vivo) -->
     <script src="js/vendor/jspdf.umd.min.js?v=1" defer></script>
     <script src="js/vendor/jspdf.plugin.autotable.min.js?v=1" defer></script>
-    <script type="module" src="js/admin/main.js?v=session-guard-1"></script>
+    <!-- Token de versión del panel: para desplegar cambios de los módulos js/admin/*
+         reemplaza "adm1" por "adm2" en TODO el repo (admin.html + js/admin/**) de una
+         sola vez. Así el grafo de módulos se baja completo y consistente, sin mezclar
+         versiones nuevas y viejas desde la caché (lo que dejaba el panel en negro). -->
+    <script type="module" src="js/admin/main.js?v=adm1"></script>
   </head>
   <body class="ad-body">
     <div class="ad-app" data-anim="on" id="adminApp">

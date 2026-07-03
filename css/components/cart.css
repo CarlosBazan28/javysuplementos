@@ -69,7 +69,7 @@
   width: 38px;
   height: 38px;
   border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: rgba(255,255,255,0.05);
   color: #fff;
   cursor: pointer;
@@ -119,7 +119,7 @@
 .consultation-empty {
   color: #a9b4c6;
   border: 1px dashed rgba(255,255,255,0.16);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 14px;
 }
 
@@ -146,7 +146,7 @@
   align-items: start;
   padding: 12px;
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   background: rgba(255,255,255,0.04);
 }
 
@@ -154,7 +154,7 @@
   width: 56px;
   height: 56px;
   object-fit: contain;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: rgba(255,255,255,0.05);
 }
 
@@ -191,7 +191,7 @@
 .consultation-item__flavor {
   justify-self: start;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(90,180,233,0.14);
   border: 1px solid rgba(90,180,233,0.28);
   color: #cfe6f6;
@@ -219,8 +219,8 @@
   grid-template-columns: 32px 38px 32px;
   align-items: center;
   border: 1px solid rgba(255,255,255,0.14);
-  border-radius: 10px;
-  background: #101724;
+  border-radius: var(--radius-sm);
+  background: var(--surface-input);
   overflow: hidden;
 }
 
@@ -305,8 +305,8 @@
 .consultation-form textarea {
   width: 100%;
   border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 12px;
-  background: #101724;
+  border-radius: var(--radius-md);
+  background: var(--surface-input);
   color: #fff;
   font: inherit;
   padding: 11px;
@@ -324,8 +324,8 @@
   gap: 10px;
   padding: 12px 14px;
   border: 1px solid rgba(90, 180, 233, 0.28);
-  border-radius: 12px;
-  background: #101724;
+  border-radius: var(--radius-md);
+  background: var(--surface-input);
 }
 
 .consultation-total span {
@@ -371,7 +371,7 @@
   gap: 8px;
   padding: 20px;
   border: 1px solid rgba(255, 90, 90, 0.32);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   background: linear-gradient(180deg, #131a26, #0d131e);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
 }
@@ -399,7 +399,7 @@
 .consultation-confirm__actions button {
   flex: 1;
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-weight: 700;
   padding: 11px 14px;
@@ -432,7 +432,7 @@
 .consultation-panel__footer button {
   flex: 1;
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-weight: 700;
   padding: 12px 14px;
@@ -480,7 +480,7 @@
 .consultation-form input:focus-visible,
 .consultation-form select:focus-visible,
 .consultation-form textarea:focus-visible {
-  outline: 2px solid var(--Cyan);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
@@ -540,7 +540,7 @@
   z-index: 1200;
   max-width: min(90vw, 360px);
   padding: 12px 18px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(16, 23, 36, 0.96);
   border: 1px solid rgba(0, 230, 118, 0.45);
   color: #e9f6ff;
@@ -581,7 +581,7 @@
   position: relative; width: min(380px, 100%);
   background: linear-gradient(180deg, var(--surface-1, #111925), var(--surface-2, #0c141d));
   border: 1px solid var(--line-strong);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   box-shadow: 0 24px 60px rgba(0,0,0,0.55);
   padding: 22px;
   display: grid; gap: 16px;
@@ -592,14 +592,14 @@
 .quick-add__close {
   position: absolute; top: 12px; right: 12px;
   display: grid; place-items: center; width: 34px; height: 34px;
-  border: 1px solid var(--line); border-radius: 10px;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
   background: rgba(255,255,255,0.04); color: #fff; cursor: pointer;
 }
 .quick-add__close:hover { background: rgba(255,255,255,0.08); }
 .quick-add__close .btn-icon { width: 16px; height: 16px; }
 .quick-add__head { display: flex; gap: 12px; align-items: center; padding-right: 40px; }
 .quick-add__img {
-  width: 60px; height: 60px; border-radius: 12px; object-fit: contain; flex: 0 0 auto;
+  width: 60px; height: 60px; border-radius: var(--radius-md); object-fit: contain; flex: 0 0 auto;
   background: rgba(255,255,255,0.05); border: 1px solid var(--line);
 }
 .quick-add__headinfo { min-width: 0; display: grid; gap: 3px; }
@@ -609,10 +609,10 @@
 .quick-add__label { font-size: 0.82rem; font-weight: 600; color: var(--muted); }
 .quick-add__stepper {
   display: inline-flex; align-items: center; gap: 4px; justify-self: start;
-  border: 1px solid var(--line); border-radius: 10px; padding: 4px; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 4px; background: rgba(255,255,255,0.04);
 }
 .quick-add__qty-btn {
-  width: 38px; height: 38px; border: 0; border-radius: 8px;
+  width: 44px; height: 44px; border: 0; border-radius: 8px;
   background: rgba(255,255,255,0.06); color: #fff; font-size: 1.2rem; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
 }
@@ -620,7 +620,7 @@
 .quick-add__qty-btn--plus { color: var(--cta); }
 .quick-add__qty { min-width: 40px; text-align: center; font-weight: 700; font-size: 1.05rem; }
 .quick-add__submit {
-  min-height: 48px; border: 0; border-radius: 12px; cursor: pointer;
+  min-height: 48px; border: 0; border-radius: var(--radius-md); cursor: pointer;
   background: linear-gradient(135deg, var(--cta-strong) 0%, var(--cta) 100%);
   color: #000; font-weight: 700; font-size: 0.95rem;
   box-shadow: 0 4px 14px rgba(0,200,83,0.3);
@@ -630,7 +630,7 @@
 .quick-add__submit:active { transform: translateY(1px); }
 .quick-add__close:focus-visible,
 .quick-add__qty-btn:focus-visible,
-.quick-add__submit:focus-visible { outline: 2px solid var(--Cyan); outline-offset: 2px; }
+.quick-add__submit:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
 @media (max-width: 767px) {
   .quick-add-overlay { place-items: end stretch; padding: 0; }
@@ -640,4 +640,24 @@
     animation: quickAddSheet .24s cubic-bezier(.4,0,.2,1);
   }
   @keyframes quickAddSheet { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+}
+
+/* Al final del archivo para ganar la cascada sobre las reglas de arriba */
+@media (prefers-reduced-motion: reduce) {
+  .consultation-panel {
+    transition: none;
+  }
+
+  .quick-add-overlay,
+  .quick-add {
+    animation: none;
+  }
+
+  .quick-add__submit {
+    transition: none;
+  }
+
+  .quick-add__submit:active {
+    transform: none;
+  }
 }

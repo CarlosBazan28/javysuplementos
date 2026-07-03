@@ -223,6 +223,9 @@ node --check js/product-page.js
 - Columnas redundantes en `schema.sql` (`nombre`/`name`, `price`/`precio_centavos`).
 - Imágenes PNG sin optimizar (algunas >1MB).
 - Sin tests, linter ni CI/CD.
+- Breakpoints dispares entre módulos (900/767/620/520/480px). Estándar propuesto para código
+  **nuevo**: `480px`, `768px`, `1024px`. La migración de los existentes queda pendiente (requiere
+  revisión visual página por página).
 - Faltan iconos PWA en tamaños 192×192 y 512×512 (el `site.webmanifest` usa `logo.png` con
   `sizes:"any"`). Generarlos con `/aligerar-imagenes` para Lighthouse PWA al 100%.
 - Columnas redundantes del schema (`name`/`nombre`, `price`/`precio_centavos`): pendiente migración

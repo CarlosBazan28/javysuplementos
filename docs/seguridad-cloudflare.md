@@ -154,6 +154,51 @@ Es gratis, sin cookies y no requiere banner de consentimiento.
 
 ---
 
+## 3.1 — Caché de assets (evitar el "panel en negro" tras un deploy)
+
+**Síntoma:** tras desplegar, el panel admin se queda en negro en el navegador normal pero
+funciona en incógnito.
+
+**Causa:** el sitio se sirve por **GitHub Pages detrás de Cloudflare** (el `vercel.json` del repo
+**no se usa** en producción — GitHub Pages no lo lee; quedó como referencia, no como config real).
+Cloudflare cachea los `.js`/`.css` con `Cache-Control: max-age=14400` (**4 horas**) y **sin
+`must-revalidate`**. Cuando despliegas, el navegador baja el `main.js` nuevo (su URL cambia con el
+`?v=`), pero los `import "./..."` internos sin versión se sirven de esa caché de 4 h → versión
+vieja. `main.js` nuevo + módulos viejos = el grafo no monta = pantalla negra. En incógnito no hay
+caché → todo fresco → funciona.
+
+**Mitigación en código (ya aplicada):** todos los `import` de `js/admin/*` llevan un token de
+versión compartido (`?v=adm1`), igual que el script de entrada en `admin.html`. Para desplegar
+cambios de los módulos del panel, reemplaza `adm1` → `adm2` en **todo el repo** de una sola vez
+(`admin.html` + `js/admin/**`). Así el grafo entero se baja consistente y nunca se mezclan
+versiones.
+
+**Arreglo de raíz en Cloudflare (recomendado, una sola vez):** que Cloudflare deje de cachear los
+assets 4 h sin revalidar.
+
+**Cloudflare → Caching → Cache Rules → Create rule:**
+
+- **Nombre:** `assets-revalidate`
+- **When incoming requests match:**
+  `http.request.uri.path.extension in {"js" "mjs" "css" "html"}`
+- **Then:**
+
+| Ajuste | Valor |
+|---|---|
+| Cache eligibility | Eligible for cache |
+| Edge TTL | Respect origin TTL |
+| **Browser Cache TTL** | **Respect origin TTL** (o `No cache` si quieres ser estricto) |
+
+Con esto Cloudflare respeta el `max-age=600` (10 min) de GitHub Pages en vez de forzar 4 h, y el
+navegador revalida pronto. Combinado con el token de versión del código, el panel ya no se queda
+en negro tras un deploy.
+
+Verificación:
+`curl -sI https://javysuplementos.com/js/admin/main.js | grep -i cache-control`
+→ ya **no** debe mostrar `max-age=14400`.
+
+---
+
 ## Verificación final
 
 - `https://securityheaders.com/?q=https://TUDOMINIO.com` → calificación A o superior.

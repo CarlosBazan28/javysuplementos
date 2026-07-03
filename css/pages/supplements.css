@@ -9,7 +9,7 @@
 }
 
 .catalog-hero__eyebrow {
-  color: var(--Cyan);
+  color: var(--brand);
   font-size: 0.8rem;
   font-weight: 500;
   margin-bottom: 8px;
@@ -26,7 +26,7 @@
 }
 
 .catalog-hero__text {
-  color: var(--grisClaro);
+  color: var(--muted);
   max-width: 680px;
   line-height: 1.55;
 }
@@ -56,8 +56,8 @@
   gap: 10px;
   min-height: 48px;
   padding: 6px 8px 6px 14px;
-  border-radius: 16px;
-  background: #101724;
+  border-radius: var(--radius-xl);
+  background: var(--surface-input);
   border:1px solid rgba(255, 255, 255, .10);
   width:100%;
 }
@@ -102,11 +102,11 @@
 
 .search__clear{
   border:0;
-  background:rgb(11, 11, 11);
+  background:var(--surface-input);
   color:#fff;
   width: 44px;
   height: 44px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   cursor:pointer;
   font-size:18px;
   line-height:0;
@@ -115,24 +115,30 @@
   place-items: center;
 }
 
+/* display:grid/flex le ganarían al [hidden] del UA stylesheet */
+.search__clear[hidden],
+.catalog-filters[hidden] {
+  display: none;
+}
+
 .search__submit{
   border:0;
   min-height: 44px;
-  background: var(--Cyan);
-  color:#08141c;
+  background: var(--brand);
+  color:var(--on-brand);
   padding: 0 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   cursor:pointer;
   font-weight: 500;
   flex: 0 0 auto;
 }
 
 .search__submit:hover{
-  background:#00cfff;
+  background:var(--neon);
 }
 
 .catalog-tools__hint {
-  color: #a9b4c6;
+  color: var(--muted);
   font-size: 0.82rem;
 }
 
@@ -143,8 +149,6 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding-bottom: 4px;
-  cursor: grab;
-  user-select: none;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -152,23 +156,40 @@
   display: none;
 }
 
+/* El cursor de arrastre solo cuando de verdad hay algo que deslizar (R-4). */
+.catalog-filters.has-overflow {
+  cursor: grab;
+  user-select: none;
+}
+
 .catalog-filters.is-dragging {
   cursor: grabbing;
 }
 
-/* Indica con un degradado a la derecha que hay más categorías al deslizar */
-.catalog-filters.has-overflow {
+/* Degradado que insinúa contenido oculto; según haya scroll a izq/der (R-5). */
+.catalog-filters.has-overflow-right {
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
   mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}
+
+.catalog-filters.has-overflow-left:not(.has-overflow-right) {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 28px);
+  mask-image: linear-gradient(to right, transparent, #000 28px);
+}
+
+.catalog-filters.has-overflow-left.has-overflow-right {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
 }
 
 .catalog-filter {
   border: 1px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.04);
   color: var(--blanco);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   min-height: 44px;
   padding: 0 14px;
+  font: inherit;
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
@@ -183,9 +204,9 @@
 }
 
 .catalog-filter.is-active {
-  background: var(--Cyan);
-  color: #08141c;
-  border-color: var(--Cyan);
+  background: var(--brand);
+  color: var(--on-brand);
+  border-color: var(--brand);
 }
 
 .catalog-filter.is-active .catalog-filter__count {
@@ -200,7 +221,7 @@
 .catalog-empty__btn:focus-visible,
 .search__clear:focus-visible,
 .search__submit:focus-visible {
-  outline: 2px solid var(--Cyan);
+  outline: 2px solid var(--brand);
   outline-offset: 3px;
 }
 
@@ -218,38 +239,368 @@
 }
 
 .catalog-filter--type.is-active {
-  background: var(--Cyan);
-  color: #08141c;
-  border-color: var(--Cyan);
+  background: var(--brand);
+  color: var(--on-brand);
+  border-color: var(--brand);
 }
 
-.catalog-facets {
+/* ===== Layout de dos columnas: sidebar de filtros + resultados =====
+   Mobile-first: una sola columna con el sidebar oculto (los filtros avanzados
+   viven en el bottom-sheet). En ≥768px el sidebar aparece fijo a la izquierda. */
+.catalog-body {
+  display: block;
+}
+
+.catalog-sidebar {
+  display: none;
+}
+
+.catalog-sidebar__clear[hidden] {
+  display: none;
+}
+
+/* ===== Panel de filtros (compartido por el sidebar y el bottom-sheet) ===== */
+.filter-panel {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.filter-group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.filter-group__legend {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Lista de categorías (familias + tipos anidados) */
+.filter-cats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.filter-cats--types {
+  margin: 4px 0 6px 12px;
+  padding-left: 8px;
+  border-left: 1px solid var(--line);
+}
+
+.filter-cat {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.filter-cat:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.filter-cat.is-active {
+  background: rgba(1, 145, 198, 0.16);
+  border-color: rgba(1, 145, 198, 0.5);
+  color: #fff;
+}
+
+.filter-cat--type {
+  min-height: 34px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.filter-cat--type.is-active {
+  color: #fff;
+}
+
+.filter-cat__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-cat__count {
+  flex: 0 0 auto;
+  font-size: 0.78em;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+/* Checkboxes / radios de facetas (multi-selección) */
+.filter-checks {
+  display: grid;
+  gap: 1px;
+}
+
+.filter-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.filter-check:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.filter-check__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.filter-check__box {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.03);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.filter-check__box--radio {
+  border-radius: var(--radius-pill);
+}
+
+.filter-check__box::after {
+  content: "";
+  opacity: 0;
+}
+
+.filter-check__input:checked + .filter-check__box {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.filter-check__input:checked + .filter-check__box::after {
+  width: 10px;
+  height: 6px;
+  border-left: 2px solid var(--on-brand);
+  border-bottom: 2px solid var(--on-brand);
+  transform: rotate(-45deg) translateY(-1px);
+  opacity: 1;
+}
+
+.filter-check__input:checked + .filter-check__box--radio::after {
+  width: 8px;
+  height: 8px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--on-brand);
+  transform: none;
+}
+
+.filter-check__input:focus-visible + .filter-check__box {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.filter-check__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-check__count {
+  flex: 0 0 auto;
+  font-size: 0.82em;
+  color: var(--muted);
+}
+
+/* Toggle "solo disponibles" */
+.filter-check--switch .filter-switch {
+  flex: 0 0 auto;
+  position: relative;
+  width: 38px;
+  height: 22px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.14);
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.filter-check--switch .filter-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-pill);
+  background: #fff;
+  transition: transform 0.18s ease;
+}
+
+.filter-check--switch .filter-check__input:checked + .filter-switch {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.filter-check--switch .filter-check__input:checked + .filter-switch::after {
+  transform: translateX(16px);
+}
+
+/* "Ver más" opciones de una faceta larga */
+.filter-more {
+  justify-self: start;
+  margin-top: 2px;
+  padding: 4px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filter-more:hover {
+  text-decoration: underline;
+}
+
+.filter-more:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Chips de orden (dentro del sheet) */
+.filter-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
-.catalog-facet {
+.filter-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
-  color: var(--grisClaro);
-}
-
-.catalog-facet__select {
-  min-height: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--blanco);
-  border-radius: 10px;
-  padding: 0 10px;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
   font-weight: 600;
+  cursor: pointer;
 }
 
-.catalog-facet__select:focus-visible {
-  outline: 2px solid var(--Cyan);
+.filter-chip.is-active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--on-brand);
+}
+
+.filter-chip:focus-visible {
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
+}
+
+/* ===== Sidebar visible en tablet/desktop ===== */
+@media (min-width: 768px) {
+  .catalog-body {
+    display: grid;
+    grid-template-columns: clamp(220px, 22vw, 280px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  .catalog-sidebar {
+    display: block;
+    position: sticky;
+    top: 84px;
+    max-height: calc(100dvh - 104px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, var(--surface-1), var(--surface-2));
+    scrollbar-width: thin;
+  }
+
+  .catalog-sidebar__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .catalog-sidebar__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .catalog-sidebar__clear {
+    border: 0;
+    background: transparent;
+    color: var(--accent);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .catalog-sidebar__clear:hover {
+    text-decoration: underline;
+  }
+
+  .catalog-sidebar__clear:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* En desktop las categorías viven en el sidebar: ocultar el carrusel de chips */
+  .catalog-tools__hint,
+  #catalogFilters,
+  #catalogSubFilters {
+    display: none !important;
+  }
+
+  .catalog-grid {
+    justify-content: start;
+  }
 }
 
 .catalog-results__bar {
@@ -263,15 +614,28 @@
 }
 
 .catalog-results__count {
-  color: var(--grisClaro);
+  color: var(--muted);
   font-size: 0.95rem;
+}
+
+/* Región viva oculta: anuncia el total al filtrar, sin repetir en cada lote */
+.catalog-count-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .catalog-sort {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--grisClaro);
+  color: var(--muted);
   font-size: 0.85rem;
 }
 
@@ -282,8 +646,8 @@
 .catalog-sort__select {
   min-height: 40px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  background: #101724;
+  border-radius: var(--radius-md);
+  background: var(--surface-input);
   color: #fff;
   font: inherit;
   font-size: 0.85rem;
@@ -292,7 +656,7 @@
 }
 
 .catalog-sort__select:focus-visible {
-  outline: 2px solid var(--Cyan);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
@@ -306,8 +670,8 @@
 
 .catalog-empty {
   border: 1px solid rgba(255,255,255,0.1);
-  background: linear-gradient(135deg, #0b1017, #141c2a);
-  border-radius: 14px;
+  background: linear-gradient(135deg, var(--surface-2), var(--surface-1));
+  border-radius: var(--radius-lg);
   padding: 24px;
   color: var(--blanco);
 }
@@ -318,23 +682,143 @@
 }
 
 .catalog-empty p {
-  color: var(--grisClaro);
+  color: var(--muted);
   line-height: 1.5;
   margin-bottom: 16px;
 }
 
 .catalog-empty__btn {
   border: 0;
-  border-radius: 999px;
-  background: var(--Cyan);
-  color: #08141c;
+  font: inherit;
+  border-radius: var(--radius-pill);
+  background: var(--brand);
+  color: var(--on-brand);
   cursor: pointer;
   font-weight: 500;
   padding: 11px 16px;
 }
 
 .catalog-empty__btn:hover {
-  background: #00cfff;
+  background: var(--neon);
+}
+
+.catalog-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.catalog-empty__btn--ghost {
+  background: transparent;
+  border: 1px solid rgba(90, 180, 233, 0.45);
+  color: var(--blanco);
+}
+
+.catalog-empty__btn--ghost:hover {
+  background: rgba(90, 180, 233, 0.14);
+}
+
+/* Aviso de catálogo servido desde el respaldo local (Supabase no respondió) */
+.catalog-offline-note {
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 179, 0, 0.35);
+  border-radius: var(--radius-md);
+  background: rgba(255, 179, 0, 0.1);
+  color: #ffd27d;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+/* Chips de filtros activos (removibles) sobre el grid */
+.catalog-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+/* display:flex le ganaría al [hidden] del UA stylesheet */
+.catalog-active-filters[hidden] {
+  display: none;
+}
+
+.catalog-active-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 12px;
+  font: inherit;
+  border: 1px solid rgba(90, 180, 233, 0.4);
+  border-radius: var(--radius-pill);
+  background: rgba(90, 180, 233, 0.12);
+  color: var(--blanco);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.catalog-active-filter:hover {
+  border-color: rgba(90, 180, 233, 0.75);
+  background: rgba(90, 180, 233, 0.2);
+}
+
+.catalog-active-filter:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.catalog-active-filter__x {
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.75;
+}
+
+.catalog-active-filter--clear {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: transparent;
+  color: var(--muted);
+}
+
+.catalog-active-filter--clear:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Botón/sentinel de carga incremental del grid */
+.catalog-more {
+  display: grid;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.catalog-more[hidden] {
+  display: none;
+}
+
+.catalog-more__btn {
+  min-height: 46px;
+  padding: 0 22px;
+  font: inherit;
+  border: 1px solid rgba(90, 180, 233, 0.4);
+  border-radius: var(--radius-pill);
+  background: rgba(90, 180, 233, 0.1);
+  color: var(--blanco);
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.catalog-more__btn:hover {
+  border-color: rgba(90, 180, 233, 0.75);
+  background: rgba(90, 180, 233, 0.18);
+}
+
+.catalog-more__btn:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }
 
 .catalog-floating-quote {
@@ -350,7 +834,7 @@
   min-height: 62px;
   padding: 8px 12px 8px 9px;
   border: 1px solid rgba(90, 180, 233, 0.42);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background:
     radial-gradient(circle at 18% 25%, rgba(255, 255, 255, 0.18), transparent 25%),
     linear-gradient(135deg, rgba(0, 200, 83, 0.96), rgba(0, 167, 225, 0.96));
@@ -383,7 +867,7 @@
   height: 42px;
   display: grid;
   place-items: center;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(5, 7, 9, 0.9);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
 }
@@ -427,7 +911,7 @@
   display: grid;
   place-items: center;
   padding: 0 7px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: #050709;
   color: #fff;
   font-size: 0.76rem;
@@ -449,7 +933,7 @@
   min-height: 48px;
   padding: 6px 12px 6px 7px;
   border: 1px solid rgba(90, 180, 233, 0.44);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background:
     radial-gradient(circle at 35% 20%, rgba(90, 180, 233, 0.24), transparent 42%),
     linear-gradient(135deg, rgba(5, 7, 9, 0.94), rgba(16, 23, 36, 0.94));
@@ -483,7 +967,7 @@
   height: 36px;
   display: grid;
   place-items: center;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background:
     linear-gradient(135deg, rgba(0, 200, 83, 0.94), rgba(0, 167, 225, 0.94));
   color: #031015;
@@ -503,7 +987,7 @@
   line-height: 1;
 }
 
-@media (max-width: 620px) {
+@media (max-width: 767px) {
   .catalog-page {
     width: min(100% - 12px, 1180px);
     padding-top: 8px;
@@ -514,7 +998,7 @@
   }
 
   .search {
-    border-radius: 16px;
+    border-radius: var(--radius-xl);
     display: grid;
     grid-template-columns: auto 1fr auto;
   }
@@ -562,5 +1046,312 @@
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
+  }
+}
+
+/* Botón "Filtros" (solo mobile): abre el bottom-sheet con facetas y orden */
+.catalog-filters-btn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgba(90, 180, 233, 0.4);
+  border-radius: var(--radius-pill);
+  background: rgba(90, 180, 233, 0.1);
+  color: var(--blanco);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.catalog-filters-btn .btn-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.catalog-filters-btn:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.catalog-filters-btn__badge {
+  min-width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--brand);
+  color: var(--on-brand);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.catalog-filters-btn__badge[hidden] {
+  display: none;
+}
+
+/* En mobile el orden y las facetas viven dentro del sheet (el sidebar se oculta) */
+@media (max-width: 767px) {
+  .catalog-sort {
+    display: none;
+  }
+
+  .catalog-filters-btn {
+    display: inline-flex;
+  }
+}
+
+/* Bottom-sheet de filtros (mismo patrón visual que el modal quick-add) */
+.filter-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 940;
+  display: grid;
+  place-items: end stretch;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: filterSheetFade 0.18s ease;
+}
+
+@keyframes filterSheetFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.filter-sheet {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  width: 100%;
+  max-height: 84dvh;
+  border: 1px solid var(--line-strong);
+  border-bottom: 0;
+  border-radius: 18px 18px 0 0;
+  background: linear-gradient(180deg, var(--surface-1, #111925), var(--surface-2, #0c141d));
+  color: var(--text);
+  box-shadow: 0 -18px 60px rgba(0, 0, 0, 0.55);
+  animation: filterSheetIn 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes filterSheetIn {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.filter-sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 10px;
+}
+
+.filter-sheet__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.filter-sheet__close {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  cursor: pointer;
+}
+
+.filter-sheet__close .btn-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.filter-sheet__body {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 18px 12px;
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.filter-sheet__group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.filter-sheet__legend {
+  padding: 0;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.filter-sheet__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-sheet__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--blanco);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filter-sheet__chip.is-active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--on-brand);
+}
+
+.filter-sheet__chip:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.filter-sheet__chip-count {
+  font-size: 0.76em;
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+.filter-sheet__foot {
+  display: flex;
+  gap: 10px;
+  padding: 12px 18px calc(14px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--line);
+}
+
+.filter-sheet__clear {
+  min-height: 48px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--blanco);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filter-sheet__apply {
+  flex: 1;
+  min-height: 48px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--brand);
+  color: var(--on-brand);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.filter-sheet__apply:hover {
+  background: var(--neon);
+}
+
+.filter-sheet__clear:focus-visible,
+.filter-sheet__apply:focus-visible,
+.filter-sheet__close:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* Si el sheet llega a abrirse en pantalla grande: modal centrado */
+@media (min-width: 768px) {
+  .filter-sheet-overlay {
+    place-items: center;
+    padding: 20px;
+  }
+
+  .filter-sheet {
+    width: min(440px, 100%);
+    max-height: 80vh;
+    border-bottom: 1px solid var(--line-strong);
+    border-radius: var(--radius-xl);
+  }
+}
+
+/* Skeleton de chips de categoría mientras carga el catálogo (R-7) */
+.catalog-filter--skeleton {
+  flex: 0 0 auto;
+  width: 92px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius-md);
+}
+
+/* Ícono del estado vacío (O-3) */
+.catalog-empty__icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 14px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.catalog-empty__icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Sin animaciones para quien pide movimiento reducido (mismo patrón que nav.css) */
+@media (prefers-reduced-motion: reduce) {
+  .filter-cat,
+  .filter-check__box,
+  .filter-switch,
+  .filter-switch::after {
+    transition: none;
+  }
+
+  .catalog-filters {
+    scroll-behavior: auto;
+  }
+
+  .filter-sheet-overlay,
+  .filter-sheet {
+    animation: none;
+  }
+
+  .catalog-filter,
+  .catalog-active-filter,
+  .catalog-more__btn,
+  .catalog-filters-btn,
+  .catalog-floating-quote,
+  .catalog-scroll-top {
+    transition: none;
+  }
+
+  .catalog-floating-quote,
+  .catalog-floating-quote.is-visible,
+  .catalog-scroll-top,
+  .catalog-scroll-top.is-visible,
+  .catalog-floating-quote:hover,
+  .catalog-floating-quote:focus-visible,
+  .catalog-scroll-top:hover,
+  .catalog-scroll-top:focus-visible {
+    transform: none;
   }
 }

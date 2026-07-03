@@ -6,11 +6,21 @@ const catalogState = {
   category: "todos",
   family: "todos",
   type: "todos",
-  goal: "",
-  brand: "",
-  size: "",
+  // Facetas multi-selección: arrays de slugs (OR dentro de la faceta).
+  goals: [],
+  brands: [],
+  sizes: [],
+  price: "", // precio queda single-select (rango)
+  available: false,
   sort: "recomendados",
 };
+
+// Rangos de precio del filtro (productos sin precio quedan fuera al filtrar).
+const PRICE_RANGES = [
+  { value: "0-25", label: "Hasta $25", min: 0, max: 25 },
+  { value: "25-50", label: "$25 a $50", min: 25, max: 50 },
+  { value: "50+", label: "Más de $50", min: 50, max: Infinity },
+];
 
 const searchForm = document.getElementById("searchForm");
 const searchInput = document.getElementById("searchInput");
@@ -21,11 +31,21 @@ const catalogEmpty = document.getElementById("catalogEmpty");
 const emptyAdvisorBtn = document.getElementById("emptyAdvisorBtn");
 const catalogFilters = document.getElementById("catalogFilters");
 const catalogSubFilters = document.getElementById("catalogSubFilters");
-const catalogFacets = document.getElementById("catalogFacets");
+const catalogSidebar = document.getElementById("catalogSidebar");
+const catalogSidebarBody = document.getElementById("catalogSidebarBody");
+const catalogSidebarClear = document.getElementById("catalogSidebarClear");
 const catalogToolsHint = document.querySelector(".catalog-tools__hint");
 const catalogSort = document.getElementById("catalogSort");
 const catalogFloatingQuote = document.getElementById("catalogFloatingQuote");
 const catalogScrollTop = document.getElementById("catalogScrollTop");
+const catalogActiveFilters = document.getElementById("catalogActiveFilters");
+const catalogOfflineNote = document.getElementById("catalogOfflineNote");
+const catalogMore = document.getElementById("catalogMore");
+const catalogMoreBtn = document.getElementById("catalogMoreBtn");
+const emptyResetBtn = document.getElementById("emptyResetBtn");
+const emptyRelaxBtn = document.getElementById("emptyRelaxBtn");
+const catalogFiltersBtn = document.getElementById("catalogFiltersBtn");
+const catalogResultsBar = document.querySelector(".catalog-results__bar");
 let lastCatalogScrollY = window.scrollY || 0;
 let scrollTopIsVisible = false;
 
@@ -99,14 +119,56 @@ function productMatchesCategory(product) {
   return getProductCategory(product) === catalogState.category;
 }
 
-function productMatchesFacets(product) {
-  if (catalogState.goal) {
-    const goals = (product.goals || product.objetivos || []).map((g) => slugify(g));
-    if (!goals.includes(catalogState.goal)) return false;
-  }
-  if (catalogState.brand && slugify(product.brand || "") !== catalogState.brand) return false;
-  if (catalogState.size && slugify(product.presentation || "") !== catalogState.size) return false;
-  return true;
+// Multi-selección: sin selección pasa todo; con selección, match si el producto
+// tiene AL MENOS uno de los valores elegidos (OR dentro de la faceta).
+function productMatchesGoal(product) {
+  if (!catalogState.goals.length) return true;
+  const goals = (product.goals || product.objetivos || []).map((g) => slugify(g));
+  return catalogState.goals.some((sel) => goals.includes(sel));
+}
+
+function productMatchesBrand(product) {
+  if (!catalogState.brands.length) return true;
+  return catalogState.brands.includes(slugify(product.brand || ""));
+}
+
+function productMatchesSize(product) {
+  if (!catalogState.sizes.length) return true;
+  return catalogState.sizes.includes(slugify(product.presentation || ""));
+}
+
+function productMatchesPrice(product) {
+  if (!catalogState.price) return true;
+  const range = PRICE_RANGES.find((r) => r.value === catalogState.price);
+  if (!range) return true;
+  const price = Number(product.price ?? product.precio ?? 0);
+  if (price <= 0) return false; // "Consultar": sin precio conocido, no entra en rangos
+  return price >= range.min && price < range.max;
+}
+
+function productMatchesAvailable(product) {
+  return !catalogState.available || productCanBeQuoted(product);
+}
+
+function productMatchesQuery(product, query) {
+  return !query || getSearchText(product).includes(query);
+}
+
+// Núcleo del filtrado facetado: aplica todas las dimensiones menos las de
+// `skipKeys`. Excluir una dimensión permite calcular contadores "reactivos"
+// (cuántos resultados daría cada opción de esa dimensión con el resto activo).
+function getResultsExcluding(...skipKeys) {
+  const skip = new Set(skipKeys);
+  const query = normalizeText(catalogState.query.trim());
+
+  return products.filter((product) =>
+    (skip.has("category") || productMatchesCategory(product))
+    && (skip.has("goals") || productMatchesGoal(product))
+    && (skip.has("brands") || productMatchesBrand(product))
+    && (skip.has("sizes") || productMatchesSize(product))
+    && (skip.has("price") || productMatchesPrice(product))
+    && (skip.has("available") || productMatchesAvailable(product))
+    && (skip.has("query") || productMatchesQuery(product, query)));
 }
 
 function getFlavorNames(product, availableOnly = false) {
@@ -130,17 +192,7 @@ function getSearchText(product) {
 }
 
 function getFilteredProducts() {
-  const query = normalizeText(catalogState.query.trim());
-
-  const filtered = products.filter((product) => {
-    const categoryMatch = productMatchesCategory(product);
-    const facetMatch = productMatchesFacets(product);
-    const queryMatch = !query || getSearchText(product).includes(query);
-
-    return categoryMatch && facetMatch && queryMatch;
-  });
-
-  return sortProducts(filtered);
+  return sortProducts(getResultsExcluding());
 }
 
 function sortProducts(list) {
@@ -154,13 +206,23 @@ function sortProducts(list) {
       return sorted.sort((a, b) => price(b) - price(a));
     case "nombre":
       return sorted.sort((a, b) => (a.name || "").localeCompare(b.name || "", "es"));
+    case "ofertas":
+      // Mayor descuento primero; sin oferta al final manteniendo su orden (sort estable)
+      return sorted.sort((a, b) => discountPercent(b) - discountPercent(a));
+    case "novedades":
+      // Los productos ya vienen ordenados por created_at desc desde la BD
+      return sorted;
     case "recomendados":
     default:
-      // Destacados primero, manteniendo el orden original dentro de cada grupo
+      // Destacados primero, luego disponibles antes que agotados; orden original
+      // dentro de cada grupo (sort estable).
       return sorted.sort((a, b) => {
         const fa = a.featured || a.destacado ? 1 : 0;
         const fb = b.featured || b.destacado ? 1 : 0;
-        return fb - fa;
+        if (fb !== fa) return fb - fa;
+        const va = productCanBeQuoted(a) ? 1 : 0;
+        const vb = productCanBeQuoted(b) ? 1 : 0;
+        return vb - va;
       });
   }
 }
@@ -200,69 +262,6 @@ function productCanBeQuoted(product) {
 
 function isNoFlavorProduct(product) {
   return product?.flavor_mode === "no_flavor";
-}
-
-function renderFlavorOptions(product) {
-  const flavors = product.flavors || [];
-  const selectId = `flavor-${slugify(product.id)}`;
-  const enabled = productCanBeQuoted(product);
-
-  if (!flavors.length) {
-    return `
-      <div class="product-card__flavors">
-        <label class="product-card__flavor-label" for="${selectId}">Sabor</label>
-        <select class="product-card__flavor-select" id="${selectId}" data-flavor-select disabled>
-          <option>Sin sabor</option>
-        </select>
-      </div>
-    `;
-  }
-
-  const label = flavors.length === 1 ? "Sabor" : "Sabores";
-
-  return `
-    <div class="product-card__flavors" aria-label="${label} disponibles">
-      <label class="product-card__flavor-label" for="${selectId}">${label}</label>
-      <select class="product-card__flavor-select" id="${selectId}" data-flavor-select ${enabled ? "" : "disabled"}>
-        <option value="">Elegir sabor</option>
-        ${flavors.map((flavor) => `
-          <option value="${escapeHTML(flavor.id)}" ${flavor.available === false ? "disabled" : ""}>
-            ${escapeHTML(flavor.name)}${flavor.available === false ? " — No disponible" : ""}
-          </option>
-        `).join("")}
-      </select>
-    </div>
-  `;
-}
-
-function getSelectedFlavor(card, product, shouldRequire = true) {
-  const select = card.querySelector("[data-flavor-select]");
-  if (!select || !product.flavors?.length) return { flavor: "", flavor_id: "" };
-
-  if (!select.value) {
-    if (shouldRequire) {
-      select.focus();
-      select.classList.add("needs-selection");
-      window.setTimeout(() => select.classList.remove("needs-selection"), 1200);
-    }
-    return null;
-  }
-
-  const flavor = product.flavors.find((item) => item.id === select.value);
-  if (!flavor || flavor.available === false) return null;
-
-  return { flavor: flavor.name, flavor_id: flavor.id };
-}
-
-function wireQuantityStepper(card) {
-  const valueEl = card.querySelector("[data-qty-value]");
-  if (!valueEl) return;
-  card.querySelector("[data-qty-dec]")?.addEventListener("click", () => {
-    valueEl.textContent = Math.max(1, (parseInt(valueEl.textContent, 10) || 1) - 1);
-  });
-  card.querySelector("[data-qty-inc]")?.addEventListener("click", () => {
-    valueEl.textContent = Math.min(99, (parseInt(valueEl.textContent, 10) || 1) + 1);
-  });
 }
 
 function setAddButtonState(button, added) {
@@ -328,34 +327,31 @@ function bindConsultationSync() {
   });
 }
 
-function getCardQuantity(card) {
-  if (window.matchMedia("(max-width: 767px)").matches) {
-    const select = card.querySelector("[data-qty-select]");
-    if (select) return Math.max(1, parseInt(select.value, 10) || 1);
-  }
-  return Math.max(1, parseInt(card.querySelector("[data-qty-value]")?.textContent, 10) || 1);
-}
-
 function getCategoryFilters() {
+  // Contadores reactivos: cuentan sobre el resultado de los DEMÁS filtros
+  // (búsqueda, facetas), no sobre el catálogo entero, para no prometer
+  // resultados que la combinación actual no puede dar.
+  const baseline = getResultsExcluding("category");
+
   const categories = products
     .map((product) => product.category)
     .filter(Boolean)
     .filter((category, index, list) => list.indexOf(category) === index)
     .sort((a, b) => a.localeCompare(b, "es"));
 
-  const featuredCount = products.filter((p) => p.featured || p.destacado).length;
+  const featuredCount = baseline.filter((p) => p.featured || p.destacado).length;
 
   return [
-    { label: "Todos", value: "todos", count: products.length },
+    { label: "Todos", value: "todos", count: baseline.length },
     { label: "Destacados", value: "destacados", count: featuredCount },
     ...categories.map((category) => ({
       label: category,
       value: slugify(category),
-      count: products.filter((p) => getProductCategory(p) === slugify(category)).length,
+      count: baseline.filter((p) => getProductCategory(p) === slugify(category)).length,
     })),
   ]
-    // Si una categoría/destacados quedan sin productos, no mostrar el chip vacío
-    .filter((filter) => filter.value === "todos" || filter.count > 0);
+    // Ocultar chips que darían 0, pero nunca el activo (para poder deseleccionarlo)
+    .filter((filter) => filter.value === "todos" || filter.count > 0 || filter.value === catalogState.category);
 }
 
 function uniqueSorted(list) {
@@ -374,82 +370,328 @@ function renderFlatFilters() {
     .map((f) => filterChip({ value: f.value, label: f.label, count: f.count, active: f.value === catalogState.category }))
     .join("");
   if (catalogSubFilters) catalogSubFilters.hidden = true;
-  if (catalogFacets) catalogFacets.hidden = true;
+}
+
+// Datos de familias/tipos con contadores reactivos (compartidos por los chips
+// móviles y la lista del sidebar de escritorio).
+function getFamilyItems() {
+  const baseline = getResultsExcluding("category");
+  const featuredCount = baseline.filter((p) => p.featured || p.destacado).length;
+  const families = pubFamilies()
+    .map((f) => ({ value: f.id, label: f.name, count: baseline.filter((p) => productInFamily(p, f.id)).length }))
+    .filter((f) => f.count > 0 || f.value === catalogState.family)
+    .sort((a, b) => a.label.localeCompare(b.label, "es"));
+
+  return [
+    { value: "todos", label: "Todos", count: baseline.length },
+    ...(featuredCount || catalogState.family === "destacados"
+      ? [{ value: "destacados", label: "Destacados", count: featuredCount }]
+      : []),
+    ...families,
+  ];
+}
+
+function getTypeItems(fam) {
+  if (fam === "todos" || fam === "destacados") return [];
+  // Baseline: todo menos la dimensión categoría, acotado a la familia elegida.
+  const familyBaseline = getResultsExcluding("category").filter((p) => productInFamily(p, fam));
+  const types = pubTypesOf(fam)
+    .map((t) => ({ value: t.id, label: t.name, count: familyBaseline.filter((p) => p.category_id === t.id).length }))
+    .filter((t) => t.count > 0 || t.value === catalogState.type);
+
+  if (!types.length) return [];
+  return [{ value: "todos", label: "Todos", count: familyBaseline.length }, ...types];
 }
 
 function renderFamilyFilters() {
-  const featuredCount = products.filter((p) => p.featured || p.destacado).length;
-  const families = pubFamilies()
-    .map((f) => ({ value: f.id, label: f.name, count: products.filter((p) => productInFamily(p, f.id)).length }))
-    .filter((f) => f.count > 0)
-    .sort((a, b) => a.label.localeCompare(b.label, "es"));
-
-  const chips = [
-    { value: "todos", label: "Todos", count: products.length },
-    ...(featuredCount ? [{ value: "destacados", label: "Destacados", count: featuredCount }] : []),
-    ...families,
-  ];
-  catalogFilters.innerHTML = chips
+  catalogFilters.innerHTML = getFamilyItems()
     .map((f) => filterChip({ value: f.value, label: f.label, count: f.count, attr: "data-family", active: f.value === catalogState.family }))
     .join("");
 }
 
 function renderTypeFilters() {
   if (!catalogSubFilters) return;
-  const fam = catalogState.family;
-  if (fam === "todos" || fam === "destacados") {
+  const items = getTypeItems(catalogState.family);
+  if (!items.length) {
     catalogSubFilters.hidden = true;
     catalogSubFilters.innerHTML = "";
     return;
   }
-  const types = pubTypesOf(fam)
-    .map((t) => ({ value: t.id, label: t.name, count: products.filter((p) => p.category_id === t.id).length }))
-    .filter((t) => t.count > 0);
-
-  if (!types.length) {
-    catalogSubFilters.hidden = true;
-    catalogSubFilters.innerHTML = "";
-    return;
-  }
-
-  const chips = [
-    { value: "todos", label: "Todos", count: products.filter((p) => productInFamily(p, fam)).length },
-    ...types,
-  ];
   catalogSubFilters.hidden = false;
-  catalogSubFilters.innerHTML = chips
+  catalogSubFilters.innerHTML = items
     .map((t) => filterChip({ value: t.value, label: t.label, count: t.count, attr: "data-type", active: t.value === catalogState.type, extraClass: " catalog-filter--type" }))
     .join("");
 }
 
-function renderFacets() {
-  if (!catalogFacets) return;
-  const goals = uniqueSorted(products.flatMap((p) => p.goals || p.objetivos || []));
-  const brands = uniqueSorted(products.map((p) => p.brand));
-  const sizes = uniqueSorted(products.map((p) => p.presentation));
+// Valores que aporta cada producto a cada faceta.
+const FACET_DEFS = {
+  goals: { title: "Objetivo", values: (p) => p.goals || p.objetivos || [] },
+  brands: { title: "Marca", values: (p) => (p.brand ? [p.brand] : []) },
+  sizes: { title: "Tamaño", values: (p) => (p.presentation ? [p.presentation] : []) },
+};
 
-  const facetSelect = (key, label, values, current) => {
-    if (!values.length) return "";
-    return `
-      <label class="catalog-facet">
-        <span class="catalog-facet__label">${label}</span>
-        <select class="catalog-facet__select" data-facet="${key}">
-          <option value="">Todas</option>
-          ${values.map((v) => `<option value="${escapeHTML(slugify(v))}"${slugify(v) === current ? " selected" : ""}>${escapeHTML(v)}</option>`).join("")}
-        </select>
-      </label>`;
-  };
+// Opciones de una faceta con contadores reactivos (sobre los demás filtros).
+// Las opciones que darían 0 se ocultan, salvo las ya seleccionadas (para poder quitarlas).
+function getFacetOptions(key) {
+  const def = FACET_DEFS[key];
+  const baseline = getResultsExcluding(key);
+  const selected = catalogState[key]; // array de slugs
 
-  const html = [
-    facetSelect("goal", "Objetivo", goals, catalogState.goal),
-    facetSelect("brand", "Marca", brands, catalogState.brand),
-    facetSelect("size", "Tamaño", sizes, catalogState.size),
-  ].join("");
+  return uniqueSorted(products.flatMap(def.values))
+    .map((value) => ({
+      value: slugify(value),
+      label: value,
+      count: baseline.filter((p) => def.values(p).some((v) => slugify(v) === slugify(value))).length,
+    }))
+    .filter((opt) => opt.count > 0 || selected.includes(opt.value));
+}
 
-  catalogFacets.hidden = !html.trim();
-  if (window.javyDropdown) window.javyDropdown.destroy(catalogFacets);
-  catalogFacets.innerHTML = html;
-  if (window.javyDropdown) window.javyDropdown.enhanceSelects(catalogFacets);
+function getPriceOptions() {
+  const baseline = getResultsExcluding("price");
+  const priceOf = (p) => Number(p.price ?? p.precio ?? 0);
+
+  return PRICE_RANGES
+    .map((range) => ({
+      value: range.value,
+      label: range.label,
+      count: baseline.filter((p) => {
+        const value = priceOf(p);
+        return value > 0 && value >= range.min && value < range.max;
+      }).length,
+    }))
+    .filter((opt) => opt.count > 0 || opt.value === catalogState.price);
+}
+
+function getAvailableCount() {
+  return getResultsExcluding("available").filter(productCanBeQuoted).length;
+}
+
+/* ----------------------------------------------------------------------------
+   Panel de filtros unificado. El MISMO markup se monta en el sidebar (desktop,
+   siempre visible) y en el bottom-sheet (mobile). Checkboxes multi-selección
+   para objetivo/marca/tamaño; radios para precio; toggle para disponibilidad.
+   ---------------------------------------------------------------------------- */
+const FACET_COLLAPSE = 6; // opciones visibles antes de "Ver más" (evita parálisis)
+const expandedFacets = new Set();
+
+function facetOptionAria(label, count, selected, word = "seleccionado") {
+  const unit = count === 1 ? "producto" : "productos";
+  return `${label}, ${count} ${unit}${selected ? `, ${word}` : ""}`;
+}
+
+function catItemButton(attr, item, active, isType = false) {
+  return `<button type="button" class="filter-cat${isType ? " filter-cat--type" : ""}${active ? " is-active" : ""}" ${attr}="${escapeHTML(item.value)}" aria-pressed="${active}" aria-label="${escapeHTML(facetOptionAria(item.label, item.count, active, "activo"))}">
+    <span class="filter-cat__label">${escapeHTML(item.label)}</span>
+    <span class="filter-cat__count" aria-hidden="true">${item.count}</span>
+  </button>`;
+}
+
+function panelCategoryGroup() {
+  const hier = useHierarchy();
+  const items = hier ? getFamilyItems() : getCategoryFilters();
+  const activeVal = hier ? catalogState.family : catalogState.category;
+  const attr = hier ? "data-family" : "data-category";
+
+  const rows = items.map((it) => {
+    const active = it.value === activeVal;
+    let row = `<li>${catItemButton(attr, it, active)}`;
+    // En jerárquico, la familia activa despliega sus tipos anidados.
+    if (hier && active && it.value !== "todos" && it.value !== "destacados") {
+      const types = getTypeItems(it.value);
+      if (types.length) {
+        row += `<ul class="filter-cats filter-cats--types" role="list">${types
+          .map((t) => `<li>${catItemButton("data-type", t, t.value === catalogState.type, true)}</li>`)
+          .join("")}</ul>`;
+      }
+    }
+    return `${row}</li>`;
+  }).join("");
+
+  return `
+    <div class="filter-group">
+      <p class="filter-group__legend" id="fg-categoria">Categoría</p>
+      <ul class="filter-cats" role="list" aria-labelledby="fg-categoria">${rows}</ul>
+    </div>`;
+}
+
+function panelCheckboxGroup(key) {
+  const def = FACET_DEFS[key];
+  const options = getFacetOptions(key);
+  if (!options.length) return "";
+
+  const selected = catalogState[key];
+  const overflow = options.length > FACET_COLLAPSE && !expandedFacets.has(key);
+  const shown = overflow ? options.slice(0, FACET_COLLAPSE) : options;
+
+  const checks = shown.map((o) => {
+    const isSel = selected.includes(o.value);
+    return `<label class="filter-check">
+      <input type="checkbox" class="filter-check__input" data-facet-check="${key}" value="${escapeHTML(o.value)}"${isSel ? " checked" : ""} aria-label="${escapeHTML(facetOptionAria(o.label, o.count, isSel))}">
+      <span class="filter-check__box" aria-hidden="true"></span>
+      <span class="filter-check__label">${escapeHTML(o.label)}</span>
+      <span class="filter-check__count" aria-hidden="true">${o.count}</span>
+    </label>`;
+  }).join("");
+
+  const more = overflow
+    ? `<button type="button" class="filter-more" data-facet-more="${key}">Ver ${options.length - FACET_COLLAPSE} más</button>`
+    : "";
+
+  return `
+    <div class="filter-group">
+      <p class="filter-group__legend">${escapeHTML(def.title)}</p>
+      <div class="filter-checks">${checks}${more}</div>
+    </div>`;
+}
+
+function panelPriceGroup() {
+  const options = getPriceOptions();
+  if (!options.length) return "";
+
+  const row = (value, label, count, checked) => `
+    <label class="filter-check filter-check--radio">
+      <input type="radio" name="catalog-price" class="filter-check__input" data-facet-radio="price" value="${escapeHTML(value)}"${checked ? " checked" : ""}${count != null ? ` aria-label="${escapeHTML(facetOptionAria(label, count, checked))}"` : ""}>
+      <span class="filter-check__box filter-check__box--radio" aria-hidden="true"></span>
+      <span class="filter-check__label">${escapeHTML(label)}</span>
+      ${count != null ? `<span class="filter-check__count" aria-hidden="true">${count}</span>` : ""}
+    </label>`;
+
+  return `
+    <div class="filter-group">
+      <p class="filter-group__legend">Precio</p>
+      <div class="filter-checks">
+        ${row("", "Cualquiera", null, !catalogState.price)}
+        ${options.map((o) => row(o.value, o.label, o.count, o.value === catalogState.price)).join("")}
+      </div>
+    </div>`;
+}
+
+function panelToggleGroup() {
+  const count = getAvailableCount();
+  const on = catalogState.available;
+  return `
+    <div class="filter-group">
+      <p class="filter-group__legend">Disponibilidad</p>
+      <div class="filter-checks">
+        <label class="filter-check filter-check--switch">
+          <input type="checkbox" class="filter-check__input" data-facet-toggle="available"${on ? " checked" : ""} aria-label="${escapeHTML(facetOptionAria("Solo disponibles", count, on))}">
+          <span class="filter-switch" aria-hidden="true"></span>
+          <span class="filter-check__label">Solo disponibles</span>
+          <span class="filter-check__count" aria-hidden="true">${count}</span>
+        </label>
+      </div>
+    </div>`;
+}
+
+function panelSortGroup() {
+  return `
+    <div class="filter-group">
+      <p class="filter-group__legend">Ordenar</p>
+      <div class="filter-chips">
+        ${SORT_OPTIONS.map((o) => `<button type="button" class="filter-chip${o.value === catalogState.sort ? " is-active" : ""}" data-sort="${o.value}" aria-pressed="${o.value === catalogState.sort}">${escapeHTML(o.label)}</button>`).join("")}
+      </div>
+    </div>`;
+}
+
+// Reconstruye el contenido del panel desde el estado (contadores reactivos),
+// preservando scroll y foco del control tocado (evita saltos al re-render).
+function renderFilterPanel(container, { includeCategory = false, includeSort = false } = {}) {
+  if (!container) return;
+
+  const scrollPos = container.scrollTop;
+  const active = document.activeElement;
+  let restore = null;
+  if (active && container.contains(active)) {
+    if (active.dataset.facetCheck) restore = `[data-facet-check="${active.dataset.facetCheck}"][value="${CSS.escape(active.value)}"]`;
+    else if (active.dataset.facetRadio) restore = `[data-facet-radio="${active.dataset.facetRadio}"][value="${CSS.escape(active.value)}"]`;
+    else if (active.dataset.facetToggle) restore = `[data-facet-toggle="${active.dataset.facetToggle}"]`;
+    else if (active.dataset.sort) restore = `[data-sort="${CSS.escape(active.dataset.sort)}"]`;
+  }
+
+  const parts = [];
+  if (includeSort) parts.push(panelSortGroup());
+  if (includeCategory) parts.push(panelCategoryGroup());
+  parts.push(panelToggleGroup());
+  parts.push(panelPriceGroup());
+  parts.push(panelCheckboxGroup("goals"));
+  parts.push(panelCheckboxGroup("brands"));
+  parts.push(panelCheckboxGroup("sizes"));
+
+  container.innerHTML = parts.join("");
+  container.scrollTop = scrollPos;
+  if (restore) container.querySelector(restore)?.focus?.({ preventScroll: true });
+}
+
+// Monta el panel en el sidebar (desktop) y, si está abierto, en el sheet (mobile).
+function renderPanels() {
+  if (catalogSidebarBody) renderFilterPanel(catalogSidebarBody, { includeCategory: true, includeSort: false });
+  const sheetBody = filterSheetEl?.querySelector(".filter-sheet__body");
+  if (sheetBody) {
+    renderFilterPanel(sheetBody, { includeCategory: false, includeSort: true });
+    updateSheetApplyLabel();
+  }
+}
+
+function updateSidebarClear() {
+  if (catalogSidebarClear) catalogSidebarClear.hidden = !hasActiveFilters();
+}
+
+function onFilterPanelChange(event) {
+  const check = event.target.closest("[data-facet-check]");
+  if (check) {
+    const key = check.dataset.facetCheck;
+    const arr = catalogState[key];
+    if (check.checked) {
+      if (!arr.includes(check.value)) arr.push(check.value);
+    } else {
+      catalogState[key] = arr.filter((v) => v !== check.value);
+    }
+    commitWithFilters();
+    return;
+  }
+
+  const radio = event.target.closest("[data-facet-radio]");
+  if (radio) {
+    catalogState[radio.dataset.facetRadio] = radio.value;
+    commitWithFilters();
+    return;
+  }
+
+  const toggle = event.target.closest("[data-facet-toggle]");
+  if (toggle) {
+    catalogState.available = toggle.checked;
+    commitWithFilters();
+  }
+}
+
+function onFilterPanelClick(event) {
+  const more = event.target.closest("[data-facet-more]");
+  if (more) {
+    expandedFacets.add(more.dataset.facetMore);
+    renderPanels(); // solo re-render de paneles; no recomputa el catálogo
+    return;
+  }
+
+  const sortBtn = event.target.closest("[data-sort]");
+  if (sortBtn) {
+    catalogState.sort = sortBtn.dataset.sort;
+    if (catalogSort) {
+      catalogSort.value = catalogState.sort;
+      window.javyDropdown?.refresh?.(catalogSort);
+    }
+    commitWithFilters();
+    return;
+  }
+
+  const cat = event.target.closest("[data-family],[data-type],[data-category]");
+  if (cat) selectCategory(cat);
+}
+
+function bindFilterPanel(container) {
+  if (!container || container._panelBound) return;
+  container._panelBound = true;
+  container.addEventListener("change", onFilterPanelChange);
+  container.addEventListener("click", onFilterPanelClick);
 }
 
 function renderFilters() {
@@ -458,17 +700,21 @@ function renderFilters() {
   if (useHierarchy()) {
     renderFamilyFilters();
     renderTypeFilters();
-    renderFacets();
   } else {
     renderFlatFilters();
   }
 
+  renderPanels();
+
   updateFilterHint();
+  updateFiltersButton();
+  updateSidebarClear();
 }
 
 function renderProductCard(product) {
   const canQuote = productCanBeQuoted(product);
-  const detailUrl = `product-page.html?id=${encodeURIComponent(product.id)}`;
+  // encodeURIComponent + escapeHTML: la URL ya va segura y explícita en el markup.
+  const detailUrl = escapeHTML(`product-page.html?id=${encodeURIComponent(product.id)}`);
   const card = document.createElement("article");
   card.className = `product-card${product.imagenPendiente ? " product-card--image-pending" : ""}`;
 
@@ -524,27 +770,80 @@ function renderProductCard(product) {
   return card;
 }
 
+// Renderizado incremental: lotes de 24 cards para no volcar ~180 nodos de golpe
+// en móvil. El resto entra al hacer scroll (IntersectionObserver sobre
+// #catalogMore) o con el botón "Ver más productos" como fallback.
+const CATALOG_BATCH_SIZE = 24;
+let currentResults = [];
+let renderedCount = 0;
+
+function updateCatalogCount() {
+  const total = currentResults.length;
+  const label = total === 1 ? "producto encontrado" : "productos encontrados";
+  catalogCount.textContent = renderedCount < total
+    ? `Mostrando ${renderedCount} de ${total} ${label}`
+    : `${total} ${label}`;
+}
+
+// Región viva aparte del contador visible: anuncia el total solo al cambiar
+// filtros; los lotes del scroll no interrumpen al lector de pantalla.
+function announceCatalogTotal() {
+  const liveRegion = document.getElementById("catalogCountLive");
+  if (!liveRegion) return;
+  const total = currentResults.length;
+  liveRegion.textContent = `${total} ${total === 1 ? "producto encontrado" : "productos encontrados"}`;
+}
+
+function appendNextBatch() {
+  const batch = currentResults.slice(renderedCount, renderedCount + CATALOG_BATCH_SIZE);
+  batch.forEach((product) => {
+    supplementsList.appendChild(renderProductCard(product));
+  });
+  renderedCount += batch.length;
+  if (window.javyDropdown) window.javyDropdown.enhanceSelects(supplementsList);
+  updateCatalogCount();
+  if (catalogMore) catalogMore.hidden = renderedCount >= currentResults.length;
+}
+
 function renderCatalog() {
   if (!supplementsList || !catalogCount || !catalogEmpty) return;
 
-  const results = getFilteredProducts();
+  currentResults = getFilteredProducts();
+  renderedCount = 0;
   if (window.javyDropdown) window.javyDropdown.destroy(supplementsList);
   supplementsList.innerHTML = "";
   bindConsultationSync();
 
-  results.forEach((product) => {
-    supplementsList.appendChild(renderProductCard(product));
-  });
-  if (window.javyDropdown) window.javyDropdown.enhanceSelects(supplementsList);
+  appendNextBatch();
+  supplementsList.setAttribute("aria-busy", "false");
+  announceCatalogTotal();
+  renderActiveFilters();
 
-  const label = results.length === 1 ? "producto encontrado" : "productos encontrados";
-  catalogCount.textContent = `${results.length} ${label}`;
-  catalogEmpty.hidden = results.length > 0;
+  catalogEmpty.hidden = currentResults.length > 0;
+  if (emptyResetBtn) emptyResetBtn.hidden = currentResults.length > 0 || !hasActiveFilters();
+  if (currentResults.length === 0) updateEmptyRelaxOption();
 }
 
 function renderLoading() {
   if (!supplementsList || !catalogCount) return;
   catalogCount.textContent = "Cargando catálogo…";
+  supplementsList.setAttribute("aria-busy", "true");
+
+  // Skeletons de filtros mientras Supabase responde (chips en mobile, grupos en
+  // el sidebar) para que no se vea un hueco antes de que aparezcan los filtros.
+  if (catalogFilters) {
+    catalogFilters.innerHTML = Array.from({ length: 5 }, () =>
+      `<span class="catalog-filter catalog-filter--skeleton skeleton-box" aria-hidden="true"></span>`).join("");
+  }
+  if (catalogSidebarBody) {
+    catalogSidebarBody.innerHTML = Array.from({ length: 3 }, () => `
+      <div class="filter-group" aria-hidden="true">
+        <span class="skeleton-line skeleton-line--sm"></span>
+        <span class="skeleton-line skeleton-line--lg"></span>
+        <span class="skeleton-line"></span>
+      </div>`).join("");
+  }
+
   supplementsList.innerHTML = Array.from({ length: 8 }, () => `
     <article class="product-card product-card--skeleton" aria-hidden="true">
       <div class="product-card__media skeleton-box"></div>
@@ -604,14 +903,291 @@ function injectStructuredData() {
   script.textContent = JSON.stringify(data);
 }
 
-function commitState() {
+function hasActiveFilters() {
+  // En modo jerárquico `category` se ignora (y `type` solo aplica con familia
+  // elegida); en modo plano pasa lo mismo con family/type. Contar solo lo que
+  // realmente filtra evita chips/botón "Quitar filtros" que no hacen nada.
+  const categoryActive = useHierarchy()
+    ? catalogState.family !== "todos"
+    : catalogState.category !== "todos";
+
+  return Boolean(catalogState.query.trim())
+    || categoryActive
+    || catalogState.goals.length > 0
+    || catalogState.brands.length > 0
+    || catalogState.sizes.length > 0
+    || Boolean(catalogState.price)
+    || catalogState.available;
+}
+
+function resetFilters() {
+  catalogState.query = "";
+  catalogState.category = "todos";
+  catalogState.family = "todos";
+  catalogState.type = "todos";
+  catalogState.goals = [];
+  catalogState.brands = [];
+  catalogState.sizes = [];
+  catalogState.price = "";
+  catalogState.available = false;
+  if (searchInput) searchInput.value = "";
+  if (searchClear) searchClear.hidden = true;
+  commitWithFilters();
+}
+
+// Recupera la etiqueta original (con acentos/mayúsculas) a partir del slug guardado.
+function facetLabelFromSlug(values, slug) {
+  return values.find((value) => slugify(value) === slug) || slug;
+}
+
+function getActiveFilterChips() {
+  const chips = [];
+  const query = catalogState.query.trim();
+  if (query) chips.push({ key: "query", label: `“${query}”` });
+
+  if (useHierarchy()) {
+    if (catalogState.family !== "todos") {
+      const label = catalogState.family === "destacados"
+        ? "Destacados"
+        : pubCategoryById(catalogState.family)?.name;
+      if (label) chips.push({ key: "family", label });
+
+      // El tipo solo filtra cuando hay una familia elegida.
+      if (catalogState.type !== "todos") {
+        const type = pubCategoryById(catalogState.type);
+        if (type) chips.push({ key: "type", label: type.name });
+      }
+    }
+  } else if (catalogState.category !== "todos") {
+    const label = catalogState.category === "destacados"
+      ? "Destacados"
+      : products.find((p) => getProductCategory(p) === catalogState.category)?.category || catalogState.category;
+    chips.push({ key: "category", label });
+  }
+
+  // Multi-selección: un chip removible por cada valor elegido.
+  const goalValues = uniqueSorted(products.flatMap((p) => p.goals || p.objetivos || []));
+  catalogState.goals.forEach((slug) => chips.push({ key: "goals", value: slug, label: facetLabelFromSlug(goalValues, slug) }));
+  const brandValues = uniqueSorted(products.map((p) => p.brand));
+  catalogState.brands.forEach((slug) => chips.push({ key: "brands", value: slug, label: facetLabelFromSlug(brandValues, slug) }));
+  const sizeValues = uniqueSorted(products.map((p) => p.presentation));
+  catalogState.sizes.forEach((slug) => chips.push({ key: "sizes", value: slug, label: facetLabelFromSlug(sizeValues, slug) }));
+
+  if (catalogState.price) {
+    const range = PRICE_RANGES.find((r) => r.value === catalogState.price);
+    if (range) chips.push({ key: "price", label: range.label });
+  }
+  if (catalogState.available) {
+    chips.push({ key: "available", label: "Solo disponibles" });
+  }
+
+  return chips;
+}
+
+// Resumen de filtros activos como chips removibles junto a los resultados.
+function renderActiveFilters() {
+  if (!catalogActiveFilters) return;
+
+  const chips = getActiveFilterChips();
+  if (!chips.length) {
+    catalogActiveFilters.hidden = true;
+    catalogActiveFilters.innerHTML = "";
+    return;
+  }
+
+  catalogActiveFilters.hidden = false;
+  catalogActiveFilters.innerHTML = chips.map((chip) => `
+    <button class="catalog-active-filter" type="button" data-filter-key="${chip.key}" data-filter-value="${escapeHTML(chip.value || "")}" aria-label="Quitar filtro: ${escapeHTML(chip.label)}">
+      ${escapeHTML(chip.label)}<span class="catalog-active-filter__x" aria-hidden="true">×</span>
+    </button>`).join("")
+    + (chips.length > 1
+      ? '<button class="catalog-active-filter catalog-active-filter--clear" type="button" data-filter-key="all">Limpiar todo</button>'
+      : "");
+}
+
+catalogActiveFilters?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-filter-key]");
+  if (!button) return;
+
+  const key = button.dataset.filterKey;
+  switch (key) {
+    case "all":
+      resetFilters();
+      return;
+    case "query":
+      catalogState.query = "";
+      if (searchInput) searchInput.value = "";
+      if (searchClear) searchClear.hidden = true;
+      break;
+    case "family":
+      catalogState.family = "todos";
+      catalogState.type = "todos";
+      break;
+    case "type":
+      catalogState.type = "todos";
+      break;
+    case "category":
+      catalogState.category = "todos";
+      break;
+    case "goals":
+    case "brands":
+    case "sizes":
+      // Quita solo el valor de este chip; conserva el resto de la faceta.
+      catalogState[key] = catalogState[key].filter((v) => v !== button.dataset.filterValue);
+      break;
+    case "price":
+      catalogState.price = "";
+      break;
+    case "available":
+      catalogState.available = false;
+      break;
+    default:
+      return;
+  }
+  commitWithFilters();
+});
+
+emptyResetBtn?.addEventListener("click", resetFilters);
+
+/* ----------------------------------------------------------------------------
+   Bottom-sheet de filtros (mobile): monta el panel unificado (renderFilterPanel)
+   con orden + facetas para no apilar controles antes del grid. En desktop ese
+   mismo panel vive en el sidebar lateral fijo (#catalogSidebar).
+   ---------------------------------------------------------------------------- */
+const SORT_OPTIONS = [
+  { value: "recomendados", label: "Recomendados" },
+  { value: "ofertas", label: "Ofertas primero" },
+  { value: "novedades", label: "Novedades" },
+  { value: "precio-asc", label: "Precio: menor a mayor" },
+  { value: "precio-desc", label: "Precio: mayor a menor" },
+  { value: "nombre", label: "Nombre: A-Z" },
+];
+
+let filterSheetEl = null;
+let filterSheetOpener = null;
+
+function countAdvancedFilters() {
+  return catalogState.goals.length + catalogState.brands.length + catalogState.sizes.length
+    + (catalogState.price ? 1 : 0)
+    + (catalogState.available ? 1 : 0);
+}
+
+function updateFiltersButton() {
+  if (!catalogFiltersBtn) return;
+  const badge = catalogFiltersBtn.querySelector(".catalog-filters-btn__badge");
+  if (!badge) return;
+  const count = countAdvancedFilters();
+  badge.textContent = count;
+  badge.hidden = count === 0;
+}
+
+// El botón de aplicar del sheet muestra cuántos productos daría el estado actual.
+function updateSheetApplyLabel() {
+  const applyBtn = filterSheetEl?.querySelector("[data-sheet-apply]");
+  if (!applyBtn) return;
+  const total = getResultsExcluding().length;
+  applyBtn.textContent = total === 1 ? "Ver 1 producto" : `Ver ${total} productos`;
+}
+
+function filterSheetOnKey(event) {
+  if (event.key === "Escape") closeFilterSheet();
+}
+
+function closeFilterSheet() {
+  if (!filterSheetEl) return;
+  document.removeEventListener("keydown", filterSheetOnKey);
+  filterSheetEl.remove();
+  filterSheetEl = null;
+  document.body.style.overflow = "";
+  filterSheetOpener?.focus?.({ preventScroll: true });
+  filterSheetOpener = null;
+}
+
+function openFilterSheet() {
+  if (filterSheetEl) return;
+  filterSheetOpener = document.activeElement;
+
+  const overlay = document.createElement("div");
+  overlay.className = "filter-sheet-overlay";
+  overlay.innerHTML = `
+    <div class="filter-sheet" role="dialog" aria-modal="true" aria-label="Filtros del catálogo">
+      <div class="filter-sheet__head">
+        <strong class="filter-sheet__title">Filtros</strong>
+        <button class="filter-sheet__close" type="button" aria-label="Cerrar filtros" data-sheet-close>
+          <span class="btn-icon" data-javy-icon="x" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="filter-sheet__body"></div>
+      <div class="filter-sheet__foot">
+        <button class="filter-sheet__clear" type="button" data-sheet-clear>Limpiar</button>
+        <button class="filter-sheet__apply" type="button" data-sheet-apply>Ver productos</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  filterSheetEl = overlay;
+  window.javyIcons?.enhance?.(overlay);
+  document.body.style.overflow = "hidden";
+  document.addEventListener("keydown", filterSheetOnKey);
+
+  const body = overlay.querySelector(".filter-sheet__body");
+  bindFilterPanel(body); // grupos (orden, checkboxes, precio, toggle, categoría no) via handler unificado
+  renderFilterPanel(body, { includeCategory: false, includeSort: true });
+  updateSheetApplyLabel();
+
+  // El overlay solo gestiona cerrar/aplicar/limpiar; los grupos los maneja el panel.
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay || event.target.closest("[data-sheet-close]")) {
+      closeFilterSheet();
+      return;
+    }
+    if (event.target.closest("[data-sheet-apply]")) {
+      closeFilterSheet();
+      scrollToResults();
+      return;
+    }
+    if (event.target.closest("[data-sheet-clear]")) {
+      // Limpia TODO (incl. búsqueda y categoría) para no dejar cero resultados inexplicables.
+      resetFilters();
+    }
+  });
+
+  window.setTimeout(() => {
+    overlay.querySelector(".filter-sheet__close")?.focus?.();
+  }, 40);
+}
+
+catalogFiltersBtn?.addEventListener("click", openFilterSheet);
+
+// Si el usuario filtra desde abajo de la página, sube hasta el inicio de los
+// resultados para que el cambio no ocurra fuera de vista.
+function scrollToResults() {
+  if (!catalogResultsBar) return;
+  if (filterSheetEl) return; // con el sheet abierto no hay que mover el fondo
+
+  const headerOffset = (document.querySelector(".site-header")?.offsetHeight || 0) + 12;
+  const top = catalogResultsBar.getBoundingClientRect().top;
+  if (top >= headerOffset) return;
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.scrollTo({
+    top: window.scrollY + top - headerOffset,
+    behavior: reduceMotion ? "auto" : "smooth",
+  });
+}
+
+// Todo cambio re-renderiza también los filtros: los contadores de chips y
+// facetas son reactivos al resto del estado (incluida la búsqueda).
+function commitState(pushHistory = false) {
+  renderFilters();
   renderCatalog();
-  writeStateToURL();
+  writeStateToURL(pushHistory);
+  scrollToResults();
 }
 
 const debouncedCommit = debounce(commitState, 160);
 
-function writeStateToURL() {
+function writeStateToURL(push = false) {
   const params = new URLSearchParams();
   if (catalogState.query.trim()) params.set("q", catalogState.query.trim());
   if (useHierarchy()) {
@@ -620,13 +1196,22 @@ function writeStateToURL() {
   } else if (catalogState.category !== "todos") {
     params.set("cat", catalogState.category);
   }
-  if (catalogState.goal) params.set("obj", catalogState.goal);
-  if (catalogState.brand) params.set("marca", catalogState.brand);
-  if (catalogState.size) params.set("size", catalogState.size);
+  if (catalogState.goals.length) params.set("obj", catalogState.goals.join(","));
+  if (catalogState.brands.length) params.set("marca", catalogState.brands.join(","));
+  if (catalogState.sizes.length) params.set("size", catalogState.sizes.join(","));
+  if (catalogState.price) params.set("precio", catalogState.price);
+  if (catalogState.available) params.set("disp", "1");
   if (catalogState.sort && catalogState.sort !== "recomendados") params.set("sort", catalogState.sort);
 
   const qs = params.toString();
-  history.replaceState(null, "", qs ? `${location.pathname}?${qs}` : location.pathname);
+  const url = qs ? `${location.pathname}?${qs}` : location.pathname;
+  // Los cambios de categoría entran al historial (el botón "atrás" los deshace);
+  // el resto (tipeo, facetas) solo reemplaza para no llenar el historial.
+  if (push && url !== location.pathname + location.search) {
+    history.pushState(null, "", url);
+  } else {
+    history.replaceState(null, "", url);
+  }
 }
 
 function readStateFromURL() {
@@ -635,10 +1220,15 @@ function readStateFromURL() {
   catalogState.category = params.get("cat") || "todos";
   catalogState.family = params.get("fam") || "todos";
   catalogState.type = params.get("tipo") || "todos";
-  catalogState.goal = params.get("obj") || "";
-  catalogState.brand = params.get("marca") || "";
-  catalogState.size = params.get("size") || "";
-  catalogState.sort = params.get("sort") || "recomendados";
+  const parseList = (v) => (v ? v.split(",").map((s) => s.trim()).filter(Boolean) : []);
+  catalogState.goals = parseList(params.get("obj"));
+  catalogState.brands = parseList(params.get("marca"));
+  catalogState.sizes = parseList(params.get("size"));
+  const precio = params.get("precio") || "";
+  catalogState.price = PRICE_RANGES.some((r) => r.value === precio) ? precio : "";
+  catalogState.available = params.get("disp") === "1";
+  const sortParam = params.get("sort") || "recomendados";
+  catalogState.sort = SORT_OPTIONS.some((o) => o.value === sortParam) ? sortParam : "recomendados";
 
   if (searchInput) searchInput.value = catalogState.query;
   if (searchClear) searchClear.hidden = !catalogState.query;
@@ -647,6 +1237,15 @@ function readStateFromURL() {
     if (window.javyDropdown) window.javyDropdown.refresh(catalogSort);
   }
 }
+
+// El botón "atrás" restaura el estado de filtros guardado con pushState.
+window.addEventListener("popstate", () => {
+  if (!products.length) return; // aún cargando
+  closeFilterSheet();
+  readStateFromURL();
+  renderFilters();
+  renderCatalog();
+});
 
 searchForm?.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -675,10 +1274,8 @@ catalogSort?.addEventListener("change", () => {
 });
 if (window.javyDropdown && catalogSort) window.javyDropdown.enhance(catalogSort);
 
-function commitWithFilters() {
-  renderFilters();
-  renderCatalog();
-  writeStateToURL();
+function commitWithFilters(pushHistory = false) {
+  commitState(pushHistory);
 }
 
 function selectCategory(button) {
@@ -686,23 +1283,18 @@ function selectCategory(button) {
   if (button.dataset.family !== undefined) {
     catalogState.family = button.dataset.family || "todos";
     catalogState.type = "todos";
-    commitWithFilters();
+    commitWithFilters(true);
     return;
   }
   if (button.dataset.type !== undefined) {
     catalogState.type = button.dataset.type || "todos";
-    commitWithFilters();
+    commitWithFilters(true);
     return;
   }
 
-  // Modo plano (fallback).
+  // Modo plano (fallback). commitState re-renderiza los chips con el activo.
   catalogState.category = button.dataset.category || "todos";
-  document.querySelectorAll("#catalogFilters .catalog-filter").forEach((item) => {
-    const isActive = item === button;
-    item.classList.toggle("is-active", isActive);
-    item.setAttribute("aria-pressed", String(isActive));
-  });
-  commitState();
+  commitState(true);
 }
 
 catalogFilters?.addEventListener("click", (event) => {
@@ -715,15 +1307,52 @@ catalogSubFilters?.addEventListener("click", (event) => {
   if (button) selectCategory(button);
 });
 
-catalogFacets?.addEventListener("change", (event) => {
-  const select = event.target.closest("[data-facet]");
-  if (!select) return;
-  catalogState[select.dataset.facet] = select.value;
-  commitWithFilters();
+// Las facetas ahora viven en el panel unificado (sidebar/sheet); sus eventos
+// los gestiona bindFilterPanel(). Ver renderFilterPanel / onFilterPanelChange.
+
+// Al navegar los chips con Tab, traer a la vista el enfocado (el carrusel
+// horizontal los puede dejar clipeados fuera del área visible).
+[catalogFilters, catalogSubFilters].forEach((element) => {
+  element?.addEventListener("focusin", (event) => {
+    const chip = event.target.closest(".catalog-filter");
+    chip?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  });
 });
 
 emptyAdvisorBtn?.addEventListener("click", () => {
   openJavyWhatsapp("Hola Javy, quiero consultar disponibilidad de suplementos.");
+});
+
+// Estado vacío inteligente: si la búsqueda sí tiene resultados fuera de la
+// categoría/facetas elegidas, ofrecer verlos en todo el catálogo.
+function updateEmptyRelaxOption() {
+  if (!emptyRelaxBtn) return;
+
+  const query = catalogState.query.trim();
+  const matches = query
+    ? getResultsExcluding("category", "goals", "brands", "sizes", "price", "available").length
+    : 0;
+
+  if (matches > 0) {
+    emptyRelaxBtn.textContent = matches === 1
+      ? `Ver 1 resultado de “${query}” en todo el catálogo`
+      : `Ver los ${matches} resultados de “${query}” en todo el catálogo`;
+    emptyRelaxBtn.hidden = false;
+  } else {
+    emptyRelaxBtn.hidden = true;
+  }
+}
+
+emptyRelaxBtn?.addEventListener("click", () => {
+  catalogState.category = "todos";
+  catalogState.family = "todos";
+  catalogState.type = "todos";
+  catalogState.goals = [];
+  catalogState.brands = [];
+  catalogState.sizes = [];
+  catalogState.price = "";
+  catalogState.available = false;
+  commitWithFilters();
 });
 
 function updateFloatingQuoteVisibility() {
@@ -738,12 +1367,17 @@ function updateFloatingQuoteVisibility() {
 function updateFilterHint() {
   if (!catalogFilters) return;
 
-  const overflowing = catalogFilters.scrollWidth > catalogFilters.clientWidth + 4;
+  const { scrollWidth, clientWidth, scrollLeft } = catalogFilters;
+  const overflowing = scrollWidth > clientWidth + 4;
   catalogFilters.classList.toggle("has-overflow", overflowing);
+  // Degradado bidireccional: fade al lado que aún tiene chips fuera de vista.
+  catalogFilters.classList.toggle("has-overflow-left", overflowing && scrollLeft > 4);
+  catalogFilters.classList.toggle("has-overflow-right", overflowing && scrollLeft + clientWidth < scrollWidth - 4);
   if (catalogToolsHint) catalogToolsHint.hidden = !overflowing;
 }
 
 window.addEventListener("resize", updateFilterHint, { passive: true });
+catalogFilters?.addEventListener("scroll", updateFilterHint, { passive: true });
 
 function updateScrollTopVisibility() {
   if (!catalogScrollTop) return;
@@ -850,10 +1484,48 @@ function enableDragScroll(element) {
   }, true);
 }
 
+catalogMoreBtn?.addEventListener("click", () => {
+  const firstNewIndex = renderedCount;
+  appendNextBatch();
+  // Si era el último lote el botón desaparece bajo el foco: moverlo a la
+  // primera card nueva para no soltarlo en <body>.
+  if (catalogMore?.hidden) {
+    supplementsList.children[firstNewIndex]
+      ?.querySelector("a, button")
+      ?.focus();
+  }
+});
+
+// Carga el siguiente lote un poco antes de que el usuario llegue al final del
+// grid. Con [hidden] el sentinel no intersecta, así que no dispara de más.
+if (catalogMore && "IntersectionObserver" in window) {
+  const moreObserver = new IntersectionObserver((entries) => {
+    if (!entries.some((entry) => entry.isIntersecting)) return;
+    appendNextBatch();
+    // Re-observar fuerza otra evaluación por si el lote no empujó el sentinel
+    // fuera del margen (el observer solo dispara en cruces).
+    moreObserver.unobserve(catalogMore);
+    moreObserver.observe(catalogMore);
+  }, { rootMargin: "600px 0px" });
+  moreObserver.observe(catalogMore);
+}
+
+// Aviso cuando Supabase falló y el catálogo salió del respaldo local:
+// los precios/disponibilidad pueden estar desactualizados.
+function updateOfflineNote() {
+  if (!catalogOfflineNote) return;
+  // Cubre también el caso de CDN caído (window.supabaseClient null): si la
+  // fuente es el respaldo local, el aviso siempre aplica.
+  catalogOfflineNote.hidden = window.catalogDb?.getProductsCacheSource?.() !== "local";
+}
+
+catalogSidebarClear?.addEventListener("click", resetFilters);
+
 async function initCatalog() {
   renderLoading();
   enableDragScroll(catalogFilters);
   enableDragScroll(catalogSubFilters);
+  bindFilterPanel(catalogSidebarBody); // sidebar desktop (el sheet se enlaza al abrirse)
   updateFloatingQuoteVisibility();
   updateScrollTopVisibility();
 
@@ -866,6 +1538,7 @@ async function initCatalog() {
   readStateFromURL();
   renderFilters();
   renderCatalog();
+  updateOfflineNote();
   injectStructuredData();
   updateFloatingQuoteVisibility();
 }
