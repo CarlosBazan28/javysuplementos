@@ -684,9 +684,17 @@ function openAddModal(productOrId) {
     if (hasFlavors) {
       const val = flavorSelect.value;
       if (!val) {
+        // javyDropdown deja el select nativo invisible y aria-hidden: el foco
+        // y el aria-invalid deben ir al trigger visible del dropdown.
+        const visibleTrigger = flavorSelect._jdd?.querySelector(".jdd__btn, .jdd__combo") || flavorSelect;
         flavorSelect.classList.add("needs-selection");
-        window.setTimeout(() => flavorSelect.classList.remove("needs-selection"), 1200);
+        visibleTrigger.setAttribute("aria-invalid", "true");
+        window.setTimeout(() => {
+          flavorSelect.classList.remove("needs-selection");
+          visibleTrigger.removeAttribute("aria-invalid");
+        }, 1200);
         showToast("Elegí un sabor");
+        visibleTrigger.focus?.();
         return;
       }
       const f = flavors.find((x) => String(x.id) === String(val));

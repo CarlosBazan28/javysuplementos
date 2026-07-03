@@ -33,13 +33,13 @@
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#050709" />
     <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/tokens.css">
-    <link rel="stylesheet" href="css/components/nav.css?v=admin-auth">
+    <link rel="stylesheet" href="css/tokens.css?v=catalogo-ux">
+    <link rel="stylesheet" href="css/components/nav.css?v=catalogo-ux">
     <link rel="stylesheet" href="css/components/auth.css?v=session-state">
-    <link rel="stylesheet" href="css/components/cards.css">
-    <link rel="stylesheet" href="css/components/cart.css">
+    <link rel="stylesheet" href="css/components/cards.css?v=catalogo-ux">
+    <link rel="stylesheet" href="css/components/cart.css?v=catalogo-ux">
     <link rel="stylesheet" href="css/components/footer.css">
-    <link rel="stylesheet" href="css/pages/supplements.css">
+    <link rel="stylesheet" href="css/pages/supplements.css?v=catalogo-ux">
     <link rel="stylesheet" href="css/dropdown.css?v=4">
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -55,8 +55,8 @@
     <script src="js/auth.js?v=session-state" defer></script>
     <script src="js/icons.js?v=icons" defer></script>
     <script src="js/dropdown.js?v=4" defer></script>
-    <script src="js/cart.js" defer></script>
-    <script src="js/supplements.js" defer></script>
+    <script src="js/cart.js?v=catalogo-ux" defer></script>
+    <script src="js/supplements.js?v=catalogo-ux" defer></script>
     <script src="js/include-nav.js?v=admin-auth" defer></script>
   </head>
   <body>
@@ -72,7 +72,7 @@
       </section>
 
       <section class="catalog-tools" aria-label="Herramientas del catálogo">
-        <form class="search catalog-search" role="search" id="searchForm">
+        <form class="search catalog-search" role="search" id="searchForm" aria-label="Buscar suplementos">
           <label class="search__label" for="searchInput">Buscar</label>
 
           <span class="search__icon" data-javy-icon="search" aria-hidden="true"></span>
@@ -83,6 +83,8 @@
             type="search"
             placeholder="Buscar producto, marca, sabor u objetivo"
             autocomplete="off"
+            aria-controls="supplementsList"
+            aria-label="Buscar en el catálogo"
           />
 
           <button
@@ -98,34 +100,65 @@
           <button type="submit" class="search__submit">Buscar</button>
         </form>
 
-        <p class="catalog-tools__hint">Desliza los filtros para ver más categorías.</p>
+        <p class="catalog-tools__hint" hidden>Desliza los filtros para ver más categorías.</p>
         <div class="catalog-filters" id="catalogFilters" aria-label="Filtrar por familia"></div>
         <div class="catalog-filters catalog-filters--types" id="catalogSubFilters" aria-label="Filtrar por tipo" hidden></div>
-        <div class="catalog-facets" id="catalogFacets" aria-label="Filtros adicionales" hidden></div>
       </section>
 
-      <section class="catalog-results">
+      <div class="catalog-body">
+        <aside class="catalog-sidebar" id="catalogSidebar" aria-label="Filtros del catálogo">
+          <div class="catalog-sidebar__head">
+            <h2 class="catalog-sidebar__title">Filtros</h2>
+            <button class="catalog-sidebar__clear" id="catalogSidebarClear" type="button" hidden>Limpiar</button>
+          </div>
+          <div class="filter-panel" id="catalogSidebarBody"></div>
+        </aside>
+
+        <section class="catalog-results">
+        <p class="catalog-offline-note" id="catalogOfflineNote" role="status" hidden>
+          Estás viendo el catálogo guardado: los precios y la disponibilidad pueden variar. Confírmalos al enviar tu cotización.
+        </p>
         <div class="catalog-results__bar">
-          <p class="catalog-results__count" id="catalogCount" aria-live="polite"></p>
+          <p class="catalog-results__count" id="catalogCount"></p>
+          <span class="catalog-count-live" id="catalogCountLive" aria-live="polite"></span>
           <label class="catalog-sort">
             <span class="catalog-sort__label">Ordenar</span>
             <select class="catalog-sort__select" id="catalogSort" aria-label="Ordenar productos">
               <option value="recomendados">Recomendados</option>
+              <option value="ofertas">Ofertas primero</option>
+              <option value="novedades">Novedades</option>
               <option value="precio-asc">Precio: menor a mayor</option>
               <option value="precio-desc">Precio: mayor a menor</option>
               <option value="nombre">Nombre: A-Z</option>
             </select>
           </label>
+          <button class="catalog-filters-btn" id="catalogFiltersBtn" type="button">
+            <span class="btn-icon" data-javy-icon="filter" aria-hidden="true"></span>
+            Filtros
+            <span class="catalog-filters-btn__badge" hidden>0</span>
+          </button>
         </div>
 
-        <div class="catalog-grid" id="supplementsList"></div>
+        <div class="catalog-active-filters" id="catalogActiveFilters" aria-label="Filtros activos" hidden></div>
+
+        <div class="catalog-grid" id="supplementsList" role="feed" aria-label="Catálogo de productos" aria-busy="false"></div>
+
+        <div class="catalog-more" id="catalogMore" hidden>
+          <button class="catalog-more__btn" type="button" id="catalogMoreBtn">Ver más productos</button>
+        </div>
 
         <div class="catalog-empty" id="catalogEmpty" hidden>
+          <span class="catalog-empty__icon" aria-hidden="true" data-javy-icon="search"></span>
           <h2>No encontramos productos con esa búsqueda</h2>
           <p>Prueba con otro nombre, marca u objetivo. También puedes escribirle directo a Javy para consultar disponibilidad.</p>
-          <button class="catalog-empty__btn" type="button" id="emptyAdvisorBtn">Consultar disponibilidad</button>
+          <div class="catalog-empty__actions">
+            <button class="catalog-empty__btn" type="button" id="emptyRelaxBtn" hidden></button>
+            <button class="catalog-empty__btn" type="button" id="emptyResetBtn" hidden>Quitar filtros y ver todo</button>
+            <button class="catalog-empty__btn catalog-empty__btn--ghost" type="button" id="emptyAdvisorBtn">Consultar disponibilidad</button>
+          </div>
         </div>
-      </section>
+        </section>
+      </div>
     </main>
 
     <button class="catalog-floating-quote" id="catalogFloatingQuote" type="button" hidden>
@@ -134,7 +167,7 @@
       </span>
       <span class="catalog-floating-quote__text">
         <strong>Cotiza con Javy</strong>
-        <small>Tu seleccion por WhatsApp</small>
+        <small>Tu selección por WhatsApp</small>
       </span>
       <span class="catalog-floating-quote__count" data-consultation-count hidden>0</span>
     </button>

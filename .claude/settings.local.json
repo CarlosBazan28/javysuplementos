@@ -32,7 +32,9 @@
       "Bash(command -v npx)",
       "Bash(command -v php)",
       "Bash(command -v py)",
-      "Bash(git config *)"
+      "Bash(git config *)",
+      "Bash(which python *)",
+      "Bash(py --version)"
     ]
   }
 }

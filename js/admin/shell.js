@@ -5,19 +5,19 @@
    Mantiene un registro key → renderFn; las secciones piden re-render con
    requestRerender() en vez de llamarse entre sí.
    ============================================================================ */
-import { state } from "./state.js";
-import { NAV } from "./config.js";
-import { $, $$, esc, ico } from "./helpers.js";
-import { showViewError } from "./view.js";
-import { renderDashboard } from "./sections/dashboard.js";
-import { renderProducts } from "./sections/products.js";
-import { renderHome } from "./sections/home.js";
-import { renderLeads } from "./sections/leads.js";
-import { renderCategories } from "./sections/categories.js";
-import { renderCombos } from "./sections/combos.js";
-import { renderAccess } from "./sections/access.js";
-import { renderSettings } from "./sections/settings.js";
-import { openProductDrawer } from "./drawers/product-drawer.js";
+import { state } from "./state.js?v=adm1";
+import { NAV } from "./config.js?v=adm1";
+import { $, $$, esc, ico } from "./helpers.js?v=adm1";
+import { showViewError } from "./view.js?v=adm1";
+import { renderDashboard } from "./sections/dashboard.js?v=adm1";
+import { renderProducts } from "./sections/products.js?v=adm1";
+import { renderHome } from "./sections/home.js?v=adm1";
+import { renderLeads } from "./sections/leads.js?v=adm1";
+import { renderCategories } from "./sections/categories.js?v=adm1";
+import { renderCombos } from "./sections/combos.js?v=adm1";
+import { renderAccess } from "./sections/access.js?v=adm1";
+import { renderSettings } from "./sections/settings.js?v=adm1";
+import { openProductDrawer } from "./drawers/product-drawer.js?v=adm1";
 
 const renderers = {
   dashboard: renderDashboard, products: renderProducts,
