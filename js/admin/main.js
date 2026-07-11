@@ -4,13 +4,17 @@
    El controlador está dividido en módulos bajo js/admin/:
    config · state · helpers · ui · view · data · shell · sections/* · drawers/*
    ============================================================================ */
-import { state } from "./state.js?v=adm1";
-import { $ } from "./helpers.js?v=adm1";
-import { setGate } from "./ui.js?v=adm1";
-import { showViewError } from "./view.js?v=adm1";
-import { loadAll } from "./data.js?v=adm1";
-import { buildChrome, go } from "./shell.js?v=adm1";
-import { startIdleGuard } from "./session.js?v=adm1";
+import { state } from "./state.js?v=adm-da781c07";
+import { $, withTimeout } from "./helpers.js?v=adm-da781c07";
+import { setGate, setGateError } from "./ui.js?v=adm-da781c07";
+import { showViewError } from "./view.js?v=adm-da781c07";
+import { loadAll } from "./data.js?v=adm-da781c07";
+import { buildChrome, go } from "./shell.js?v=adm-da781c07";
+import { startIdleGuard } from "./session.js?v=adm-da781c07";
+
+// Le avisa al watchdog de boot-guard.js que el grafo de módulos evaluó bien;
+// de acá en más los errores los muestra boot() en el gate.
+window.__adminBooted = true;
 
 async function boot() {
   if (!window.javyAuth || !window.javyAuth.hasSupabase()) {
@@ -18,7 +22,9 @@ async function boot() {
     return;
   }
   try {
-    const { session, profile } = await window.javyAuth.requireAdminSession();
+    const { session, profile } = await withTimeout(
+      window.javyAuth.requireAdminSession(), 15000, "La validación de sesión"
+    );
     if (!session || !profile) {
       window.location.href = "login.html";
       return;
@@ -26,7 +32,9 @@ async function boot() {
     state.userId = session.user.id;
     state.userEmail = session.user.email || null;
     setGate("Cargando catálogo…");
-    await loadAll();
+    // loadAll casi nunca rechaza (cada fuente trae su .catch), pero sí puede
+    // colgarse si un fetch queda pendiente; el timeout es la única defensa.
+    await withTimeout(loadAll(), 20000, "La carga del catálogo");
     buildChrome();
     $("#adminGate").hidden = true;
     $("#adminShell").hidden = false;
@@ -43,7 +51,7 @@ async function boot() {
     console.error(error);
     // El gate puede estar oculto si ya mostramos el shell; mostrar el error
     // donde se vea (la vista) además del gate.
-    setGate("No se pudo validar el acceso: " + (error.message || error));
+    setGateError("No se pudo validar el acceso.", error.message || String(error));
     if (!$("#adminShell").hidden) showViewError(error, "el panel");
   }
 }

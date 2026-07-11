@@ -3,7 +3,7 @@
    toasts, modales (confirm/prompt), gate, markup de formulario y chips-input.
    Solo depende de helpers (esc, ico, DOM).
    ============================================================================ */
-import { $, $$, esc, ico } from "./helpers.js?v=adm1";
+import { $, $$, esc, ico } from "./helpers.js?v=adm-da781c07";
 
 /* ----------------------------- toasts ----------------------------- */
 export function toast({ tone = "ok", msg = "", sub = "" }) {
@@ -86,6 +86,19 @@ export function promptModal({ title, label = "", value = "", confirmLabel = "Gua
 export function setGate(msg) {
   const el = $("#adminGateMessage");
   if (el) el.textContent = msg;
+}
+
+// Estado de error del gate: mensaje + detalle técnico + botón Reintentar
+// (el listener del botón lo pone boot-guard.js). Solo textContent: el detalle
+// puede traer texto arbitrario de un Error.
+export function setGateError(message, detail = "") {
+  setGate(message);
+  const box = $("#adminGateError");
+  const det = $("#adminGateErrorDetail");
+  const loader = document.querySelector(".ad-gate__loader");
+  if (det) det.textContent = detail;
+  if (loader) loader.hidden = true;
+  if (box) box.hidden = false;
 }
 
 /* ----------------------------- estados vacíos ----------------------------- */

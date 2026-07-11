@@ -11,7 +11,7 @@
       "Bash(grep -nA1 'product-card__flavor-label\" for=\"\\\\${selectId}\">Sabor' js/script.js js/supplements.js)",
       "Bash(git rev-list *)",
       "Bash(node --check js/db.js)",
-      "Bash(node --check js/admin-dashboard.js)",
+      "Bash(node scripts/bump-admin-version.mjs --check)",
       "Bash(bash scripts/estado-ramas.sh)",
       "Bash(git ls-remote *)",
       "Bash(cat .gitignore)",

@@ -3,7 +3,8 @@
    Recreación del handoff de diseño (design_handoff_admin_panel) en el codebase
    vanilla. Autocontenido: define localmente los tokens --pb-* que el kit usa,
    sin tocar los tokens globales de la tienda (css/tokens.css).
-   Lógica en js/admin-dashboard.js (wireado a window.catalogDb / Supabase).
+   Lógica en js/admin/ (módulos ES; entry boot-guard.js → main.js, wireado a
+   window.catalogDb / Supabase).
    ============================================================================ */
 
 /* ---- Tokens del sistema P-Boom usados por el admin (scoped al documento
@@ -104,6 +105,16 @@ body.ad-body { min-height: 100vh; }
 .ad-gate__card p { color: var(--pb-muted); font-size: 0.9rem; }
 .ad-gate__loader { width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--pb-line-strong); border-top-color: var(--ad-blue); animation: adSpin 0.8s linear infinite; margin-top: 6px; }
 @keyframes adSpin { to { transform: rotate(360deg); } }
+/* Error de arranque: botón Reintentar + detalle técnico (boot-guard.js / setGateError) */
+.ad-gate__error { display: grid; gap: 10px; justify-items: center; margin-top: 12px; }
+.ad-gate__error-detail {
+  max-width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  color: var(--pb-muted-2);
+  word-break: break-word;
+}
+.ad-gate__error-detail:empty { display: none; }
 
 /* ---- shell grid ---- */
 .ad-shell { min-height: 100vh; display: grid; grid-template-columns: 264px minmax(0,1fr); }
