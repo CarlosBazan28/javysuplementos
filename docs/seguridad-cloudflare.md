@@ -167,11 +167,16 @@ Cloudflare cachea los `.js`/`.css` con `Cache-Control: max-age=14400` (**4 horas
 vieja. `main.js` nuevo + módulos viejos = el grafo no monta = pantalla negra. En incógnito no hay
 caché → todo fresco → funciona.
 
-**Mitigación en código (ya aplicada):** todos los `import` de `js/admin/*` llevan un token de
-versión compartido (`?v=adm1`), igual que el script de entrada en `admin.html`. Para desplegar
-cambios de los módulos del panel, reemplaza `adm1` → `adm2` en **todo el repo** de una sola vez
-(`admin.html` + `js/admin/**`). Así el grafo entero se baja consistente y nunca se mezclan
-versiones.
+**Mitigación en código (ya aplicada y automatizada):** todos los `import` de `js/admin/*` llevan
+un token de versión compartido (`?v=adm-<hash>`), igual que el script de entrada en `admin.html`.
+El token **ya no se edita a mano**: `scripts/bump-admin-version.mjs` lo recalcula como hash del
+contenido de los módulos, y `scripts/guardar.sh` (el comando `/guardar`) lo corre en cada guardado.
+Además, `js/admin/boot-guard.js` carga el panel con `import()` dinámico: si aun así el grafo no
+carga (caché vieja, 404), el gate muestra un error con botón **Reintentar** en vez de quedar en
+negro.
+
+**Después del primer deploy de este cambio:** hacer **una vez** *Caching → Purge Everything* en
+Cloudflare, para limpiar los `?v=adm1` viejos y el `admin.html` cacheado.
 
 **Arreglo de raíz en Cloudflare (recomendado, una sola vez):** que Cloudflare deje de cachear los
 assets 4 h sin revalidar.

@@ -17,6 +17,9 @@ Guarda mi trabajo en mi rama de desarrollo de forma segura.
    ```
 
    - Si el `pull` falla por divergencia, explícame en lenguaje simple qué pasó antes de resolver.
+   - El script también actualiza solo el token de versión del panel admin
+     (`scripts/bump-admin-version.mjs`): si el diff muestra muchos `?v=adm-...` cambiados,
+     es normal y esperado.
 4. **NUNCA** hagas push a `main`. Regla del proyecto: a producción solo se llega por Pull Request
    `claude → main` o `codex → main` aprobado por el dueño.
 

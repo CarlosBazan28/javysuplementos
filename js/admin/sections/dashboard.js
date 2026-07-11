@@ -1,11 +1,11 @@
 /* ============================================================================
    Sección Dashboard: stats, centro de operaciones y últimos agregados.
    ============================================================================ */
-import { state } from "../state.js?v=adm1";
-import { STALE_DAYS, HOME_MAX, HOME_MIN } from "../config.js?v=adm1";
-import { $, esc, ico, imgTag, peso, isAvailable, isMissingImage, hasOffer, discountPct, daysSince, agoLabel } from "../helpers.js?v=adm1";
-import { setView } from "../view.js?v=adm1";
-import { go, bindEditClicks } from "../shell.js?v=adm1";
+import { state } from "../state.js?v=adm-da781c07";
+import { STALE_DAYS, HOME_MAX, HOME_MIN } from "../config.js?v=adm-da781c07";
+import { $, esc, ico, imgTag, peso, isAvailable, isMissingImage, hasOffer, discountPct, daysSince, agoLabel } from "../helpers.js?v=adm-da781c07";
+import { setView } from "../view.js?v=adm-da781c07";
+import { go, bindEditClicks } from "../shell.js?v=adm-da781c07";
 
 export function renderDashboard() {
   const p = state.products;

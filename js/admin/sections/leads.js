@@ -4,9 +4,9 @@
    WhatsApp y marca su estado. Lee de window.catalogDb.getLeads(); degrada
    elegante si falta la migración fase7-leads.sql.
    ============================================================================ */
-import { esc, ico, agoLabel } from "../helpers.js?v=adm1";
-import { setView, paint } from "../view.js?v=adm1";
-import { toast, emptyFeature } from "../ui.js?v=adm1";
+import { esc, ico, agoLabel } from "../helpers.js?v=adm-da781c07";
+import { setView, paint } from "../view.js?v=adm-da781c07";
+import { toast, emptyFeature } from "../ui.js?v=adm-da781c07";
 
 const STATUS = [["", "Todos"], ["nuevo", "Nuevos"], ["atendido", "Atendidos"], ["archivado", "Archivados"]];
 const STATUS_LABEL = { nuevo: "Nuevo", atendido: "Atendido", archivado: "Archivado" };

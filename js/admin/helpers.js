@@ -2,10 +2,24 @@
    Helpers de bajo nivel: DOM, escape, formato, fechas e imágenes.
    Puros o casi puros; no conocen el estado de la app.
    ============================================================================ */
-import { PLACEHOLDER } from "./config.js?v=adm1";
+import { PLACEHOLDER } from "./config.js?v=adm-da781c07";
 
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+// Rechaza si `promise` no resuelve en `ms`. Sin esto, un fetch colgado
+// (Supabase sin timeout propio) dejaba el gate girando para siempre.
+export function withTimeout(promise, ms, label) {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => {
+      reject(new Error(`${label} tardó más de ${Math.round(ms / 1000)} segundos. Revisa tu conexión e intenta de nuevo.`));
+    }, ms);
+    promise.then(
+      (v) => { clearTimeout(t); resolve(v); },
+      (e) => { clearTimeout(t); reject(e); }
+    );
+  });
+}
 
 export function esc(value) {
   // String(value ?? "") tolera null, undefined y números sin tirar

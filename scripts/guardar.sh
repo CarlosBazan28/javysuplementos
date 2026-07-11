@@ -44,6 +44,18 @@ if ! git pull --ff-only origin "$rama"; then
   exit 1
 fi
 
+# Mantiene consistente el token de versión del panel admin (js/admin/** + admin.html).
+# Sin esto, la caché puede mezclar módulos viejos y nuevos → panel en negro.
+if command -v node >/dev/null 2>&1; then
+  if ! node scripts/bump-admin-version.mjs --quiet; then
+    echo "❌ No se pudo actualizar el token de versión del panel admin. No guardé nada."
+    exit 1
+  fi
+else
+  echo "⚠️  No encontré 'node': no pude verificar el token del panel admin."
+  echo "   Si tocaste js/admin/**, corré: node scripts/bump-admin-version.mjs"
+fi
+
 # Preparamos todo (modificados, nuevos y borrados) y RECIÉN ahí comprobamos si
 # hay algo que commitear. Hacerlo antes con `git diff` dejaba fuera los archivos
 # nuevos sin rastrear (git diff no los ve) y creía que "no había cambios".

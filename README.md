@@ -52,6 +52,12 @@ manual, por chat.
 La lógica de `/guardar` y `/estado-ramas` vive en `scripts/guardar.sh` y `scripts/estado-ramas.sh`
 (usables también desde cualquier terminal, por Claude y por Codex).
 
+`scripts/guardar.sh` corre además `node scripts/bump-admin-version.mjs`, que recalcula el token
+de versión del panel admin (`?v=adm-<hash>` en `admin.html` + `js/admin/**`) a partir del
+contenido de los módulos: si el panel cambió, el token cambia y la caché baja el grafo completo
+(evita el "panel en negro" por mezclar versiones); si no cambió, no genera diff. También acepta
+`--check` (sale con error si el token está desactualizado).
+
 ---
 
 ## Estructura de archivos
@@ -100,9 +106,15 @@ Los scripts cargan con `defer` y se comunican por objetos en `window`:
 - `window.PRODUCTS` — `js/product-data.js`. ~180 productos hardcodeados (fallback, ver abajo).
 
 Otros archivos de `js/`: `script.js` (home), `supplements.js` (catálogo + filtros),
-`product-page.js` (detalle + meta tags dinámicos), `admin-dashboard.js` (panel admin),
-`admin.js` (stub), `contacto.js`, `login.js`, `testimonials.js`, `testimonials-data.js`,
-`supabase-config.js`, `whatsapp-config.js`.
+`product-page.js` (detalle + meta tags dinámicos), `contacto.js`, `login.js`,
+`testimonials.js`, `testimonials-data.js`, `supabase-config.js`, `whatsapp-config.js`.
+
+**Panel admin**: vive en `js/admin/` como módulos ES. La entrada es
+`js/admin/boot-guard.js` (script clásico que carga `main.js` con `import()` dinámico y
+muestra un error con botón *Reintentar* si el grafo no carga), luego
+`main.js` → `shell.js` (router) → `sections/*` y `drawers/*`. Todos los imports llevan un
+token de versión `?v=adm-<hash>` que gestiona `scripts/bump-admin-version.mjs` (ver abajo);
+**no se edita a mano**.
 
 ---
 
@@ -174,10 +186,17 @@ Luego abrir `http://localhost:8080` (usar el puerto que indique la terminal si c
 ```bash
 git status --short
 git diff --check
-node --check js/admin-dashboard.js
 node --check js/cart.js
 node --check js/include-nav.js
 node --check js/icons.js
+node scripts/bump-admin-version.mjs --check
+```
+
+Los módulos del panel (`js/admin/**`) son ES modules; `node --check` a secas falla con `import`.
+Verifícalos así:
+
+```bash
+for f in js/admin/*.js js/admin/*/*.js; do node --input-type=module --check < "$f" || echo "❌ $f"; done
 ```
 
 Si modificas una página pública, revisa también su JS:
@@ -215,8 +234,9 @@ node --check js/product-page.js
 
 ## Deuda técnica conocida
 
-- `js/admin-dashboard.js` es monolítico (~1.600 líneas) → conviene dividirlo en módulos
-  (ES modules: `js/admin/`).
+- El panel admin depende del token de versión `?v=adm-<hash>` para que la caché no mezcle
+  módulos (lo gestiona `scripts/bump-admin-version.mjs` vía `/guardar`). Si el panel crece,
+  evaluar empaquetarlo en un solo archivo (esbuild) para eliminar el problema de raíz.
 - Helpers duplicados (`escapeHTML`, `slugify`, normalización) repartidos en varios archivos →
   centralizar en un `js/utils.js`.
 - Productos duplicados entre Supabase y `product-data.js` → decidir una sola fuente de verdad.
