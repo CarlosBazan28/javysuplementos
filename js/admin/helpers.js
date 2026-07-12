@@ -2,7 +2,7 @@
    Helpers de bajo nivel: DOM, escape, formato, fechas e imágenes.
    Puros o casi puros; no conocen el estado de la app.
    ============================================================================ */
-import { PLACEHOLDER } from "./config.js?v=adm-da781c07";
+import { PLACEHOLDER } from "./config.js?v=adm-9cb457e9";
 
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));

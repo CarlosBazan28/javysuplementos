@@ -552,6 +552,44 @@ body.ad-body { min-height: 100vh; }
 }
 .ad-modal__foot .ad-btn { flex: 1; }
 
+/* ---- Fase 3: drawer de producto a 2 columnas con vista previa en vivo ---- */
+.ad-modal--product { width: min(1180px, 100%); }
+.ad-modal--product .ad-modal__main { grid-template-columns: 190px minmax(0, 1fr) 340px; }
+.ad-modal__preview {
+  border-left: 1px solid var(--pb-line);
+  background: rgba(255, 255, 255, 0.015);
+  padding: 18px;
+  overflow-y: auto;
+}
+.ad-modal__preview-head {
+  margin: 0 0 14px;
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--pb-muted-2);
+}
+.ad-preview-card { max-width: 300px; margin: 0 auto; }
+/* La card de la preview es sólo visual: no debe capturar clics ni foco. */
+.ad-modal__preview .product-card { pointer-events: none; }
+.ad-modal__preview .product-card:hover { transform: none; }
+.ad-preview-note { margin: 14px 0 0; text-align: center; font-size: 0.72rem; color: var(--pb-muted-2); }
+
+/* En pantallas medianas/chicas el drawer de producto se apila: índice arriba,
+   formulario, y la vista previa debajo (el <main> pasa a scrollear entero). */
+@media (max-width: 1024px) {
+  .ad-modal--product { width: 100%; }
+  .ad-modal--product .ad-modal__main { grid-template-columns: 1fr; overflow-y: auto; }
+  .ad-modal--product .ad-modal__content { overflow: visible; }
+  .ad-modal--product .ad-modal__preview { border-left: 0; border-top: 1px solid var(--pb-line); overflow: visible; }
+  .ad-modal--product .ad-preview-card { max-width: 340px; }
+  .ad-modal--product .ad-modal__rail {
+    flex-direction: row; gap: 6px; padding: 8px 12px;
+    border-right: 0; border-bottom: 1px solid var(--pb-line);
+    overflow-x: auto; overflow-y: hidden;
+    position: sticky; top: 0; z-index: 2; background: #0c121a;
+  }
+  .ad-modal--product .ad-modal__rail-item { flex: 0 0 auto; white-space: nowrap; padding: 8px 12px; }
+  .ad-modal--product .ad-modal__rail-num { display: none; }
+}
+
 @media (max-width: 760px) {
   .ad-modal-overlay { padding: 0; }
   .ad-modal { width: 100%; height: 100%; max-height: 100%; border: 0; border-radius: 0; }
