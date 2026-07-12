@@ -1,0 +1,92 @@
+/* ============================================================================
+   BOTÓN — componente único y reutilizable para UI nueva.
+   Usa los tokens de css/tokens.css. Jerarquía por variante, tamaño por
+   modificador, estados consistentes (hover/active/disabled/focus-visible).
+
+   Uso:
+     <button class="btn btn--primary">Guardar</button>       // acción principal (verde)
+     <button class="btn btn--secondary">Ver más</button>     // acción secundaria (azul marca)
+     <button class="btn btn--ghost">Cancelar</button>        // acción neutra
+     <button class="btn btn--danger">Eliminar</button>       // destructiva
+     <a class="btn btn--primary btn--lg">…</a>               // también en enlaces
+     <button class="btn btn--primary btn--block">…</button>  // ancho completo
+   Migración: los botones a medida existentes (.pdp__cta, .testimonials-btn,
+   .ad-btn, etc.) se irán moviendo a este componente de forma incremental.
+   ============================================================================ */
+
+.btn {
+  --_bg: var(--surface-3);
+  --_fg: var(--text);
+  --_bd: var(--line-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-5);
+  border: 1px solid var(--_bd);
+  border-radius: var(--radius-md);
+  background: var(--_bg);
+  color: var(--_fg);
+  font: inherit;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.15s ease, background 0.15s ease,
+    border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.btn:active { transform: translateY(0); filter: brightness(0.97); }
+.btn:focus-visible { outline: none; box-shadow: var(--ring); }
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+}
+
+/* ---- Variantes (jerarquía) ---- */
+.btn--primary {   /* acción principal: verde */
+  --_bg: var(--cta);
+  --_fg: var(--on-brand);
+  --_bd: transparent;
+}
+.btn--primary:hover { --_bg: var(--cta-strong); }
+
+.btn--secondary { /* acción secundaria: azul de marca */
+  --_bg: var(--brand);
+  --_fg: #fff;
+  --_bd: transparent;
+}
+.btn--secondary:hover { --_bg: var(--brand-strong); }
+
+.btn--ghost {     /* neutra / cancelar */
+  --_bg: transparent;
+  --_fg: var(--text);
+  --_bd: var(--line-strong);
+}
+.btn--ghost:hover { --_bg: rgba(255, 255, 255, 0.06); }
+
+.btn--danger {    /* destructiva */
+  --_bg: var(--danger-tint);
+  --_fg: var(--danger-soft);
+  --_bd: rgba(255, 79, 107, 0.4);
+}
+.btn--danger:hover { --_bg: rgba(255, 79, 107, 0.22); --_bd: var(--danger); }
+
+/* ---- Tamaños ---- */
+.btn--sm { padding: var(--sp-2) var(--sp-3); font-size: 0.85rem; border-radius: var(--radius-sm); }
+.btn--lg { padding: var(--sp-4) var(--sp-6); font-size: 1.05rem; }
+
+/* ---- Modificadores ---- */
+.btn--block { display: flex; width: 100%; }
+.btn__icon { width: 18px; height: 18px; flex: 0 0 auto; }
+.btn__icon svg { width: 100%; height: 100%; display: block; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+  .btn:hover, .btn:active { transform: none; }
+}
