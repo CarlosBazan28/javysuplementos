@@ -3,12 +3,12 @@
    imagen, chips de sabores/tags, objetivos, validación inline y guardado con
    sincronización de sabores. Comportamiento idéntico al monolito original.
    ============================================================================ */
-import { state, catById, families, typesOf } from "../state.js?v=adm-da781c07";
-import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-da781c07";
-import { $, esc, ico } from "../helpers.js?v=adm-da781c07";
-import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-da781c07";
-import { requestRerender } from "../shell.js?v=adm-da781c07";
-import { reloadProducts } from "../data.js?v=adm-da781c07";
+import { state, catById, families, typesOf } from "../state.js?v=adm-9cb457e9";
+import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-9cb457e9";
+import { $, esc, ico } from "../helpers.js?v=adm-9cb457e9";
+import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-9cb457e9";
+import { requestRerender } from "../shell.js?v=adm-9cb457e9";
+import { reloadProducts } from "../data.js?v=adm-9cb457e9";
 
 // Arreglos de texto (beneficios/uso/descripción) ⇄ textarea (una línea por ítem).
 const linesToText = (v) => Array.isArray(v) ? v.join("\n") : (v || "");
@@ -52,6 +52,10 @@ export function openProductDrawer(product, opts = {}) {
   let touched = false;
   let dirty = false;
   const markDirty = () => { dirty = true; };
+  // Imagen que muestra la vista previa (Fase 3). Se cachea para no crear un
+  // objectURL nuevo en cada tecleo; se actualiza sólo al cambiar/quitar imagen.
+  let previewImgUrl = data.image || PLACEHOLDER;
+  let previewObjUrl = null;
 
   const host = $("#adminDrawerHost");
   const overlay = document.createElement("div");
@@ -93,7 +97,7 @@ export function openProductDrawer(product, opts = {}) {
 
   overlay.innerHTML = `
     <div class="ad-modal__scrim" data-close></div>
-    <div class="ad-modal" role="dialog" aria-modal="true">
+    <div class="ad-modal ad-modal--product" role="dialog" aria-modal="true">
       <div class="ad-modal__head">
         <div><h2>${isNew ? "Nuevo producto" : "Editar producto"}</h2><p data-meta>${metaLine}</p></div>
         <button class="ad-modal__close" type="button" aria-label="Cerrar" data-close>${ico("x")}</button>
@@ -150,6 +154,11 @@ export function openProductDrawer(product, opts = {}) {
             <div data-home-order-slot>${data.home ? field("Orden en inicio", false, `<input class="ad-input" inputmode="numeric" data-f="home_order" value="${esc(data.home_order)}" placeholder="Ej. 1" style="max-width:120px" />`, null, "Posición entre los destacados del home") : ""}</div>
           `)}
         </div>
+        <aside class="ad-modal__preview" aria-label="Vista previa del producto">
+          <p class="ad-modal__preview-head">Vista previa</p>
+          <div class="ad-preview-card" data-preview-card></div>
+          <p class="ad-preview-note">Así se verá en la tienda</p>
+        </aside>
       </div>
       <div class="ad-modal__foot">
         <button class="ad-btn ad-btn--ghost" type="button" data-close>Cancelar</button>
@@ -163,6 +172,47 @@ export function openProductDrawer(product, opts = {}) {
 
   const get = (sel) => overlay.querySelector(sel);
   const fEl = (name) => overlay.querySelector(`[data-f="${name}"]`);
+
+  // ---- Vista previa en vivo: usa la MISMA card de la tienda pública (Fase 3) ----
+  const previewPrice = (v) => { const n = Number(v); return n > 0 ? "$" + n.toFixed(2) : "$0.00"; };
+  function renderPreview() {
+    const host = get("[data-preview-card]");
+    if (!host) return;
+    const name = (fEl("name").value || "").trim() || "Nombre del producto";
+    const brand = (fEl("brand").value || "").trim() || "Marca";
+    const pres = (fEl("presentation").value || "").trim();
+    const priceV = (fEl("price").value || "").trim();
+    const oldV = (fEl("old_price").value || "").trim();
+    const availSw = overlay.querySelector('[data-sw="available"]');
+    const available = availSw ? availSw.checked : true;
+    const priceN = Number(priceV), oldN = Number(oldV);
+    const offer = priceN > 0 && oldN > priceN;
+    const disc = offer ? Math.round((1 - priceN / oldN) * 100) : 0;
+    host.innerHTML = `
+      <article class="product-card">
+        <div class="product-card__media">
+          <img class="product-card__img" src="${esc(previewImgUrl || PLACEHOLDER)}" alt="" />
+        </div>
+        <div class="product-card__info">
+          <div class="product-card__meta">
+            <span class="product-card__brand">${esc(brand)}</span>
+            <span class="product-card__status ${available ? "is-available" : "is-agotado"}">${available ? "Disponible" : "Agotado"}</span>
+          </div>
+          <h3 class="product-card__name">${esc(name)}</h3>
+          <div class="product-card__price-row">
+            <span class="product-card__price-group">
+              <span class="product-card__price">${previewPrice(priceV)}</span>
+              ${offer ? `<span class="product-card__price-old">${previewPrice(oldV)}</span><span class="product-card__discount">-${disc}%</span>` : ""}
+            </span>
+            ${pres ? `<span class="product-card__pres">${esc(pres)}</span>` : ""}
+          </div>
+        </div>
+        <div class="product-card__actions">
+          <button class="product-card__btn product-card__btn--buy" type="button" tabindex="-1">Agregar a cotización</button>
+          <span class="product-card__detail-link">Ver detalles</span>
+        </div>
+      </article>`;
+  }
 
   // navegación por secciones: índice lateral + scroll-spy (resalta la sección visible)
   const content = get(".ad-modal__content");
@@ -187,6 +237,7 @@ export function openProductDrawer(product, opts = {}) {
   // close handlers — pide confirmación si hay cambios sin guardar
   function destroy() {
     if (window.javyDropdown) window.javyDropdown.destroy(overlay);
+    if (previewObjUrl) URL.revokeObjectURL(previewObjUrl);
     document.body.style.overflow = "";
     document.removeEventListener("keydown", onKey);
     overlay.remove();
@@ -202,9 +253,9 @@ export function openProductDrawer(product, opts = {}) {
   document.addEventListener("keydown", onKey);
   overlay.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", close));
 
-  // cualquier cambio en el formulario marca el modal como "sucio"
-  content.addEventListener("input", markDirty);
-  content.addEventListener("change", markDirty);
+  // cualquier cambio en el formulario marca el modal como "sucio" y refresca la preview
+  content.addEventListener("input", () => { markDirty(); renderPreview(); });
+  content.addEventListener("change", () => { markDirty(); renderPreview(); });
 
   // cascade
   fEl("family").addEventListener("change", (e) => {
@@ -247,7 +298,13 @@ export function openProductDrawer(product, opts = {}) {
     const input = imageSlot.querySelector("[data-img-input]");
     input.addEventListener("change", (e) => {
       const file = e.target.files[0];
-      if (file) { draftImageFile.file = file; draftImageFile.cleared = false; renderImage(); }
+      if (file) {
+        draftImageFile.file = file; draftImageFile.cleared = false;
+        if (previewObjUrl) URL.revokeObjectURL(previewObjUrl);
+        previewObjUrl = URL.createObjectURL(file);
+        previewImgUrl = previewObjUrl;
+        renderImage(); renderPreview();
+      }
     });
     const changeBtn = imageSlot.querySelector("[data-img-change]");
     if (changeBtn) changeBtn.addEventListener("click", () => input.click());
@@ -255,10 +312,14 @@ export function openProductDrawer(product, opts = {}) {
     if (clearBtn) clearBtn.addEventListener("click", async () => {
       const ok = await confirmModal({ title: "Quitar imagen", body: "La imagen se quitará al guardar. ¿Continuar?", confirmLabel: "Quitar" });
       if (!ok) return;
-      draftImageFile.file = null; draftImageFile.cleared = true; renderImage();
+      draftImageFile.file = null; draftImageFile.cleared = true;
+      if (previewObjUrl) { URL.revokeObjectURL(previewObjUrl); previewObjUrl = null; }
+      previewImgUrl = PLACEHOLDER;
+      renderImage(); renderPreview();
     });
   }
   renderImage();
+  renderPreview();
 
   // sabores con disponibilidad por sabor
   const flavorRows = data.flavors.map((f) => ({ id: f.id, name: f.name, available: f.available }));
