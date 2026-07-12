@@ -1,54 +1,100 @@
+/* ============================================================================
+   TOKENS — Fuente ÚNICA de verdad del sistema visual de Javy Suplementos.
+   Se carga en TODAS las páginas y DESPUÉS de styles.css, así que estos valores
+   mandan. No hardcodees colores en los componentes: usá estas variables.
+
+   Tema oscuro con identidad, pero en CAPAS azuladas (no negro plano) para que
+   descanse la vista. Cada acento tiene UN significado fijo (ver abajo).
+   ============================================================================ */
 :root {
-  --bg: #000;
-  --surface: rgba(24, 24, 24, 0.7);
-  --blanco: #fff;
-  --Cyan: var(--brand); /* alias histórico: usar --brand en código nuevo */
-  --grisClaro: var(--muted); /* alias: unificado con --muted (texto secundario) */
-  /* Base negra en capas */
-  --bg-0: #050709; /* body/background absoluto (negro realista) */
-  --bg-1: #0a0f14; /* secciones principales (ligeramente más claras) */
-  --bg-2: #0f1620; /* superficies elevadas (cards/nav) */
+  /* ---- Base en capas (de más profundo a más elevado). Menos negro que antes:
+     el body ya NO es #000, sino un azul-gris muy oscuro. ---- */
+  --bg-0: #0b0e15;   /* fondo base del body */
+  --bg-1: #10141d;   /* secciones principales */
+  --bg-2: #161c28;   /* superficies elevadas (nav, bloques) */
 
-  /* Superficies/contornos */
-  --surface-1: #111925; /* panels/cards */
-  --surface-2: #0c141d; /* bloques secundarios */
-  --line: rgba(255, 255, 255, 0.08); /* bordes sutiles */
-  --line-strong: rgba(255, 255, 255, 0.14);
+  --surface-1: #1a2130;  /* cards / paneles */
+  --surface-2: #141a25;  /* bloques secundarios */
+  --surface-3: #202836;  /* superficie más elevada (hover, popovers) */
+  --surface-input: #131a26; /* inputs, selects, buscadores */
+  --surface: rgba(22, 28, 40, 0.7); /* superficie translúcida (overlays suaves) */
 
-  /* Texto */
-  --text: #e9eef7;
-  --muted: #a9b4c6;
+  /* ---- Contornos ---- */
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.13);
 
-  /* Marca / acentos */
-  --brand: rgb(1 145 198); /* tu azul */
-  --on-brand: #08141c; /* texto/íconos oscuros sobre fondos --brand */
-  --neon: #00cfff; /* azul neón para glow */
-  --hot: #ff2e63; /* acento cálido pequeño (badges/hover) */
-  --accent: #5ab4e9; /* cyan de acento (precio, links de marca) */
-  --cta: #00e676; /* verde de llamada a la acción (botones agregar) */
-  --cta-strong: #00c853; /* verde CTA en hover/activo */
-  --cta-soft: #69f0ae; /* verde aclarado: pasa contraste AA en texto pequeño sobre fondo oscuro */
+  /* ---- Texto ---- */
+  --text: #e9eef7;    /* texto principal */
+  --muted: #a9b4c6;   /* texto secundario */
+  --muted-2: #7c8799; /* texto terciario / hints */
+  --blanco: #ffffff;
 
-  /* Sombras/blur */
+  /* ---- Marca (azul). Acción/enlace de marca, foco, acentos primarios. ---- */
+  --brand: #0191c6;         /* azul de marca (antes estaba escrito como rgba inválida) */
+  --brand-strong: #0aa6de;  /* azul de marca en hover/activo */
+  --on-brand: #08141c;      /* texto/íconos oscuros sobre fondos --brand */
+  --neon: #00cfff;          /* azul neón para glow */
+  --accent: #5ab4e9;        /* cyan de acento: precios, links de marca */
+
+  /* ---- Semántica de acción/estado (UN color = UN significado) ---- */
+  --cta: #00e676;         /* verde: ACCIÓN principal (Agregar, Guardar, Crear) */
+  --cta-strong: #00c853;  /* verde CTA en hover/activo */
+  --cta-soft: #69f0ae;    /* verde aclarado: texto pequeño sobre fondo oscuro (AA) */
+  --success: #00e676;     /* éxito (= verde de acción) */
+
+  --danger: #ff4f6b;        /* error / destructivo (Eliminar) */
+  --danger-strong: #ff2e4f; /* error en hover/activo */
+  --danger-soft: #ffc1ce;   /* texto de error sobre fondo oscuro */
+
+  --warning: #ffb300;       /* advertencia / pendiente */
+  --warning-soft: #ffcf6d;
+
+  --hot: #ff2e63;           /* acento cálido pequeño (badges/promos) */
+
+  /* ---- Tintes reutilizables (fondos suaves de estado) ---- */
+  --brand-tint: rgba(90, 180, 233, 0.12);
+  --cta-tint: rgba(0, 230, 118, 0.14);
+  --danger-tint: rgba(255, 79, 107, 0.14);
+  --warning-tint: rgba(255, 179, 0, 0.14);
+
+  /* ---- Sombras / foco ---- */
+  --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.35);
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-  --ring: 0 0 0 3px rgba(1, 146, 198, 0.25);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.55);
+  --ring: 0 0 0 3px rgba(1, 145, 198, 0.35);
 
-  /* Radios (usar en código nuevo en vez de valores sueltos) */
+  /* ---- Radios (usar en vez de valores sueltos) ---- */
   --radius-sm: 10px;
   --radius-md: 12px;
   --radius-lg: 14px;
   --radius-xl: 16px;
   --radius-pill: 999px;
 
-  /* Superficie de inputs/selects (search, sort, formularios del carrito) */
-  --surface-input: #101724;
+  /* ---- Escala de espaciado (4·8) ---- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
 
-  --footer-bg: #050709;
-    --footer-surface: #0B1017;
-    --footer-surface-soft: #101724;
-    --footer-text: #E9EEF7;
-    --footer-muted: #A9B4C6;
-    --footer-line: rgba(255,255,255,0.08);
-    --footer-accent: #5AB4E9; /* rgba(90,180,233,0.9) */
-    --footer-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  /* ---- Alias históricos (no usar en código nuevo) ---- */
+  --bg: var(--bg-0);        /* body: antes #000 (negro puro) */
+  --txt: var(--text);       /* unificado con --text */
+  --Cyan: var(--brand);
+  --grisClaro: var(--muted);
+  --cardsp: var(--text);
+  --cardss: var(--muted);
+
+  /* ---- Footer (alineado a la base en capas) ---- */
+  --footer-bg: var(--bg-0);
+  --footer-surface: #0f141d;
+  --footer-surface-soft: #131a26;
+  --footer-text: var(--text);
+  --footer-muted: var(--muted);
+  --footer-line: var(--line);
+  --footer-accent: var(--accent);
+  --footer-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
 }
