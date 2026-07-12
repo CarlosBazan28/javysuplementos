@@ -407,6 +407,21 @@ body.ad-body { min-height: 100vh; }
 .ad-field__error .ad-ico { width: 14px; height: 14px; }
 .ad-field__help { color: var(--pb-muted); font-size: 0.78rem; }
 .ad-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Fase 4: botón "Llenar con IA" en campos de texto (descripción, beneficios, uso) */
+.ad-field__labelrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ad-ai-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--pb-blue-tint-18);
+  background: var(--pb-blue-tint-08); color: #d2ecff;
+  font: inherit; font-size: 0.74rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap; flex: 0 0 auto;
+  transition: background .15s ease, border-color .15s ease, opacity .15s ease;
+}
+.ad-ai-btn:hover { background: var(--pb-blue-tint-12); border-color: rgba(90,180,233,0.5); }
+.ad-ai-btn:disabled { opacity: 0.6; cursor: progress; }
+.ad-field__error:empty { display: none; }
 .ad-input-affix { position: relative; }
 .ad-input-affix__sign { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--pb-muted); font-weight: 600; pointer-events: none; }
 .ad-input-affix .ad-input { padding-left: 26px; }
