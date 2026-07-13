@@ -3,12 +3,12 @@
    imagen, chips de sabores/tags, objetivos, validación inline y guardado con
    sincronización de sabores. Comportamiento idéntico al monolito original.
    ============================================================================ */
-import { state, catById, families, typesOf } from "../state.js?v=adm-9cb457e9";
-import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-9cb457e9";
-import { $, esc, ico } from "../helpers.js?v=adm-9cb457e9";
-import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-9cb457e9";
-import { requestRerender } from "../shell.js?v=adm-9cb457e9";
-import { reloadProducts } from "../data.js?v=adm-9cb457e9";
+import { state, catById, families, typesOf } from "../state.js?v=adm-5e1d8f92";
+import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-5e1d8f92";
+import { $, esc, ico } from "../helpers.js?v=adm-5e1d8f92";
+import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-5e1d8f92";
+import { requestRerender } from "../shell.js?v=adm-5e1d8f92";
+import { reloadProducts } from "../data.js?v=adm-5e1d8f92";
 
 // Arreglos de texto (beneficios/uso/descripción) ⇄ textarea (una línea por ítem).
 const linesToText = (v) => Array.isArray(v) ? v.join("\n") : (v || "");
@@ -95,6 +95,19 @@ export function openProductDrawer(product, opts = {}) {
     </section>`;
   };
 
+  // Campo de texto con botón "Llenar con IA ✨" (Fase 4). El botón llama a la
+  // Edge Function ai-fill; el error va en el span rojo reutilizando .ad-field__error.
+  const aiField = (label, dataF, value, placeholder, help) => `
+    <div class="ad-field">
+      <div class="ad-field__labelrow">
+        <label class="ad-field__label">${esc(label)}</label>
+        <button type="button" class="ad-ai-btn" data-ai="${dataF}" title="Generar con IA a partir del nombre y la marca">✨ Llenar con IA</button>
+      </div>
+      <textarea class="ad-textarea" data-f="${dataF}" placeholder="${esc(placeholder)}">${esc(value)}</textarea>
+      ${help ? `<span class="ad-field__help">${esc(help)}</span>` : ""}
+      <span class="ad-field__error" data-ai-err="${dataF}"></span>
+    </div>`;
+
   overlay.innerHTML = `
     <div class="ad-modal__scrim" data-close></div>
     <div class="ad-modal ad-modal--product" role="dialog" aria-modal="true">
@@ -137,10 +150,10 @@ export function openProductDrawer(product, opts = {}) {
           `)}
           ${sec("descripcion", `
             ${field("Descripción corta", false, `<textarea class="ad-textarea" data-f="description_short" placeholder="Una línea que resuma el producto…">${esc(data.description_short)}</textarea>`)}
-            ${field("Descripción larga (detalle)", false, `<textarea class="ad-textarea" data-f="description_long" placeholder="Texto completo para la página de detalle…">${esc(data.description_long)}</textarea>`)}
+            ${aiField("Descripción larga (detalle)", "description_long", data.description_long, "Texto completo para la página de detalle…", "")}
             <div class="ad-form-grid">
-              ${field("Beneficios", false, `<textarea class="ad-textarea" data-f="beneficios" placeholder="Un beneficio por línea…">${esc(data.beneficios)}</textarea>`, null, "Una línea por beneficio")}
-              ${field("Modo de uso", false, `<textarea class="ad-textarea" data-f="uso" placeholder="Una indicación por línea…">${esc(data.uso)}</textarea>`, null, "Una línea por indicación")}
+              ${aiField("Beneficios", "beneficios", data.beneficios, "Un beneficio por línea…", "Una línea por beneficio")}
+              ${aiField("Modo de uso", "uso", data.uso, "Una indicación por línea…", "Una línea por indicación")}
             </div>
             ${field("Tags", false, `<div class="ad-chips-input" data-tags>${data.tags.map(chipTag).join("")}<input type="text" placeholder="Ej. Energía" /></div>`, null, "Palabras clave para búsqueda")}
             ${field("Objetivos", false, `<div style="display:flex;flex-wrap:wrap;gap:8px" data-goals>${GOAL_SUGGESTIONS.concat(data.goals.filter((g) => !GOAL_SUGGESTIONS.includes(g))).map((g) => `<button type="button" class="ad-chip-toggle${data.goals.includes(g) ? " is-active" : ""}" data-goal="${esc(g)}">${esc(g)}</button>`).join("")}</div>`)}
@@ -256,6 +269,44 @@ export function openProductDrawer(product, opts = {}) {
   // cualquier cambio en el formulario marca el modal como "sucio" y refresca la preview
   content.addEventListener("input", () => { markDirty(); renderPreview(); });
   content.addEventListener("change", () => { markDirty(); renderPreview(); });
+
+  // ---- Fase 4: "Llenar con IA" por campo (descripción larga, beneficios, uso) ----
+  const AI_NO_INFO = "No se encontró información confiable para este producto. Verifica el nombre y la marca, o llénalo manualmente.";
+  overlay.querySelectorAll("[data-ai]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const key = btn.getAttribute("data-ai");
+      const errEl = overlay.querySelector(`[data-ai-err="${key}"]`);
+      const nameV = fEl("name").value.trim();
+      const brandV = fEl("brand").value.trim();
+      if (errEl) errEl.textContent = "";
+      if (!nameV || !brandV) {
+        if (errEl) errEl.textContent = "Escribe primero el nombre y la marca del producto.";
+        return;
+      }
+      const original = btn.innerHTML;
+      btn.disabled = true;
+      btn.textContent = "Generando…";
+      try {
+        if (!window.supabaseClient || !window.supabaseClient.functions) throw new Error("sin-supabase");
+        const { data: res, error } = await window.supabaseClient.functions.invoke("ai-fill", {
+          body: { field: key, name: nameV, brand: brandV, presentation: fEl("presentation").value.trim() },
+        });
+        if (error) throw error;
+        if (res && res.ok && res.content) {
+          fEl(key).value = res.content;
+          markDirty();
+          renderPreview();
+        } else if (errEl) {
+          errEl.textContent = AI_NO_INFO;
+        }
+      } catch (_) {
+        if (errEl) errEl.textContent = "No se pudo generar con IA ahora. Intenta de nuevo o llénalo manualmente.";
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = original;
+      }
+    });
+  });
 
   // cascade
   fEl("family").addEventListener("change", (e) => {
