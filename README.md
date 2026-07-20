@@ -116,11 +116,12 @@ muestra un error con botón *Reintentar* si el grafo no carga), luego
 token de versión `?v=adm-<hash>` que gestiona `scripts/bump-admin-version.mjs` (ver abajo);
 **no se edita a mano**.
 
-El formulario de producto (`drawers/product-drawer.js`) es a dos columnas con **vista
-previa en vivo** usando la card real de la tienda, y tiene botones **"Llenar con IA ✨"**
-en Descripción/Beneficios/Uso que llaman a la Edge Function `supabase/functions/ai-fill/`
-(la clave de IA vive solo en Supabase, nunca en el navegador). Puesta en marcha y detalle:
-[`docs/ia-productos.md`](docs/ia-productos.md).
+El formulario de producto (`drawers/product-drawer.js`) tiene edición completamente manual
+para descripción corta, descripción larga, beneficios y modo de uso. Su **vista previa en vivo**
+permite alternar entre la card real del catálogo y una representación del detalle completo.
+Beneficios y modo de uso se escriben con un elemento por línea; al guardar se convierten en
+arreglos. Categorías, objetivos y tags alimentan la búsqueda y los filtros aunque no aparezcan
+en la card.
 
 ---
 

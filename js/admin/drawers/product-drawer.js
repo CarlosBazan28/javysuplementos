@@ -3,12 +3,12 @@
    imagen, chips de sabores/tags, objetivos, validación inline y guardado con
    sincronización de sabores. Comportamiento idéntico al monolito original.
    ============================================================================ */
-import { state, catById, families, typesOf } from "../state.js?v=adm-5e1d8f92";
-import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-5e1d8f92";
-import { $, esc, ico } from "../helpers.js?v=adm-5e1d8f92";
-import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-5e1d8f92";
-import { requestRerender } from "../shell.js?v=adm-5e1d8f92";
-import { reloadProducts } from "../data.js?v=adm-5e1d8f92";
+import { state, catById, families, typesOf } from "../state.js?v=adm-3d34d81a";
+import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-3d34d81a";
+import { $, esc, ico } from "../helpers.js?v=adm-3d34d81a";
+import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-3d34d81a";
+import { requestRerender } from "../shell.js?v=adm-3d34d81a";
+import { reloadProducts } from "../data.js?v=adm-3d34d81a";
 
 // Arreglos de texto (beneficios/uso/descripción) ⇄ textarea (una línea por ítem).
 const linesToText = (v) => Array.isArray(v) ? v.join("\n") : (v || "");
@@ -95,17 +95,11 @@ export function openProductDrawer(product, opts = {}) {
     </section>`;
   };
 
-  // Campo de texto con botón "Llenar con IA ✨" (Fase 4). El botón llama a la
-  // Edge Function ai-fill; el error va en el span rojo reutilizando .ad-field__error.
-  const aiField = (label, dataF, value, placeholder, help) => `
+  const manualTextField = (label, dataF, value, placeholder, help, className = "") => `
     <div class="ad-field">
-      <div class="ad-field__labelrow">
-        <label class="ad-field__label">${esc(label)}</label>
-        <button type="button" class="ad-ai-btn" data-ai="${dataF}" title="Generar con IA a partir del nombre y la marca">✨ Llenar con IA</button>
-      </div>
-      <textarea class="ad-textarea" data-f="${dataF}" placeholder="${esc(placeholder)}">${esc(value)}</textarea>
+      <label class="ad-field__label" for="product-${dataF}">${esc(label)}</label>
+      <textarea id="product-${dataF}" class="ad-textarea ${esc(className)}" data-f="${dataF}" placeholder="${esc(placeholder)}">${esc(value)}</textarea>
       ${help ? `<span class="ad-field__help">${esc(help)}</span>` : ""}
-      <span class="ad-field__error" data-ai-err="${dataF}"></span>
     </div>`;
 
   overlay.innerHTML = `
@@ -149,14 +143,14 @@ export function openProductDrawer(product, opts = {}) {
             </div>
           `)}
           ${sec("descripcion", `
-            ${field("Descripción corta", false, `<textarea class="ad-textarea" data-f="description_short" placeholder="Una línea que resuma el producto…">${esc(data.description_short)}</textarea>`)}
-            ${aiField("Descripción larga (detalle)", "description_long", data.description_long, "Texto completo para la página de detalle…", "")}
+            ${manualTextField("Descripción corta", "description_short", data.description_short, "Una oración que resuma el producto…", "Recomendación: una oración de 80–140 caracteres. Aparece bajo el nombre en la página de detalle.")}
+            ${manualTextField("Descripción larga", "description_long", data.description_long, "Texto completo para la página de detalle…", "Recomendación: 2–4 párrafos y 80–180 palabras. Separá cada párrafo con un salto de línea.", "ad-textarea--long")}
             <div class="ad-form-grid">
-              ${aiField("Beneficios", "beneficios", data.beneficios, "Un beneficio por línea…", "Una línea por beneficio")}
-              ${aiField("Modo de uso", "uso", data.uso, "Una indicación por línea…", "Una línea por indicación")}
+              ${manualTextField("Beneficios", "beneficios", data.beneficios, "Un beneficio por línea…", "Recomendación: 3–6 beneficios, uno por línea.", "ad-textarea--list")}
+              ${manualTextField("Modo de uso", "uso", data.uso, "Una instrucción por línea…", "Recomendación: 2–6 pasos, uno por línea.", "ad-textarea--list")}
             </div>
-            ${field("Tags", false, `<div class="ad-chips-input" data-tags>${data.tags.map(chipTag).join("")}<input type="text" placeholder="Ej. Energía" /></div>`, null, "Palabras clave para búsqueda")}
-            ${field("Objetivos", false, `<div style="display:flex;flex-wrap:wrap;gap:8px" data-goals>${GOAL_SUGGESTIONS.concat(data.goals.filter((g) => !GOAL_SUGGESTIONS.includes(g))).map((g) => `<button type="button" class="ad-chip-toggle${data.goals.includes(g) ? " is-active" : ""}" data-goal="${esc(g)}">${esc(g)}</button>`).join("")}</div>`)}
+            ${field("Tags", false, `<div class="ad-chips-input" data-tags>${data.tags.map(chipTag).join("")}<input type="text" placeholder="Ej. Energía" /></div>`, null, "Afectan la búsqueda y los filtros; no aparecen en la card.")}
+            ${field("Objetivos", false, `<div style="display:flex;flex-wrap:wrap;gap:8px" data-goals>${GOAL_SUGGESTIONS.concat(data.goals.filter((g) => !GOAL_SUGGESTIONS.includes(g))).map((g) => `<button type="button" class="ad-chip-toggle${data.goals.includes(g) ? " is-active" : ""}" data-goal="${esc(g)}">${esc(g)}</button>`).join("")}</div>`, null, "Afectan la búsqueda y los filtros; no aparecen en la card.")}
           `)}
           ${sec("visibilidad", `
             <div>
@@ -168,9 +162,15 @@ export function openProductDrawer(product, opts = {}) {
           `)}
         </div>
         <aside class="ad-modal__preview" aria-label="Vista previa del producto">
-          <p class="ad-modal__preview-head">Vista previa</p>
-          <div class="ad-preview-card" data-preview-card></div>
-          <p class="ad-preview-note">Así se verá en la tienda</p>
+          <div class="ad-modal__preview-top">
+            <p class="ad-modal__preview-head">Vista previa</p>
+            <div class="ad-preview-switch" role="group" aria-label="Tipo de vista previa">
+              <button type="button" class="is-active" data-preview-mode="card" aria-pressed="true">Card</button>
+              <button type="button" data-preview-mode="detail" aria-pressed="false">Detalle</button>
+            </div>
+          </div>
+          <div class="ad-preview-card" data-preview-host></div>
+          <p class="ad-preview-note" data-preview-note></p>
         </aside>
       </div>
       <div class="ad-modal__foot">
@@ -186,14 +186,21 @@ export function openProductDrawer(product, opts = {}) {
   const get = (sel) => overlay.querySelector(sel);
   const fEl = (name) => overlay.querySelector(`[data-f="${name}"]`);
 
-  // ---- Vista previa en vivo: usa la MISMA card de la tienda pública (Fase 3) ----
+  // La card usa las mismas clases que el catálogo público. La vista de detalle
+  // resume todos los campos editoriales sin guardar ni modificar datos.
+  let previewMode = "card";
   const previewPrice = (v) => { const n = Number(v); return n > 0 ? "$" + n.toFixed(2) : "$0.00"; };
   function renderPreview() {
-    const host = get("[data-preview-card]");
+    const host = get("[data-preview-host]");
     if (!host) return;
     const name = (fEl("name").value || "").trim() || "Nombre del producto";
     const brand = (fEl("brand").value || "").trim() || "Marca";
     const pres = (fEl("presentation").value || "").trim();
+    const category = catById(typeId || famId)?.name || "Categoría";
+    const shortDescription = (fEl("description_short").value || "").trim();
+    const longDescription = (fEl("description_long").value || "").trim();
+    const benefits = textToLines(fEl("beneficios").value);
+    const usage = textToLines(fEl("uso").value);
     const priceV = (fEl("price").value || "").trim();
     const oldV = (fEl("old_price").value || "").trim();
     const availSw = overlay.querySelector('[data-sw="available"]');
@@ -201,6 +208,46 @@ export function openProductDrawer(product, opts = {}) {
     const priceN = Number(priceV), oldN = Number(oldV);
     const offer = priceN > 0 && oldN > priceN;
     const disc = offer ? Math.round((1 - priceN / oldN) * 100) : 0;
+    const priceMarkup = `<span class="ad-detail-preview__price-now">${previewPrice(priceV)}</span>${offer ? `<span class="ad-detail-preview__price-old">${previewPrice(oldV)}</span><span class="ad-detail-preview__discount">-${disc}%</span>` : ""}`;
+
+    if (previewMode === "detail") {
+      const paragraphs = longDescription.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+      host.className = "ad-detail-preview";
+      host.innerHTML = `
+        <article>
+          <div class="ad-detail-preview__media">
+            <img src="${esc(previewImgUrl || PLACEHOLDER)}" alt="" />
+          </div>
+          <div class="ad-detail-preview__content">
+            <div class="ad-detail-preview__eyebrow">
+              <span>${esc([category, pres].filter(Boolean).join(" · "))}</span>
+              <span class="ad-detail-preview__status ${available ? "is-available" : "is-agotado"}">${available ? "Disponible" : "Agotado"}</span>
+            </div>
+            <p class="ad-detail-preview__brand">${esc(brand)}</p>
+            <h3>${esc(name)}</h3>
+            ${shortDescription ? `<p class="ad-detail-preview__short">${esc(shortDescription)}</p>` : `<p class="ad-detail-preview__empty">La descripción corta aparecerá aquí.</p>`}
+            <p class="ad-detail-preview__price">${priceMarkup}</p>
+          </div>
+          <div class="ad-detail-preview__sections">
+            <section>
+              <h4>Descripción</h4>
+              <div class="ad-detail-preview__prose">${paragraphs.length ? paragraphs.map((text) => `<p>${esc(text)}</p>`).join("") : `<p class="ad-detail-preview__empty">Sin descripción larga.</p>`}</div>
+            </section>
+            <section>
+              <h4>Beneficios</h4>
+              ${benefits.length ? `<ul>${benefits.map((text) => `<li>${esc(text)}</li>`).join("")}</ul>` : `<p class="ad-detail-preview__empty">Sin beneficios.</p>`}
+            </section>
+            <section>
+              <h4>Cómo usar</h4>
+              ${usage.length ? `<ol>${usage.map((text) => `<li>${esc(text)}</li>`).join("")}</ol>` : `<p class="ad-detail-preview__empty">Sin instrucciones de uso.</p>`}
+            </section>
+          </div>
+        </article>`;
+      get("[data-preview-note]").textContent = "El detalle refleja la información editorial mientras escribís; las secciones vacías se ocultarán en la tienda.";
+      return;
+    }
+
+    host.className = "ad-preview-card";
     host.innerHTML = `
       <article class="product-card">
         <div class="product-card__media">
@@ -221,10 +268,11 @@ export function openProductDrawer(product, opts = {}) {
           </div>
         </div>
         <div class="product-card__actions">
-          <button class="product-card__btn product-card__btn--buy" type="button" tabindex="-1">Agregar a cotización</button>
+          <span class="product-card__btn product-card__btn--buy">Agregar a cotización</span>
           <span class="product-card__detail-link">Ver detalles</span>
         </div>
       </article>`;
+    get("[data-preview-note]").textContent = "La card muestra imagen, marca, disponibilidad, nombre, precio, oferta y presentación. Categorías, objetivos y tags se usan para búsqueda y filtros.";
   }
 
   // navegación por secciones: índice lateral + scroll-spy (resalta la sección visible)
@@ -270,41 +318,15 @@ export function openProductDrawer(product, opts = {}) {
   content.addEventListener("input", () => { markDirty(); renderPreview(); });
   content.addEventListener("change", () => { markDirty(); renderPreview(); });
 
-  // ---- Fase 4: "Llenar con IA" por campo (descripción larga, beneficios, uso) ----
-  const AI_NO_INFO = "No se encontró información confiable para este producto. Verifica el nombre y la marca, o llénalo manualmente.";
-  overlay.querySelectorAll("[data-ai]").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const key = btn.getAttribute("data-ai");
-      const errEl = overlay.querySelector(`[data-ai-err="${key}"]`);
-      const nameV = fEl("name").value.trim();
-      const brandV = fEl("brand").value.trim();
-      if (errEl) errEl.textContent = "";
-      if (!nameV || !brandV) {
-        if (errEl) errEl.textContent = "Escribe primero el nombre y la marca del producto.";
-        return;
-      }
-      const original = btn.innerHTML;
-      btn.disabled = true;
-      btn.textContent = "Generando…";
-      try {
-        if (!window.supabaseClient || !window.supabaseClient.functions) throw new Error("sin-supabase");
-        const { data: res, error } = await window.supabaseClient.functions.invoke("ai-fill", {
-          body: { field: key, name: nameV, brand: brandV, presentation: fEl("presentation").value.trim() },
-        });
-        if (error) throw error;
-        if (res && res.ok && res.content) {
-          fEl(key).value = res.content;
-          markDirty();
-          renderPreview();
-        } else if (errEl) {
-          errEl.textContent = AI_NO_INFO;
-        }
-      } catch (_) {
-        if (errEl) errEl.textContent = "No se pudo generar con IA ahora. Intenta de nuevo o llénalo manualmente.";
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = original;
-      }
+  overlay.querySelectorAll("[data-preview-mode]").forEach((button) => {
+    button.addEventListener("click", () => {
+      previewMode = button.getAttribute("data-preview-mode") === "detail" ? "detail" : "card";
+      overlay.querySelectorAll("[data-preview-mode]").forEach((item) => {
+        const active = item.getAttribute("data-preview-mode") === previewMode;
+        item.classList.toggle("is-active", active);
+        item.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+      renderPreview();
     });
   });
 

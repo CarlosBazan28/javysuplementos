@@ -16,10 +16,6 @@ function productCanBeQuoted(product) {
   return product.flavors.some((flavor) => flavor.available !== false);
 }
 
-function isNoFlavorProduct(product) {
-  return product?.flavor_mode === "no_flavor";
-}
-
 function getSelectedFlavor(product, shouldRequire = true) {
   const select = document.getElementById("prod-flavor-select");
   if (!select || !product.flavors?.length) return { flavor: "", flavor_id: "" };
@@ -113,15 +109,17 @@ async function initProductPage() {
 
   const pageUrl = `${SITE_BASE}product-page.html?id=${encodeURIComponent(productId)}`;
   const imageUrl = toAbsoluteUrl(product.image);
+  const shortDescription = String(product.description_short || product.subtitulo || "").trim();
+  const metaDescription = shortDescription || `${product.name} — Cotizá ahora por WhatsApp con Javy Suplementos.`;
   const setMeta = (sel, val) => { const el = document.querySelector(sel); if (el) el.setAttribute("content", val); };
   setMeta('meta[property="og:title"]', `${product.name} | Javy Suplementos`);
-  setMeta('meta[property="og:description"]', product.description || `${product.name} — Cotizá ahora por WhatsApp con Javy Suplementos.`);
+  setMeta('meta[property="og:description"]', metaDescription);
   setMeta('meta[property="og:image"]', imageUrl);
   setMeta('meta[property="og:url"]', pageUrl);
   setMeta('meta[name="twitter:title"]', `${product.name} | Javy Suplementos`);
-  setMeta('meta[name="twitter:description"]', product.description || `${product.name} — Cotizá ahora por WhatsApp con Javy Suplementos.`);
+  setMeta('meta[name="twitter:description"]', metaDescription);
   setMeta('meta[name="twitter:image"]', imageUrl);
-  setMeta('meta[name="description"]', product.description || `${product.name} — Mirá el precio y cotizá por WhatsApp.`);
+  setMeta('meta[name="description"]', metaDescription);
 
   // canonical dinámico por producto (mismo dominio de producción + ?id=)
   const canonicalEl = document.querySelector('link[rel="canonical"]');
@@ -143,9 +141,23 @@ async function initProductPage() {
   imgEl.alt = product.name;
 
   document.getElementById("prod-title").textContent = product.name;
-  document.getElementById("prod-subtitle").textContent =
-    presentation ? `${category} · ${presentation}` : (product.subtitulo || category);
+  const subtitleEl = document.getElementById("prod-subtitle");
+  subtitleEl.textContent = shortDescription;
+  subtitleEl.hidden = !shortDescription;
   document.getElementById("prod-price").innerHTML = priceHTML;
+
+  const categoryLabel = document.getElementById("prod-category-label");
+  const presentationEl = document.getElementById("prod-presentation");
+  const contextSeparator = document.querySelector(".pdp__context-sep");
+  if (categoryLabel) categoryLabel.textContent = category;
+  if (presentationEl) {
+    presentationEl.textContent = presentation;
+    presentationEl.hidden = !presentation;
+  }
+  if (contextSeparator) contextSeparator.hidden = !presentation;
+
+  const brandLabel = document.getElementById("prod-brand-label");
+  if (brandLabel) brandLabel.textContent = product.brand || "Marca por confirmar";
 
   const barPriceEl = document.getElementById("pdp-bar-price");
   if (barPriceEl) barPriceEl.innerHTML = priceHTML;
@@ -269,12 +281,8 @@ async function initProductPage() {
     });
   }
 
-  // Contenido informativo
-  document.getElementById("tab-beneficios").innerHTML = crearBeneficios(product.beneficios);
-  document.getElementById("tab-descripcion").innerHTML = crearParrafos(product.descripcion);
-  document.getElementById("tab-uso").innerHTML = crearLista(product.uso);
-
-  setupDetails();
+  renderProductInformation(product);
+  setupMobilePurchaseBar();
 }
 
 function renderNotFound() {
@@ -289,62 +297,65 @@ function renderNotFound() {
   `;
 }
 
-function crearBeneficios(items = []) {
-  if (!items.length) return "<p>Información no disponible.</p>";
-  return items.map((text) => `<div class="pdp__benefit">${escapeHTML(text)}</div>`).join("");
+function normalizeTextItems(value) {
+  const values = Array.isArray(value) ? value : String(value || "").split(/\n+/);
+  return values.map((text) => String(text || "").trim()).filter(Boolean);
 }
 
-function crearLista(items = []) {
-  if (!items.length) return "<p>Información no disponible.</p>";
-  return `<ul>${items.map((text) => `<li>${escapeHTML(text)}</li>`).join("")}</ul>`;
-}
+function renderProductInformation(product) {
+  const description = normalizeTextItems(product.description_long || product.description || product.descripcion);
+  const benefits = normalizeTextItems(product.beneficios);
+  const usage = normalizeTextItems(product.uso);
 
-function crearParrafos(lines = []) {
-  if (!lines.length) return "<p>Información no disponible.</p>";
-  return lines.map((text) => `<p>${escapeHTML(text)}</p>`).join("");
-}
+  const descriptionEl = document.getElementById("tab-descripcion");
+  const benefitsEl = document.getElementById("tab-beneficios");
+  const usageEl = document.getElementById("tab-uso");
 
-/* Tabs (tablet/desktop) <-> Acordeón (mobile) sobre la misma estructura.
-   Un panel se muestra cuando tiene la clase is-active. */
-function setupDetails() {
-  const tabs = Array.from(document.querySelectorAll(".pdp__tab"));
-  const panels = Array.from(document.querySelectorAll(".pdp__panel"));
-  const accHeads = Array.from(document.querySelectorAll("[data-acc]"));
+  if (descriptionEl) descriptionEl.innerHTML = description.map((text) => `<p>${escapeHTML(text)}</p>`).join("");
+  if (benefitsEl) benefitsEl.innerHTML = benefits.map((text) => `<div class="pdp__benefit">${escapeHTML(text)}</div>`).join("");
+  if (usageEl) usageEl.innerHTML = usage.map((text) => `<li>${escapeHTML(text)}</li>`).join("");
 
-  const setActivePanel = (name) => {
-    panels.forEach((panel) => {
-      const match = panel.dataset.panel === name;
-      panel.classList.toggle("is-active", match);
-    });
-    tabs.forEach((tab) => {
-      const match = tab.dataset.tab === name;
-      tab.classList.toggle("is-active", match);
-      tab.setAttribute("aria-selected", match ? "true" : "false");
-    });
-  };
-
-  // Modo tabs (single-select)
-  tabs.forEach((tab) => {
-    tab.addEventListener("click", () => setActivePanel(tab.dataset.tab));
+  const sectionStates = { description: description.length, benefits: benefits.length, usage: usage.length };
+  document.querySelectorAll("[data-content-section]").forEach((section) => {
+    section.hidden = !sectionStates[section.getAttribute("data-content-section")];
   });
 
-  // Modo acordeón (toggle individual)
-  accHeads.forEach((head) => {
-    head.addEventListener("click", () => {
-      const panel = head.closest(".pdp__panel");
-      if (!panel) return;
-      const open = panel.classList.toggle("is-active");
-      head.setAttribute("aria-expanded", open ? "true" : "false");
-    });
-  });
+  const details = document.querySelector(".pdp__details");
+  if (details) details.hidden = !Object.values(sectionStates).some(Boolean);
+}
 
-  // Al pasar a tabs (>=768px) garantizar exactamente un panel activo
-  const mq = window.matchMedia("(min-width: 768px)");
-  const normalizeForTabs = (e) => {
-    if (!e.matches) return;
-    const firstActive = panels.find((p) => p.classList.contains("is-active")) || panels[0];
-    if (firstActive) setActivePanel(firstActive.dataset.panel);
+function setupMobilePurchaseBar() {
+  const bar = document.querySelector(".pdp__bar");
+  const primaryCta = document.querySelector("[data-primary-cta]");
+  const barCta = bar?.querySelector("[data-add-cta]");
+  if (!bar || !primaryCta || !barCta) return;
+
+  const mobileQuery = window.matchMedia("(max-width: 767px)");
+  let primaryCtaVisible = true;
+
+  const updateBar = () => {
+    const shouldShow = mobileQuery.matches && !primaryCtaVisible;
+    bar.classList.toggle("is-visible", shouldShow);
+    bar.setAttribute("aria-hidden", shouldShow ? "false" : "true");
+    barCta.tabIndex = shouldShow ? 0 : -1;
   };
-  mq.addEventListener("change", normalizeForTabs);
-  normalizeForTabs(mq);
+
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(([entry]) => {
+      primaryCtaVisible = entry.isIntersecting;
+      updateBar();
+    }, { threshold: 0.15 });
+    observer.observe(primaryCta);
+  } else {
+    const checkVisibility = () => {
+      const rect = primaryCta.getBoundingClientRect();
+      primaryCtaVisible = rect.bottom > 0 && rect.top < window.innerHeight;
+      updateBar();
+    };
+    window.addEventListener("scroll", checkVisibility, { passive: true });
+    checkVisibility();
+  }
+
+  mobileQuery.addEventListener("change", updateBar);
+  updateBar();
 }
