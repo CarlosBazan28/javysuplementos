@@ -1,12 +1,12 @@
 /* ============================================================================
-   Sección Mensajes (leads): solicitudes que llegan del formulario de contacto.
-   El público (anon) inserta vía RLS; aquí el admin las lee, responde por
+   Sección Mensajes (leads): historial del formulario de contacto retirado.
+   Aquí el admin conserva las solicitudes anteriores, responde por
    WhatsApp y marca su estado. Lee de window.catalogDb.getLeads(); degrada
    elegante si falta la migración fase7-leads.sql.
    ============================================================================ */
-import { esc, ico, agoLabel } from "../helpers.js?v=adm-3d34d81a";
-import { setView, paint } from "../view.js?v=adm-3d34d81a";
-import { toast, emptyFeature } from "../ui.js?v=adm-3d34d81a";
+import { esc, ico, agoLabel } from "../helpers.js?v=adm-38070a5c";
+import { setView, paint } from "../view.js?v=adm-38070a5c";
+import { toast, emptyFeature } from "../ui.js?v=adm-38070a5c";
 
 const STATUS = [["", "Todos"], ["nuevo", "Nuevos"], ["atendido", "Atendidos"], ["archivado", "Archivados"]];
 const STATUS_LABEL = { nuevo: "Nuevo", atendido: "Atendido", archivado: "Archivado" };
@@ -29,7 +29,7 @@ function shell() {
     .join("");
   return `
     <div class="ad-section-intro">
-      <div><p class="ad-kicker">Mensajes</p><p>Solicitudes que llegan desde el formulario de contacto. Lo más reciente primero.</p></div>
+      <div><p class="ad-kicker">Mensajes</p><p>Historial de solicitudes capturadas antes de retirar el formulario. Lo más reciente primero.</p></div>
     </div>
     <div class="ad-filters">
       <span class="ad-filters__ico">${ico("filter")}</span>
@@ -64,7 +64,7 @@ function renderList() {
       ctx.status ? "Sin mensajes con ese estado" : "Sin mensajes todavía",
       ctx.status
         ? "No hay solicitudes que coincidan con el filtro elegido."
-        : "Cuando un cliente envíe el formulario de contacto, su solicitud aparecerá aquí."
+        : "No hay solicitudes históricas guardadas. Las cotizaciones nuevas llegan directamente por WhatsApp."
     ));
     return;
   }

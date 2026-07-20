@@ -68,17 +68,17 @@ default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; fram
 | `Referrer-Policy` | `strict-origin-when-cross-origin` |
 | `Permissions-Policy` | `geolocation=(), microphone=(), camera=()` |
 
-**CSP público** (una sola línea — incluye Instagram, Google Maps y analítica):
+**CSP público** (una sola línea — incluye Instagram y analítica):
 
 ```
-default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests; script-src 'self' https://cdn.jsdelivr.net https://www.instagram.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co https://*.cdninstagram.com https://*.fbcdn.net https://www.instagram.com; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com; frame-src https://www.instagram.com https://www.google.com
+default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests; script-src 'self' https://cdn.jsdelivr.net https://www.instagram.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co https://*.cdninstagram.com https://*.fbcdn.net https://www.instagram.com; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com; frame-src https://www.instagram.com
 ```
 
 ### Desplegar la CSP con red de seguridad (Report-Only primero)
 
 1. Antes de enforzar, crea las reglas usando el header **`Content-Security-Policy-Report-Only`**
    en vez de `Content-Security-Policy` (mismo valor).
-2. Navega todo el sitio (home con reels, contacto con mapa, login, panel) y revisa la consola del
+2. Navega todo el sitio (home con reels, Sobre nosotros, login, panel) y revisa la consola del
    navegador: no debe haber `Refused to load ...`.
 3. Cuando esté limpio, renombra el header a `Content-Security-Policy` (enforce).
 
@@ -102,19 +102,12 @@ Esto frena ataques de fuerza bruta a nivel de red, antes de llegar a Supabase.
 
 ---
 
-## 1.4b — Protección del formulario de contacto (leads)
+## 1.4b — Formulario de contacto retirado
 
-El formulario de contacto inserta `leads` en Supabase con la clave `anon` (lo permite RLS). En el
-código ya hay un **honeypot** que descarta bots tontos. Para frenar spam más insistente sin meter
-fricción a los humanos, añadí protección a nivel de borde:
-
-- **Cloudflare → Security → WAF → Rate limiting:** una regla sobre `http.request.uri.path eq
-  "/contacto.html"` (p. ej. 5 envíos por minuto por IP).
-- (Opcional) **Managed Challenge** de Cloudflare para esa ruta si llega spam real.
-
-Si en el futuro hace falta verificación fuerte del captcha en el insert, la vía correcta es una
-**Supabase Edge Function** que valide el token de Turnstile (siteverify) e inserte con service role.
-Queda anotado como mejora futura para no añadir un backend antes de necesitarlo.
+`contacto.html` ahora es la página **Sobre nosotros** y no inserta registros en `leads`. La tabla,
+sus políticas RLS y la sección Mensajes del panel se conservan únicamente para consultar el
+historial existente. Si hay una regla de rate limiting o Managed Challenge exclusiva para los
+envíos del antiguo formulario, puede retirarse manualmente de Cloudflare.
 
 ---
 
