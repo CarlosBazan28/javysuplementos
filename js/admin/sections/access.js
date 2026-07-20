@@ -1,10 +1,10 @@
 /* ============================================================================
    Sección Accesos: administradores con acceso al panel (activar/desactivar).
    ============================================================================ */
-import { state } from "../state.js?v=adm-3d34d81a";
-import { $, $$, esc } from "../helpers.js?v=adm-3d34d81a";
-import { setView } from "../view.js?v=adm-3d34d81a";
-import { switchMarkup, toast } from "../ui.js?v=adm-3d34d81a";
+import { state } from "../state.js?v=adm-38070a5c";
+import { $, $$, esc } from "../helpers.js?v=adm-38070a5c";
+import { setView } from "../view.js?v=adm-38070a5c";
+import { switchMarkup, toast } from "../ui.js?v=adm-38070a5c";
 
 export function renderAccess() {
   const initials = (s) => (s || "?").split(/[@.\s]+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");

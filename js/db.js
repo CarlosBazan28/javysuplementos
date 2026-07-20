@@ -510,7 +510,7 @@ async function getActivityLog(options = {}) {
   return data || [];
 }
 
-// Leads del formulario de contacto (más reciente primero). Solo admins (RLS).
+// Historial de leads del formulario retirado (más reciente primero). Solo admins (RLS).
 async function getLeads(options = {}) {
   ensureSupabaseForWrite();
   const { limit = 100, offset = 0, status } = options;

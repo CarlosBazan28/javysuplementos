@@ -3,12 +3,12 @@
    imagen, chips de sabores/tags, objetivos, validación inline y guardado con
    sincronización de sabores. Comportamiento idéntico al monolito original.
    ============================================================================ */
-import { state, catById, families, typesOf } from "../state.js?v=adm-3d34d81a";
-import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-3d34d81a";
-import { $, esc, ico } from "../helpers.js?v=adm-3d34d81a";
-import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-3d34d81a";
-import { requestRerender } from "../shell.js?v=adm-3d34d81a";
-import { reloadProducts } from "../data.js?v=adm-3d34d81a";
+import { state, catById, families, typesOf } from "../state.js?v=adm-38070a5c";
+import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-38070a5c";
+import { $, esc, ico } from "../helpers.js?v=adm-38070a5c";
+import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-38070a5c";
+import { requestRerender } from "../shell.js?v=adm-38070a5c";
+import { reloadProducts } from "../data.js?v=adm-38070a5c";
 
 // Arreglos de texto (beneficios/uso/descripción) ⇄ textarea (una línea por ítem).
 const linesToText = (v) => Array.isArray(v) ? v.join("\n") : (v || "");

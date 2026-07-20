@@ -85,7 +85,7 @@ contenido de los módulos: si el panel cambió, el token cambia y la caché baja
 - `index.html` — home: hero, productos destacados, reels de Instagram, footer.
 - `supplements-page.html` — catálogo filtrable.
 - `product-page.html` — detalle de producto, carga por `?id=` (UUID o legacy_id).
-- `contacto.html` — formulario de contacto y mapa.
+- `contacto.html` — página Sobre nosotros, acceso a WhatsApp y selector Google Maps/Waze.
 - `testimonios.html` — testimonios de clientes.
 - `login.html` — login de admin (Supabase Auth). Lleva `noindex`.
 - `admin.html` — panel de gestión de productos (protegido). Lleva `noindex`.
@@ -106,7 +106,7 @@ Los scripts cargan con `defer` y se comunican por objetos en `window`:
 - `window.PRODUCTS` — `js/product-data.js`. ~180 productos hardcodeados (fallback, ver abajo).
 
 Otros archivos de `js/`: `script.js` (home), `supplements.js` (catálogo + filtros),
-`product-page.js` (detalle + meta tags dinámicos), `contacto.js`, `login.js`,
+`product-page.js` (detalle + meta tags dinámicos), `contacto.js` (WhatsApp + ubicación), `login.js`,
 `testimonials.js`, `testimonials-data.js`, `supabase-config.js`, `whatsapp-config.js`.
 
 **Panel admin**: vive en `js/admin/` como módulos ES. La entrada es
@@ -154,7 +154,7 @@ commitear). Para el sentido inverso (sembrar Supabase desde el fallback la prime
 5. La seguridad real la impone **RLS en Supabase**, no la UI.
 
 El panel cubre: Dashboard, Productos, Sabores/variantes, Inicio (curación del home), Mensajes
-(leads del formulario de contacto), Categorías, Combos, Accesos y Ajustes, más el **drawer de
+(historial de leads capturados por el formulario anterior), Categorías, Combos, Accesos y Ajustes, más el **drawer de
 edición de producto**. Filtros de revisión:
 sin imagen, sin sabor, faltan sabores, sin sabores activos, revisar tipo de sabor, no disponibles,
 precio vacío, destacados.
@@ -168,8 +168,9 @@ precio vacío, destacados.
 - `categories` — categorías y tipos (Proteínas, Creatinas, Pre-entrenos, etc.).
 - `admin_profiles` — vincula usuarios de Auth con el rol admin.
 - `settings` — configuración tipo clave/valor (JSONB).
-- `leads` — solicitudes del formulario de contacto (anon **inserta**, solo admins **leen/gestionan**
-  vía RLS). Migración: `supabase/migrations/fase7-leads.sql`.
+- `leads` — historial de solicitudes del formulario anterior; la página pública ya no crea
+  registros, pero los admins conservan lectura/gestión vía RLS. Migración histórica:
+  `supabase/migrations/fase7-leads.sql`.
 
 **RLS activado** en todas las tablas: lectura pública, escritura solo para admins verificados vía
 la función `public.is_admin()`. En el frontend solo se usan claves públicas tipo `anon`
