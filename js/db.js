@@ -232,11 +232,11 @@ function normalizeProductFromDb(product) {
   const category = getUsefulText(product.category === "Producto" ? "" : product.category, product.categoria, product.tag) || "Producto";
   const presentation = product.presentation || product.presentacion || "";
   const price = Number(product.price ?? product.precio ?? (product.precio_centavos != null ? product.precio_centavos / 100 : 0));
-  const descriptionText = product.description_long || product.description || product.descripcion || product.subtitulo || "";
-  const descriptionShort = product.description_short || product.subtitulo || descriptionText;
-  const descriptionLines = Array.isArray(descriptionText)
-    ? descriptionText
-    : descriptionText.toString().split("\n").filter(Boolean);
+  // Los campos editoriales son manuales: una cadena o arreglo vacío debe seguir
+  // vacío, no convertirse en contenido genérico durante la normalización.
+  const descriptionText = product.description_long ?? product.description ?? product.descripcion ?? "";
+  const descriptionShort = product.description_short ?? product.subtitulo ?? "";
+  const descriptionLines = toTextLines(descriptionText);
 
   return {
     id: product.id,
@@ -289,21 +289,10 @@ function normalizeProductFromDb(product) {
     objetivos: goals,
     tag: available ? "Disponible" : "Consultar stock",
     alt: name,
-    subtitulo: descriptionShort || `${category}${presentation ? ` ${presentation}` : ""}.`,
-    beneficios: toTextLines(product.beneficios, [
-      goals.length ? `Apoya objetivos de ${goals.join(", ").toLowerCase()}.` : "Apoya tu rutina de suplementacion.",
-      "Producto disponible para cotizacion por WhatsApp.",
-      "Javy puede orientarte sobre uso, sabor y disponibilidad.",
-    ]),
-    descripcion: descriptionLines.length ? descriptionLines : [
-      `${name} es un producto de ${brand || "marca por confirmar"} dentro de la categoria ${category.toLowerCase()}.`,
-      `Precio de catalogo: $${price.toFixed(2)}.`,
-    ],
-    uso: toTextLines(product.uso, [
-      "Consultar la dosis indicada en la etiqueta del producto.",
-      "Usar como complemento de una alimentacion y entrenamiento adecuados.",
-      "Si tienes condiciones medicas o sensibilidad a estimulantes, consulta antes de usar.",
-    ]),
+    subtitulo: descriptionShort,
+    beneficios: toTextLines(product.beneficios),
+    descripcion: descriptionLines,
+    uso: toTextLines(product.uso),
   };
 }
 
@@ -358,9 +347,9 @@ function mapProductToDb(productData = {}) {
   const oldPrice = productData.old_price === "" || productData.old_price == null ? null : Number(productData.old_price);
   const presentation = productData.presentation?.trim() || null;
   const imageUrl = productData.image_url?.trim() || productData.image?.trim() || DB_PLACEHOLDER_IMAGE;
-  const descriptionShort = productData.description_short?.trim() || productData.subtitulo?.trim() || null;
-  const descriptionLong = productData.description_long?.trim() || productData.description?.trim() || null;
-  const descriptionLines = toTextLines(productData.descripcion || descriptionLong || descriptionShort);
+  const descriptionShort = productData.description_short?.trim() || null;
+  const descriptionLong = productData.description_long?.trim() || null;
+  const descriptionLines = toTextLines(descriptionLong);
   const description = descriptionLines.join("\n") || null;
   const available = productData.is_available ?? productData.available ?? true;
   const featured = productData.is_featured ?? productData.featured ?? false;
@@ -368,15 +357,9 @@ function mapProductToDb(productData = {}) {
   const showOnHome = productData.show_on_home ?? productData.featured ?? false;
   const homeOrder = productData.home_order === "" || productData.home_order == null ? null : Number(productData.home_order);
   const label = productData.label?.trim() || null;
-  const subtitle = descriptionShort || productData.subtitulo || `${category || "Producto"}${presentation ? ` ${presentation}` : ""}.`;
-  const benefits = toTextLines(productData.beneficios, [
-    category ? `Producto de la categoria ${category}.` : "Producto disponible para cotizacion.",
-    "Javy puede confirmar disponibilidad, precio final y forma de entrega por WhatsApp.",
-  ]);
-  const usage = toTextLines(productData.uso, [
-    "Consultar la dosis indicada en la etiqueta del producto.",
-    "Usar como complemento de una alimentacion y entrenamiento adecuados.",
-  ]);
+  const subtitle = descriptionShort || "";
+  const benefits = toTextLines(productData.beneficios);
+  const usage = toTextLines(productData.uso);
 
   const payload = {
     slug: getProductSlug(productData),
@@ -389,7 +372,7 @@ function mapProductToDb(productData = {}) {
     alt: name,
     whatsapp_mensaje: `Hola Javy, quiero asesoría sobre ${name}.`,
     beneficios: benefits,
-    descripcion: descriptionLines.length ? descriptionLines : [subtitle],
+    descripcion: descriptionLines,
     uso: usage,
     is_active: available,
     name,
@@ -400,8 +383,8 @@ function mapProductToDb(productData = {}) {
     presentation,
     image_url: imageUrl,
     description,
-    description_short: descriptionShort || subtitle,
-    description_long: descriptionLong || description,
+    description_short: descriptionShort,
+    description_long: descriptionLong,
     available,
     is_available: available,
     featured,

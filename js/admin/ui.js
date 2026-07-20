@@ -3,7 +3,7 @@
    toasts, modales (confirm/prompt), gate, markup de formulario y chips-input.
    Solo depende de helpers (esc, ico, DOM).
    ============================================================================ */
-import { $, $$, esc, ico } from "./helpers.js?v=adm-5e1d8f92";
+import { $, $$, esc, ico } from "./helpers.js?v=adm-3d34d81a";
 
 /* ----------------------------- toasts ----------------------------- */
 export function toast({ tone = "ok", msg = "", sub = "" }) {

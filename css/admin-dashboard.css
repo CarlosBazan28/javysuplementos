@@ -42,6 +42,7 @@
   --pb-blue-tint-08: rgba(90, 180, 233, 0.08);
   --pb-blue-tint-12: rgba(90, 180, 233, 0.12);
   --pb-blue-tint-18: rgba(90, 180, 233, 0.18);
+  --pb-green-tint-12: rgba(0, 230, 118, 0.12);
   --pb-hot-tint-12: rgba(255, 46, 99, 0.12);
   --pb-amber-tint-12: rgba(255, 179, 0, 0.12);
   --pb-white-04: rgba(255, 255, 255, 0.04);
@@ -407,20 +408,8 @@ body.ad-body { min-height: 100vh; }
 .ad-field__error .ad-ico { width: 14px; height: 14px; }
 .ad-field__help { color: var(--pb-muted); font-size: 0.78rem; }
 .ad-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-/* Fase 4: botón "Llenar con IA" en campos de texto (descripción, beneficios, uso) */
-.ad-field__labelrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.ad-ai-btn {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 4px 10px; border-radius: 999px;
-  border: 1px solid var(--pb-blue-tint-18);
-  background: var(--pb-blue-tint-08); color: #d2ecff;
-  font: inherit; font-size: 0.74rem; font-weight: 700;
-  cursor: pointer; white-space: nowrap; flex: 0 0 auto;
-  transition: background .15s ease, border-color .15s ease, opacity .15s ease;
-}
-.ad-ai-btn:hover { background: var(--pb-blue-tint-12); border-color: rgba(90,180,233,0.5); }
-.ad-ai-btn:disabled { opacity: 0.6; cursor: progress; }
+.ad-textarea--long { min-height: 170px; }
+.ad-textarea--list { min-height: 132px; }
 .ad-field__error:empty { display: none; }
 .ad-input-affix { position: relative; }
 .ad-input-affix__sign { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--pb-muted); font-weight: 600; pointer-events: none; }
@@ -567,7 +556,7 @@ body.ad-body { min-height: 100vh; }
 }
 .ad-modal__foot .ad-btn { flex: 1; }
 
-/* ---- Fase 3: drawer de producto a 2 columnas con vista previa en vivo ---- */
+/* ---- Drawer de producto con vista previa Card / Detalle ---- */
 .ad-modal--product { width: min(1180px, 100%); }
 .ad-modal--product .ad-modal__main { grid-template-columns: 190px minmax(0, 1fr) 340px; }
 .ad-modal__preview {
@@ -576,25 +565,71 @@ body.ad-body { min-height: 100vh; }
   padding: 18px;
   overflow-y: auto;
 }
+.ad-modal__preview-top { display: grid; gap: 10px; margin-bottom: 14px; }
 .ad-modal__preview-head {
-  margin: 0 0 14px;
+  margin: 0;
   font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--pb-muted-2);
 }
+.ad-preview-switch {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px;
+  border: 1px solid var(--pb-line); border-radius: 11px; background: rgba(5,7,9,0.55);
+}
+.ad-preview-switch button {
+  min-height: 44px; border: 0; border-radius: 8px; background: transparent;
+  color: var(--pb-muted); font: inherit; font-size: 0.8rem; font-weight: 800; cursor: pointer;
+}
+.ad-preview-switch button:hover { color: #fff; background: var(--pb-white-04); }
+.ad-preview-switch button.is-active { color: #dff3ff; background: var(--pb-blue-tint-18); }
+.ad-preview-switch button:focus-visible { outline: 2px solid var(--ad-blue); outline-offset: 2px; }
 .ad-preview-card { max-width: 300px; margin: 0 auto; }
 /* La card de la preview es sólo visual: no debe capturar clics ni foco. */
 .ad-modal__preview .product-card { pointer-events: none; }
 .ad-modal__preview .product-card:hover { transform: none; }
-.ad-preview-note { margin: 14px 0 0; text-align: center; font-size: 0.72rem; color: var(--pb-muted-2); }
+.ad-preview-note { margin: 14px 0 0; font-size: 0.72rem; line-height: 1.5; color: var(--pb-muted); }
+
+.ad-detail-preview {
+  width: 100%; min-width: 0; overflow: hidden;
+  border: 1px solid var(--pb-line); border-radius: 16px;
+  background: linear-gradient(145deg, rgba(16,23,34,0.98), rgba(8,12,18,0.98));
+  box-shadow: 0 16px 34px rgba(0,0,0,0.28);
+}
+.ad-detail-preview__media {
+  display: grid; place-items: center; min-height: 190px; padding: 18px;
+  background: radial-gradient(circle, rgba(90,180,233,0.12), transparent 68%);
+  border-bottom: 1px solid var(--pb-line);
+}
+.ad-detail-preview__media img { width: 100%; height: 180px; object-fit: contain; }
+.ad-detail-preview__content { display: grid; gap: 8px; padding: 16px; min-width: 0; }
+.ad-detail-preview__eyebrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--pb-muted); font-size: 0.68rem; line-height: 1.35; }
+.ad-detail-preview__status { flex: 0 0 auto; padding: 4px 8px; border-radius: 999px; font-weight: 800; }
+.ad-detail-preview__status.is-available { color: var(--pb-available); background: var(--pb-green-tint-12); }
+.ad-detail-preview__status.is-agotado { color: #ff9eb3; background: rgba(255,79,118,0.12); }
+.ad-detail-preview__brand { margin: 0; color: var(--pb-brand-bright); font-size: 0.7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.ad-detail-preview h3 { margin: 0; color: #fff; font-size: 1.15rem; line-height: 1.2; overflow-wrap: anywhere; }
+.ad-detail-preview__short { margin: 0; color: var(--pb-muted); font-size: 0.82rem; line-height: 1.5; overflow-wrap: anywhere; }
+.ad-detail-preview__price { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 2px 0 0; }
+.ad-detail-preview__price-now { color: var(--pb-brand-bright); font-size: 1.2rem; font-weight: 900; }
+.ad-detail-preview__price-old { color: var(--pb-muted-2); font-size: 0.78rem; text-decoration: line-through; }
+.ad-detail-preview__discount { padding: 3px 7px; border-radius: 999px; background: var(--pb-green-tint-12); color: var(--pb-available); font-size: 0.68rem; font-weight: 800; }
+.ad-detail-preview__sections { display: grid; gap: 16px; padding: 0 16px 18px; }
+.ad-detail-preview__sections section { min-width: 0; padding-top: 14px; border-top: 1px solid var(--pb-line); }
+.ad-detail-preview__sections h4 { margin: 0 0 8px; color: #fff; font-size: 0.83rem; }
+.ad-detail-preview__sections p, .ad-detail-preview__sections li { color: var(--pb-muted); font-size: 0.76rem; line-height: 1.55; overflow-wrap: anywhere; }
+.ad-detail-preview__sections p { margin: 0 0 8px; }
+.ad-detail-preview__sections p:last-child { margin-bottom: 0; }
+.ad-detail-preview__sections ul, .ad-detail-preview__sections ol { display: grid; gap: 6px; margin: 0; padding-left: 18px; }
+.ad-detail-preview__empty { color: var(--pb-muted) !important; font-style: italic; }
 
 /* En pantallas medianas/chicas el drawer de producto se apila: índice arriba,
    formulario, y la vista previa debajo (el <main> pasa a scrollear entero). */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .ad-modal--product { width: 100%; }
   .ad-modal--product .ad-modal__main { grid-template-columns: 1fr; overflow-y: auto; }
   .ad-modal--product .ad-modal__content { overflow: visible; }
   .ad-modal--product .ad-modal__preview { border-left: 0; border-top: 1px solid var(--pb-line); overflow: visible; }
   .ad-modal--product .ad-preview-card { max-width: 340px; }
+  .ad-modal--product .ad-detail-preview { max-width: 620px; margin: 0 auto; }
   .ad-modal--product .ad-modal__rail {
     flex-direction: row; gap: 6px; padding: 8px 12px;
     border-right: 0; border-bottom: 1px solid var(--pb-line);
@@ -605,7 +640,7 @@ body.ad-body { min-height: 100vh; }
   .ad-modal--product .ad-modal__rail-num { display: none; }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 767px) {
   .ad-modal-overlay { padding: 0; }
   .ad-modal { width: 100%; height: 100%; max-height: 100%; border: 0; border-radius: 0; }
   .ad-modal__main { grid-template-columns: 1fr; overflow-y: auto; }

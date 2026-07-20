@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <!-- Seguridad: CSP baseline versionada. El enforce real + frame-ancestors lo aplica Cloudflare (ver docs/seguridad-cloudflare.md). -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com" />
@@ -38,7 +38,7 @@
 
     <link rel="stylesheet" href="css/tokens.css?v=fase2-ui" />
     <link rel="stylesheet" href="css/components/cart.css?v=fase2-ui" />
-    <link rel="stylesheet" href="css/pages/product.css" />
+    <link rel="stylesheet" href="css/pages/product.css?v=product-detail-manual" />
     <link rel="stylesheet" href="css/dropdown.css?v=4" />
 
 
@@ -58,7 +58,7 @@
     <script src="js/icons.js?v=icons" defer></script>
     <script src="js/dropdown.js?v=4" defer></script>
     <script src="js/cart.js?v=fase2-ui" defer></script>
-    <script src="js/product-page.js" defer></script>
+    <script src="js/product-page.js?v=product-detail-manual" defer></script>
     <script src="js/include-nav.js?v=admin-auth" defer></script>
   </head>
   <body>
@@ -78,11 +78,18 @@
             <img id="prod-image" class="pdp__img" src="" alt="" />
           </figure>
 
-          <section class="pdp__info">
-            <div class="pdp__info-head">
-              <h1 id="prod-title" class="pdp__title"></h1>
+          <section class="pdp__info" aria-labelledby="prod-title">
+            <div class="pdp__eyebrow">
+              <p class="pdp__context">
+                <span id="prod-category-label"></span>
+                <span class="pdp__context-sep" aria-hidden="true">·</span>
+                <span id="prod-presentation"></span>
+              </p>
               <span class="pdp__status" data-status-pill></span>
             </div>
+
+            <p id="prod-brand-label" class="pdp__brand"></p>
+            <h1 id="prod-title" class="pdp__title"></h1>
             <p id="prod-subtitle" class="pdp__subtitle"></p>
             <p id="prod-price" class="pdp__price"></p>
 
@@ -102,7 +109,7 @@
                 <label class="pdp__label" for="prod-flavor-select">Sabores</label>
                 <div id="prod-flavors"></div>
               </div>
-              <div class="pdp__field">
+              <div class="pdp__field pdp__field--quantity">
                 <span class="pdp__label">Cantidad</span>
                 <div class="pdp__stepper" role="group" aria-label="Cantidad">
                   <button type="button" class="pdp__qty-btn" data-qty-dec aria-label="Disminuir">−</button>
@@ -116,67 +123,46 @@
 
             <p class="pdp__hint">Selecciona sabor y cantidad antes de agregarlo a la cotización.</p>
 
-            <button id="prod-add-consultation" type="button" class="pdp__cta" data-add-cta>
+            <button id="prod-add-consultation" type="button" class="pdp__cta" data-add-cta data-primary-cta>
               Agregar a cotización
             </button>
           </section>
 
-          <section class="pdp__details">
-            <h3 class="pdp__details-title">Información<span class="pdp__hide-mobile"> del producto</span></h3>
-            <div class="pdp__tabs">
-              <div class="pdp__tabs-bar" role="tablist" aria-label="Información del suplemento">
-                <button class="pdp__tab is-active" type="button" role="tab" aria-selected="true" data-tab="beneficios">Beneficios</button>
-                <button class="pdp__tab" type="button" role="tab" aria-selected="false" data-tab="descripcion">Descripción</button>
-                <button class="pdp__tab" type="button" role="tab" aria-selected="false" data-tab="uso">Cómo usar</button>
-              </div>
+          <section class="pdp__details" aria-labelledby="pdp-details-heading">
+            <div class="pdp__details-head">
+              <p class="pdp__details-kicker">Conocé el producto</p>
+              <h2 id="pdp-details-heading" class="pdp__details-title">Información completa</h2>
+            </div>
 
-              <div class="pdp__panels">
-                <article class="pdp__panel is-active" data-panel="beneficios">
-                  <button class="pdp__acc-head" type="button" data-acc aria-expanded="true">
-                    <span>Beneficios</span>
-                    <span class="pdp__acc-icon" aria-hidden="true"></span>
-                  </button>
-                  <div class="pdp__panel-body">
-                    <h4 class="pdp__panel-title">Beneficios principales</h4>
-                    <div id="tab-beneficios" class="pdp__benefits"></div>
-                  </div>
-                </article>
+            <div class="pdp__details-grid">
+              <section class="pdp__content-section pdp__content-section--description" data-content-section="description" aria-labelledby="pdp-description-heading">
+                <h3 id="pdp-description-heading">Descripción</h3>
+                <div id="tab-descripcion" class="pdp__prose"></div>
+              </section>
 
-                <article class="pdp__panel" data-panel="descripcion">
-                  <button class="pdp__acc-head" type="button" data-acc aria-expanded="false">
-                    <span>Descripción</span>
-                    <span class="pdp__acc-icon" aria-hidden="true"></span>
-                  </button>
-                  <div class="pdp__panel-body">
-                    <div id="tab-descripcion" class="pdp__prose"></div>
-                  </div>
-                </article>
+              <section class="pdp__content-section" data-content-section="benefits" aria-labelledby="pdp-benefits-heading">
+                <h3 id="pdp-benefits-heading">Beneficios</h3>
+                <div id="tab-beneficios" class="pdp__benefits"></div>
+              </section>
 
-                <article class="pdp__panel" data-panel="uso">
-                  <button class="pdp__acc-head" type="button" data-acc aria-expanded="false">
-                    <span>Cómo usar</span>
-                    <span class="pdp__acc-icon" aria-hidden="true"></span>
-                  </button>
-                  <div class="pdp__panel-body">
-                    <div id="tab-uso" class="pdp__prose"></div>
-                  </div>
-                </article>
-              </div>
+              <section class="pdp__content-section" data-content-section="usage" aria-labelledby="pdp-usage-heading">
+                <h3 id="pdp-usage-heading">Cómo usar</h3>
+                <ol id="tab-uso" class="pdp__usage"></ol>
+              </section>
             </div>
           </section>
         </div>
 
-        <div class="pdp__bar">
+        <aside class="pdp__bar" aria-label="Acciones de compra" aria-hidden="true">
           <div class="pdp__bar-info">
             <span class="pdp__bar-strong pdp__bar-price" id="pdp-bar-price"></span>
-            <span class="pdp__bar-strong pdp__bar-ready">Listo para cotizar</span>
             <span class="pdp__bar-sub">
               <span data-bar-units>1 unidad</span>
               <span class="pdp__bar-flavornote" data-bar-flavor> · sabor por elegir</span>
             </span>
           </div>
           <button type="button" class="pdp__cta pdp__bar-cta" data-add-cta>Agregar a cotización</button>
-        </div>
+        </aside>
 
       </div>
     </main>
