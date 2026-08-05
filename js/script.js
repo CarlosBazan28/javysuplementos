@@ -195,7 +195,7 @@ function renderFeaturedProducts(productos) {
     card.classList.add("product-card");
     if (product.imagenPendiente) card.classList.add("product-card--image-pending");
 
-    const detailUrl = `product-page.html?id=${encodeURIComponent(product.id)}`;
+    const detailUrl = window.javyProductUrl?.forProduct?.(product) || `product-page.html?id=${encodeURIComponent(product.id)}`;
     card.innerHTML = `
       <a class="product-card__media product-card__media-link" href="${detailUrl}" aria-label="Ver ${escapeHTML(product.name)}">
         <img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.name)}" class="product-card__img" loading="lazy" />

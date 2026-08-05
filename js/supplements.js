@@ -714,7 +714,7 @@ function renderFilters() {
 function renderProductCard(product) {
   const canQuote = productCanBeQuoted(product);
   // encodeURIComponent + escapeHTML: la URL ya va segura y explícita en el markup.
-  const detailUrl = escapeHTML(`product-page.html?id=${encodeURIComponent(product.id)}`);
+  const detailUrl = escapeHTML(window.javyProductUrl?.forProduct?.(product) || `product-page.html?id=${encodeURIComponent(product.id)}`);
   const card = document.createElement("article");
   card.className = `product-card${product.imagenPendiente ? " product-card--image-pending" : ""}`;
 

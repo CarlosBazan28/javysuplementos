@@ -49,6 +49,10 @@ manual, por chat.
 | `/aligerar-imagenes` | Convierte PNG pesados a WebP y actualiza las referencias. |
 | `/revisar-cambios` | Lanza en paralelo la revisión de diseño + lógica de tus cambios. |
 
+Además, `node scripts/generate-pages.mjs` regenera las páginas estáticas del catálogo
+(`producto/`, `categoria/`, `js/product-urls.js` y `sitemap.xml`) desde Supabase. **Corrélo
+cada vez que cambien productos o categorías** y revisá el `git diff` antes de commitear.
+
 La lógica de `/guardar` y `/estado-ramas` vive en `scripts/guardar.sh` y `scripts/estado-ramas.sh`
 (usables también desde cualquier terminal, por Claude y por Codex).
 
@@ -64,6 +68,8 @@ contenido de los módulos: si el panel cambió, el token cambia y la caché baja
 
 ```text
 /                      páginas .html (7)
+/producto/<slug>/      fichas estáticas generadas (una por producto)
+/categoria/<slug>/     landings de categoría generadas
 /css                   estilos
   /components          nav, auth, cards, cart, buttons, footer (reutilizables)
   /pages               home, supplements, products, contacto, login, testimonials
@@ -84,7 +90,13 @@ contenido de los módulos: si el panel cambió, el token cambia y la caché baja
 
 - `index.html` — home: hero, productos destacados, reels de Instagram, footer.
 - `supplements-page.html` — catálogo filtrable.
-- `product-page.html` — detalle de producto, carga por `?id=` (UUID o legacy_id).
+- `product-page.html` — detalle de producto, carga por `?id=` (UUID o legacy_id). Sigue vivo
+  para no romper enlaces ya compartidos, pero su `canonical` apunta a `/producto/<slug>/`.
+- `producto/<slug>/index.html` — **generadas** por `scripts/generate-pages.mjs`. Traen title,
+  meta description, Open Graph y JSON-LD ya escritos en el HTML (los scrapers de WhatsApp y
+  Facebook no ejecutan JS, así que sin esto el preview salía genérico). Se hidratan con
+  Supabase al cargar; si Supabase no responde, conservan el contenido estático.
+- `categoria/<slug>/index.html` — **generadas**. Landing por categoría con al menos 3 productos.
 - `contacto.html` — página Sobre nosotros, acceso a WhatsApp y selector Google Maps/Waze.
 - `testimonios.html` — testimonios de clientes.
 - `login.html` — login de admin (Supabase Auth). Lleva `noindex`.

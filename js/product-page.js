@@ -126,16 +126,22 @@ function getQuantity() {
 
 async function initProductPage() {
   const params = new URLSearchParams(window.location.search);
-  const productId = params.get("id");
+  // En /producto/<slug>/ no hay ?id=: la página generada lo declara en
+  // data-product-id (un <script> inline lo bloquearía la CSP).
+  const prerenderedId = document.querySelector(".pdp[data-product-id]")?.dataset.productId || "";
+  const productId = params.get("id") || prerenderedId;
 
   if (!productId || !window.catalogDb) {
-    renderNotFound();
+    if (!prerenderedId) renderNotFound();
     return;
   }
 
   const product = await window.catalogDb.getProductById(productId);
   if (!product) {
-    renderNotFound();
+    // En /producto/<slug>/ el HTML ya trae nombre, precio y descripción escritos.
+    // Si Supabase no responde, conservarlo es mejor que borrarlo: la página
+    // sigue siendo útil y legible en vez de mostrar "no encontrado".
+    if (!prerenderedId) renderNotFound();
     return;
   }
 
@@ -150,7 +156,12 @@ async function initProductPage() {
     return SITE_BASE + String(path).replace(/^\/+/, "");
   };
 
-  const pageUrl = `${SITE_BASE}product-page.html?id=${encodeURIComponent(productId)}`;
+  // Canonical siempre a la URL limpia: si se entra por el enlace viejo
+  // (product-page.html?id=), Google consolida la autoridad en /producto/<slug>/.
+  const cleanPath = window.javyProductUrl?.forId?.(productId) || "";
+  const pageUrl = cleanPath.startsWith("/producto/")
+    ? SITE_BASE + cleanPath.replace(/^\/+/, "")
+    : `${SITE_BASE}product-page.html?id=${encodeURIComponent(productId)}`;
   const imageUrl = toAbsoluteUrl(product.image);
   const shortDescription = String(product.description_short || product.subtitulo || "").trim();
   const metaDescription = shortDescription || `${product.name} — Cotizá ahora por WhatsApp con Javy Suplementos.`;
@@ -335,7 +346,7 @@ function renderNotFound() {
       <div>
         <h1 style="margin-bottom:0.75rem;">Producto no encontrado</h1>
         <p style="margin-bottom:1rem;color:#A9B4C6;">Verifica el enlace o vuelve al catalogo.</p>
-        <a href="supplements-page.html" style="color:#5AB4E9;text-decoration:none;font-weight:500;">Volver al catalogo</a>
+        <a href="/supplements-page.html" style="color:#5AB4E9;text-decoration:none;font-weight:500;">Volver al catalogo</a>
       </div>
     </main>
   `;

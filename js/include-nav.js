@@ -3,7 +3,7 @@
   if (!host) return;
 
   document.body.classList.add("page-transition");
-  const html = await fetch("Editables/nav.html", { cache: "no-store" }).then((response) => response.text());
+  const html = await fetch("/Editables/nav.html", { cache: "no-store" }).then((response) => response.text());
   host.innerHTML = html;
   window.javyIcons?.enhance?.(host);
   document.dispatchEvent(new CustomEvent("javy:nav-ready"));
