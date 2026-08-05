@@ -1,6 +1,14 @@
 # Productos a verificar manualmente
 
 **Generado el 2026-08-04 · 49 de 111 productos**
+**Actualizado el 2026-08-05 · quedan 48** — ver el bloque E, ya resuelto.
+
+> **Llenado de contenido (2026-08-05).** Se completaron en Supabase los 5 productos que
+> seguían con contenido incompleto o con texto de relleno: BioSport Xtreme Gainer,
+> C4 Whey Protein 2.2 lb, Zinc Chelate 50 mg, Lipodrene Fat Burner y Creatina Nutrex.
+> Hoy **ningún producto activo** tiene menos de 4 beneficios, menos de 3 líneas de uso,
+> ni objetivos vacíos. Esto es independiente de la verificación de marcas de abajo, que
+> sigue pendiente.
 
 Estos son los productos donde **la marca o el nombre no están claros** en la base de datos.
 Sin una identidad correcta no se puede buscar información veraz del producto, y la regla
@@ -102,11 +110,24 @@ los filtros de la tienda **el mismo fabricante aparezca varias veces**.
 
 ---
 
-## E. Registro incompleto — 1 producto
+## E. Registro incompleto — ✅ resuelto (era 1 producto)
 
-| Producto | Marca | Presentación | Precio | Nota |
+La imagen cargada (`creatine-nutrex-60srv.png`) identificó el registro: es la **creatina
+Nutrex de 60 servidas**. Se le completaron marca, presentación, objetivos, beneficios y
+modo de uso.
+
+| Producto | Marca | Presentación | Precio | Estado |
 |---|---|---|---|---|
-| **Producto sin nombre** | **falta** | **falta** | $15.99 | Registro sin identificar. **Tiene imagen cargada** — mirala para saber qué es, o borralo del catálogo |
+| Creatina Nutrex - 60 Servidas | Nutrex ✅ | 60 servidas ✅ | $15.99 | Contenido completo |
+
+> ⚠️ **Pero es un duplicado.** Ya existe `Nutrex Creatine Monohydrate 60 servidas`
+> (Nutrex, 60 servidas, **$15.00**), que además está marcada para aparecer en la home y ya
+> tenía su contenido escrito. Ahora la misma creatina figura dos veces en el catálogo con
+> dos precios distintos.
+>
+> **Falta decidir:** desactivar el duplicado (`is_active = false`, recomendado — se puede
+> revertir), borrarlo, o dejar los dos. Mientras tanto quedó con `category = 'Producto'`
+> a propósito, así no aparece en el filtro de Creatinas junto al original.
 
 ---
 
@@ -135,9 +156,9 @@ producto es. Muchas marcas tienen varias líneas con nombres parecidos.
 | B · Marca es el nombre del producto | 11 | 🟡 Media — 5 son deducibles |
 | C · Marca es un sabor | 2 | 🟢 Baja — ya sabemos la respuesta (Cellucor) |
 | D · Typos y duplicados | 10 | 🟢 Baja — corrección directa |
-| E · Registro incompleto | 1 | 🟡 Media — mirar la imagen |
+| E · Registro incompleto | ~~1~~ → 0 | ✅ Resuelto — falta decidir el duplicado |
 | F · Nombre genérico o duplicado | 7 | 🟡 Media — comparar con el envase |
-| **Total a revisar** | **49** | |
+| **Total a revisar** | **48** | |
 | **Listos para llenado automático** | **62** | |
 
 ### Dato aparte: 22 productos sin presentación
