@@ -354,3 +354,34 @@ async function initHomeCombos() {
 }
 
 initHomeCombos();
+
+// Carga el embed de Instagram (iframes pesados) solo cuando la sección de
+// reels está por entrar en pantalla, en vez de bloquear la carga inicial.
+function initInstagramLazyLoad() {
+  const section = document.getElementById("educacion");
+  if (!section) return;
+
+  const loadEmbedScript = () => {
+    if (document.querySelector('script[src*="instagram.com/embed.js"]')) return;
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://www.instagram.com/embed.js";
+    document.body.appendChild(script);
+  };
+
+  if (!("IntersectionObserver" in window)) {
+    loadEmbedScript();
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    if (entries.some((entry) => entry.isIntersecting)) {
+      loadEmbedScript();
+      observer.disconnect();
+    }
+  }, { rootMargin: "400px 0px" });
+
+  observer.observe(section);
+}
+
+initInstagramLazyLoad();
