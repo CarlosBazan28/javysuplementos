@@ -3,7 +3,7 @@
   "short_name": "Javy",
   "description": "Suplementos deportivos 100% originales en Panamá. Armá tu cotización y enviala por WhatsApp.",
   "lang": "es-PA",
-  "start_url": "/index.html",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#050709",

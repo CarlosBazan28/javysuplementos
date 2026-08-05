@@ -62,6 +62,49 @@ function renderFlavorField(product) {
   if (window.javyDropdown) window.javyDropdown.enhanceSelects(flavorsEl);
 }
 
+function injectProductStructuredData(product, { pageUrl, imageUrl, metaDescription, canQuote }) {
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        name: product.name,
+        image: imageUrl,
+        description: metaDescription,
+        url: pageUrl,
+        ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),
+        ...(product.price > 0
+          ? {
+              offers: {
+                "@type": "Offer",
+                price: Number(product.price).toFixed(2),
+                priceCurrency: "USD",
+                availability: canQuote ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                url: pageUrl,
+              },
+            }
+          : {}),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Catálogo", item: "https://javysuplementos.com/supplements-page.html" },
+          { "@type": "ListItem", position: 2, name: product.name, item: pageUrl },
+        ],
+      },
+    ],
+  };
+
+  let script = document.getElementById("product-jsonld");
+  if (!script) {
+    script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = "product-jsonld";
+    document.head.appendChild(script);
+  }
+  script.textContent = JSON.stringify(data);
+}
+
 function wireQuantityStepper(onChange) {
   const valueEl = document.querySelector("[data-qty-value]");
   if (!valueEl) return;
@@ -126,6 +169,7 @@ async function initProductPage() {
   if (canonicalEl) canonicalEl.setAttribute("href", pageUrl);
 
   const canQuote = productCanBeQuoted(product);
+  injectProductStructuredData(product, { pageUrl, imageUrl, metaDescription, canQuote });
   const category = product.category || "Producto";
   const presentation = product.presentation || "";
   const priceText = product.price > 0 ? `$${product.price.toFixed(2)}` : "Consultar precio";

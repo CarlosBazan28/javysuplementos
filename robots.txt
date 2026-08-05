@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /admin.html
 Disallow: /login.html
+Disallow: /Editables/
 
 Sitemap: https://javysuplementos.com/sitemap.xml
