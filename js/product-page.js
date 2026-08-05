@@ -62,6 +62,49 @@ function renderFlavorField(product) {
   if (window.javyDropdown) window.javyDropdown.enhanceSelects(flavorsEl);
 }
 
+function injectProductStructuredData(product, { pageUrl, imageUrl, metaDescription, canQuote }) {
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        name: product.name,
+        image: imageUrl,
+        description: metaDescription,
+        url: pageUrl,
+        ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),
+        ...(product.price > 0
+          ? {
+              offers: {
+                "@type": "Offer",
+                price: Number(product.price).toFixed(2),
+                priceCurrency: "USD",
+                availability: canQuote ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                url: pageUrl,
+              },
+            }
+          : {}),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Catálogo", item: "https://javysuplementos.com/supplements-page.html" },
+          { "@type": "ListItem", position: 2, name: product.name, item: pageUrl },
+        ],
+      },
+    ],
+  };
+
+  let script = document.getElementById("product-jsonld");
+  if (!script) {
+    script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = "product-jsonld";
+    document.head.appendChild(script);
+  }
+  script.textContent = JSON.stringify(data);
+}
+
 function wireQuantityStepper(onChange) {
   const valueEl = document.querySelector("[data-qty-value]");
   if (!valueEl) return;
@@ -83,16 +126,22 @@ function getQuantity() {
 
 async function initProductPage() {
   const params = new URLSearchParams(window.location.search);
-  const productId = params.get("id");
+  // En /producto/<slug>/ no hay ?id=: la página generada lo declara en
+  // data-product-id (un <script> inline lo bloquearía la CSP).
+  const prerenderedId = document.querySelector(".pdp[data-product-id]")?.dataset.productId || "";
+  const productId = params.get("id") || prerenderedId;
 
   if (!productId || !window.catalogDb) {
-    renderNotFound();
+    if (!prerenderedId) renderNotFound();
     return;
   }
 
   const product = await window.catalogDb.getProductById(productId);
   if (!product) {
-    renderNotFound();
+    // En /producto/<slug>/ el HTML ya trae nombre, precio y descripción escritos.
+    // Si Supabase no responde, conservarlo es mejor que borrarlo: la página
+    // sigue siendo útil y legible en vez de mostrar "no encontrado".
+    if (!prerenderedId) renderNotFound();
     return;
   }
 
@@ -107,7 +156,12 @@ async function initProductPage() {
     return SITE_BASE + String(path).replace(/^\/+/, "");
   };
 
-  const pageUrl = `${SITE_BASE}product-page.html?id=${encodeURIComponent(productId)}`;
+  // Canonical siempre a la URL limpia: si se entra por el enlace viejo
+  // (product-page.html?id=), Google consolida la autoridad en /producto/<slug>/.
+  const cleanPath = window.javyProductUrl?.forId?.(productId) || "";
+  const pageUrl = cleanPath.startsWith("/producto/")
+    ? SITE_BASE + cleanPath.replace(/^\/+/, "")
+    : `${SITE_BASE}product-page.html?id=${encodeURIComponent(productId)}`;
   const imageUrl = toAbsoluteUrl(product.image);
   const shortDescription = String(product.description_short || product.subtitulo || "").trim();
   const metaDescription = shortDescription || `${product.name} — Cotizá ahora por WhatsApp con Javy Suplementos.`;
@@ -126,6 +180,7 @@ async function initProductPage() {
   if (canonicalEl) canonicalEl.setAttribute("href", pageUrl);
 
   const canQuote = productCanBeQuoted(product);
+  injectProductStructuredData(product, { pageUrl, imageUrl, metaDescription, canQuote });
   const category = product.category || "Producto";
   const presentation = product.presentation || "";
   const priceText = product.price > 0 ? `$${product.price.toFixed(2)}` : "Consultar precio";
@@ -291,7 +346,7 @@ function renderNotFound() {
       <div>
         <h1 style="margin-bottom:0.75rem;">Producto no encontrado</h1>
         <p style="margin-bottom:1rem;color:#A9B4C6;">Verifica el enlace o vuelve al catalogo.</p>
-        <a href="supplements-page.html" style="color:#5AB4E9;text-decoration:none;font-weight:500;">Volver al catalogo</a>
+        <a href="/supplements-page.html" style="color:#5AB4E9;text-decoration:none;font-weight:500;">Volver al catalogo</a>
       </div>
     </main>
   `;

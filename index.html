@@ -10,11 +10,11 @@
 
     <!-- SEO -->
     <meta name="description" content="Suplementos deportivos 100% originales en Panamá. Mirá los precios, armá tu cotización y enviala directo por WhatsApp. Proteínas, creatinas, quemadores y más.">
-    <link rel="canonical" href="https://javysuplementos.com/index.html">
+    <link rel="canonical" href="https://javysuplementos.com/">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://javysuplementos.com/index.html">
+    <meta property="og:url" content="https://javysuplementos.com/">
     <meta property="og:title" content="Javy Suplementos | Suplementos originales en Panamá">
     <meta property="og:description" content="Suplementos deportivos 100% originales en Panamá. Mirá los precios, armá tu cotización y enviala directo por WhatsApp.">
     <meta property="og:image" content="https://javysuplementos.com/img/icons/javy-web-app-icon-1024.png">
@@ -32,6 +32,51 @@
     <link rel="apple-touch-icon" href="/img/icons/javy-app-icon-ios-ipados-1024.png?v=2" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#050709" />
+
+    <!-- Structured data: negocio + sitio -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://javysuplementos.com/#website",
+          "url": "https://javysuplementos.com/",
+          "name": "Javy Suplementos",
+          "inLanguage": "es-PA",
+          "publisher": { "@id": "https://javysuplementos.com/#business" }
+        },
+        {
+          "@type": "SportingGoodsStore",
+          "@id": "https://javysuplementos.com/#business",
+          "name": "Javy Suplementos",
+          "url": "https://javysuplementos.com/",
+          "image": "https://javysuplementos.com/img/icons/javy-web-app-icon-1024.png",
+          "logo": "https://javysuplementos.com/img/icons/javy-web-app-icon-1024.png",
+          "telephone": "+50763932305",
+          "priceRange": "$$",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "San Miguelito",
+            "addressRegion": "Panamá",
+            "addressCountry": "PA"
+          },
+          "areaServed": "PA",
+          "openingHoursSpecification": {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            "opens": "08:00",
+            "closes": "20:00"
+          },
+          "sameAs": [
+            "https://instagram.com/javy.supplements",
+            "https://tiktok.com/@javysuplementos",
+            "https://facebook.com/javysuplementos"
+          ]
+        }
+      ]
+    }
+    </script>
     <link rel="stylesheet" href="css/styles.css?v=fase2-ui">
     <link rel="stylesheet" href="css/components/nav.css?v=fase2-ui">
     <link rel="stylesheet" href="css/components/auth.css?v=session-state">
@@ -44,12 +89,15 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fodwjfiyfmscklqsqrip.supabase.co" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="js/supabase-config.js" defer></script>
     <script src="js/whatsapp-config.js?v=central-links" defer></script>
     <script src="js/product-data.js" defer></script>
+    <script src="js/product-urls.js?v=seo-urls" defer></script>
     <script src="js/db.js?v=no-img-fallback" defer></script>
     <script src="js/auth.js?v=session-state" defer></script>
     <script src="js/icons.js?v=icons" defer></script>
@@ -63,7 +111,7 @@
     <main class="main__container">
       <section class="hero">
         <div class="hero__slogan">
-          <h2>Tu Salud y Bienestar es nuestra prioridad</h2>
+          <h1>Tu Salud y Bienestar es nuestra prioridad</h1>
           <p class="hero__copy">Suplementos originales, asesoria directa y cotizaciones por WhatsApp para elegir mejor.</p>
           <div class="hero__button">
             <button class="hero__button--pri">Ver productos</button> <button class="hero__button--sec">Abrir cotización</button>
@@ -73,6 +121,9 @@
           class="hero__img"
           src="img/images/javi.webp"
           alt="Javito posando con proteina"
+          width="1313"
+          height="1198"
+          fetchpriority="high"
         />
       </section>
       <section class="top-products" id="productos">
@@ -146,14 +197,12 @@
       </div>
     </section>
 
-    <script async src="//www.instagram.com/embed.js"></script>
-
     <footer class="footer">
   <div class="footer__glow"></div>                                         
   <div class="footer__inner">
     <div class="footer__grid">
       <div class="footer__brand">
-        <h2 class="footer__logo">Javy Supplements</h2>
+        <p class="footer__logo">Javy Supplements</p>
         <p class="footer__text">
           Tu salud y bienestar son nuestra prioridad.  
           Productos originales, información de calidad y acompañamiento real en tu proceso.
@@ -177,7 +226,7 @@
         <ul class="footer__list footer__list--contact">
           <li>📍 San Miguelito, Panama</li>
           <li>📞 <a data-javy-whatsapp data-javy-phone aria-label="WhatsApp de Javy" target="_blank" rel="noopener"></a></li>
-          <li>📧 <a href="mailto:contacto@pboom.com">correodejavito@pboom.com</a></li>
+          <li>📧 <a href="mailto:correodejavito@pboom.com">correodejavito@pboom.com</a></li>
           <li>🕐 Lunes a Sábado: 8:00 am – 8:00 pm</li>
         </ul>
         <a class="footer__cta" data-javy-whatsapp data-whatsapp-message="Hola Javy, necesito asesoría sobre suplementos" target="_blank" rel="noopener">
@@ -195,7 +244,7 @@
       </div>
     </div>
     <div class="footer__bottom">
-      <p>© 2024 Javy Supplements — Todos los derechos reservados.</p>
+      <p>© 2026 Javy Supplements — Todos los derechos reservados.</p>
       <p class="footer__dev">Sitio desarrollado por Bazan Dev.</p>
     </div>
   </div>
