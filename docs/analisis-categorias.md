@@ -222,7 +222,55 @@ publicar puertas de entrada por categoría mientras la mitad del catálogo no es
 
 ---
 
-## 7. Decisiones que necesitan al dueño
+## 7. Interacción con las páginas estáticas de categoría (`scripts/generate-pages.mjs`)
+
+> Añadido después del commit `5d31b77 seo: Fase 2 - páginas estáticas por producto y categoría`,
+> que adelanta parte de la fase 5 de este plan. **Hereda el problema de la sección 2.1 y conviene
+> revisarlo antes de mergear a producción.**
+
+El generador agrupa los productos por **`category_id` exacto**, sin acumular las subcategorías en su
+familia (`scripts/generate-pages.mjs:566-572`), y descarta las categorías con menos de 3 productos
+directos (`MIN_PRODUCTS_PER_CATEGORY`, línea 44). Con los datos actuales eso produce **9 páginas**:
+
+| Página generada | Nivel | Productos en la página | Total real de la rama |
+|---|---|---:|---:|
+| `/categoria/whey` | subcategoría | 13 | 13 |
+| `/categoria/iso-aislada` | subcategoría | 12 | 12 |
+| `/categoria/mass-gainer` | subcategoría | 8 | 8 |
+| `/categoria/salud-y-bienestar` | familia | 21 | 28 |
+| `/categoria/quemadores` | familia | 10 | 10 |
+| `/categoria/creatina` | familia | 9 | 11 |
+| `/categoria/pre-entrenos` | familia | 8 | 9 |
+| `/categoria/aminoacidos` | familia | 5 | 9 |
+| `/categoria/potenciadores-hormonales` | familia | 3 | 3 |
+
+*(La diferencia entre ambas columnas son los productos que cuelgan de subcategorías —el generador no
+los sube a la familia— más los 2 productos no disponibles que el script filtra.)*
+
+Tres consecuencias:
+
+1. **Proteínas no tiene página.** La familia más grande del catálogo (27 productos) tiene 0 productos
+   asignados directamente, así que no supera el umbral y queda fuera. Lo mismo pasa con
+   **Ganadores de Peso** (8) y **Energía y rendimiento** (4). Es decir: las tres familias mejor
+   categorizadas son justamente las que se quedaron sin landing.
+2. **Las páginas de familia que sí existen, existen por el defecto de datos.** Salud y bienestar,
+   Quemadores, Pre-entrenos, Creatina, Aminoácidos y Potenciadores obtuvieron página únicamente
+   porque sus productos están mal colgados de la familia. Además quedan incompletas: la de Salud y
+   bienestar lista 21 de 28, la de Aminoácidos 5 de 9.
+3. **Al arreglar los datos, estas URLs desaparecen.** Cuando se repartan los 58 productos sueltos
+   (fase 4), esas 6 familias se quedarán con 0 productos directos y el generador dejará de emitir sus
+   páginas — después de que Google las haya indexado. Es una trampa de 404s a futuro.
+
+**Arreglo propuesto**: que el conteo y el listado de cada familia incluyan sus subcategorías
+(`category_id` propio **o** `parent_id` = la familia). Con eso Proteínas, Ganadores y Energía pasan a
+tener página, las de familia quedan completas, y ninguna depende ya de la mala asignación: sobreviven
+intactas al reparto de la fase 4. Queda por decidir si familia y subcategoría deben convivir en el
+mismo nivel de URL (`/categoria/whey` junto a `/categoria/proteinas`) o anidarse
+(`/categoria/proteinas/whey`).
+
+---
+
+## 8. Decisiones que necesitan al dueño
 
 1. ¿Se fusiona "Energía y rendimiento" dentro de Pre-entrenos, o se mantiene como familia propia?
 2. ¿"Potenciadores hormonales" (3 productos) se mantiene visible o se esconde hasta tener más inventario?
