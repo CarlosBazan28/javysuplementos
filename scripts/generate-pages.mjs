@@ -47,9 +47,14 @@ const MIN_PRODUCTS_PER_CATEGORY = 3;
 // familias. Se mantienen como redirección permanente hacia su familia para no
 // devolver 404 a lo que ya está indexado. Mapea slug viejo -> nombre de familia.
 const LEGACY_CATEGORY_REDIRECTS = {
+  // Subcategorías que llegaron a tener página propia.
   "whey": "Proteínas",
   "iso-aislada": "Proteínas",
   "mass-gainer": "Ganadores de Peso",
+  // Familias cuyo slug cambió al fusionar Energía dentro de Pre-entrenos
+  // (fase8-taxonomia.sql): el slug sale del nombre, y el nombre cambió.
+  "pre-entrenos": "Pre-entrenos y energía",
+  "energia-y-rendimiento": "Pre-entrenos y energía",
 };
 
 /* ------------------------------- utilidades ------------------------------ */

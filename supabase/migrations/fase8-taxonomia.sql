@@ -16,6 +16,24 @@
 --   el bloque opcional del final.
 -- ============================================================
 
+-- ------------------------------------------------------------
+-- RESPALDO — correr ANTES de la migración. `goals` y `category` se reescriben
+-- de forma irreversible, así que el snapshot vive en la propia base.
+-- ------------------------------------------------------------
+-- drop table if exists public.categories_backup_fase8;
+-- drop table if exists public.products_backup_fase8;
+-- create table public.categories_backup_fase8 as select * from public.categories;
+-- create table public.products_backup_fase8 as
+--   select id, category_id, category, goals from public.products;
+--
+-- RESTAURAR (si algo salió mal):
+-- insert into public.categories select * from public.categories_backup_fase8
+--   on conflict (id) do update set name = excluded.name, slug = excluded.slug,
+--     sort_order = excluded.sort_order, is_active = excluded.is_active,
+--     parent_id = excluded.parent_id;
+-- update public.products p set category_id = b.category_id, category = b.category,
+--   goals = b.goals from public.products_backup_fase8 b where p.id = b.id;
+
 begin;
 
 -- ------------------------------------------------------------
@@ -159,13 +177,17 @@ commit;
 -- VERIFICACIÓN (correr por separado, NO es parte de la migración).
 -- ============================================================
 
--- A) Familias con su inventario real (directos + subcategorías):
+-- A) Familias con su inventario real (directos + subcategorías).
+--    OJO: no unir contra las subcategorías como filas (`join categories t`) y
+--    contar ahí — cada producto suelto se contaría una vez por subcategoría y
+--    los totales salen inflados. La subconsulta evita ese fan-out.
 -- select f.name, f.sort_order,
---        count(p.id) filter (where p.category_id = f.id) as sueltos,
---        count(p.id) as total
+--        count(*) filter (where p.category_id = f.id) as sueltos,
+--        count(*) as total
 -- from public.categories f
--- left join public.categories t on t.parent_id = f.id
--- left join public.products p on p.category_id = f.id or p.category_id = t.id
+-- join public.products p
+--   on p.category_id = f.id
+--   or p.category_id in (select t.id from public.categories t where t.parent_id = f.id)
 -- where f.parent_id is null
 -- group by f.id, f.name, f.sort_order
 -- order by f.sort_order;
