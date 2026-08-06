@@ -385,3 +385,122 @@ function initInstagramLazyLoad() {
 }
 
 initInstagramLazyLoad();
+
+/* ============================================================================
+   Compra por categoría + objetivos
+   ----------------------------------------------------------------------------
+   Antes la home no tenía ninguna puerta de entrada por categoría: el único
+   acceso a las familias era entrar al catálogo y descubrir un carrusel
+   horizontal. Estas dos secciones son ese atajo.
+   ============================================================================ */
+const homeCatsGrid = document.getElementById("home-cats__grid");
+const homeGoalsRow = document.getElementById("home-goals__row");
+
+// Icono por familia. La clave es el slug público (sin el prefijo "fam-").
+const FAMILY_ICONS = {
+  "proteinas": "dumbbell",
+  "ganadores": "wheat",
+  "creatina": "zap",
+  "pre-entrenos": "flame",
+  "aminoacidos": "pill",
+  "quemadores": "flame",
+  "energia": "zap",
+  "potenciadores": "shield",
+  "salud": "heart-pulse",
+};
+
+// Objetivos que se ofrecen como atajo, en el idioma del cliente. Hick: 6 y no
+// los 30+ valores sueltos que hay en la base.
+const HOME_GOALS = [
+  { label: "Ganar masa", slug: "masa-muscular" },
+  { label: "Definición", slug: "definicion" },
+  { label: "Fuerza", slug: "fuerza" },
+  { label: "Energía", slug: "energia" },
+  { label: "Recuperación", slug: "recuperacion" },
+  { label: "Salud general", slug: "salud-general" },
+];
+
+const familySlug = (category) =>
+  String(category?.slug || "").replace(/^(fam|tipo)-/, "") || slugify(category?.name || "");
+
+function categorySkeletons(n = 8) {
+  return Array.from({ length: n }, () =>
+    `<span class="home-cat home-cat--skeleton skeleton-box" aria-hidden="true"></span>`).join("");
+}
+
+async function initHomeCategories() {
+  if (!homeCatsGrid) return;
+  homeCatsGrid.innerHTML = categorySkeletons();
+
+  let categories = [];
+  let products = [];
+  try {
+    [categories, products] = await Promise.all([
+      window.catalogDb.getCategories(),
+      window.catalogDb.getProductsWithFlavors(),
+    ]);
+  } catch (error) {
+    console.warn("No se pudieron cargar las categorías del inicio:", error.message);
+  }
+
+  const families = categories.filter((c) => !c.parent_id);
+  if (!families.length) {
+    // Sin datos, la sección entera se retira: mejor que dejar un hueco.
+    document.getElementById("categorias")?.setAttribute("hidden", "");
+    return;
+  }
+
+  // Cuenta los productos de la familia MÁS los de sus subcategorías: si solo
+  // contara los directos, una familia bien repartida mostraría 0.
+  const countFor = (fam) => {
+    const childIds = new Set(
+      categories.filter((c) => String(c.parent_id) === String(fam.id)).map((c) => String(c.id)),
+    );
+    return products.filter((p) => {
+      const own = String(p.category_id);
+      return own === String(fam.id) || childIds.has(own);
+    }).length;
+  };
+
+  const cards = families
+    .map((fam) => ({ fam, count: countFor(fam), slug: familySlug(fam) }))
+    .filter((item) => item.count > 0)
+    .sort((a, b) => b.count - a.count)
+    .map(({ fam, count, slug }) => `
+      <a class="home-cat" href="/categoria/${encodeURIComponent(slug)}/"
+         aria-label="${escapeHTML(`${fam.name}, ${count} producto${count === 1 ? "" : "s"}`)}">
+        <span class="home-cat__icon" aria-hidden="true" data-javy-icon="${escapeHTML(FAMILY_ICONS[slug] || "package")}"></span>
+        <span class="home-cat__name">${escapeHTML(fam.name)}</span>
+        <span class="home-cat__count">${count} producto${count === 1 ? "" : "s"}</span>
+      </a>`);
+
+  if (!cards.length) {
+    document.getElementById("categorias")?.setAttribute("hidden", "");
+    return;
+  }
+
+  homeCatsGrid.innerHTML = cards.join("");
+  window.javyIcons?.enhance?.(homeCatsGrid);
+
+  renderHomeGoals(products);
+}
+
+// Los chips de objetivo solo aparecen si el objetivo existe en el catálogo:
+// un atajo que lleva a cero resultados es peor que no ofrecerlo.
+function renderHomeGoals(products) {
+  if (!homeGoalsRow) return;
+
+  const available = new Set(
+    products.flatMap((p) => (p.goals || []).map((g) => slugify(g))),
+  );
+  const chips = HOME_GOALS.filter((goal) => available.has(goal.slug));
+  if (!chips.length) return;
+
+  homeGoalsRow.innerHTML = chips.map((goal) => `
+    <a class="home-goal" href="/supplements-page.html?obj=${encodeURIComponent(goal.slug)}">
+      ${escapeHTML(goal.label)}
+    </a>`).join("");
+  document.getElementById("objetivos")?.removeAttribute("hidden");
+}
+
+initHomeCategories();

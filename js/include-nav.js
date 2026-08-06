@@ -1,3 +1,61 @@
+/* Submenú de categorías bajo "SUPLEMENTOS": dropdown en escritorio, acordeón
+   dentro del menú hamburguesa en móvil. Antes el nav no ofrecía ninguna vía a
+   las familias — había que entrar al catálogo y descubrir el carrusel. */
+async function initCategoriesSubmenu(host) {
+  const item = host.querySelector("[data-nav-categories]");
+  const list = item?.querySelector(".nav__sub");
+  const toggle = item?.querySelector(".nav__sub-toggle");
+  if (!item || !list || !toggle || !window.catalogDb?.getCategories) return;
+
+  let categories = [];
+  try {
+    categories = await window.catalogDb.getCategories();
+  } catch (error) {
+    console.warn("No se pudieron cargar las categorías del nav:", error.message);
+  }
+
+  const families = categories.filter((c) => !c.parent_id);
+  if (!families.length) {
+    // Sin datos no se ofrece un menú vacío: el enlace directo al catálogo basta.
+    toggle.remove();
+    return;
+  }
+
+  const escapeAttr = (value = "") =>
+    String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+  const slugOf = (c) => String(c.slug || "").replace(/^(fam|tipo)-/, "");
+
+  list.innerHTML = families
+    .map((f) => `<li><a href="/categoria/${encodeURIComponent(slugOf(f))}/">${escapeAttr(f.name)}</a></li>`)
+    .join("")
+    + `<li><a class="nav__sub-all" href="/supplements-page.html">Ver todo el catálogo</a></li>`;
+
+  const setOpen = (open) => {
+    item.classList.toggle("is-open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+    list.hidden = !open;
+  };
+
+  toggle.addEventListener("click", (event) => {
+    event.preventDefault();
+    setOpen(list.hidden);
+  });
+
+  // Cierra al hacer clic fuera y con Escape (mismo patrón que el menú del panel).
+  document.addEventListener("click", (event) => {
+    if (!item.contains(event.target)) setOpen(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || list.hidden) return;
+    setOpen(false);
+    toggle.focus();
+  });
+  // Al salir con Tab del último enlace, el menú deja de tener sentido abierto.
+  item.addEventListener("focusout", (event) => {
+    if (!item.contains(event.relatedTarget)) setOpen(false);
+  });
+}
+
 (async function () {
   const host = document.getElementById("site-header");
   if (!host) return;
@@ -50,6 +108,7 @@
   };
 
   updateAdminEntryState();
+  initCategoriesSubmenu(host);
 
   if (window.supabaseClient?.auth?.onAuthStateChange) {
     window.supabaseClient.auth.onAuthStateChange(() => {
