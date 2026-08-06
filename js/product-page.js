@@ -175,6 +175,60 @@ function renderCategoryTrail(family, type, fallbackLabel) {
   }
 }
 
+/* Hasta 4 productos de la misma familia, priorizando los de la misma
+   subcategoría (más parecidos) y los disponibles. Da salida a una ficha que
+   hoy termina en nada. */
+function renderRelatedProducts(product, family, type, allProducts, categories) {
+  const section = document.getElementById("pdp-related");
+  const grid = document.getElementById("pdp-related-grid");
+  if (!section || !grid || !family) return;
+
+  // Un producto pertenece a la familia si cuelga de ella o de una de sus
+  // subcategorías (mismo criterio que productInFamily en js/supplements.js).
+  const childIds = new Set(
+    categories.filter((c) => String(c.parent_id) === String(family.id)).map((c) => String(c.id)),
+  );
+  const inFamily = allProducts.filter((p) => {
+    if (String(p.id) === String(product.id)) return false;
+    const own = String(p.category_id);
+    return own === String(family.id) || childIds.has(own);
+  });
+
+  const score = (p) => (String(p.category_id) === String(type?.id) ? 2 : 0)
+    + (productCanBeQuoted(p) ? 1 : 0);
+  const picks = inFamily.sort((a, b) => score(b) - score(a)).slice(0, 4);
+  if (!picks.length) return;
+
+  const titleEl = document.getElementById("pdp-related-title");
+  if (titleEl) titleEl.textContent = `Más de ${family.name}`;
+  const linkEl = document.getElementById("pdp-related-link");
+  if (linkEl) linkEl.href = `/categoria/${categoryFilterSlug(family)}/`;
+
+  grid.innerHTML = picks.map((p) => {
+    const href = window.javyProductUrl?.forId?.(p.id) || `product-page.html?id=${encodeURIComponent(p.id)}`;
+    const price = Number(p.price || 0);
+    return `
+      <article class="product-card">
+        <a class="product-card__media product-card__media-link" href="${escapeHTML(href)}" aria-label="Ver ${escapeHTML(p.name)}">
+          <img src="${escapeHTML(p.image || "img/images/javi.webp")}" alt="${escapeHTML(p.name)}" class="product-card__img" loading="lazy" decoding="async" />
+        </a>
+        <div class="product-card__info">
+          <div class="product-card__meta">
+            <span class="product-card__brand">${escapeHTML(p.brand || "Marca en revisión")}</span>
+          </div>
+          <h3 class="product-card__name">
+            <a class="product-card__name-link" href="${escapeHTML(href)}">${escapeHTML(p.name)}</a>
+          </h3>
+          <div class="product-card__price-row">
+            <span class="product-card__price">${price > 0 ? `$${price.toFixed(2)}` : "Consultar"}</span>
+          </div>
+        </div>
+      </article>`;
+  }).join("");
+
+  section.hidden = false;
+}
+
 async function initProductPage() {
   const params = new URLSearchParams(window.location.search);
   // En /producto/<slug>/ no hay ?id=: la página generada lo declara en
@@ -276,6 +330,11 @@ async function initProductPage() {
   // a "todas las proteínas" desde un producto concreto.
   const { family, type } = resolveProductCategories(product, categories);
   renderCategoryTrail(family, type, category);
+
+  // No bloquea el render de la ficha: el bloque aparece cuando el catálogo esté.
+  window.catalogDb.getProductsWithFlavors?.()
+    .then((all) => renderRelatedProducts(product, family, type, all || [], categories))
+    .catch(() => {});
 
   document.getElementById("prod-brand").textContent = product.brand || "Por confirmar";
 

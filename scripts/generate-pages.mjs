@@ -299,8 +299,8 @@ function renderProductPage(product, ctx) {
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
-${renderHead({ title, description, canonical: url, image, ogType: "product", jsonLd, extraCss: ["css/pages/product.css?v=product-detail-manual"] })}
-${renderScripts(["/js/product-page.js?v=product-detail-manual"])}
+${renderHead({ title, description, canonical: url, image, ogType: "product", jsonLd, extraCss: ["css/pages/product.css?v=cat-nav"] })}
+${renderScripts(["/js/product-page.js?v=cat-nav"])}
   </head>
   <body>
     <div id="site-header"></div>
@@ -392,6 +392,15 @@ ${renderScripts(["/js/product-page.js?v=product-detail-manual"])}
             </div>
           </section>
         </div>
+
+        <!-- Lo rellena js/product-page.js con productos de la misma familia. -->
+        <section class="pdp__related" id="pdp-related" aria-labelledby="pdp-related-title" hidden>
+          <div class="pdp__related-head">
+            <h2 class="pdp__related-title" id="pdp-related-title"></h2>
+            <a class="pdp__related-link" id="pdp-related-link" href="/supplements-page.html">Ver todos</a>
+          </div>
+          <div class="pdp__related-grid" id="pdp-related-grid"></div>
+        </section>
 
         <aside class="pdp__bar" aria-label="Acciones de compra" aria-hidden="true">
           <div class="pdp__bar-info">
