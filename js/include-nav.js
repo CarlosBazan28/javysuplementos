@@ -25,8 +25,17 @@ async function initCategoriesSubmenu(host) {
     String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
   const slugOf = (c) => String(c.slug || "").replace(/^(fam|tipo)-/, "");
 
+  // Con Supabase caído, getCategories() devuelve la lista plana de respaldo,
+  // cuyos slugs ("creatinas", "vitaminas", "accesorios") no tienen página
+  // generada: enlazar ahí daría 404. En ese caso se manda al catálogo
+  // filtrado, que sí resuelve por texto.
+  const hasRealCategories = families.every((f) => f.id);
+  const hrefFor = (f) => (hasRealCategories
+    ? `/categoria/${encodeURIComponent(slugOf(f))}/`
+    : `/supplements-page.html?cat=${encodeURIComponent(slugOf(f))}`);
+
   list.innerHTML = families
-    .map((f) => `<li><a href="/categoria/${encodeURIComponent(slugOf(f))}/">${escapeAttr(f.name)}</a></li>`)
+    .map((f) => `<li><a href="${hrefFor(f)}">${escapeAttr(f.name)}</a></li>`)
     .join("")
     + `<li><a class="nav__sub-all" href="/supplements-page.html">Ver todo el catálogo</a></li>`;
 

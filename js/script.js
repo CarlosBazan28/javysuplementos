@@ -423,6 +423,15 @@ const HOME_GOALS = [
 const familySlug = (category) =>
   String(category?.slug || "").replace(/^(fam|tipo)-/, "") || slugify(category?.name || "");
 
+/* El icono se busca por coincidencia parcial y no exacta: con Supabase caído
+   los slugs se derivan del texto ("creatinas", "proteinas-whey", "salud-y-
+   bienestar") y no calzarían con las claves cortas del mapa. */
+function iconForFamily(slug) {
+  if (FAMILY_ICONS[slug]) return FAMILY_ICONS[slug];
+  const key = Object.keys(FAMILY_ICONS).find((k) => slug.startsWith(k) || slug.includes(k));
+  return key ? FAMILY_ICONS[key] : "package";
+}
+
 function categorySkeletons(n = 8) {
   return Array.from({ length: n }, () =>
     `<span class="home-cat home-cat--skeleton skeleton-box" aria-hidden="true"></span>`).join("");
@@ -441,6 +450,17 @@ async function initHomeCategories() {
     ]);
   } catch (error) {
     console.warn("No se pudieron cargar las categorías del inicio:", error.message);
+  }
+
+  // Con Supabase caído, getCategories() devuelve la lista plana de respaldo y
+  // los productos locales no traen category_id: se agrupa por el texto de
+  // categoría y se enlaza al catálogo con ?cat=, que ya entiende ese modo.
+  // Mismo criterio que useHierarchy() en js/supplements.js.
+  const usableHierarchy = categories.some((c) => c.id) && products.some((p) => p.category_id);
+  if (!usableHierarchy) {
+    renderHomeCategoriesFlat(products);
+    renderHomeGoals(products);
+    return;
   }
 
   const families = categories.filter((c) => !c.parent_id);
@@ -469,7 +489,7 @@ async function initHomeCategories() {
     .map(({ fam, count, slug }) => `
       <a class="home-cat" href="/categoria/${encodeURIComponent(slug)}/"
          aria-label="${escapeHTML(`${fam.name}, ${count} producto${count === 1 ? "" : "s"}`)}">
-        <span class="home-cat__icon" aria-hidden="true" data-javy-icon="${escapeHTML(FAMILY_ICONS[slug] || "package")}"></span>
+        <span class="home-cat__icon" aria-hidden="true" data-javy-icon="${escapeHTML(iconForFamily(slug))}"></span>
         <span class="home-cat__name">${escapeHTML(fam.name)}</span>
         <span class="home-cat__count">${count} producto${count === 1 ? "" : "s"}</span>
       </a>`);
@@ -483,6 +503,39 @@ async function initHomeCategories() {
   window.javyIcons?.enhance?.(homeCatsGrid);
 
   renderHomeGoals(products);
+}
+
+/* Respaldo sin jerarquía: agrupa por el texto `category` de cada producto y
+   enlaza al catálogo filtrado (?cat=), no a /categoria/<slug>/, porque esas
+   páginas se generan desde las familias de Supabase y acá no las tenemos. */
+function renderHomeCategoriesFlat(products) {
+  const counts = new Map();
+  products.forEach((p) => {
+    const label = (p.category || p.categoria || "").trim();
+    if (!label) return;
+    counts.set(label, (counts.get(label) || 0) + 1);
+  });
+
+  const cards = [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([label, count]) => {
+      const slug = slugify(label);
+      return `
+      <a class="home-cat" href="/supplements-page.html?cat=${encodeURIComponent(slug)}"
+         aria-label="${escapeHTML(`${label}, ${count} producto${count === 1 ? "" : "s"}`)}">
+        <span class="home-cat__icon" aria-hidden="true" data-javy-icon="${escapeHTML(iconForFamily(slug))}"></span>
+        <span class="home-cat__name">${escapeHTML(label)}</span>
+        <span class="home-cat__count">${count} producto${count === 1 ? "" : "s"}</span>
+      </a>`;
+    });
+
+  if (!cards.length) {
+    document.getElementById("categorias")?.setAttribute("hidden", "");
+    return;
+  }
+  homeCatsGrid.innerHTML = cards.join("");
+  window.javyIcons?.enhance?.(homeCatsGrid);
 }
 
 // Los chips de objetivo solo aparecen si el objetivo existe en el catálogo:
