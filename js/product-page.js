@@ -124,6 +124,57 @@ function getQuantity() {
   return Math.max(1, parseInt(document.querySelector("[data-qty-value]")?.textContent, 10) || 1);
 }
 
+/* Slug de categoría para las URLs públicas. Réplica de `categoryFilterSlug()`
+   en scripts/lib/product-slug.mjs: la columna `slug` de Supabase arrastra
+   prefijos internos ("fam-proteinas") impropios de una URL. Si cambia allá,
+   cambia acá. */
+function categoryFilterSlug(category) {
+  return String(category?.slug || "").replace(/^(fam|tipo)-/, "");
+}
+
+/* Familia y subcategoría de un producto a partir de su category_id. Devuelve
+   `type` solo cuando el producto cuelga de un segundo nivel. */
+function resolveProductCategories(product, categories = []) {
+  const byId = (id) => categories.find((c) => String(c.id) === String(id)) || null;
+  const own = byId(product.category_id);
+  if (!own) return { family: null, type: null };
+  return own.parent_id
+    ? { family: byId(own.parent_id), type: own }
+    : { family: own, type: null };
+}
+
+/* Pinta el breadcrumb y el dato "Categoría" de la ficha técnica. Cuando la
+   familia tiene página estática se enlaza; si no, queda como texto. */
+function renderCategoryTrail(family, type, fallbackLabel) {
+  const familyHref = family ? `/categoria/${categoryFilterSlug(family)}/` : "";
+  const link = (label) => `<a href="${escapeHTML(familyHref)}">${escapeHTML(label)}</a>`;
+
+  const breadcrumbCat = document.getElementById("pdp-breadcrumb-cat");
+  if (breadcrumbCat) breadcrumbCat.textContent = type?.name || family?.name || fallbackLabel;
+
+  // El tramo de familia vive antes del span del breadcrumb; se inserta una sola
+  // vez (la hidratación puede correr después de un HTML ya prerenderizado).
+  const breadcrumb = document.querySelector(".pdp__breadcrumb");
+  if (breadcrumb && family && type && !breadcrumb.querySelector("[data-breadcrumb-family]")) {
+    const sep = document.createElement("span");
+    sep.className = "pdp__breadcrumb-sep";
+    sep.textContent = "/";
+    const anchor = document.createElement("a");
+    anchor.href = familyHref;
+    anchor.textContent = family.name;
+    anchor.setAttribute("data-breadcrumb-family", "");
+    breadcrumbCat?.before(anchor, sep);
+  }
+
+  const categoryCell = document.getElementById("prod-category");
+  if (!categoryCell) return;
+  if (family) {
+    categoryCell.innerHTML = `${link(family.name)}${type ? ` · ${escapeHTML(type.name)}` : ""}`;
+  } else {
+    categoryCell.textContent = fallbackLabel;
+  }
+}
+
 async function initProductPage() {
   const params = new URLSearchParams(window.location.search);
   // En /producto/<slug>/ no hay ?id=: la página generada lo declara en
@@ -136,7 +187,10 @@ async function initProductPage() {
     return;
   }
 
-  const product = await window.catalogDb.getProductById(productId);
+  const [product, categories] = await Promise.all([
+    window.catalogDb.getProductById(productId),
+    window.catalogDb.getCategories?.().catch(() => []) ?? [],
+  ]);
   if (!product) {
     // En /producto/<slug>/ el HTML ya trae nombre, precio y descripción escritos.
     // Si Supabase no responde, conservarlo es mejor que borrarlo: la página
@@ -217,11 +271,13 @@ async function initProductPage() {
   const barPriceEl = document.getElementById("pdp-bar-price");
   if (barPriceEl) barPriceEl.innerHTML = priceHTML;
 
-  const breadcrumbCat = document.getElementById("pdp-breadcrumb-cat");
-  if (breadcrumbCat) breadcrumbCat.textContent = category;
+  // Breadcrumb Catálogo / Familia / Subcategoría, con la familia enlazada a su
+  // página. Sin esto la ficha es un callejón sin salida: no hay camino de vuelta
+  // a "todas las proteínas" desde un producto concreto.
+  const { family, type } = resolveProductCategories(product, categories);
+  renderCategoryTrail(family, type, category);
 
   document.getElementById("prod-brand").textContent = product.brand || "Por confirmar";
-  document.getElementById("prod-category").textContent = category;
 
   document.querySelectorAll("[data-status-pill]").forEach((pill) => {
     pill.textContent = canQuote ? "Disponible" : "Agotado";
