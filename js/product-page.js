@@ -124,12 +124,19 @@ function getQuantity() {
   return Math.max(1, parseInt(document.querySelector("[data-qty-value]")?.textContent, 10) || 1);
 }
 
-/* Slug de categoría para las URLs públicas. Réplica de `categoryFilterSlug()`
-   en scripts/lib/product-slug.mjs: la columna `slug` de Supabase arrastra
-   prefijos internos ("fam-proteinas") impropios de una URL. Si cambia allá,
-   cambia acá. */
+/* Slug de categoría para las páginas /categoria/<slug>/. Réplica de
+   `slugTokens(category.name).join("-")` en scripts/generate-pages.mjs: esas
+   páginas se generan a partir del NOMBRE, no de la columna `slug` de
+   Supabase (que trae prefijos "fam-"/"tipo-" y no coincide con la carpeta
+   generada, ej. "fam-salud" -> "salud" en vez de "salud-y-bienestar"). Si
+   cambia allá, cambia acá. */
 function categoryFilterSlug(category) {
-  return String(category?.slug || "").replace(/^(fam|tipo)-/, "");
+  return String(category?.name || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 /* Familia y subcategoría de un producto a partir de su category_id. Devuelve

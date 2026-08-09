@@ -25,7 +25,16 @@ async function initCategoriesSubmenu(host) {
 
   const escapeAttr = (value = "") =>
     String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
-  const slugOf = (c) => String(c.slug || "").replace(/^(fam|tipo)-/, "");
+  // Las páginas /categoria/<slug>/ se generan a partir del NOMBRE (ver
+  // scripts/generate-pages.mjs), no de la columna `slug` de Supabase
+  // (fam-/tipo-): usar esa columna manda a URLs que no existen (404).
+  const slugOf = (c) =>
+    String(c.name || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
 
   // Con Supabase caído, getCategories() devuelve la lista plana de respaldo,
   // cuyos slugs ("creatinas", "vitaminas", "accesorios") no tienen página
