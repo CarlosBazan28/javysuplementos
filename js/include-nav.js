@@ -3,9 +3,12 @@
    las familias — había que entrar al catálogo y descubrir el carrusel. */
 async function initCategoriesSubmenu(host) {
   const item = host.querySelector("[data-nav-categories]");
+  const trigger = item?.querySelector(".nav__has-sub-trigger");
   const list = item?.querySelector(".nav__sub");
-  const toggle = item?.querySelector(".nav__sub-toggle");
-  if (!item || !list || !toggle || !window.catalogDb?.getCategories) return;
+  // Sin catalogDb (p. ej. una página que no cargó js/db.js) el trigger se
+  // queda como el <a> normal que ya es en el HTML: navega al catálogo en
+  // vez de quedar como un control muerto.
+  if (!item || !trigger || !list || !window.catalogDb?.getCategories) return;
 
   let categories = [];
   try {
@@ -17,7 +20,6 @@ async function initCategoriesSubmenu(host) {
   const families = categories.filter((c) => !c.parent_id);
   if (!families.length) {
     // Sin datos no se ofrece un menú vacío: el enlace directo al catálogo basta.
-    toggle.remove();
     return;
   }
 
@@ -41,11 +43,14 @@ async function initCategoriesSubmenu(host) {
 
   const setOpen = (open) => {
     item.classList.toggle("is-open", open);
-    toggle.setAttribute("aria-expanded", String(open));
+    trigger.setAttribute("aria-expanded", String(open));
     list.hidden = !open;
   };
 
-  toggle.addEventListener("click", (event) => {
+  // Con categorías disponibles, "SUPLEMENTOS" abre el submenú en vez de
+  // navegar directo; "Ver todo el catálogo" (dentro del submenú) sigue
+  // siendo la vía para ir al listado completo.
+  trigger.addEventListener("click", (event) => {
     event.preventDefault();
     setOpen(list.hidden);
   });
@@ -57,7 +62,7 @@ async function initCategoriesSubmenu(host) {
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape" || list.hidden) return;
     setOpen(false);
-    toggle.focus();
+    trigger.focus();
   });
   // Al salir con Tab del último enlace, el menú deja de tener sentido abierto.
   item.addEventListener("focusout", (event) => {
@@ -174,6 +179,9 @@ async function initCategoriesSubmenu(host) {
 
   navMenu?.addEventListener("click", (event) => {
     if (!(event.target instanceof HTMLAnchorElement)) return;
+    // El trigger de "SUPLEMENTOS" es un <a>, pero cuando abre el submenú
+    // (en vez de navegar) no debe cerrar el menú hamburguesa completo.
+    if (event.target.closest(".nav__has-sub-trigger") && event.defaultPrevented) return;
 
     setNavToggleState(false);
   });
@@ -196,6 +204,10 @@ async function initCategoriesSubmenu(host) {
   });
 
   document.addEventListener("click", (event) => {
+    // Otros handlers (p. ej. el toggle del submenú de "SUPLEMENTOS") pueden
+    // haber cancelado el click a propósito para no navegar; respetarlo.
+    if (event.defaultPrevented) return;
+
     const link = event.target.closest?.("a[href]");
     if (!link) return;
 

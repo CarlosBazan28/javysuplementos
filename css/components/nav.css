@@ -420,38 +420,24 @@
    flotante. */
 .nav__has-sub {
   position: relative;
-  display: flex;
+}
+
+/* Todo el bloque "SUPLEMENTOS" (texto + flecha) es un único link: abre el
+   submenú cuando hay categorías cargadas, o navega al catálogo si no. */
+.nav__has-sub-trigger {
+  display: inline-flex !important;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
 }
 
-.nav__sub-toggle {
-  display: grid;
-  place-items: center;
-  /* 44px de área táctil aunque el icono sea chico. */
-  width: 44px;
-  height: 44px;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  color: var(--blanco);
-  cursor: pointer;
-}
-
-.nav__sub-toggle .btn-icon svg {
+.nav__sub-caret svg {
   width: 16px;
   height: 16px;
   transition: transform 0.18s ease;
 }
 
-.nav__has-sub.is-open .nav__sub-toggle .btn-icon svg {
+.nav__has-sub.is-open .nav__sub-caret svg {
   transform: rotate(180deg);
-}
-
-.nav__sub-toggle:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: -4px;
-  border-radius: 999px;
 }
 
 .nav__sub {
@@ -495,10 +481,8 @@
 }
 
 @media (max-width: 900px) {
-  .nav__has-sub {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
+  .nav__has-sub-trigger {
+    justify-content: space-between;
   }
 
   /* El acordeón empuja el resto del menú en vez de flotar sobre él. */
@@ -518,7 +502,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nav__sub-toggle .btn-icon svg {
+  .nav__sub-caret svg {
     transition: none;
   }
 }

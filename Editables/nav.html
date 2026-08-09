@@ -9,10 +9,10 @@
         <ul class="nav__links" id="navMenu">
           <li><a href="/">INICIO</a></li>
           <li class="nav__has-sub" data-nav-categories>
-            <a href="/supplements-page.html">SUPLEMENTOS</a>
-            <button class="nav__sub-toggle" type="button" aria-expanded="false" aria-controls="navCategories" aria-label="Ver categorías">
-              <span class="btn-icon" data-javy-icon="arrow-down" aria-hidden="true"></span>
-            </button>
+            <a class="nav__has-sub-trigger" href="/supplements-page.html" aria-haspopup="true" aria-expanded="false" aria-controls="navCategories">
+              SUPLEMENTOS
+              <span class="btn-icon nav__sub-caret" data-javy-icon="arrow-down" aria-hidden="true"></span>
+            </a>
             <!-- Lo rellena js/include-nav.js con las familias reales. -->
             <ul class="nav__sub" id="navCategories" hidden></ul>
           </li>
