@@ -544,7 +544,7 @@ ${types
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
-${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd })}
+${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-nav", "css/pages/supplements.css?v=cat-nav"] })}
 ${renderScripts()}
   </head>
   <body>
