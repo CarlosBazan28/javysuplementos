@@ -47,6 +47,7 @@
   --pb-amber-tint-12: rgba(255, 179, 0, 0.12);
   --pb-white-04: rgba(255, 255, 255, 0.04);
   --pb-white-06: rgba(255, 255, 255, 0.06);
+  --pb-white-10: rgba(255, 255, 255, 0.10);
 }
 
 html, body { margin: 0; background: var(--pb-bg-0); }
@@ -741,7 +742,7 @@ body.ad-body { min-height: 100vh; }
 .ad-cat__title small { color: var(--pb-muted); font-size: 0.78rem; white-space: nowrap; }
 .ad-cat__actions { display: flex; gap: 7px; align-items: center; }
 .ad-cat__types { display: grid; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--pb-line); }
-.ad-cat__sublabel { color: var(--pb-muted-2); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.ad-cat__sublabel { color: var(--pb-muted); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
 .ad-cat__chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .ad-cat__empty { color: var(--pb-muted); font-size: 0.82rem; }
 
@@ -769,8 +770,11 @@ body.ad-body { min-height: 100vh; }
   .ad-cat__head { grid-template-columns: 1fr; gap: 10px; }
 }
 .ad-type-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 11px; border-radius: 999px; background: var(--pb-white-06); color: var(--pb-text); font-size: 0.8rem; font-weight: 600; }
-.ad-type-chip button { display: grid; place-items: center; width: 16px; height: 16px; border: 0; background: transparent; color: var(--pb-muted); cursor: pointer; padding: 0; }
-.ad-type-chip button .ad-ico { width: 12px; height: 12px; }
+/* Solo el botón de borrar es cuadrado. Ojo: NO usar `.ad-type-chip button`,
+   porque el nombre de la subcategoría también es un <button> y quedaba
+   aplastado a 16px con el texto desbordado encima del contador y de la ×. */
+.ad-type-chip__del { display: grid; place-items: center; width: 16px; height: 16px; border: 0; background: transparent; color: var(--pb-muted); cursor: pointer; padding: 0; }
+.ad-type-chip__del .ad-ico { width: 12px; height: 12px; }
 .ad-type-chip--add { cursor: pointer; color: var(--pb-muted); border: 1px dashed var(--pb-line-strong); background: transparent; }
 
 /* ---- combos ---- */
@@ -982,29 +986,59 @@ body.ad-body { min-height: 100vh; }
 .ad-prod-card.is-selected { border-color: var(--pb-brand); background: var(--pb-blue-tint-08); }
 
 /* ---- conteo por subcategoría y aviso de productos sueltos --------------- */
+/* El nombre es un botón que renombra. Antes se veía como texto plano y nadie
+   descubría que era clicleable, así que ahora se comporta como un control:
+   fondo al pasar por encima y anillo de foco propio. */
 .ad-type-chip__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  margin: -3px 0 -3px -5px;
+  padding: 0 5px;
   border: 0;
+  border-radius: 999px;
   background: transparent;
   color: inherit;
   font: inherit;
-  padding: 0;
   cursor: pointer;
 }
-.ad-type-chip__name:hover { text-decoration: underline; }
+.ad-type-chip__name:hover { background: var(--pb-white-10); }
+.ad-type-chip__name:hover .ad-type-chip__label { text-decoration: underline; }
+.ad-type-chip__name:focus-visible { outline: 2px solid var(--pb-brand); outline-offset: 1px; }
 .ad-type-chip__count {
   min-width: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: var(--pb-white-06);
-  color: var(--pb-muted);
+  background: var(--pb-white-10);
+  color: var(--pb-text);
   font-size: 0.72rem;
   font-weight: 700;
   text-align: center;
 }
-/* Una subcategoría vacía no se oculta: se atenúa, para que se vea que existe
-   y que nadie la está usando. */
-.ad-type-chip.is-empty { opacity: 0.55; }
-.ad-type-chip.is-empty .ad-type-chip__count { color: var(--pb-muted-2); }
+/* Una subcategoría vacía se marca con un borde punteado, no bajándole la
+   opacidad: atenuarla la volvía ilegible (contraste 2.0) y la hacía parecer
+   deshabilitada cuando en realidad es la que más atención necesita. */
+.ad-type-chip.is-empty {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--pb-line-strong);
+}
+.ad-type-chip.is-empty .ad-type-chip__count { background: transparent; color: var(--pb-muted); }
+
+/* La × es destructiva: se mantiene discreta hasta que el chip recibe atención,
+   y se separa del nombre para no comerse el clic de renombrar. */
+.ad-type-chip__del { margin-left: 2px; opacity: 0.6; transition: opacity 0.12s ease, color 0.12s ease; }
+.ad-type-chip:hover .ad-type-chip__del,
+.ad-type-chip:focus-within .ad-type-chip__del { opacity: 1; }
+.ad-type-chip__del:hover { color: #ffc1ce; }
+.ad-type-chip__del:focus-visible { outline: 2px solid var(--pb-brand); outline-offset: 1px; border-radius: 999px; opacity: 1; }
+
+/* Texto solo para lectores de pantalla. */
+.ad-sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
 
 /* Convierte un dato invisible ("22 sin subcategoría") en una tarea de un clic. */
 .ad-cat__loose {
