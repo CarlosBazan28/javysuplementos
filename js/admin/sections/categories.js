@@ -50,10 +50,17 @@ export function renderCategories() {
         <div class="ad-cat__chips">
           ${subs.map((t) => {
             const n = typeCountFor(t);
-            return `<span class="ad-type-chip${n ? "" : " is-empty"}" title="${esc(t.name)}: ${n} producto${n === 1 ? "" : "s"}">
-              <button class="ad-type-chip__name" type="button" data-type-rename="${esc(t.id)}" title="Renombrar ${esc(t.name)}">${esc(t.name)}</button>
-              <span class="ad-type-chip__count" aria-hidden="true">${n}</span>
-              <button type="button" aria-label="Eliminar subcategoría ${esc(t.name)}" data-type-del="${esc(t.id)}">${ico("x")}</button>
+            // El nombre y el conteo se ocultan a lectores de pantalla y se
+            // reemplazan por una sola etiqueta que incluye el número: antes el
+            // conteo era aria-hidden y no llegaba a anunciarse nunca.
+            const etiqueta = `${t.name}: ${n} producto${n === 1 ? "" : "s"}`;
+            return `<span class="ad-type-chip${n ? "" : " is-empty"}">
+              <button class="ad-type-chip__name" type="button" data-type-rename="${esc(t.id)}" title="Renombrar “${esc(t.name)}”">
+                <span class="ad-type-chip__label" aria-hidden="true">${esc(t.name)}</span>
+                <span class="ad-type-chip__count" aria-hidden="true">${n}</span>
+                <span class="ad-sr-only">${esc(etiqueta)}. Renombrar</span>
+              </button>
+              <button class="ad-type-chip__del" type="button" aria-label="Eliminar subcategoría ${esc(t.name)}" title="Eliminar “${esc(t.name)}”" data-type-del="${esc(t.id)}">${ico("x")}</button>
             </span>`;
           }).join("")}
           ${subs.length ? "" : `<span class="ad-cat__empty">Aún sin subcategorías.</span>`}
@@ -73,6 +80,7 @@ export function renderCategories() {
       <div><p class="ad-kicker">Catálogo</p><p>Categorías del catálogo y sus subcategorías. Reordená con las flechas u ocultá una categoría sin borrar sus productos.</p></div>
       <button class="ad-btn ad-btn--primary" type="button" data-fam-add>${ico("plus")}Nueva categoría</button>
     </div>
+    <p class="ad-sr-only" role="status" aria-live="polite" data-cat-status></p>
     <div class="ad-panel">${cards || `<p class="ad-ops__empty">Todavía no hay categorías. Creá la primera.</p>`}</div>`);
 
   const view = $("#adminView");
@@ -118,6 +126,21 @@ function ensureMenuListeners() {
     if (!e.target.closest(".ad-menu__panel")) closeAllMenus();
   });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAllMenus(); });
+}
+
+/* Devuelve el foco a la flecha que se acaba de usar, ya en la fila nueva. Si esa
+   flecha quedó deshabilitada (la categoría llegó al borde), pasa a la opuesta
+   para no dejar el foco en la nada. */
+function restoreMoveFocus(index, dir) {
+  const view = $("#adminView");
+  if (!view) return;
+  const pick = (d) => view.querySelector(`[data-cat-move="${index}|${d}"]:not([disabled])`);
+  (pick(dir) || pick(-dir))?.focus();
+}
+
+function announce(msg) {
+  const box = $("#adminView")?.querySelector("[data-cat-status]");
+  if (box) box.textContent = msg;
 }
 
 /* Salta a Productos ya filtrado por los que cuelgan de esta familia sin
@@ -189,7 +212,12 @@ async function moveFamily(spec) {
     if (cat.sort_order !== newOrder) { cat.sort_order = newOrder; changed.push(cat); }
   });
 
+  const movida = ordered[j];
   renderCategories(); // optimista: el nuevo orden se ve al instante
+  // renderCategories() reconstruye el DOM, así que el foco se perdía en cada
+  // clic: quien reordena con el teclado quedaba sin posición y sin aviso.
+  restoreMoveFocus(j, dir);
+  announce(`${movida.name} movida a la posición ${j + 1} de ${ordered.length}.`);
 
   try {
     await Promise.all(changed.map((cat) =>

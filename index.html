@@ -6,6 +6,8 @@
 
     <!-- Seguridad: CSP baseline versionada. El enforce real + frame-ancestors lo aplica Cloudflare (ver docs/seguridad-cloudflare.md). -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.instagram.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co https://*.cdninstagram.com https://*.fbcdn.net https://www.instagram.com; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com; frame-src https://www.instagram.com" />
+    <!-- Modo mantenimiento: bloquea el sitio público mientras esté activo (ver js/mantenimiento.js). -->
+    <script src="/js/mantenimiento.js?v=1"></script>
     <title>Javy Suplementos | Suplementos originales en Panamá</title>
 
     <!-- SEO -->
@@ -166,9 +168,8 @@
         </div>
         <div class="top-products__list" id="home-combos__list"></div>
       </section>
-    </main>
 
-    <section class="instagram-videos" id="educacion">
+      <section class="instagram-videos" id="educacion">
        <div class="title instagram-videos__header">
           <h2>Aprende sobre tus suplementos</h2>
           <p>
@@ -216,13 +217,14 @@
         </article>
       </div>
     </section>
+    </main>
 
     <footer class="footer">
   <div class="footer__glow"></div>                                         
   <div class="footer__inner">
     <div class="footer__grid">
       <div class="footer__brand">
-        <p class="footer__logo">Javy Supplements</p>
+        <p class="footer__logo">Javy Suplementos</p>
         <p class="footer__text">
           Tu salud y bienestar son nuestra prioridad.  
           Productos originales, información de calidad y acompañamiento real en tu proceso.
@@ -264,7 +266,7 @@
       </div>
     </div>
     <div class="footer__bottom">
-      <p>© 2026 Javy Supplements — Todos los derechos reservados.</p>
+      <p>© 2026 Javy Suplementos — Todos los derechos reservados.</p>
       <p class="footer__dev">Sitio desarrollado por Bazan Dev.</p>
     </div>
   </div>
