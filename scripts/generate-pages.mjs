@@ -204,7 +204,7 @@ ${css.map((href) => `    <link rel="stylesheet" href="/${href}" />`).join("\n")}
 const COMMON_SCRIPTS = [
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
   "/js/supabase-config.js",
-  "/js/whatsapp-config.js?v=central-links",
+  "/js/whatsapp-config.js?v=num-2026-08",
   "/js/product-data.js",
   "/js/product-urls.js?v=seo-urls",
   "/js/db.js?v=no-img-fallback",
