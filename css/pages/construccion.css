@@ -1,6 +1,7 @@
 /* ============================================================================
    PÁGINA EN CONSTRUCCIÓN — aviso de mantenimiento del sitio público.
-   Mobile primero. Usa los tokens de marca (css/tokens.css).
+   Mobile primero. Usa los tokens de marca (css/tokens.css) y el componente
+   .btn (css/components/buttons.css).
    ============================================================================ */
 
 body.construccion-page {
@@ -21,43 +22,50 @@ body.construccion-page {
   min-height: 100dvh;
   display: grid;
   place-items: center;
-  padding: 12px;
-  padding-top: max(12px, env(safe-area-inset-top));
-  padding-right: max(12px, env(safe-area-inset-right));
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
-  padding-left: max(12px, env(safe-area-inset-left));
+  padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  padding-left: max(16px, env(safe-area-inset-left));
 }
 
 .construccion-card {
-  width: min(560px, 100%);
-  border: 1px solid rgba(90, 180, 233, 0.22);
+  width: min(480px, 100%);
+  border: 1px solid rgba(90, 180, 233, 0.18);
   border-radius: 24px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 28%),
-    linear-gradient(145deg, rgba(17, 25, 37, 0.9), rgba(8, 10, 12, 0.96));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 30%),
+    linear-gradient(145deg, rgba(17, 25, 37, 0.92), rgba(8, 10, 12, 0.96));
   box-shadow:
     0 28px 90px rgba(0, 0, 0, 0.68),
-    0 0 80px rgba(1, 145, 198, 0.12);
-  padding: 26px 22px 24px;
+    0 0 80px rgba(1, 145, 198, 0.1);
+  padding: 32px 24px 26px;
   text-align: center;
 }
 
-/* ---- Logo ---- */
+/* ---- Logo: sin caja, apoyado en un halo de marca ---- */
 .construccion-logo {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 88px;
-  height: 88px;
   margin: 0 auto;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.03);
+}
+
+.construccion-logo::before {
+  content: "";
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(1, 145, 198, 0.28), transparent 68%);
 }
 
 .construccion-logo img {
+  position: relative;
   display: block;
-  width: 72px;
+  width: 112px;
   height: auto;
-  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.42));
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.5));
 }
 
 /* ---- Badge de estado ---- */
@@ -65,120 +73,83 @@ body.construccion-page {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin: 16px 0 0;
-  border: 1px solid rgba(255, 179, 0, 0.32);
+  margin: 18px 0 0;
+  border: 1px solid rgba(90, 180, 233, 0.28);
   border-radius: var(--radius-pill, 999px);
-  background: var(--warning-tint, rgba(255, 179, 0, 0.14));
-  color: var(--warning-soft, #ffcf6d);
-  font-size: 0.78rem;
+  background: var(--brand-tint, rgba(90, 180, 233, 0.12));
+  color: var(--accent, #5ab4e9);
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  padding: 7px 14px;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  padding: 8px 14px;
   text-transform: uppercase;
 }
 
 .construccion-badge__dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   flex: 0 0 auto;
   border-radius: 999px;
-  background: var(--warning, #ffb300);
-  box-shadow: 0 0 0 0 rgba(255, 179, 0, 0.5);
-  animation: construccionPulso 2s ease-out infinite;
+  background: var(--neon, #00cfff);
+  box-shadow: 0 0 0 0 rgba(0, 207, 255, 0.55);
+  animation: construccionPulso 2.2s ease-out infinite;
 }
 
 /* ---- Texto ---- */
 .construccion-card h1 {
-  margin: 14px 0 0;
-  font-size: clamp(1.75rem, 7vw, 2.6rem);
+  margin: 16px 0 0;
+  font-size: clamp(1.65rem, 6.5vw, 2.15rem);
   font-weight: 900;
-  line-height: 1.1;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
 }
 
 .construccion-lead {
-  width: min(400px, 100%);
-  margin: 12px auto 0;
+  margin: 12px 0 0;
   color: var(--muted, #a9b4c6);
-  font-size: 1rem;
-  line-height: 1.55;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  text-wrap: balance;
 }
 
-/* ---- Barra de progreso decorativa ---- */
-.construccion-barra {
-  overflow: hidden;
-  height: 6px;
-  margin: 24px 0 0;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+.construccion-lead strong {
+  color: var(--text, #e9eef7);
+  font-weight: 700;
 }
 
-.construccion-barra span {
-  display: block;
-  width: 42%;
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--brand, #0191c6), var(--neon, #00cfff));
-  animation: construccionBarra 2.4s ease-in-out infinite;
-}
-
-/* ---- Redes ---- */
-.construccion-redes-titulo {
-  margin: 24px 0 0;
-  color: var(--muted-2, #7c8799);
-  font-size: 0.88rem;
-  line-height: 1.5;
-}
-
-.construccion-redes {
+/* ---- Acciones ---- */
+.construccion-acciones {
   display: grid;
   gap: 10px;
-  margin-top: 14px;
+  margin-top: 26px;
 }
 
-.construccion-red {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 50px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #dbe9f8;
-  font-size: 0.98rem;
-  font-weight: 700;
-  padding: 0 20px;
-  text-decoration: none;
-  transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
-}
-
-.construccion-red:hover,
-.construccion-red:focus-visible {
-  box-shadow: 0 0 0 4px rgba(90, 180, 233, 0.12);
-  filter: brightness(1.1);
-  outline: none;
-  transform: translateY(-1px);
+/* .btn viene con white-space: nowrap y padding generoso: en pantallas angostas
+   eso empuja la card más allá del viewport. Acá las etiquetas son largas y el
+   botón ya ocupa el ancho completo, así que puede ceder. */
+.construccion-acciones .btn {
+  min-width: 0;
+  padding-left: var(--sp-4);
+  padding-right: var(--sp-4);
+  white-space: normal;
 }
 
 /* ---- Pie ---- */
 .construccion-pie {
-  margin: 22px 0 0;
+  margin: 24px 0 0;
   border-top: 1px solid var(--line, rgba(255, 255, 255, 0.07));
   color: var(--muted-2, #7c8799);
-  font-size: 0.82rem;
-  line-height: 1.6;
-  padding-top: 16px;
+  font-size: 0.8rem;
+  line-height: 1.65;
+  padding-top: 18px;
 }
 
 /* ---- Animaciones ---- */
 @keyframes construccionPulso {
-  0% { box-shadow: 0 0 0 0 rgba(255, 179, 0, 0.5); }
-  70% { box-shadow: 0 0 0 8px rgba(255, 179, 0, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 179, 0, 0); }
-}
-
-@keyframes construccionBarra {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(240%); }
+  0% { box-shadow: 0 0 0 0 rgba(0, 207, 255, 0.55); }
+  70% { box-shadow: 0 0 0 7px rgba(0, 207, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 207, 255, 0); }
 }
 
 /* ---- Tablet / desktop ---- */
@@ -188,34 +159,27 @@ body.construccion-page {
   }
 
   .construccion-card {
+    width: min(520px, 100%);
     border-radius: 28px;
-    padding: 44px 40px 36px;
+    padding: 44px 44px 32px;
   }
 
-  .construccion-logo {
-    width: 96px;
-    height: 96px;
-    border-radius: 24px;
+  .construccion-logo::before {
+    width: 170px;
+    height: 170px;
   }
 
   .construccion-logo img {
-    width: 78px;
+    width: 128px;
   }
 
-  .construccion-redes {
-    grid-template-columns: repeat(3, 1fr);
+  .construccion-lead {
+    font-size: 1.02rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .construccion-badge__dot,
-  .construccion-barra span,
-  .construccion-red {
+  .construccion-badge__dot {
     animation: none;
-    transition: none;
-  }
-
-  .construccion-barra span {
-    width: 100%;
   }
 }

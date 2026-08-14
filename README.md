@@ -101,8 +101,9 @@ contenido de los módulos: si el panel cambió, el token cambia y la caché baja
 - `testimonios.html` — testimonios de clientes.
 - `login.html` — login de admin (Supabase Auth). Lleva `noindex`.
 - `admin.html` — panel de gestión de productos (protegido). Lleva `noindex`.
-- `construccion.html` — aviso de "sitio en construcción". Lleva `noindex`. No carga catálogo,
-  carrito ni WhatsApp: solo logo, mensaje y redes. Ver "Modo mantenimiento".
+- `construccion.html` — aviso de "sitio en construcción". Lleva `noindex`. No carga catálogo
+  ni carrito: solo logo, mensaje y dos enlaces (WhatsApp e Instagram). Ver "Modo
+  mantenimiento".
 
 ---
 
