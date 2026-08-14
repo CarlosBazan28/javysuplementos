@@ -1,4 +1,4 @@
-const JAVY_WHATSAPP_NUMBER = "50763932305";
+const JAVY_WHATSAPP_NUMBER = "50766494509";
 
 // Devuelve la URL de wa.me; el texto es opcional para enlaces de contacto directo.
 function buildJavyWhatsappUrl(message = "") {
