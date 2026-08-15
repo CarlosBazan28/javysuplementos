@@ -24,6 +24,14 @@
   display: none;
 }
 
+/* Mismo motivo que arriba: los enlaces del footer saltan a estas secciones y el
+   header sticky les tapaba el título. */
+#productos,
+#combos,
+#educacion {
+  scroll-margin-top: 112px;
+}
+
 /* ---- Grilla de categorías --------------------------------------------- */
 /* 2 columnas en móvil: con 8 familias son 4 filas escaneables de un vistazo,
    sin scroll lateral ni chips escondidos fuera de pantalla. */

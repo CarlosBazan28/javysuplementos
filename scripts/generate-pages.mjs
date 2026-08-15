@@ -150,7 +150,7 @@ function renderHead({ title, description, canonical, image, ogType, jsonLd, extr
     "css/components/nav.css?v=cat-nav",
     "css/components/auth.css?v=session-state",
     "css/tokens.css?v=fase2-ui",
-    "css/components/cart.css?v=fase2-ui",
+    "css/components/cart.css?v=ux-fix-1",
     "css/components/cards.css?v=fase2-ui",
     "css/dropdown.css?v=4",
     ...(extraCss || []),
@@ -208,11 +208,11 @@ const COMMON_SCRIPTS = [
   "/js/auth.js?v=session-state",
   "/js/icons.js?v=cat-icons",
   "/js/dropdown.js?v=4",
-  "/js/cart.js?v=fase2-ui",
+  "/js/cart.js?v=ux-fix-1",
 ];
 
 function renderScripts(extra = []) {
-  return [...COMMON_SCRIPTS, ...extra, "/js/include-nav.js?v=cat-nav"]
+  return [...COMMON_SCRIPTS, ...extra, "/js/include-nav.js?v=ux-fix-1"]
     .map((src) => `    <script src="${src}" defer></script>`)
     .join("\n");
 }

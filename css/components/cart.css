@@ -558,6 +558,52 @@
   transform: translate(-50%, 0);
 }
 
+/* Variante persistente y clicable: respaldo cuando el navegador bloquea el
+   popup de WhatsApp. No se auto-oculta — el usuario debe poder pulsar el enlace. */
+.javy-toast--action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(94vw, 420px);
+  text-align: left;
+  border-color: rgba(255, 193, 7, 0.55);
+}
+
+.javy-toast--action.is-visible {
+  pointer-events: auto;
+}
+
+.javy-toast__link {
+  flex: none;
+  padding: 8px 14px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--neon, #00e676);
+  color: #04240f;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.javy-toast__close {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.javy-toast__close:hover,
+.javy-toast__close:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .javy-toast {
     transition: opacity 0.15s ease;

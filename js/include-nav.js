@@ -69,8 +69,23 @@ async function initCategoriesSubmenu(host) {
   const host = document.getElementById("site-header");
   if (!host) return;
 
-  document.body.classList.add("page-transition");
-  const html = await fetch("/Editables/nav.html", { cache: "no-store" }).then((response) => response.text());
+  document.body.classList.add("page-transition"); // opacity: 0
+
+  // El fetch DEBE ir protegido: el body ya está en opacity 0 y la clase que lo
+  // vuelve visible (page-transition-in) se añade al final de esta IIFE. Si el
+  // fetch rechaza (offline, 404, despliegue parcial, CSP) la función aborta y
+  // la página entera queda invisible, sin nav y sin cotización.
+  let html = "";
+  try {
+    const response = await fetch("/Editables/nav.html");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    html = await response.text();
+  } catch (error) {
+    console.warn("No se pudo cargar el nav:", error.message);
+    document.body.classList.add("page-transition-in"); // la página sigue usable sin nav
+    return;
+  }
+
   host.innerHTML = html;
   window.javyIcons?.enhance?.(host);
   document.dispatchEvent(new CustomEvent("javy:nav-ready"));
