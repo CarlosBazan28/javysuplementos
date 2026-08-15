@@ -1,0 +1,45 @@
+/* ============================================================================
+   MODO SOLO LECTURA — el catálogo se ve, pero no se puede cotizar.
+   La carga js/mantenimiento.js cuando el modo está activo; no se enlaza desde
+   las páginas. El atributo data-modo lo pone ese mismo script en <html>.
+   ============================================================================ */
+
+/* Todo lo que dispara una cotización. */
+[data-modo="solo-lectura"] .product-card__btn--buy,
+[data-modo="solo-lectura"] .product-card__btn--quote,
+[data-modo="solo-lectura"] [data-add-cta],
+[data-modo="solo-lectura"] .pdp__cta,
+[data-modo="solo-lectura"] .pdp__bar,
+[data-modo="solo-lectura"] #consultationBtn,
+[data-modo="solo-lectura"] .cart-btn,
+[data-modo="solo-lectura"] .consultation-panel,
+/* Selectores de sabor y cantidad de la ficha: sin botón de agregar no llevan
+   a ningún lado, así que quedarían como controles muertos. */
+[data-modo="solo-lectura"] .pdp__selectors,
+/* "Selecciona sabor y cantidad antes de agregarlo a la cotización." */
+[data-modo="solo-lectura"] .pdp__hint,
+/* Este aviso remata en "confírmalos al enviar tu cotización": lo reemplaza el
+   aviso del modo, que dice justo lo contrario. */
+[data-modo="solo-lectura"] .catalog-offline-note {
+  display: none !important;
+}
+
+/* Aviso al tope de la página. */
+.modo-aviso {
+  background: var(--warning-tint, rgba(255, 179, 0, 0.14));
+  border-bottom: 1px solid rgba(255, 179, 0, 0.28);
+  color: var(--warning-soft, #ffcf6d);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.45;
+  padding: 10px 16px;
+  text-align: center;
+  text-wrap: balance;
+}
+
+@media (min-width: 768px) {
+  .modo-aviso {
+    font-size: 0.9rem;
+    padding: 12px 24px;
+  }
+}

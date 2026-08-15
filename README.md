@@ -107,18 +107,28 @@ contenido de los módulos: si el panel cambió, el token cambia y la caché baja
 
 ---
 
-## Modo mantenimiento
+## Modo del sitio (mantenimiento)
 
-`js/mantenimiento.js` es el interruptor global del sitio público. Cuando está activo, cualquier
-página pública redirige a `/construccion.html` **antes** de pintar nada, así el visitante no ve
-el catálogo ni puede armar una cotización.
+`js/mantenimiento.js` es el interruptor global del sitio público. La constante `MODO` acepta
+tres valores:
 
-- **Encender / apagar:** en `js/mantenimiento.js`, la constante `ACTIVO` (`true` = sitio cerrado,
-  `false` = sitio normal). Es la única línea que hay que tocar.
-- **Ver el sitio real mientras está cerrado:** entrar una vez a
-  `https://javysuplementos.com/?ver=javy`. El permiso queda guardado en `sessionStorage` mientras
-  dure la pestaña.
-- **No se bloquean:** `construccion.html`, `login.html`, `admin.html` y `404.html`.
+| Modo | Qué ve el visitante |
+|---|---|
+| `abierto` | El sitio normal. |
+| `solo-lectura` | Ve el catálogo y las fichas con sus precios, pero **no puede cotizar**: se ocultan los botones de agregar, el panel de cotización y su acceso en el nav, y aparece un aviso arriba. |
+| `cerrado` | Toda página pública redirige a `/construccion.html` antes de pintar nada. |
+
+- **Cambiar de modo:** la constante `MODO` en `js/mantenimiento.js`. Es la única línea.
+- **El modo solo aplica en producción** (`javysuplementos.com`). En los previews de Vercel y en
+  `localhost` el sitio está siempre abierto, así se trabaja sin que estorbe. Por eso `main` y las
+  ramas de desarrollo pueden tener el mismo valor sin pisarse.
+- **Probar un modo en cualquier lado:** agregar `?modo=cerrado`, `?modo=solo-lectura` o
+  `?modo=abierto` a la URL. Queda en `sessionStorage` mientras dure la pestaña (`?ver=javy`
+  sigue funcionando como atajo de `abierto`).
+- **Nunca se bloquean:** `construccion.html`, `login.html`, `admin.html` y `404.html`.
+- Lo que oculta el modo `solo-lectura` vive en `css/modo-solo-lectura.css`, que carga el propio
+  script; las páginas no lo enlazan. Si aparece un CTA de cotización nuevo, hay que sumarlo ahí
+  **y** a la constante `COTIZAR` del script (que bloquea el click por si el CSS no cargara).
 - El script se inyecta sin `defer` justo debajo del `<meta>` de CSP en todas las páginas públicas
   (raíz + `producto/**` + `categoria/**`). El template de `scripts/generate-pages.mjs` ya lo
   incluye, así que las páginas regeneradas lo conservan.
