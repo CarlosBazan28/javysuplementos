@@ -161,6 +161,9 @@ function renderHead({ title, description, canonical, image, ogType, jsonLd, extr
 
     <!-- Seguridad: CSP baseline versionada. El enforce real + frame-ancestors lo aplica Cloudflare (ver docs/seguridad-cloudflare.md). -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com" />
+
+    <!-- Modo mantenimiento: bloquea el sitio público mientras esté activo (ver js/mantenimiento.js). -->
+    <script src="/js/mantenimiento.js?v=1"></script>
     <title>${escapeHTML(title)}</title>
 
     <!-- SEO -->
@@ -201,7 +204,7 @@ ${css.map((href) => `    <link rel="stylesheet" href="/${href}" />`).join("\n")}
 const COMMON_SCRIPTS = [
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
   "/js/supabase-config.js",
-  "/js/whatsapp-config.js?v=central-links",
+  "/js/whatsapp-config.js?v=num-2026-08",
   "/js/product-data.js",
   "/js/product-urls.js?v=seo-urls",
   "/js/db.js?v=no-img-fallback",
@@ -544,7 +547,7 @@ ${types
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
-${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd })}
+${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-nav", "css/pages/supplements.css?v=cat-nav"] })}
 ${renderScripts()}
   </head>
   <body>

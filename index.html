@@ -6,6 +6,8 @@
 
     <!-- Seguridad: CSP baseline versionada. El enforce real + frame-ancestors lo aplica Cloudflare (ver docs/seguridad-cloudflare.md). -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.instagram.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co https://*.cdninstagram.com https://*.fbcdn.net https://www.instagram.com; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com; frame-src https://www.instagram.com" />
+    <!-- Modo mantenimiento: bloquea el sitio público mientras esté activo (ver js/mantenimiento.js). -->
+    <script src="/js/mantenimiento.js?v=1"></script>
     <title>Javy Suplementos | Suplementos originales en Panamá</title>
 
     <!-- SEO -->
@@ -53,7 +55,7 @@
           "url": "https://javysuplementos.com/",
           "image": "https://javysuplementos.com/img/icons/javy-web-app-icon-1024.png",
           "logo": "https://javysuplementos.com/img/icons/javy-web-app-icon-1024.png",
-          "telephone": "+50763932305",
+          "telephone": "+50766494509",
           "priceRange": "$$",
           "address": {
             "@type": "PostalAddress",
@@ -69,7 +71,7 @@
             "closes": "20:00"
           },
           "sameAs": [
-            "https://instagram.com/javy.supplements",
+            "https://instagram.com/javy.suplementos",
             "https://tiktok.com/@javysuplementos",
             "https://facebook.com/javysuplementos"
           ]
@@ -96,7 +98,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="js/supabase-config.js" defer></script>
-    <script src="js/whatsapp-config.js?v=central-links" defer></script>
+    <script src="js/whatsapp-config.js?v=num-2026-08" defer></script>
     <script src="js/product-data.js" defer></script>
     <script src="js/product-urls.js?v=seo-urls" defer></script>
     <script src="js/db.js?v=no-img-fallback" defer></script>
@@ -166,16 +168,15 @@
         </div>
         <div class="top-products__list" id="home-combos__list"></div>
       </section>
-    </main>
 
-    <section class="instagram-videos" id="educacion">
+      <section class="instagram-videos" id="educacion">
        <div class="title instagram-videos__header">
           <h2>Aprende sobre tus suplementos</h2>
           <p>
             Cómo funcionan proteínas, creatinas, quemadores y más.
             Videos hechos por Javy, sin tecnicismos.
           </p>
-          <a class="instagram-videos__cta" href="https://www.instagram.com/javy.supplements" target="_blank" rel="noopener">Ver mas reels</a>
+          <a class="instagram-videos__cta" href="https://www.instagram.com/javy.suplementos" target="_blank" rel="noopener">Ver mas reels</a>
         </div>
       <div class="instagram-videos__grid" aria-label="Reels educativos de suplementos">
         <article class="reel-card">
@@ -216,13 +217,14 @@
         </article>
       </div>
     </section>
+    </main>
 
     <footer class="footer">
   <div class="footer__glow"></div>                                         
   <div class="footer__inner">
     <div class="footer__grid">
       <div class="footer__brand">
-        <p class="footer__logo">Javy Supplements</p>
+        <p class="footer__logo">Javy Suplementos</p>
         <p class="footer__text">
           Tu salud y bienestar son nuestra prioridad.  
           Productos originales, información de calidad y acompañamiento real en tu proceso.
@@ -258,14 +260,14 @@
         <h3 class="footer__title">Redes</h3>
         <p class="footer__text">Seguinos para más tips, guías y resultados reales.</p>
         <div class="footer__social">
-          <a href="https://instagram.com/javy.supplements" target="_blank" rel="noopener">Instagram</a>
+          <a href="https://instagram.com/javy.suplementos" target="_blank" rel="noopener">Instagram</a>
           <a href="https://tiktok.com/@javysuplementos" target="_blank" rel="noopener">TikTok</a>
           <a href="https://facebook.com/javysuplementos" target="_blank" rel="noopener">Facebook</a>
         </div>
       </div>
     </div>
     <div class="footer__bottom">
-      <p>© 2026 Javy Supplements — Todos los derechos reservados.</p>
+      <p>© 2026 Javy Suplementos — Todos los derechos reservados.</p>
       <p class="footer__dev">Sitio desarrollado por Bazan Dev.</p>
     </div>
   </div>

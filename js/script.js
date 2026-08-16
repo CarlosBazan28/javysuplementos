@@ -425,8 +425,12 @@ const HOME_GOALS = [
   { label: "Salud general", slug: "salud-general" },
 ];
 
-const familySlug = (category) =>
-  String(category?.slug || "").replace(/^(fam|tipo)-/, "") || slugify(category?.name || "");
+/* Las páginas /categoria/<slug>/ las genera scripts/generate-pages.mjs con un
+   slug derivado del NOMBRE (slugTokens), no de la columna `slug` de Supabase
+   (que usa prefijos fam-/tipo- y no coincide, ej. "fam-salud" -> "salud" en
+   vez de "salud-y-bienestar"). Hay que usar el mismo criterio acá o el link
+   apunta a una página que no existe. */
+const familySlug = (category) => slugify(category?.name || "");
 
 /* El icono se busca por coincidencia parcial y no exacta: con Supabase caído
    los slugs se derivan del texto ("creatinas", "proteinas-whey", "salud-y-

@@ -101,6 +101,29 @@ contenido de los módulos: si el panel cambió, el token cambia y la caché baja
 - `testimonios.html` — testimonios de clientes.
 - `login.html` — login de admin (Supabase Auth). Lleva `noindex`.
 - `admin.html` — panel de gestión de productos (protegido). Lleva `noindex`.
+- `construccion.html` — aviso de "sitio en construcción". Lleva `noindex`. No carga catálogo
+  ni carrito: solo logo, mensaje y dos enlaces (WhatsApp e Instagram). Ver "Modo
+  mantenimiento".
+
+---
+
+## Modo mantenimiento
+
+`js/mantenimiento.js` es el interruptor global del sitio público. Cuando está activo, cualquier
+página pública redirige a `/construccion.html` **antes** de pintar nada, así el visitante no ve
+el catálogo ni puede armar una cotización.
+
+- **Encender / apagar:** en `js/mantenimiento.js`, la constante `ACTIVO` (`true` = sitio cerrado,
+  `false` = sitio normal). Es la única línea que hay que tocar.
+- **Ver el sitio real mientras está cerrado:** entrar una vez a
+  `https://javysuplementos.com/?ver=javy`. El permiso queda guardado en `sessionStorage` mientras
+  dure la pestaña.
+- **No se bloquean:** `construccion.html`, `login.html`, `admin.html` y `404.html`.
+- El script se inyecta sin `defer` justo debajo del `<meta>` de CSP en todas las páginas públicas
+  (raíz + `producto/**` + `categoria/**`). El template de `scripts/generate-pages.mjs` ya lo
+  incluye, así que las páginas regeneradas lo conservan.
+- Si cambia el contenido del script, subir el `?v=` en las páginas para saltear caché de
+  Cloudflare/GitHub Pages.
 
 ---
 
