@@ -44,8 +44,8 @@
     <link rel="stylesheet" href="/css/components/cart.css?v=fase2-ui" />
     <link rel="stylesheet" href="/css/components/cards.css?v=fase2-ui" />
     <link rel="stylesheet" href="/css/dropdown.css?v=4" />
-    <link rel="stylesheet" href="/css/pages/product.css?v=cat-nav" />
-    <link rel="stylesheet" href="/css/pages/supplements.css?v=cat-nav" />
+    <link rel="stylesheet" href="/css/pages/product.css?v=cat-unif" />
+    <link rel="stylesheet" href="/css/pages/supplements.css?v=cat-unif" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -62,6 +62,7 @@
     <script src="/js/icons.js?v=cat-icons" defer></script>
     <script src="/js/dropdown.js?v=4" defer></script>
     <script src="/js/cart.js?v=fase2-ui" defer></script>
+    <script src="/js/categoria.js?v=cat-unif" defer></script>
     <script src="/js/include-nav.js?v=cat-nav" defer></script>
   </head>
   <body>
@@ -80,15 +81,16 @@
           10 productos originales en stock con precio de catálogo.
           Agregá lo que te interese y enviá tu cotización por WhatsApp para confirmar disponibilidad.
         </p>
-        <p><a class="catalog-hero__link" href="/supplements-page.html">Ver el catálogo completo con filtros</a></p>
+        <a class="catalog-hero__link" href="/supplements-page.html">Ver el catálogo completo con filtros</a>
       </section>
 
 
-      <section class="top-products__list" aria-label="Productos de Quemadores">
-        <article class="product-card">
+      <section class="catalog-grid" aria-label="Productos de Quemadores">
+        <article class="product-card" data-product-id="5b248bfa-a017-4741-a021-4c6a02864f07" data-legacy-id="carniburn-fuego" data-name="Carniburn Fuego" data-brand="Carniburn" data-category="Quemadores" data-price="35" data-presentation="" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/carniburn-fuego/" aria-label="Ver Carniburn Fuego">
             <img src="/img/products/product-placeholder.svg" alt="Carniburn Fuego" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Carniburn</span>
@@ -97,13 +99,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/carniburn-fuego/">Carniburn Fuego</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$35.00</span></span>
+              
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/carniburn-fuego/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="122ca681-eaad-4dc3-a1f5-a776146f06c8" data-legacy-id="h2o-diuretico" data-name="H2O Diurético" data-brand="H2O" data-category="Quemadores" data-price="18" data-presentation="" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/h2o-diuretico/" aria-label="Ver H2O Diurético">
             <img src="/img/products/product-placeholder.svg" alt="H2O Diurético" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">H2O</span>
@@ -112,13 +121,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/h2o-diuretico/">H2O Diurético</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$18.00</span></span>
+              
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/h2o-diuretico/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="9161a3d9-456a-4428-a11a-18484d983b38" data-legacy-id="liquid-l-carnitine" data-name="L-Carnitine Líquida" data-brand="Nutrex" data-category="Quemadores" data-price="16" data-presentation="31 servidas" data-image="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1784942921536-nutrex-l-carnitine-3000-berry-blast-master.webp">
           <a class="product-card__media product-card__media-link" href="/producto/nutrex-l-carnitine-liquida-31-servidas/" aria-label="Ver L-Carnitine Líquida">
             <img src="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1784942921536-nutrex-l-carnitine-3000-berry-blast-master.webp" alt="L-Carnitine Líquida" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutrex</span>
@@ -127,13 +143,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutrex-l-carnitine-liquida-31-servidas/">L-Carnitine Líquida</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$16.00</span></span>
+              <span class="product-card__pres">31 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutrex-l-carnitine-liquida-31-servidas/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="435fffe9-90f2-4545-8557-6b616a5f31c5" data-legacy-id="lipodrene-fat-burner" data-name="Lipodrene Fat Burner" data-brand="Hi-Tech Pharmaceuticals" data-category="Quemadores" data-price="33.5" data-presentation="" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/hi-tech-pharmaceuticals-lipodrene-fat-burner/" aria-label="Ver Lipodrene Fat Burner">
             <img src="/img/products/product-placeholder.svg" alt="Lipodrene Fat Burner" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Hi-Tech Pharmaceuticals</span>
@@ -142,13 +165,21 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/hi-tech-pharmaceuticals-lipodrene-fat-burner/">Lipodrene Fat Burner</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$33.50</span></span>
+              
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/hi-tech-pharmaceuticals-lipodrene-fat-burner/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="dd6a3404-ea29-4cb6-a3c5-bcbee9a64c41" data-legacy-id="nutrex-lipo-6-black-60-caps" data-name="Nutrex Lipo-6 Black 60 cápsulas" data-brand="Nutrex" data-category="Quemadores" data-price="20" data-presentation="60 cápsulas" data-image="/img/products/nutrex-lipo-6-black-60-caps.webp">
+          <span class="product-card__badge">Destacado</span>
           <a class="product-card__media product-card__media-link" href="/producto/nutrex-lipo-6-black-60-capsulas/" aria-label="Ver Nutrex Lipo-6 Black 60 cápsulas">
             <img src="/img/products/nutrex-lipo-6-black-60-caps.webp" alt="Nutrex Lipo-6 Black 60 cápsulas" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutrex</span>
@@ -157,13 +188,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutrex-lipo-6-black-60-capsulas/">Nutrex Lipo-6 Black 60 cápsulas</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$20.00</span></span>
+              <span class="product-card__pres">60 cápsulas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutrex-lipo-6-black-60-capsulas/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="6afa9827-d292-46ca-8818-e7836670bc21" data-legacy-id="nutrex-lipo-6-hardcore-60-caps" data-name="Nutrex Lipo-6 Hardcore 60 cápsulas" data-brand="Nutrex" data-category="Quemadores" data-price="23.5" data-presentation="60 cápsulas" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/nutrex-lipo-6-hardcore-60-capsulas/" aria-label="Ver Nutrex Lipo-6 Hardcore 60 cápsulas">
             <img src="/img/products/product-placeholder.svg" alt="Nutrex Lipo-6 Hardcore 60 cápsulas" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutrex</span>
@@ -172,13 +210,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutrex-lipo-6-hardcore-60-capsulas/">Nutrex Lipo-6 Hardcore 60 cápsulas</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$23.50</span></span>
+              <span class="product-card__pres">60 cápsulas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutrex-lipo-6-hardcore-60-capsulas/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="8018abde-c0c1-4182-b1b2-d601ef914e8b" data-legacy-id="nutrex-lipo-6-hers-60-caps" data-name="Nutrex Lipo-6 Hers 60 cápsulas" data-brand="Nutrex" data-category="Quemadores" data-price="21" data-presentation="60 cápsulas" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/nutrex-lipo-6-hers-60-capsulas/" aria-label="Ver Nutrex Lipo-6 Hers 60 cápsulas">
             <img src="/img/products/product-placeholder.svg" alt="Nutrex Lipo-6 Hers 60 cápsulas" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutrex</span>
@@ -187,13 +232,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutrex-lipo-6-hers-60-capsulas/">Nutrex Lipo-6 Hers 60 cápsulas</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$21.00</span></span>
+              <span class="product-card__pres">60 cápsulas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutrex-lipo-6-hers-60-capsulas/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="748ae6de-accc-4ad1-9b81-9bf6fbddd5ca" data-legacy-id="nutrex-lipo-6-intense-60-caps" data-name="Nutrex Lipo-6 Intense 60 cápsulas" data-brand="Nutrex" data-category="Quemadores" data-price="25" data-presentation="60 cápsulas" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/nutrex-lipo-6-intense-60-capsulas/" aria-label="Ver Nutrex Lipo-6 Intense 60 cápsulas">
             <img src="/img/products/product-placeholder.svg" alt="Nutrex Lipo-6 Intense 60 cápsulas" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutrex</span>
@@ -202,13 +254,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutrex-lipo-6-intense-60-capsulas/">Nutrex Lipo-6 Intense 60 cápsulas</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$25.00</span></span>
+              <span class="product-card__pres">60 cápsulas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutrex-lipo-6-intense-60-capsulas/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="c9ae9bfd-dd7f-44b1-89f4-8861525627bb" data-legacy-id="nutrex-lipo-6-stim-free-60-caps" data-name="Nutrex Lipo-6 Stim-Free 60 cápsulas" data-brand="Nutrex" data-category="Quemadores" data-price="20" data-presentation="60 cápsulas" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/nutrex-lipo-6-stim-free-60-capsulas/" aria-label="Ver Nutrex Lipo-6 Stim-Free 60 cápsulas">
             <img src="/img/products/product-placeholder.svg" alt="Nutrex Lipo-6 Stim-Free 60 cápsulas" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutrex</span>
@@ -217,13 +276,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutrex-lipo-6-stim-free-60-capsulas/">Nutrex Lipo-6 Stim-Free 60 cápsulas</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$20.00</span></span>
+              <span class="product-card__pres">60 cápsulas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutrex-lipo-6-stim-free-60-capsulas/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="1f9505b7-a3f1-4fed-8b1d-7ef120b4cea7" data-legacy-id="xpel-diuretico" data-name="Xpel Diurético" data-brand="Xpel" data-category="Quemadores" data-price="17" data-presentation="" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/xpel-diuretico/" aria-label="Ver Xpel Diurético">
             <img src="/img/products/product-placeholder.svg" alt="Xpel Diurético" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Xpel</span>
@@ -232,7 +298,13 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/xpel-diuretico/">Xpel Diurético</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$17.00</span></span>
+              
             </div>
+          </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/xpel-diuretico/">Ver detalles</a>
           </div>
         </article>
       </section>

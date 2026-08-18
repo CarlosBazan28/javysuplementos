@@ -520,25 +520,47 @@ ${types
 `
     : "";
 
+  // Misma estructura que renderProductCard() de js/supplements.js: la card del
+  // catálogo y la de una categoría tienen que ser la misma pieza. Acá se emite
+  // en HTML (para que el scraper la lea) y js/categoria.js le engancha la
+  // cotización al cargar, con el producto ya normalizado por catalogDb.
   const cards = products
     .map((p) => {
       const productSlug = slugMap.get(String(p.id));
+      const name = p.name || p.nombre || "Producto";
       const price = productPrice(p);
       const priceText = price > 0 ? `$${price.toFixed(2)}` : "Consultar";
+      const oldPrice = Number(p.old_price || 0);
+      const hasOffer = oldPrice > price && price > 0;
+      const discount = hasOffer ? Math.round(((oldPrice - price) / oldPrice) * 100) : 0;
+      const featured = p.featured === true || p.is_featured === true;
+      const available = isAvailable(p);
       const img = p.image_url || p.imagen_url || PLACEHOLDER_IMAGE;
-      return `        <article class="product-card">
-          <a class="product-card__media product-card__media-link" href="${productPath(productSlug)}" aria-label="Ver ${escapeHTML(p.name || p.nombre)}">
-            <img src="${escapeHTML(assetSrc(img))}" alt="${escapeHTML(p.name || p.nombre)}" class="product-card__img" loading="lazy" decoding="async" />
+      const href = productPath(productSlug);
+
+      // Los data-* llevan lo mínimo para cotizar sin depender de la red: si
+      // Supabase no responde, js/categoria.js arma el producto con esto y el
+      // botón sigue sirviendo (sin sabores, que sí requieren la base).
+      return `        <article class="product-card" data-product-id="${escapeHTML(String(p.id))}" data-legacy-id="${escapeHTML(String(p.legacy_id || p.id))}" data-name="${escapeHTML(name)}" data-brand="${escapeHTML(p.brand || "")}" data-category="${escapeHTML(p.category || "")}" data-price="${price}" data-presentation="${escapeHTML(p.presentation || "")}" data-image="${escapeHTML(assetSrc(img))}">
+${featured ? `          <span class="product-card__badge">Destacado</span>\n` : ""}          <a class="product-card__media product-card__media-link" href="${href}" aria-label="Ver ${escapeHTML(name)}">
+            <img src="${escapeHTML(assetSrc(img))}" alt="${escapeHTML(name)}" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">${escapeHTML(p.brand || "Marca en revisión")}</span>
-              <span class="product-card__status ${isAvailable(p) ? "is-available" : "is-agotado"}">${isAvailable(p) ? "Disponible" : "Agotado"}</span>
+              <span class="product-card__status ${available ? "is-available" : "is-agotado"}">${available ? "Disponible" : "Agotado"}</span>
             </div>
-            <h2 class="product-card__name"><a class="product-card__name-link" href="${productPath(productSlug)}">${escapeHTML(p.name || p.nombre)}</a></h2>
+            <h2 class="product-card__name"><a class="product-card__name-link" href="${href}">${escapeHTML(name)}</a></h2>
             <div class="product-card__price-row">
-              <span class="product-card__price-group"><span class="product-card__price">${escapeHTML(priceText)}</span></span>
+              <span class="product-card__price-group"><span class="product-card__price">${escapeHTML(priceText)}</span>${hasOffer ? `<span class="product-card__price-old">$${oldPrice.toFixed(2)}</span><span class="product-card__discount">-${discount}%</span>` : ""}</span>
+              ${p.presentation ? `<span class="product-card__pres">${escapeHTML(p.presentation)}</span>` : ""}
             </div>
+          </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--${available ? "buy" : "quote"}" type="button">${available ? "Agregar a cotización" : "Consultar disponibilidad"}</button>
+            <a class="product-card__detail-link" href="${href}">Ver detalles</a>
           </div>
         </article>`;
     })
@@ -547,8 +569,8 @@ ${types
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
-${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-nav", "css/pages/supplements.css?v=cat-nav"] })}
-${renderScripts()}
+${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-unif", "css/pages/supplements.css?v=cat-unif"] })}
+${renderScripts(["/js/categoria.js?v=cat-unif"])}
   </head>
   <body>
     <div id="site-header"></div>
@@ -566,11 +588,11 @@ ${renderScripts()}
           ${products.length} producto${products.length === 1 ? "" : "s"} original${products.length === 1 ? "" : "es"} en stock con precio de catálogo.
           Agregá lo que te interese y enviá tu cotización por WhatsApp para confirmar disponibilidad.
         </p>
-        <p><a class="catalog-hero__link" href="/supplements-page.html">Ver el catálogo completo con filtros</a></p>
+        <a class="catalog-hero__link" href="/supplements-page.html">Ver el catálogo completo con filtros</a>
       </section>
 ${typeChips}
 
-      <section class="top-products__list" aria-label="Productos de ${escapeHTML(name)}">
+      <section class="catalog-grid" aria-label="Productos de ${escapeHTML(name)}">
 ${cards}
       </section>
     </main>

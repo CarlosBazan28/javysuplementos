@@ -44,8 +44,8 @@
     <link rel="stylesheet" href="/css/components/cart.css?v=fase2-ui" />
     <link rel="stylesheet" href="/css/components/cards.css?v=fase2-ui" />
     <link rel="stylesheet" href="/css/dropdown.css?v=4" />
-    <link rel="stylesheet" href="/css/pages/product.css?v=cat-nav" />
-    <link rel="stylesheet" href="/css/pages/supplements.css?v=cat-nav" />
+    <link rel="stylesheet" href="/css/pages/product.css?v=cat-unif" />
+    <link rel="stylesheet" href="/css/pages/supplements.css?v=cat-unif" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -62,6 +62,7 @@
     <script src="/js/icons.js?v=cat-icons" defer></script>
     <script src="/js/dropdown.js?v=4" defer></script>
     <script src="/js/cart.js?v=fase2-ui" defer></script>
+    <script src="/js/categoria.js?v=cat-unif" defer></script>
     <script src="/js/include-nav.js?v=cat-nav" defer></script>
   </head>
   <body>
@@ -80,7 +81,7 @@
           12 productos originales en stock con precio de catálogo.
           Agregá lo que te interese y enviá tu cotización por WhatsApp para confirmar disponibilidad.
         </p>
-        <p><a class="catalog-hero__link" href="/supplements-page.html">Ver el catálogo completo con filtros</a></p>
+        <a class="catalog-hero__link" href="/supplements-page.html">Ver el catálogo completo con filtros</a>
       </section>
 
       <nav class="catalog-filters catalog-filters--types" aria-label="Filtrar Pre-entrenos y energía por tipo">
@@ -90,11 +91,12 @@
       </nav>
 
 
-      <section class="top-products__list" aria-label="Productos de Pre-entrenos y energía">
-        <article class="product-card">
+      <section class="catalog-grid" aria-label="Productos de Pre-entrenos y energía">
+        <article class="product-card" data-product-id="355eb1bd-ee1d-4246-b8e6-5b3b02e37308" data-legacy-id="adiplex-kiwi-berry" data-name="Adiplex" data-brand="Adiplex" data-category="Pre-entrenos y energía" data-price="21" data-presentation="" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/adiplex/" aria-label="Ver Adiplex">
             <img src="/img/products/product-placeholder.svg" alt="Adiplex" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Adiplex</span>
@@ -103,13 +105,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/adiplex/">Adiplex</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$21.00</span></span>
+              
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/adiplex/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="13e75b2f-8ac8-4cda-bb36-6354b8420664" data-legacy-id="cbum-energy-drink-355ml" data-name="CBUM Energy Drink 355 ml" data-brand="CBUM" data-category="Bebidas" data-price="2.5" data-presentation="355 ml" data-image="/img/products/cbum-energy-drink-355ml.webp">
           <a class="product-card__media product-card__media-link" href="/producto/cbum-energy-drink-355-ml/" aria-label="Ver CBUM Energy Drink 355 ml">
             <img src="/img/products/cbum-energy-drink-355ml.webp" alt="CBUM Energy Drink 355 ml" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">CBUM</span>
@@ -118,13 +127,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/cbum-energy-drink-355-ml/">CBUM Energy Drink 355 ml</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$2.50</span></span>
+              <span class="product-card__pres">355 ml</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/cbum-energy-drink-355-ml/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="420ca056-bae7-4335-84f1-b3595c28ca50" data-legacy-id="maltodextrin-2lb" data-name="Maltodextrin 2 lb" data-brand="Maltodextrin" data-category="Carbohidratos" data-price="20" data-presentation="2 lb / 60 servidas" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/maltodextrin-2-lb/" aria-label="Ver Maltodextrin 2 lb">
             <img src="/img/products/product-placeholder.svg" alt="Maltodextrin 2 lb" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Maltodextrin</span>
@@ -133,13 +149,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/maltodextrin-2-lb/">Maltodextrin 2 lb</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$20.00</span></span>
+              <span class="product-card__pres">2 lb / 60 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/maltodextrin-2-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="949f018f-c8cb-4f48-9f31-1ada93bfa42f" data-legacy-id="maltodextrin-8lb" data-name="Maltodextrin 8 lb" data-brand="Maltodextrin" data-category="Carbohidratos" data-price="42" data-presentation="8 lb / 242 servidas" data-image="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1784942111276-nutricost-maltodextrin-2lb.webp">
           <a class="product-card__media product-card__media-link" href="/producto/maltodextrin-8-lb/" aria-label="Ver Maltodextrin 8 lb">
             <img src="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1784942111276-nutricost-maltodextrin-2lb.webp" alt="Maltodextrin 8 lb" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Maltodextrin</span>
@@ -148,13 +171,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/maltodextrin-8-lb/">Maltodextrin 8 lb</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$42.00</span></span>
+              <span class="product-card__pres">8 lb / 242 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/maltodextrin-8-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="aaafc218-0747-4082-8602-d22cb99cd12c" data-legacy-id="maniac-extreme-preworkout" data-name="Maniac Extreme Pre-Workout" data-brand="Maniac" data-category="Pre-entrenos y energía" data-price="24" data-presentation="" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/maniac-extreme-pre-workout/" aria-label="Ver Maniac Extreme Pre-Workout">
             <img src="/img/products/product-placeholder.svg" alt="Maniac Extreme Pre-Workout" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Maniac</span>
@@ -163,13 +193,21 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/maniac-extreme-pre-workout/">Maniac Extreme Pre-Workout</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$24.00</span></span>
+              
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/maniac-extreme-pre-workout/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="5becf937-8e6c-473b-b3af-1a407cd33abd" data-legacy-id="mesomorph-pre-workout" data-name="Mesomorph Pre-Workout" data-brand="APS Nutrition" data-category="Pre-entrenos y energía" data-price="35" data-presentation="" data-image="/img/products/mesomorph-pre-workout.webp">
+          <span class="product-card__badge">Destacado</span>
           <a class="product-card__media product-card__media-link" href="/producto/aps-nutrition-mesomorph-pre-workout/" aria-label="Ver Mesomorph Pre-Workout">
             <img src="/img/products/mesomorph-pre-workout.webp" alt="Mesomorph Pre-Workout" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">APS Nutrition</span>
@@ -178,13 +216,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/aps-nutrition-mesomorph-pre-workout/">Mesomorph Pre-Workout</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$35.00</span></span>
+              
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/aps-nutrition-mesomorph-pre-workout/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="fa092555-ae92-491d-ba6e-a936d4d2ea71" data-legacy-id="mutant-caffeine-240-tabs" data-name="Mutant Caffeine 240 tabletas" data-brand="Mutant" data-category="Cafeína" data-price="10" data-presentation="240 tabletas" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/mutant-caffeine-240-tabletas/" aria-label="Ver Mutant Caffeine 240 tabletas">
             <img src="/img/products/product-placeholder.svg" alt="Mutant Caffeine 240 tabletas" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Mutant</span>
@@ -193,13 +238,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/mutant-caffeine-240-tabletas/">Mutant Caffeine 240 tabletas</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$10.00</span></span>
+              <span class="product-card__pres">240 tabletas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/mutant-caffeine-240-tabletas/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="f8cd7b8f-e359-41cf-a59c-68177e42e02f" data-legacy-id="nutrex-outrage" data-name="Nutrex Outrage" data-brand="Nutrex" data-category="Pre-entrenos y energía" data-price="20" data-presentation="" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/nutrex-outrage/" aria-label="Ver Nutrex Outrage">
             <img src="/img/products/product-placeholder.svg" alt="Nutrex Outrage" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutrex</span>
@@ -208,13 +260,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutrex-outrage/">Nutrex Outrage</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$20.00</span></span>
+              
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutrex-outrage/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="8d49d2b4-6841-466b-b127-5faabba02085" data-legacy-id="primaforce-beta-alanine-100-serv" data-name="Primaforce Beta-Alanine 100 servidas" data-brand="Primaforce" data-category="Pre-entrenos y energía" data-price="15" data-presentation="100 servidas" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/primaforce-beta-alanine-100-servidas/" aria-label="Ver Primaforce Beta-Alanine 100 servidas">
             <img src="/img/products/product-placeholder.svg" alt="Primaforce Beta-Alanine 100 servidas" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Primaforce</span>
@@ -223,13 +282,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/primaforce-beta-alanine-100-servidas/">Primaforce Beta-Alanine 100 servidas</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$15.00</span></span>
+              <span class="product-card__pres">100 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/primaforce-beta-alanine-100-servidas/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="a3f66af8-65a6-4a5e-bb1c-a6888f977e04" data-legacy-id="hyde-nightmare" data-name="ProSupps Hyde Nightmare" data-brand="ProSupps" data-category="Pre-entrenos y energía" data-price="37" data-presentation="" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/prosupps-hyde-nightmare/" aria-label="Ver ProSupps Hyde Nightmare">
             <img src="/img/products/product-placeholder.svg" alt="ProSupps Hyde Nightmare" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">ProSupps</span>
@@ -238,13 +304,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/prosupps-hyde-nightmare/">ProSupps Hyde Nightmare</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$37.00</span></span>
+              
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/prosupps-hyde-nightmare/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="1a7322f8-5d48-46b6-ba27-58288cd795b0" data-legacy-id="raw-cbum-essential-30-serv" data-name="RAW Nutrition CBUM Essential 30 servidas" data-brand="RAW Nutrition" data-category="Pre-entrenos y energía" data-price="24" data-presentation="" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/raw-nutrition-cbum-essential-30-servidas/" aria-label="Ver RAW Nutrition CBUM Essential 30 servidas">
             <img src="/img/products/product-placeholder.svg" alt="RAW Nutrition CBUM Essential 30 servidas" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">RAW Nutrition</span>
@@ -253,13 +326,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/raw-nutrition-cbum-essential-30-servidas/">RAW Nutrition CBUM Essential 30 servidas</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$24.00</span></span>
+              
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/raw-nutrition-cbum-essential-30-servidas/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="c3c6b740-fae8-481b-b60c-285b0272b213" data-legacy-id="skull-preworkout-xtreme" data-name="Skull Pre-Workout Xtreme" data-brand="Skull" data-category="Pre-entrenos y energía" data-price="20" data-presentation="" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/skull-pre-workout-xtreme/" aria-label="Ver Skull Pre-Workout Xtreme">
             <img src="/img/products/product-placeholder.svg" alt="Skull Pre-Workout Xtreme" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Skull</span>
@@ -268,7 +348,13 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/skull-pre-workout-xtreme/">Skull Pre-Workout Xtreme</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$20.00</span></span>
+              
             </div>
+          </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/skull-pre-workout-xtreme/">Ver detalles</a>
           </div>
         </article>
       </section>

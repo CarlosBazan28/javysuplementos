@@ -44,8 +44,8 @@
     <link rel="stylesheet" href="/css/components/cart.css?v=fase2-ui" />
     <link rel="stylesheet" href="/css/components/cards.css?v=fase2-ui" />
     <link rel="stylesheet" href="/css/dropdown.css?v=4" />
-    <link rel="stylesheet" href="/css/pages/product.css?v=cat-nav" />
-    <link rel="stylesheet" href="/css/pages/supplements.css?v=cat-nav" />
+    <link rel="stylesheet" href="/css/pages/product.css?v=cat-unif" />
+    <link rel="stylesheet" href="/css/pages/supplements.css?v=cat-unif" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -62,6 +62,7 @@
     <script src="/js/icons.js?v=cat-icons" defer></script>
     <script src="/js/dropdown.js?v=4" defer></script>
     <script src="/js/cart.js?v=fase2-ui" defer></script>
+    <script src="/js/categoria.js?v=cat-unif" defer></script>
     <script src="/js/include-nav.js?v=cat-nav" defer></script>
   </head>
   <body>
@@ -80,7 +81,7 @@
           27 productos originales en stock con precio de catálogo.
           Agregá lo que te interese y enviá tu cotización por WhatsApp para confirmar disponibilidad.
         </p>
-        <p><a class="catalog-hero__link" href="/supplements-page.html">Ver el catálogo completo con filtros</a></p>
+        <a class="catalog-hero__link" href="/supplements-page.html">Ver el catálogo completo con filtros</a>
       </section>
 
       <nav class="catalog-filters catalog-filters--types" aria-label="Filtrar Proteínas por tipo">
@@ -90,11 +91,12 @@
       </nav>
 
 
-      <section class="top-products__list" aria-label="Productos de Proteínas">
-        <article class="product-card">
+      <section class="catalog-grid" aria-label="Productos de Proteínas">
+        <article class="product-card" data-product-id="5edbd04d-be92-4aed-8cde-3f1aed57d20c" data-legacy-id="nutrex-100-whey-protein" data-name="100% Whey Protein" data-brand="Nutrex" data-category="Whey" data-price="43" data-presentation="2 lb - 27 servidas" data-image="/img/products/nutrex-100-whey-protein.webp">
           <a class="product-card__media product-card__media-link" href="/producto/nutrex-100-whey-protein-2-lb/" aria-label="Ver 100% Whey Protein">
             <img src="/img/products/nutrex-100-whey-protein.webp" alt="100% Whey Protein" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutrex</span>
@@ -103,13 +105,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutrex-100-whey-protein-2-lb/">100% Whey Protein</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$43.00</span></span>
+              <span class="product-card__pres">2 lb - 27 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutrex-100-whey-protein-2-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="32ede699-2eee-40bc-9bb4-d83309943857" data-legacy-id="biosport-absolute-iso-4lb" data-name="Absolute ISO" data-brand="Biosport" data-category="ISO (aislada)" data-price="65" data-presentation="4 lb" data-image="/img/products/biosport-absolute-iso-4lb.webp">
           <a class="product-card__media product-card__media-link" href="/producto/biosport-absolute-iso-4-lb/" aria-label="Ver Absolute ISO">
             <img src="/img/products/biosport-absolute-iso-4lb.webp" alt="Absolute ISO" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Biosport</span>
@@ -118,13 +127,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/biosport-absolute-iso-4-lb/">Absolute ISO</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$65.00</span></span>
+              <span class="product-card__pres">4 lb</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/biosport-absolute-iso-4-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="2fd6edce-18b3-4fcb-8844-b11a104085ba" data-legacy-id="nutrabol-c4-whey-2lb" data-name="C4 Whey Protein" data-brand="Cellucor" data-category="Whey" data-price="39" data-presentation="2.2 lb - 28 servidas" data-image="/img/products/nutrabol-c4-whey-2lb.webp">
           <a class="product-card__media product-card__media-link" href="/producto/cellucor-c4-whey-protein-2-lb/" aria-label="Ver C4 Whey Protein">
             <img src="/img/products/nutrabol-c4-whey-2lb.webp" alt="C4 Whey Protein" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Cellucor</span>
@@ -133,13 +149,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/cellucor-c4-whey-protein-2-lb/">C4 Whey Protein</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$39.00</span></span>
+              <span class="product-card__pres">2.2 lb - 28 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/cellucor-c4-whey-protein-2-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="099a3767-7980-48a5-8864-b1d55818d3e7" data-legacy-id="nutrabol-c4-whey-5lb" data-name="C4 Whey Protein" data-brand="Cellucor" data-category="Whey" data-price="75" data-presentation="5.8 lb - 66 servidas" data-image="/img/products/nutrabol-c4-whey-5lb.webp">
           <a class="product-card__media product-card__media-link" href="/producto/cellucor-c4-whey-protein-5-8-lb/" aria-label="Ver C4 Whey Protein">
             <img src="/img/products/nutrabol-c4-whey-5lb.webp" alt="C4 Whey Protein" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Cellucor</span>
@@ -148,13 +171,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/cellucor-c4-whey-protein-5-8-lb/">C4 Whey Protein</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$75.00</span></span>
+              <span class="product-card__pres">5.8 lb - 66 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/cellucor-c4-whey-protein-5-8-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="85c94f72-b8ab-4d8f-9398-46206d4e5f4b" data-legacy-id="carnivor-iso-2lb" data-name="Carnivor Beef ISO Protein" data-brand="MuscleMeds" data-category="ISO (aislada)" data-price="39" data-presentation="2 lb - 28 servidas" data-image="/img/products/carnivor-iso-2lb.webp">
           <a class="product-card__media product-card__media-link" href="/producto/musclemeds-carnivor-beef-iso-protein-2-lb/" aria-label="Ver Carnivor Beef ISO Protein">
             <img src="/img/products/carnivor-iso-2lb.webp" alt="Carnivor Beef ISO Protein" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">MuscleMeds</span>
@@ -163,13 +193,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/musclemeds-carnivor-beef-iso-protein-2-lb/">Carnivor Beef ISO Protein</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$39.00</span></span>
+              <span class="product-card__pres">2 lb - 28 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/musclemeds-carnivor-beef-iso-protein-2-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="b8559d32-aeb8-4e30-8e77-70e12f48cc51" data-legacy-id="carnivor-iso-4lb" data-name="Carnivor ISO 4 lb" data-brand="MuscleMeds" data-category="ISO (aislada)" data-price="64" data-presentation="4 lb - 56 servidas" data-image="/img/products/carnivor-iso-4lb.webp">
           <a class="product-card__media product-card__media-link" href="/producto/musclemeds-carnivor-iso-4-lb/" aria-label="Ver Carnivor ISO 4 lb">
             <img src="/img/products/carnivor-iso-4lb.webp" alt="Carnivor ISO 4 lb" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">MuscleMeds</span>
@@ -178,13 +215,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/musclemeds-carnivor-iso-4-lb/">Carnivor ISO 4 lb</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$64.00</span></span>
+              <span class="product-card__pres">4 lb - 56 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/musclemeds-carnivor-iso-4-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="329d3bb8-bec1-45bd-90f8-837eee2b1725" data-legacy-id="optimum-nutrition-gold-standard-whey-5lb" data-name="Gold Standard 100% Whey" data-brand="Optimum Nutrition" data-category="Whey" data-price="93" data-presentation="5 lb - 73 servidas" data-image="/img/products/optimum-nutrition-gold-standard-whey-5lb.webp">
           <a class="product-card__media product-card__media-link" href="/producto/optimum-nutrition-gold-standard-100-whey-5-lb/" aria-label="Ver Gold Standard 100% Whey">
             <img src="/img/products/optimum-nutrition-gold-standard-whey-5lb.webp" alt="Gold Standard 100% Whey" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Optimum Nutrition</span>
@@ -193,13 +237,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/optimum-nutrition-gold-standard-100-whey-5-lb/">Gold Standard 100% Whey</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$93.00</span></span>
+              <span class="product-card__pres">5 lb - 73 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/optimum-nutrition-gold-standard-100-whey-5-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="c1dc0f90-ae8c-400c-8551-24ca5b456dbf" data-legacy-id="c1dc0f90-ae8c-400c-8551-24ca5b456dbf" data-name="Gold Standard 100% Whey Protein" data-brand="Optimun  Nutrition" data-category="Whey" data-price="43" data-presentation="1.85 lb - 27 servidas" data-image="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1784505713562-gold-standard-whey-cookies-cream.webp">
           <a class="product-card__media product-card__media-link" href="/producto/optimun-nutrition-gold-standard-100-whey-protein-1-85-lb/" aria-label="Ver Gold Standard 100% Whey Protein">
             <img src="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1784505713562-gold-standard-whey-cookies-cream.webp" alt="Gold Standard 100% Whey Protein" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Optimun  Nutrition</span>
@@ -208,13 +259,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/optimun-nutrition-gold-standard-100-whey-protein-1-85-lb/">Gold Standard 100% Whey Protein</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$43.00</span></span>
+              <span class="product-card__pres">1.85 lb - 27 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/optimun-nutrition-gold-standard-100-whey-protein-1-85-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="c6ef0ecc-4510-445f-93d7-36e3ade6b205" data-legacy-id="c6ef0ecc-4510-445f-93d7-36e3ade6b205" data-name="ISO 100 HIDROLYZED" data-brand="Dymatize" data-category="ISO (aislada)" data-price="44" data-presentation="20 servidas" data-image="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1783902024630-iso100-dymatize-dunkin-glazed-donut-20-servings.webp">
           <a class="product-card__media product-card__media-link" href="/producto/dymatize-iso-100-hidrolyzed-20-servidas/" aria-label="Ver ISO 100 HIDROLYZED">
             <img src="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1783902024630-iso100-dymatize-dunkin-glazed-donut-20-servings.webp" alt="ISO 100 HIDROLYZED" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Dymatize</span>
@@ -223,13 +281,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/dymatize-iso-100-hidrolyzed-20-servidas/">ISO 100 HIDROLYZED</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$44.00</span></span>
+              <span class="product-card__pres">20 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/dymatize-iso-100-hidrolyzed-20-servidas/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="17ef3197-542c-4af6-bbd8-f21027bc3f01" data-legacy-id="17ef3197-542c-4af6-bbd8-f21027bc3f01" data-name="Iso Surge" data-brand="Mutant" data-category="ISO (aislada)" data-price="42" data-presentation="1.6 lb - 23 servidas" data-image="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1784513360554-mutant-iso-surge-peanut-butter-chocolate.webp">
           <a class="product-card__media product-card__media-link" href="/producto/mutant-iso-surge-1-6-lb/" aria-label="Ver Iso Surge">
             <img src="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1784513360554-mutant-iso-surge-peanut-butter-chocolate.webp" alt="Iso Surge" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Mutant</span>
@@ -238,13 +303,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/mutant-iso-surge-1-6-lb/">Iso Surge</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$42.00</span></span>
+              <span class="product-card__pres">1.6 lb - 23 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/mutant-iso-surge-1-6-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="112f9d44-1d0d-4c1a-bb11-16972b4095f2" data-legacy-id="mutant-iso-surge-5lb" data-name="ISO Surge 5 lb" data-brand="Mutant" data-category="ISO (aislada)" data-price="97" data-presentation="5 lb" data-image="/img/products/mutant-iso-surge-5lb.webp">
           <a class="product-card__media product-card__media-link" href="/producto/mutant-iso-surge-5-lb/" aria-label="Ver ISO Surge 5 lb">
             <img src="/img/products/mutant-iso-surge-5lb.webp" alt="ISO Surge 5 lb" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Mutant</span>
@@ -253,13 +325,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/mutant-iso-surge-5-lb/">ISO Surge 5 lb</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$97.00</span></span>
+              <span class="product-card__pres">5 lb</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/mutant-iso-surge-5-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="f18c216d-c9af-4eb7-9f47-4e62a99b4c73" data-legacy-id="nutrex-isofit-protein-5lb" data-name="Isofit Protein" data-brand="Nutrex" data-category="ISO (aislada)" data-price="75" data-presentation="5 lb - 70 servidas" data-image="/img/products/nutrex-isofit-protein-5lb.webp">
           <a class="product-card__media product-card__media-link" href="/producto/nutrex-isofit-protein-5-lb/" aria-label="Ver Isofit Protein">
             <img src="/img/products/nutrex-isofit-protein-5lb.webp" alt="Isofit Protein" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutrex</span>
@@ -268,13 +347,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutrex-isofit-protein-5-lb/">Isofit Protein</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$75.00</span></span>
+              <span class="product-card__pres">5 lb - 70 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutrex-isofit-protein-5-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="4ac47fab-cda0-491e-b8a6-e69e5781434e" data-legacy-id="nutrex-isofit-protein-2lb" data-name="Isofit Protein" data-brand="Nutrex" data-category="ISO (aislada)" data-price="40" data-presentation="2.3 lb - 30 servidas" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/nutrex-isofit-protein-2-3-lb/" aria-label="Ver Isofit Protein">
             <img src="/img/products/product-placeholder.svg" alt="Isofit Protein" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutrex</span>
@@ -283,13 +369,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutrex-isofit-protein-2-3-lb/">Isofit Protein</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$40.00</span></span>
+              <span class="product-card__pres">2.3 lb - 30 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutrex-isofit-protein-2-3-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="2c928e9c-f425-4fcb-b178-2ba118ef0bfa" data-legacy-id="isomorph-28g-protein" data-name="Isomorph 28 Pure Whey Isolate" data-brand="APS Nutrition" data-category="ISO (aislada)" data-price="41" data-presentation="2 lb - 27 servidas" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/aps-nutrition-isomorph-28-pure-whey-isolate-2-lb/" aria-label="Ver Isomorph 28 Pure Whey Isolate">
             <img src="/img/products/product-placeholder.svg" alt="Isomorph 28 Pure Whey Isolate" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">APS Nutrition</span>
@@ -298,13 +391,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/aps-nutrition-isomorph-28-pure-whey-isolate-2-lb/">Isomorph 28 Pure Whey Isolate</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$41.00</span></span>
+              <span class="product-card__pres">2 lb - 27 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/aps-nutrition-isomorph-28-pure-whey-isolate-2-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="456d03c8-24d8-465d-80cb-5896c2cc553a" data-legacy-id="muscletech-nitro-tech-whey-gold-2lb" data-name="MuscleTech Nitro-Tech Whey Gold 2 lb" data-brand="MuscleTech" data-category="Whey" data-price="40" data-presentation="2 lb" data-image="/img/products/muscletech-nitro-tech-whey-gold-2lb.webp">
           <a class="product-card__media product-card__media-link" href="/producto/muscletech-nitro-tech-whey-gold-2-lb/" aria-label="Ver MuscleTech Nitro-Tech Whey Gold 2 lb">
             <img src="/img/products/muscletech-nitro-tech-whey-gold-2lb.webp" alt="MuscleTech Nitro-Tech Whey Gold 2 lb" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">MuscleTech</span>
@@ -313,13 +413,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/muscletech-nitro-tech-whey-gold-2-lb/">MuscleTech Nitro-Tech Whey Gold 2 lb</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$40.00</span></span>
+              <span class="product-card__pres">2 lb</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/muscletech-nitro-tech-whey-gold-2-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="e55f5d54-76d7-4d5b-8305-622941acbdeb" data-legacy-id="muscletech-nitro-tech-whey-gold-5lb" data-name="Nitro Tech 100% Whey Gold" data-brand="MuscleTech" data-category="Whey" data-price="78" data-presentation="5 lb - 69 servidas" data-image="/img/products/muscletech-nitro-tech-whey-gold-5lb.webp">
           <a class="product-card__media product-card__media-link" href="/producto/muscletech-nitro-tech-100-whey-gold-5-lb/" aria-label="Ver Nitro Tech 100% Whey Gold">
             <img src="/img/products/muscletech-nitro-tech-whey-gold-5lb.webp" alt="Nitro Tech 100% Whey Gold" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">MuscleTech</span>
@@ -328,13 +435,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/muscletech-nitro-tech-100-whey-gold-5-lb/">Nitro Tech 100% Whey Gold</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$78.00</span></span>
+              <span class="product-card__pres">5 lb - 69 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/muscletech-nitro-tech-100-whey-gold-5-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="5cda32e5-3af9-4115-9255-4e181f569695" data-legacy-id="5cda32e5-3af9-4115-9255-4e181f569695" data-name="Nitro Tech Whey Gold Gourtmet" data-brand="Muscletech" data-category="Whey" data-price="78" data-presentation="5 lb - 67 servidas" data-image="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1784513426532-muscletech-nitro-tech-whey-gold-double-rich-chocolate.webp">
           <a class="product-card__media product-card__media-link" href="/producto/muscletech-nitro-tech-whey-gold-gourtmet-5-lb/" aria-label="Ver Nitro Tech Whey Gold Gourtmet">
             <img src="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1784513426532-muscletech-nitro-tech-whey-gold-double-rich-chocolate.webp" alt="Nitro Tech Whey Gold Gourtmet" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Muscletech</span>
@@ -343,13 +457,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/muscletech-nitro-tech-whey-gold-gourtmet-5-lb/">Nitro Tech Whey Gold Gourtmet</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$78.00</span></span>
+              <span class="product-card__pres">5 lb - 67 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/muscletech-nitro-tech-whey-gold-gourtmet-5-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="c240aeee-ae10-4a0c-b884-6b022e216840" data-legacy-id="nutricost-casein-5lb" data-name="Nutricost Casein" data-brand="Nutricost" data-category="Caseína" data-price="38" data-presentation="5 lb" data-image="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1783901738979-casein-protein-nutricost-5lb-64-servings.webp">
           <a class="product-card__media product-card__media-link" href="/producto/nutricost-casein-5-lb/" aria-label="Ver Nutricost Casein">
             <img src="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1783901738979-casein-protein-nutricost-5lb-64-servings.webp" alt="Nutricost Casein" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutricost</span>
@@ -358,13 +479,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutricost-casein-5-lb/">Nutricost Casein</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$38.00</span></span>
+              <span class="product-card__pres">5 lb</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutricost-casein-5-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="4e861129-a9d0-476c-8bd3-840859aaa3a3" data-legacy-id="nutricost-casein-2lb" data-name="Nutricost Casein 2 lb" data-brand="Nutricost" data-category="Caseína" data-price="38" data-presentation="2 lb" data-image="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1783901710239-casein-protein-nutricost-2lb-28-servings.webp">
           <a class="product-card__media product-card__media-link" href="/producto/nutricost-casein-2-lb/" aria-label="Ver Nutricost Casein 2 lb">
             <img src="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1783901710239-casein-protein-nutricost-2lb-28-servings.webp" alt="Nutricost Casein 2 lb" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutricost</span>
@@ -373,13 +501,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutricost-casein-2-lb/">Nutricost Casein 2 lb</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$38.00</span></span>
+              <span class="product-card__pres">2 lb</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutricost-casein-2-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="987f7501-c624-426f-a298-71621498ff51" data-legacy-id="nutricost-protein-1-5lb" data-name="Nutricost Whey Protein Concentrate 1.5 lb" data-brand="Nutricost" data-category="Whey" data-price="25" data-presentation="1.5 lb" data-image="/img/products/nutricost-protein-1-5lb.webp">
           <a class="product-card__media product-card__media-link" href="/producto/nutricost-whey-protein-concentrate-1-5-lb/" aria-label="Ver Nutricost Whey Protein Concentrate 1.5 lb">
             <img src="/img/products/nutricost-protein-1-5lb.webp" alt="Nutricost Whey Protein Concentrate 1.5 lb" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutricost</span>
@@ -388,13 +523,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutricost-whey-protein-concentrate-1-5-lb/">Nutricost Whey Protein Concentrate 1.5 lb</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$25.00</span></span>
+              <span class="product-card__pres">1.5 lb</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutricost-whey-protein-concentrate-1-5-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="8260e638-772e-443a-b501-fab9f1ba9ba4" data-legacy-id="htp-precision-protein" data-name="Precision Protein" data-brand="HTP" data-category="ISO (aislada)" data-price="41" data-presentation="2 lb - 28 servidas" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/htp-precision-protein-2-lb/" aria-label="Ver Precision Protein">
             <img src="/img/products/product-placeholder.svg" alt="Precision Protein" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">HTP</span>
@@ -403,13 +545,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/htp-precision-protein-2-lb/">Precision Protein</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$41.00</span></span>
+              <span class="product-card__pres">2 lb - 28 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/htp-precision-protein-2-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="f0608b74-7aba-4258-bab6-6562ec3a0ea8" data-legacy-id="raw-grass-fed-isolate-2lb" data-name="RAW Grass Fed Isolate Protein 2 lb" data-brand="RAW Nutrition" data-category="ISO (aislada)" data-price="45" data-presentation="2 lb" data-image="/img/products/raw-grass-fed-isolate-2lb.webp">
           <a class="product-card__media product-card__media-link" href="/producto/raw-nutrition-grass-fed-isolate-protein-2-lb/" aria-label="Ver RAW Grass Fed Isolate Protein 2 lb">
             <img src="/img/products/raw-grass-fed-isolate-2lb.webp" alt="RAW Grass Fed Isolate Protein 2 lb" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">RAW Nutrition</span>
@@ -418,13 +567,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/raw-nutrition-grass-fed-isolate-protein-2-lb/">RAW Grass Fed Isolate Protein 2 lb</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$45.00</span></span>
+              <span class="product-card__pres">2 lb</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/raw-nutrition-grass-fed-isolate-protein-2-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="219b3513-7a94-4252-b7d9-840ffc5c36fe" data-legacy-id="prosupps-whey-premium-5lb" data-name="Whey Concentrate Premium Protein 5 lb" data-brand="ProSupps" data-category="Whey" data-price="70" data-presentation="5 lb - 63 servidas" data-image="/img/products/prosupps-whey-premium-5lb.webp">
           <a class="product-card__media product-card__media-link" href="/producto/prosupps-whey-concentrate-premium-protein-5-lb/" aria-label="Ver Whey Concentrate Premium Protein 5 lb">
             <img src="/img/products/prosupps-whey-premium-5lb.webp" alt="Whey Concentrate Premium Protein 5 lb" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">ProSupps</span>
@@ -433,13 +589,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/prosupps-whey-concentrate-premium-protein-5-lb/">Whey Concentrate Premium Protein 5 lb</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$70.00</span></span>
+              <span class="product-card__pres">5 lb - 63 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/prosupps-whey-concentrate-premium-protein-5-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="9b6daa99-af09-4770-b5df-db16a7cad4cc" data-legacy-id="9b6daa99-af09-4770-b5df-db16a7cad4cc" data-name="Whey Protein" data-brand="Nutrex" data-category="Whey" data-price="83" data-presentation="5 lb - 67 servidas" data-image="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1784516288254-nutrex-whey-protein-vanilla.webp">
           <a class="product-card__media product-card__media-link" href="/producto/nutrex-whey-protein-5-lb/" aria-label="Ver Whey Protein">
             <img src="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1784516288254-nutrex-whey-protein-vanilla.webp" alt="Whey Protein" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutrex</span>
@@ -448,13 +611,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutrex-whey-protein-5-lb/">Whey Protein</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$83.00</span></span>
+              <span class="product-card__pres">5 lb - 67 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutrex-whey-protein-5-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="163d54ec-318b-41a3-b554-856eedcdaa42" data-legacy-id="mutant-whey-protein-5lb" data-name="Whey Protein" data-brand="Mutant" data-category="Whey" data-price="50" data-presentation="5 lb - 61 servidas" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/mutant-whey-protein-5-lb/" aria-label="Ver Whey Protein">
             <img src="/img/products/product-placeholder.svg" alt="Whey Protein" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Mutant</span>
@@ -463,13 +633,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/mutant-whey-protein-5-lb/">Whey Protein</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$50.00</span></span>
+              <span class="product-card__pres">5 lb - 61 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/mutant-whey-protein-5-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="06470ce3-a77b-4d49-9ce8-665dbaa54491" data-legacy-id="xtreme-whey-5lb" data-name="Xtreme Whey" data-brand="Biosport" data-category="Whey" data-price="56" data-presentation="5 lb - 70 servidas" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/biosport-xtreme-whey-5-lb/" aria-label="Ver Xtreme Whey">
             <img src="/img/products/product-placeholder.svg" alt="Xtreme Whey" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Biosport</span>
@@ -478,13 +655,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/biosport-xtreme-whey-5-lb/">Xtreme Whey</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$56.00</span></span>
+              <span class="product-card__pres">5 lb - 70 servidas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/biosport-xtreme-whey-5-lb/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="1c28e6da-eaad-4830-9578-1badfb6d49e8" data-legacy-id="1c28e6da-eaad-4830-9578-1badfb6d49e8" data-name="Zero Carb Protein" data-brand="Isopure" data-category="ISO (aislada)" data-price="40" data-presentation="4.5 lb" data-image="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1784513454425-isopure-zero-carb-creamy-vanilla.webp">
           <a class="product-card__media product-card__media-link" href="/producto/isopure-zero-carb-protein-4-5-lb/" aria-label="Ver Zero Carb Protein">
             <img src="https://fodwjfiyfmscklqsqrip.supabase.co/storage/v1/object/public/product-images/1784513454425-isopure-zero-carb-creamy-vanilla.webp" alt="Zero Carb Protein" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Isopure</span>
@@ -493,7 +677,13 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/isopure-zero-carb-protein-4-5-lb/">Zero Carb Protein</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$40.00</span></span>
+              <span class="product-card__pres">4.5 lb</span>
             </div>
+          </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/isopure-zero-carb-protein-4-5-lb/">Ver detalles</a>
           </div>
         </article>
       </section>

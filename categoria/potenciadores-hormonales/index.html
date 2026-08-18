@@ -44,8 +44,8 @@
     <link rel="stylesheet" href="/css/components/cart.css?v=fase2-ui" />
     <link rel="stylesheet" href="/css/components/cards.css?v=fase2-ui" />
     <link rel="stylesheet" href="/css/dropdown.css?v=4" />
-    <link rel="stylesheet" href="/css/pages/product.css?v=cat-nav" />
-    <link rel="stylesheet" href="/css/pages/supplements.css?v=cat-nav" />
+    <link rel="stylesheet" href="/css/pages/product.css?v=cat-unif" />
+    <link rel="stylesheet" href="/css/pages/supplements.css?v=cat-unif" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -62,6 +62,7 @@
     <script src="/js/icons.js?v=cat-icons" defer></script>
     <script src="/js/dropdown.js?v=4" defer></script>
     <script src="/js/cart.js?v=fase2-ui" defer></script>
+    <script src="/js/categoria.js?v=cat-unif" defer></script>
     <script src="/js/include-nav.js?v=cat-nav" defer></script>
   </head>
   <body>
@@ -80,15 +81,16 @@
           3 productos originales en stock con precio de catálogo.
           Agregá lo que te interese y enviá tu cotización por WhatsApp para confirmar disponibilidad.
         </p>
-        <p><a class="catalog-hero__link" href="/supplements-page.html">Ver el catálogo completo con filtros</a></p>
+        <a class="catalog-hero__link" href="/supplements-page.html">Ver el catálogo completo con filtros</a>
       </section>
 
 
-      <section class="top-products__list" aria-label="Productos de Potenciadores hormonales">
-        <article class="product-card">
+      <section class="catalog-grid" aria-label="Productos de Potenciadores hormonales">
+        <article class="product-card" data-product-id="d46a5677-784a-4158-ba67-3168576c6c0a" data-legacy-id="nutrex-t-up-max-60-caps" data-name="Nutrex T-UP Max 60 cápsulas" data-brand="Nutrex" data-category="Potenciadores hormonales" data-price="16.5" data-presentation="60 cápsulas" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/nutrex-t-up-max-60-capsulas/" aria-label="Ver Nutrex T-UP Max 60 cápsulas">
             <img src="/img/products/product-placeholder.svg" alt="Nutrex T-UP Max 60 cápsulas" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutrex</span>
@@ -97,13 +99,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutrex-t-up-max-60-capsulas/">Nutrex T-UP Max 60 cápsulas</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$16.50</span></span>
+              <span class="product-card__pres">60 cápsulas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutrex-t-up-max-60-capsulas/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="bf0cc366-4a8c-41a4-bfb2-fca4300abaef" data-legacy-id="nutrex-tribulus-90-caps" data-name="Nutrex Tribulus 90 cápsulas" data-brand="Nutrex" data-category="Potenciadores hormonales" data-price="13.5" data-presentation="90 cápsulas" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/nutrex-tribulus-90-capsulas/" aria-label="Ver Nutrex Tribulus 90 cápsulas">
             <img src="/img/products/product-placeholder.svg" alt="Nutrex Tribulus 90 cápsulas" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Nutrex</span>
@@ -112,13 +121,20 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/nutrex-tribulus-90-capsulas/">Nutrex Tribulus 90 cápsulas</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$13.50</span></span>
+              <span class="product-card__pres">90 cápsulas</span>
             </div>
           </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/nutrex-tribulus-90-capsulas/">Ver detalles</a>
+          </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-product-id="fdc4f4bd-06d9-447a-9c7d-ac11218f0c1e" data-legacy-id="tongkat-ali-complex-1000mg" data-name="Tongkat Ali Complex 1000 mg 60 cápsulas" data-brand="Tongkat Ali" data-category="Potenciadores hormonales" data-price="15.5" data-presentation="60 cápsulas" data-image="/img/products/product-placeholder.svg">
           <a class="product-card__media product-card__media-link" href="/producto/tongkat-ali-complex-1000-mg-60-capsulas/" aria-label="Ver Tongkat Ali Complex 1000 mg 60 cápsulas">
             <img src="/img/products/product-placeholder.svg" alt="Tongkat Ali Complex 1000 mg 60 cápsulas" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">Tongkat Ali</span>
@@ -127,7 +143,13 @@
             <h2 class="product-card__name"><a class="product-card__name-link" href="/producto/tongkat-ali-complex-1000-mg-60-capsulas/">Tongkat Ali Complex 1000 mg 60 cápsulas</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">$15.50</span></span>
+              <span class="product-card__pres">60 cápsulas</span>
             </div>
+          </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+            <a class="product-card__detail-link" href="/producto/tongkat-ali-complex-1000-mg-60-capsulas/">Ver detalles</a>
           </div>
         </article>
       </section>
