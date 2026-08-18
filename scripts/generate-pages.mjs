@@ -68,6 +68,59 @@ function escapeHTML(value = "") {
     .replace(/'/g, "&#039;");
 }
 
+// El negocio y el sitio, con los mismos @id que declara index.html. Van en el
+// grafo de cada página generada para que las referencias (`seller`, `about`,
+// `isPartOf`) resuelvan ahí mismo: Google no cruza @id entre URLs distintas.
+function entidadesDelSitio() {
+  return [
+    {
+      "@type": "WebSite",
+      "@id": `${SITE}/#website`,
+      url: `${SITE}/`,
+      name: "Javy Suplementos",
+      inLanguage: "es-PA",
+      publisher: { "@id": `${SITE}/#business` },
+    },
+    {
+      "@type": "SportingGoodsStore",
+      "@id": `${SITE}/#business`,
+      name: "Javy Suplementos",
+      url: `${SITE}/`,
+      image: `${SITE}/img/icons/javy-web-app-icon-1024.png`,
+      logo: `${SITE}/img/icons/javy-web-app-icon-1024.png`,
+      telephone: "+50766494509",
+      priceRange: "$$",
+      address: {
+        "@type": "PostalAddress",
+        addressRegion: "Panamá",
+        addressCountry: "PA",
+      },
+      areaServed: "PA",
+      sameAs: [
+        "https://instagram.com/javy.suplementos",
+        "https://tiktok.com/@javysuplementos",
+        "https://facebook.com/javysuplementos",
+      ],
+    },
+  ];
+}
+
+// Arma el BreadcrumbList numerando las posiciones solo. Google descarta el
+// breadcrumb completo si un tramo intermedio no trae `item`, así que los tramos
+// sin URL se caen antes de llegar acá (los filtra quien llama); el último sí
+// puede ir sin enlace.
+function breadcrumbList(tramos) {
+  return {
+    "@type": "BreadcrumbList",
+    itemListElement: tramos.map((tramo, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: tramo.name,
+      ...(tramo.item ? { item: tramo.item } : {}),
+    })),
+  };
+}
+
 // El JSON-LD va dentro de <script>: hay que neutralizar "</script>" y los
 // separadores de línea U+2028/U+2029, que rompen el parseo del navegador.
 function jsonForScript(data) {
@@ -223,7 +276,7 @@ function renderScripts(extra = []) {
 /* ---------------------------- página de producto -------------------------- */
 
 function renderProductPage(product, ctx) {
-  const { slug, familyName, familySlug, typeName } = ctx;
+  const { slug, familyName, familySlug, typeName, typeUrl } = ctx;
   // Etiqueta de categoría visible: la subcategoría es más precisa cuando existe.
   const categoryName = typeName || familyName;
   const url = `${SITE}${productPath(slug)}`;
@@ -265,22 +318,24 @@ function renderProductPage(product, ctx) {
                   ? "https://schema.org/InStock"
                   : "https://schema.org/OutOfStock",
                 url,
-                seller: { "@type": "Organization", name: "Javy Suplementos" },
+                // El mismo @id del negocio de index.html: así la oferta queda
+                // atada a la tienda y no a una organización suelta por página.
+                seller: { "@id": `${SITE}/#business` },
               },
             }
           : {}),
       },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Catálogo", item: `${SITE}/supplements-page.html` },
-          ...(familySlug
-            ? [{ "@type": "ListItem", position: 2, name: familyName, item: `${SITE}${categoryPath(familySlug)}` }]
-            : []),
-          ...(familySlug && typeName ? [{ "@type": "ListItem", position: 3, name: typeName }] : []),
-          { "@type": "ListItem", position: (familySlug ? 2 : 1) + (typeName && familySlug ? 2 : 1), name, item: url },
-        ],
-      },
+      breadcrumbList([
+        { name: "Inicio", item: `${SITE}/` },
+        { name: "Catálogo", item: `${SITE}/supplements-page.html` },
+        ...(familySlug ? [{ name: familyName, item: `${SITE}${categoryPath(familySlug)}` }] : []),
+        // La subcategoría no tiene página propia, pero sí una URL real: el
+        // catálogo ya filtrado. Sin `item` Google descarta el breadcrumb
+        // entero, porque solo el último tramo puede ir sin enlace.
+        ...(familySlug && typeName && typeUrl ? [{ name: typeName, item: typeUrl }] : []),
+        { name, item: url },
+      ]),
+      ...entidadesDelSitio(),
     ],
   });
 
@@ -467,6 +522,10 @@ function renderCategoryPage(category, products, slugMap, categorySlug, types = [
         name: title,
         description,
         url,
+        // Ata la página al sitio y al negocio declarados en index.html, para
+        // que Google no las trate como entidades sueltas.
+        isPartOf: { "@id": `${SITE}/#website` },
+        about: { "@id": `${SITE}/#business` },
       },
       {
         "@type": "ItemList",
@@ -496,13 +555,12 @@ function renderCategoryPage(category, products, slugMap, categorySlug, types = [
           },
         })),
       },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Catálogo", item: `${SITE}/supplements-page.html` },
-          { "@type": "ListItem", position: 2, name, item: url },
-        ],
-      },
+      breadcrumbList([
+        { name: "Inicio", item: `${SITE}/` },
+        { name: "Catálogo", item: `${SITE}/supplements-page.html` },
+        { name, item: url },
+      ]),
+      ...entidadesDelSitio(),
     ],
   });
 
@@ -743,14 +801,18 @@ async function main() {
   for (const product of products) {
     const slug = slugMap.get(String(product.id));
     const category = product.category_id ? categoriesById.get(String(product.category_id)) : null;
-    // El breadcrumb enlaza a la familia (la que tiene página); la subcategoría
-    // se muestra como último tramo, sin enlace propio.
+    // El breadcrumb enlaza a la familia (la que tiene página) y a la
+    // subcategoría (que no tiene página, pero sí el catálogo ya filtrado).
     const family = category ? categoriesById.get(familyIdOf(category)) : null;
+    const esSubcategoria = !!(category && category.parent_id);
     const html = renderProductPage(product, {
       slug,
       familyName: family?.name || product.category || "Suplementos",
       familySlug: family ? categorySlugs.get(String(family.id)) || null : null,
-      typeName: category && category.parent_id ? category.name : "",
+      typeName: esSubcategoria ? category.name : "",
+      typeUrl: esSubcategoria && family
+        ? `${SITE}/supplements-page.html?fam=${encodeURIComponent(categoryFilterSlug(family))}&tipo=${encodeURIComponent(categoryFilterSlug(category))}`
+        : "",
     });
     const dir = join(ROOT, "producto", slug);
     await mkdir(dir, { recursive: true });
