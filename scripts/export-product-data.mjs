@@ -131,14 +131,19 @@ function serialize(p) {
 async function loadData() {
   if (INPUT_FILE) {
     const raw = JSON.parse(await readFile(INPUT_FILE, "utf8"));
-    const products = [...(raw.products || [])].sort((a, b) =>
-      String(a.category || "").localeCompare(String(b.category || ""), "es")
-      || String(a.name || "").localeCompare(String(b.name || ""), "es"));
+    const products = [...(raw.products || [])]
+      .filter((p) => p.is_active !== false)   // mismo criterio que la consulta a Supabase
+      .sort((a, b) =>
+        String(a.category || "").localeCompare(String(b.category || ""), "es")
+        || String(a.name || "").localeCompare(String(b.name || ""), "es"));
     return [products, raw.product_flavors || []];
   }
   const cfg = await readSupabaseConfig();
   return Promise.all([
-    sb("products?select=*&order=category.asc,name.asc", cfg),
+    // Solo productos activos: este archivo es el respaldo que ve el visitante
+    // cuando Supabase no responde, así que un producto dado de baja o un
+    // borrador sin revisar no tiene que aparecer ahí.
+    sb("products?select=*&is_active=not.is.false&order=category.asc,name.asc", cfg),
     sb("product_flavors?select=product_id,name,available,is_available", cfg),
   ]);
 }
