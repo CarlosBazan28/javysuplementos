@@ -115,12 +115,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/optimum-nutrition-amino-energy-355-ml/</loc>
-    <lastmod>2026-08-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://javysuplementos.com/producto/optimum-nutrition-amino-energy/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
@@ -133,13 +127,19 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/bsn-amino-x-30-servidas/</loc>
+    <loc>https://javysuplementos.com/producto/optimum-nutrition-amino-energy-355-ml/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://javysuplementos.com/producto/bsn-amino-x-375-g/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://javysuplementos.com/producto/bsn-amino-x-30-servidas/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -331,13 +331,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/nutrex-cla-1000-180-capsulas/</loc>
+    <loc>https://javysuplementos.com/producto/nutrex-cla-1000-90-capsulas/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/nutrex-cla-1000-90-capsulas/</loc>
+    <loc>https://javysuplementos.com/producto/nutrex-cla-1000-180-capsulas/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -373,13 +373,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/ronnie-coleman-creatina-adventure-60-servidas/</loc>
+    <loc>https://javysuplementos.com/producto/ronnie-coleman-creatina-adventure-20-servidas/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/ronnie-coleman-creatina-adventure-20-servidas/</loc>
+    <loc>https://javysuplementos.com/producto/ronnie-coleman-creatina-adventure-60-servidas/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -403,6 +403,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://javysuplementos.com/producto/nutrex-creatina-monohidratada-300-g/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://javysuplementos.com/producto/nutrex-creatina-monohidratada-30-servidas/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
@@ -410,12 +416,6 @@
   </url>
   <url>
     <loc>https://javysuplementos.com/producto/optimum-nutrition-creatina-monohidratada-300-g/</loc>
-    <lastmod>2026-08-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://javysuplementos.com/producto/nutrex-creatina-monohidratada-300-g/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -553,13 +553,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/mutant-iso-surge-1-6-lb/</loc>
+    <loc>https://javysuplementos.com/producto/mutant-iso-surge-2-lb/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/mutant-iso-surge-2-lb/</loc>
+    <loc>https://javysuplementos.com/producto/mutant-iso-surge-1-6-lb/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -727,6 +727,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://javysuplementos.com/producto/mutant-mass-extreme-2500-12-lb/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://javysuplementos.com/producto/mutant-mass-extreme-2500-15-lb/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
@@ -740,12 +746,6 @@
   </url>
   <url>
     <loc>https://javysuplementos.com/producto/mutant-mass-extreme-2500-6-lb/</loc>
-    <lastmod>2026-08-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://javysuplementos.com/producto/mutant-mass-extreme-2500-12-lb/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1075,7 +1075,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/htp-precision-protein-2-lb-8260e6/</loc>
+    <loc>https://javysuplementos.com/producto/htp-precision-protein-5-lb/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1087,7 +1087,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/htp-precision-protein-5-lb/</loc>
+    <loc>https://javysuplementos.com/producto/htp-precision-protein-2-lb-8260e6/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1189,7 +1189,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/xtend-shaker-unidad/</loc>
+    <loc>https://javysuplementos.com/producto/mutant-shaker-unidad/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1207,7 +1207,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/mutant-shaker-unidad/</loc>
+    <loc>https://javysuplementos.com/producto/xtend-shaker-unidad/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1291,13 +1291,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/prosupps-whey-protein-2-lb/</loc>
+    <loc>https://javysuplementos.com/producto/nutrex-whey-protein-5-lb/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/nutrex-whey-protein-5-lb/</loc>
+    <loc>https://javysuplementos.com/producto/prosupps-whey-protein-2-lb/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
