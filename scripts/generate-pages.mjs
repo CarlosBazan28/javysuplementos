@@ -363,7 +363,7 @@ function renderProductPage(product, ctx) {
 <html lang="es">
   <head>
 ${renderHead({ title, description, canonical: url, image, ogType: "product", jsonLd, extraCss: ["css/pages/product.css?v=cat-nav"] })}
-${renderScripts(["/js/product-page.js?v=img-abs"])}
+${renderScripts(["/js/product-page.js?v=cards-full"])}
   </head>
   <body>
     <div id="site-header"></div>
