@@ -362,8 +362,8 @@ function renderProductPage(product, ctx) {
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
-${renderHead({ title, description, canonical: url, image, ogType: "product", jsonLd, extraCss: ["css/pages/product.css?v=cat-nav"] })}
-${renderScripts(["/js/product-page.js?v=cards-full"])}
+${renderHead({ title, description, canonical: url, image, ogType: "product", jsonLd, extraCss: ["css/pages/product.css?v=eyebrow-chip"] })}
+${renderScripts(["/js/product-page.js?v=eyebrow-chip"])}
   </head>
   <body>
     <div id="site-header"></div>
@@ -384,9 +384,8 @@ ${renderScripts(["/js/product-page.js?v=cards-full"])}
           <section class="pdp__info" aria-labelledby="prod-title">
             <div class="pdp__eyebrow">
               <p class="pdp__context">
-                <span id="prod-category-label">${escapeHTML(categoryName)}</span>
-                <span class="pdp__context-sep" aria-hidden="true"${presentation ? "" : " hidden"}>·</span>
-                <span id="prod-presentation"${presentation ? "" : " hidden"}>${escapeHTML(presentation)}</span>
+                <span class="pdp__context-cat" id="prod-category-label">${escapeHTML(categoryName)}</span>
+                <span class="pdp__pres" id="prod-presentation"${presentation ? "" : " hidden"}>${escapeHTML(presentation)}</span>
               </p>
               <span class="pdp__status${available ? "" : " is-agotado"}" data-status-pill>${available ? "Disponible" : "Agotado"}</span>
             </div>

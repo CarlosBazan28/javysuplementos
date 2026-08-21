@@ -406,13 +406,11 @@ async function initProductPage() {
 
   const categoryLabel = document.getElementById("prod-category-label");
   const presentationEl = document.getElementById("prod-presentation");
-  const contextSeparator = document.querySelector(".pdp__context-sep");
   if (categoryLabel) categoryLabel.textContent = category;
   if (presentationEl) {
     presentationEl.textContent = presentation;
     presentationEl.hidden = !presentation;
   }
-  if (contextSeparator) contextSeparator.hidden = !presentation;
 
   const brandLabel = document.getElementById("prod-brand-label");
   if (brandLabel) brandLabel.textContent = product.brand || "Marca por confirmar";
