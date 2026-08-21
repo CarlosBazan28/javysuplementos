@@ -733,12 +733,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/mutant-mass-extreme-2500-15-lb/</loc>
-    <lastmod>2026-08-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://javysuplementos.com/producto/mutant-mass-extreme-2500-20-lb/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
@@ -746,6 +740,12 @@
   </url>
   <url>
     <loc>https://javysuplementos.com/producto/mutant-mass-extreme-2500-6-lb/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://javysuplementos.com/producto/mutant-mass-extreme-2500-15-lb/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1075,13 +1075,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/htp-precision-protein-5-lb/</loc>
+    <loc>https://javysuplementos.com/producto/htp-precision-protein-2-lb/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/htp-precision-protein-2-lb/</loc>
+    <loc>https://javysuplementos.com/producto/htp-precision-protein-5-lb/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1189,25 +1189,25 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/mutant-shaker-unidad/</loc>
-    <lastmod>2026-08-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://javysuplementos.com/producto/animal-shaker-unidad/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/c4-shaker-unidad/</loc>
+    <loc>https://javysuplementos.com/producto/xtend-shaker-unidad/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/xtend-shaker-unidad/</loc>
+    <loc>https://javysuplementos.com/producto/mutant-shaker-unidad/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://javysuplementos.com/producto/c4-shaker-unidad/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1279,25 +1279,25 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/optimum-nutrition-whey-gourmet-series-25-servidas/</loc>
-    <lastmod>2026-08-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://javysuplementos.com/producto/optimum-nutrition-whey-gourmet-series-24-servidas/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/nutrex-whey-protein-5-lb/</loc>
+    <loc>https://javysuplementos.com/producto/optimum-nutrition-whey-gourmet-series-25-servidas/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://javysuplementos.com/producto/prosupps-whey-protein-2-lb/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://javysuplementos.com/producto/nutrex-whey-protein-5-lb/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1345,13 +1345,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/isopure-zero-carb-protein-66-servidas/</loc>
+    <loc>https://javysuplementos.com/producto/isopure-zero-carb-protein-4-5-lb/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/isopure-zero-carb-protein-4-5-lb/</loc>
+    <loc>https://javysuplementos.com/producto/isopure-zero-carb-protein-66-servidas/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
