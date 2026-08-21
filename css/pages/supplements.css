@@ -31,6 +31,36 @@
   line-height: 1.55;
 }
 
+/* Vuelta al catálogo completo desde una página de categoría. */
+.catalog-hero__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  color: var(--brand);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.catalog-hero__link::after {
+  content: "→";
+  transition: transform 0.15s ease;
+}
+
+.catalog-hero__link:hover {
+  text-decoration: underline;
+}
+
+.catalog-hero__link:hover::after {
+  transform: translateX(3px);
+}
+
+.catalog-hero__link:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
 .catalog-tools {
   display: grid;
   gap: 10px;
@@ -190,7 +220,13 @@
   mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
 }
 
+/* El chip se usa como <button> en el catálogo (filtra con JS) y como <a> en las
+   páginas de categoría (navega a la URL ya filtrada). Sin display explícito el
+   <a> queda inline: ignora min-height y llega subrayado. */
 .catalog-filter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.04);
   color: var(--blanco);
@@ -200,6 +236,7 @@
   font: inherit;
   font-weight: 700;
   white-space: nowrap;
+  text-decoration: none;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
 }
