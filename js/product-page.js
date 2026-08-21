@@ -10,6 +10,16 @@ function escapeHTML(value = "") {
     .replace(/'/g, "&#039;");
 }
 
+// Las rutas guardadas en la BD son relativas ("img/products/x.webp"). Esta
+// ficha vive en /producto/<slug>/, donde el navegador las resolvería contra ese
+// directorio y daría 404, así que se anclan a la raíz del sitio.
+function productImageSrc(path) {
+  const clean = String(path || "").trim();
+  if (!clean) return "/img/images/javi.webp";
+  if (clean.startsWith("http://") || clean.startsWith("https://") || clean.startsWith("//")) return clean;
+  return clean.startsWith("/") ? clean : "/" + clean;
+}
+
 function productCanBeQuoted(product) {
   if (product.available === false) return false;
   if (!product.flavors?.length) return true;
@@ -217,7 +227,7 @@ function renderRelatedProducts(product, family, type, allProducts, categories) {
     return `
       <article class="product-card">
         <a class="product-card__media product-card__media-link" href="${escapeHTML(href)}" aria-label="Ver ${escapeHTML(p.name)}">
-          <img src="${escapeHTML(p.image || "img/images/javi.webp")}" alt="${escapeHTML(p.name)}" class="product-card__img" loading="lazy" decoding="async" />
+          <img src="${escapeHTML(productImageSrc(p.image))}" alt="${escapeHTML(p.name)}" class="product-card__img" loading="lazy" decoding="async" />
         </a>
         <div class="product-card__info">
           <div class="product-card__meta">
@@ -306,8 +316,8 @@ async function initProductPage() {
     : priceText;
 
   const imgEl = document.getElementById("prod-image");
-  imgEl.src = product.image || "img/images/javi.webp";
-  imgEl.onerror = () => { imgEl.onerror = null; imgEl.src = "img/images/javi.webp"; };
+  imgEl.src = productImageSrc(product.image);
+  imgEl.onerror = () => { imgEl.onerror = null; imgEl.src = "/img/images/javi.webp"; };
   imgEl.alt = product.name;
 
   document.getElementById("prod-title").textContent = product.name;

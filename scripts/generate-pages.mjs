@@ -260,7 +260,7 @@ const COMMON_SCRIPTS = [
   "/js/whatsapp-config.js?v=num-2026-08",
   "/js/product-data.js",
   "/js/product-urls.js?v=seo-urls",
-  "/js/db.js?v=no-img-fallback",
+  "/js/db.js?v=solo-activos",
   "/js/auth.js?v=session-state",
   "/js/icons.js?v=cat-icons",
   "/js/dropdown.js?v=4",
@@ -363,7 +363,7 @@ function renderProductPage(product, ctx) {
 <html lang="es">
   <head>
 ${renderHead({ title, description, canonical: url, image, ogType: "product", jsonLd, extraCss: ["css/pages/product.css?v=cat-nav"] })}
-${renderScripts(["/js/product-page.js?v=cat-nav"])}
+${renderScripts(["/js/product-page.js?v=img-abs"])}
   </head>
   <body>
     <div id="site-header"></div>
