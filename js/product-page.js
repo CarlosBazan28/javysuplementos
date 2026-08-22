@@ -367,7 +367,7 @@ async function initProductPage() {
     : `${SITE_BASE}product-page.html?id=${encodeURIComponent(productId)}`;
   const imageUrl = toAbsoluteUrl(product.image);
   const shortDescription = String(product.description_short || product.subtitulo || "").trim();
-  const metaDescription = shortDescription || `${product.name} — Cotizá ahora por WhatsApp con Javy Suplementos.`;
+  const metaDescription = shortDescription || `${product.name} — Cotiza ahora por WhatsApp con Javy Suplementos.`;
   const setMeta = (sel, val) => { const el = document.querySelector(sel); if (el) el.setAttribute("content", val); };
   setMeta('meta[property="og:title"]', `${product.name} | Javy Suplementos`);
   setMeta('meta[property="og:description"]', metaDescription);

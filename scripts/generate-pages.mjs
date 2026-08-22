@@ -290,7 +290,7 @@ function renderProductPage(product, ctx) {
 
   const shortDescription = String(product.description_short || product.subtitulo || "").trim();
   const description = shortDescription
-    || `${name}${brand ? ` de ${brand}` : ""}${presentation ? ` (${presentation})` : ""}. Cotizá por WhatsApp con Javy Suplementos en Panamá.`;
+    || `${name}${brand ? ` de ${brand}` : ""}${presentation ? ` (${presentation})` : ""}. Cotiza por WhatsApp con Javy Suplementos en Panamá.`;
 
   const title = `${name}${brand && !name.toLowerCase().includes(brand.toLowerCase()) ? ` ${brand}` : ""} | Javy Suplementos`;
 
@@ -510,7 +510,7 @@ function renderCategoryPage(category, products, slugMap, categorySlug, types = [
   const url = `${SITE}${categoryPath(categorySlug)}`;
   const name = category.name || "Categoría";
   const title = `${name} en Panamá | Javy Suplementos`;
-  const description = `${name}: ${products.length} producto${products.length === 1 ? "" : "s"} original${products.length === 1 ? "" : "es"} con precio. Armá tu cotización y enviala por WhatsApp con Javy Suplementos.`;
+  const description = `${name}: ${products.length} producto${products.length === 1 ? "" : "s"} original${products.length === 1 ? "" : "es"} con precio. Arma tu cotización y envíala por WhatsApp con Javy Suplementos.`;
   const image = absoluteUrl(products[0]?.image_url || products[0]?.imagen_url);
 
   const jsonLd = jsonForScript({
