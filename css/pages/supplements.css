@@ -275,6 +275,16 @@
   margin-top: -2px;
 }
 
+/* En /categoria/<slug>/ el nav de tipos cuelga directo de .catalog-page, que es
+   un bloque sin gap: los chips quedaban pegados a la grilla, separados solo por
+   los 4px de padding del scroll. En el catálogo esto no pasa porque ahí los
+   sub-filtros van dentro de .catalog-tools, que ya trae margin-bottom: 24px. Se
+   repite ese mismo valor para que las dos páginas respiren igual.
+   El selector es de hijo directo a propósito: así no toca el caso del catálogo. */
+.catalog-page > .catalog-filters--types {
+  margin-bottom: 24px;
+}
+
 .catalog-filter--type {
   min-height: 38px;
   font-weight: 600;
