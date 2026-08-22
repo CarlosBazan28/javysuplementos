@@ -626,7 +626,7 @@ ${featured ? `          <span class="product-card__badge">Destacado</span>\n` : 
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
-${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-unif", "css/pages/supplements.css?v=filtros-aire"] })}
+${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-unif", "css/pages/supplements.css?v=tap-44"] })}
 ${renderScripts(["/js/categoria.js?v=cat-unif"])}
   </head>
   <body>

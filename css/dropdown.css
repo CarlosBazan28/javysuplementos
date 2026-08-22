@@ -47,7 +47,7 @@
 }
 .jdd__menu[hidden] { display: none; }
 .jdd__opt {
-  display: flex; align-items: center; min-height: 40px; padding: 0 12px; width: 100%;
+  display: flex; align-items: center; min-height: 44px; padding: 0 12px; width: 100%;
   border: 0; border-radius: 9px; background: transparent; color: var(--dd-text);
   font: inherit; font-size: 0.9rem; text-align: left; cursor: pointer;
 }
@@ -82,8 +82,11 @@
 .jdd.is-open .jdd__input { cursor: text; }
 .jdd__input:disabled { cursor: not-allowed; }
 .jdd__combo:has(.jdd__input:disabled) { opacity: .55; }
+/* El icono mide 18px: sin min-* el area tactil quedaba en ~26px. Se agranda el
+   AREA, no el icono, para no cambiar la densidad visual del combo. */
 .jdd__toggle {
   flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; min-height: 44px;
   padding: 4px; border: 0; background: transparent; color: var(--dd-muted); cursor: pointer;
 }
 .jdd__toggle .jdd__ico, .jdd__toggle svg { width: 18px; height: 18px; transition: transform .18s ease; }
@@ -91,7 +94,7 @@
 
 /* facetas / orden del catálogo público: en línea, ancho por contenido */
 .catalog-facet .jdd, .catalog-sort .jdd { display: inline-flex; width: auto; min-width: 150px; vertical-align: middle; }
-.catalog-facet .jdd__btn, .catalog-sort .jdd__btn, .ad-filterbar__sel .jdd__btn { min-height: 40px; }
+.catalog-facet .jdd__btn, .catalog-sort .jdd__btn, .ad-filterbar__sel .jdd__btn { min-height: 44px; }
 
 /* la tarjeta con un dropdown abierto pasa por encima de las vecinas */
 .product-card:has(.jdd.is-open) { z-index: 20; }

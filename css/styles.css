@@ -79,6 +79,10 @@ body {
   position: relative;
   align-items: stretch;
   padding: clamp(48px, 7vw, 86px) clamp(16px, 4vw, 32px);
+  /* Esta sección tiene fondo propio, así que el aire con la anterior tiene que
+     ser margen (fuera del fondo) y no padding: si fuera padding, el degradado
+     se estiraría hacia arriba y se comería la separación. */
+  margin-top: var(--section-gap);
   overflow: hidden;
   background:
     radial-gradient(760px 360px at 12% 10%, rgba(90, 180, 233, 0.16), transparent 70%),
@@ -244,7 +248,7 @@ body {
 .footer {
     background: var(--footer-bg);
     color: var(--footer-text);
-    margin-top: 80px;
+    margin-top: var(--section-gap);
     border-top: 1px solid rgba(90,180,233,0.18);
   }
 
@@ -477,6 +481,10 @@ body {
   text-shadow: 0 3px 18px rgba(0, 0, 0, 0.44);
 }
 
+/* El markup usa <h1> (index.html:125). La regla apuntaba solo a h2, asi que no
+   aplicaba a nada y el titulo caia al h1 por defecto del navegador (~32px en vez
+   del clamp de hasta 89px). Se cubren los dos para no depender de la etiqueta. */
+.hero__slogan h1,
 .hero__slogan h2 {
   max-width: 12ch;
   margin: 0;
@@ -523,6 +531,61 @@ body {
     drop-shadow(0 0 24px rgba(90, 180, 233, 0.72))
     drop-shadow(0 20px 40px rgba(0, 0, 0, 0.52));
   animation: heroFloat 5.6s ease-in-out infinite;
+}
+
+/* ---- Entrada del hero ----------------------------------------------------
+   Se engancha a .page-transition-in, la clase que js/include-nav.js ya le pone
+   al <body> cuando termina de inyectar el nav. No hace falta JS nuevo: el
+   momento en que la pagina se vuelve visible es exactamente el que queremos.
+
+   El orden del stagger sigue la lectura: titulo -> bajada -> botones -> imagen.
+   ------------------------------------------------------------------------- */
+/* El estado oculto va colgado de .page-transition, que la agrega el propio JS
+   (include-nav.js). Si el JS no corre, esa clase no existe y el hero se pinta
+   normal: la animacion se pierde, el contenido no. */
+body.page-transition .hero__slogan h1,
+body.page-transition .hero__slogan h2,
+body.page-transition .hero__copy,
+body.page-transition .hero__button {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+body.page-transition-in .hero__slogan h1,
+body.page-transition-in .hero__slogan h2,
+body.page-transition-in .hero__copy,
+body.page-transition-in .hero__button {
+  opacity: 1;
+  transform: none;
+}
+
+body.page-transition-in .hero__slogan h1,
+body.page-transition-in .hero__slogan h2 { transition-delay: 0.06s; }
+body.page-transition-in .hero__copy      { transition-delay: 0.16s; }
+body.page-transition-in .hero__button    { transition-delay: 0.26s; }
+
+/* La imagen NO puede usar transition para entrar: su heroFloat anima transform
+   en bucle y le ganaria al translateY de entrada (misma propiedad). Se resuelve
+   encadenando dos animaciones: heroEnter corre una vez y heroFloat arranca justo
+   despues, con delay = inicio + duracion de la entrada. */
+body.page-transition .hero__img {
+  opacity: 0;
+}
+
+body.page-transition-in .hero__img {
+  /* El opacity va declarado ADEMAS de la animacion: mientras heroEnter corre
+     manda el keyframe, pero si la animacion no llegara a ejecutarse la imagen
+     igual queda visible. La animacion aporta el movimiento, no la visibilidad. */
+  opacity: 1;
+  animation:
+    heroEnter 0.7s ease 0.34s both,
+    heroFloat 5.6s ease-in-out 1.04s infinite;
+}
+
+@keyframes heroEnter {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes heroFloat {
@@ -599,5 +662,20 @@ body {
     transition: none;
     animation: none;
     transform: none;
+  }
+
+  /* Sin movimiento, pero el hero tiene que quedar VISIBLE: hay que reponer la
+     opacidad, porque el estado inicial de la entrada es opacity 0 y sin
+     animacion nadie lo devuelve a 1. */
+  body.page-transition .hero__slogan h1,
+  body.page-transition .hero__slogan h2,
+  body.page-transition .hero__copy,
+  body.page-transition .hero__button,
+  body.page-transition .hero__img,
+  body.page-transition-in .hero__img {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    animation: none;
   }
 }

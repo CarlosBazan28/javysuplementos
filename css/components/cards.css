@@ -4,6 +4,10 @@
   align-items: center;
   gap: 30px;
   justify-content: center;
+  /* Separación con la sección anterior. Antes no había ninguna: el aire salía
+     del margin-bottom del .top-products__list de arriba, así que dependía de
+     qué sección viniera antes. */
+  margin-top: var(--section-gap);
 }
 
 .top-products__list {
@@ -650,7 +654,7 @@
   }
 
   .product-card__flavor-select {
-    min-height: 34px;
+    min-height: 44px;
     border-radius: var(--radius-sm);
     font-size: 0.68rem;
     padding-left: 8px;
@@ -667,7 +671,7 @@
 
   .product-card__qty-select {
     display: block;
-    min-height: 34px;
+    min-height: 44px;
     font-size: 0.72rem;
   }
 
@@ -679,15 +683,17 @@
 
   .product-card__btn {
     width: 100%;
-    min-height: 40px;
+    min-height: 44px;
     padding: 0 6px;
     border-radius: var(--radius-sm);
     font-size: 0.72rem;
   }
 
+  /* Se agranda el AREA, no la letra: el texto sigue en 0.72rem para no
+     desbalancear la card, pero el enlace ocupa 44px de alto. */
   .product-card__detail-link {
     font-size: 0.72rem;
-    min-height: 28px;
+    min-height: 44px;
   }
 }
 
