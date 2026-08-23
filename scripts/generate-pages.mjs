@@ -50,11 +50,14 @@ const LEGACY_CATEGORY_REDIRECTS = {
   // Subcategorías que llegaron a tener página propia.
   "whey": "Proteínas",
   "iso-aislada": "Proteínas",
-  "mass-gainer": "Ganadores de Peso",
+  "mass-gainer": "Proteínas",
   // Familias cuyo slug cambió al fusionar Energía dentro de Pre-entrenos
   // (fase8-taxonomia.sql): el slug sale del nombre, y el nombre cambió.
   "pre-entrenos": "Pre-entrenos y energía",
   "energia-y-rendimiento": "Pre-entrenos y energía",
+  // "Ganadores de Peso" deja de ser familia propia: pasa a ser la
+  // subcategoría "Ganadores de peso" dentro de Proteínas (2026-08-23).
+  "ganadores-de-peso": "Proteínas",
 };
 
 /* ------------------------------- utilidades ------------------------------ */
