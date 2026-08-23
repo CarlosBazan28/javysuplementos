@@ -199,13 +199,13 @@ async function loadData() {
 // subdirectorios (/producto/<slug>/), donde las relativas de la raíz romperían.
 function renderHead({ title, description, canonical, image, ogType, jsonLd, extraCss }) {
   const css = [
-    "css/styles.css?v=fase2-ui",
-    "css/components/nav.css?v=cat-nav",
+    "css/styles.css?v=anim-1",
+    "css/components/nav.css?v=anim-1",
     "css/components/auth.css?v=session-state",
-    "css/tokens.css?v=fase2-ui",
+    "css/tokens.css?v=anim-1",
     "css/components/cart.css?v=ux-fix-1",
-    "css/components/cards.css?v=fase2-ui",
-    "css/dropdown.css?v=4",
+    "css/components/cards.css?v=anim-1",
+    "css/dropdown.css?v=anim-1",
     ...(extraCss || []),
   ];
 

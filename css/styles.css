@@ -474,6 +474,12 @@ body {
 }
 
 .hero__slogan {
+  /* display:flex + column son de la definicion vieja de arriba, que se borro
+     por duplicada: sin ellos, align-items y justify-self quedan inertes y en
+     movil el titulo (max-width en ch) se pega a la izquierda en vez de
+     centrarse. */
+  display: flex;
+  flex-direction: column;
   align-items: flex-start;
   width: min(100%, 590px);
   font-style: normal;
@@ -613,6 +619,8 @@ body.page-transition-in .hero__img {
     text-align: center;
   }
 
+  /* Mismo caso que la regla base: el markup usa h1. */
+  .hero__slogan h1,
   .hero__slogan h2 {
     max-width: 13ch;
     font-size: clamp(2.15rem, 11vw, 4.4rem);
