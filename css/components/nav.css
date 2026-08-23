@@ -446,6 +446,17 @@
 .nav__sub {
   list-style: none;
   margin: 0;
+  /* Estado inicial de la entrada: js/include-nav.js quita [hidden] y, un
+     frame después, agrega .nav__sub--in para que la transición arranque
+     desde acá en vez de aparecer de golpe. */
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.nav__sub.nav__sub--in {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .nav__sub[hidden] {
@@ -462,13 +473,32 @@
 /* Va primero en la lista (js/include-nav.js), no último: el separador y el
    aire pasan de arriba a abajo. text-align:center porque es la acción
    destacada del submenú, no un ítem más de la lista de familias -las demás
-   quedan a la izquierda como texto normal-. */
+   quedan a la izquierda como texto normal-.
+
+   El !important en padding/border-radius/background no es capricho: este
+   <a> vive dentro de .nav__links (el trigger "SUPLEMENTOS" es un <li> de esa
+   lista), así que hereda el look de píldora de .nav__links a (padding 8px
+   12px, border-radius 999px, fondo de marca al hover). Sin anularlo, el
+   texto queda centrado DENTRO de una píldora que no ocupa el ancho completo
+   del submenú -se ve centrado respecto de sí mismo, pero no respecto del
+   menú-, que es justo lo que se veía mal. */
 .nav__sub-all {
+  display: block !important;
+  width: 100%;
   text-align: center;
+  padding: 0 0 8px !important;
+  border-radius: 0 !important;
+  background: transparent !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 4px;
-  padding-bottom: 8px !important;
   color: var(--neon) !important;
+}
+
+.nav__sub-all:hover,
+.nav__sub-all:focus-visible {
+  background: transparent !important;
+  color: var(--brand) !important;
+  text-decoration: underline;
 }
 
 @media (min-width: 901px) {
@@ -512,5 +542,13 @@
 @media (prefers-reduced-motion: reduce) {
   .nav__sub-caret svg {
     transition: none;
+  }
+
+  .nav__sub {
+    transition: none;
+    /* Sin animación, visible directo al quitarse [hidden]: si algo interrumpe
+       el rAF de include-nav.js que agrega --in, no debe quedar en opacity:0. */
+    opacity: 1;
+    transform: none;
   }
 }

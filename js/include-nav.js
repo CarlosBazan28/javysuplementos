@@ -53,7 +53,19 @@ async function initCategoriesSubmenu(host) {
   const setOpen = (open) => {
     item.classList.toggle("is-open", open);
     trigger.setAttribute("aria-expanded", String(open));
-    list.hidden = !open;
+    if (open) {
+      list.hidden = false;
+      // Doble rAF: si la clase se agrega en el mismo tick que se quita
+      // [hidden], el navegador puede colapsar el estado inicial (opacity:0
+      // en css/components/nav.css) y la transición no se ve -arranca ya en
+      // opacity:1-. Mismo patrón que el badge de visitas del hero.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => list.classList.add("nav__sub--in"));
+      });
+    } else {
+      list.classList.remove("nav__sub--in");
+      list.hidden = true;
+    }
   };
 
   // Con categorías disponibles, "SUPLEMENTOS" abre el submenú en vez de
