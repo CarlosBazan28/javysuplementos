@@ -3,6 +3,29 @@
 **Generado el 2026-08-04 · 49 de 111 productos**
 **Actualizado el 2026-08-05 · quedan 46** — los bloques C y E ya están resueltos.
 
+> **Bloque A resuelto en su mayoría (2026-08-23).** De los 18 "marca es ingrediente",
+> 9 se confirmaron **Nutricost** (Inositol, Biotin, Maltodextrin ×2, Olive Leaf,
+> Resveratrol, Zinc Chelate, Potassium 30 cáps, R-ALA) leyendo la foto real del envase
+> o el nombre de archivo original de Supabase Storage — no se adivinó ninguna. Del
+> bloque B: Adiplex → **BioSport** (foto dice "Bio-Sport USA"), Xpel → **MHP**, y las 4
+> fichas de `HTP` → **Hi-Tech Pharmaceuticals** (foto con el nombre completo impreso;
+> unifica con Lipodrene Fat Burner, que ya usaba el nombre completo). Del bloque D,
+> ZMA 180 cápsulas → **PrimaForce** (foto, no Nutricost como se sospechaba).
+> Cruzando contra `Catalogo-Javy-Suplementos-PREMIUM.pdf` (el catálogo real del
+> negocio) salieron 3 duplicados que se desactivaron (`is_active=false`, no
+> borrados): "Liv52 Protector Hepático" y "NAD+ $49" repetían un producto que ya
+> existía bien cargado (Liv 52/Himalaya, Nad+/Olympus), y "Maniac Extreme Pre-Workout"
+> repetía a "Maniac Extreme"/Terror Labz. Ashwagandha y Magnesium Complex no aparecen
+> en el catálogo actual del proveedor: se desactivaron en vez de dejarlos con marca
+> inventada. Rollback en `docs/rollback-marcas-ingrediente-2026-08-23.sql`.
+>
+> **Siguen sin confirmar** (sin foto real, o el producto no tenía marca aún resuelta):
+> Potassium 240 cápsulas (su gemelo de 30 sí se confirmó Nutricost, pero no se asumió
+> por similitud), Carniburn Fuego y Skull Pre-Workout Xtreme (ambos SÍ están en el
+> catálogo actual, así que se dejan activos — solo falta la marca), Calcium+Vitamin D,
+> Tongkat Ali, H2O Diurético, Skull BCAA+EAA, Vitamin C 500mg (estos 5 ya estaban
+> `is_active=false` o no existen como fila activa).
+
 > **Llenado de contenido (2026-08-05).** Se completaron en Supabase los 5 productos que
 > seguían con contenido incompleto o con texto de relleno: BioSport Xtreme Gainer,
 > C4 Whey Protein 2.2 lb, Zinc Chelate 50 mg, Lipodrene Fat Burner y Creatina Nutrex.

@@ -91,7 +91,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/adiplex/</loc>
+    <loc>https://javysuplementos.com/producto/biosport-adiplex/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -109,7 +109,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/optimum-nutrition-amino-energy/</loc>
+    <loc>https://javysuplementos.com/producto/optimum-nutrition-amino-energy-65-servidas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -121,19 +121,19 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/optimum-nutrition-amino-energy-65-servidas/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://javysuplementos.com/producto/bsn-amino-x-30-servidas/</loc>
+    <loc>https://javysuplementos.com/producto/optimum-nutrition-amino-energy/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://javysuplementos.com/producto/bsn-amino-x-375-g/</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://javysuplementos.com/producto/bsn-amino-x-30-servidas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -152,12 +152,6 @@
   </url>
   <url>
     <loc>https://javysuplementos.com/producto/nutrex-anabol-60-capsulas/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://javysuplementos.com/producto/ashwagandha-90-capsulas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -211,7 +205,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/biotin-vitamin-b7-120-capsulas/</loc>
+    <loc>https://javysuplementos.com/producto/nutricost-biotin-vitamin-b7-120-capsulas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -253,13 +247,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/cellucor-c4-whey-protein-2-lb/</loc>
+    <loc>https://javysuplementos.com/producto/cellucor-c4-whey-protein-5-8-lb/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/cellucor-c4-whey-protein-5-8-lb/</loc>
+    <loc>https://javysuplementos.com/producto/cellucor-c4-whey-protein-2-lb/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -307,13 +301,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/nutricost-casein-protein-micellar-26-servidas/</loc>
+    <loc>https://javysuplementos.com/producto/nutricost-casein-protein-micellar-64-servidas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/nutricost-casein-protein-micellar-64-servidas/</loc>
+    <loc>https://javysuplementos.com/producto/nutricost-casein-protein-micellar-26-servidas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -325,13 +319,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/nutrex-cla-1000-90-capsulas/</loc>
+    <loc>https://javysuplementos.com/producto/nutrex-cla-1000-180-capsulas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/nutrex-cla-1000-180-capsulas/</loc>
+    <loc>https://javysuplementos.com/producto/nutrex-cla-1000-90-capsulas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -391,13 +385,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/nutrex-creatina-monohidratada-300-g/</loc>
+    <loc>https://javysuplementos.com/producto/nutricost-creatina-monohidratada-300-g/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/nutricost-creatina-monohidratada-300-g/</loc>
+    <loc>https://javysuplementos.com/producto/nutrex-creatina-monohidratada-30-servidas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -409,7 +403,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/nutrex-creatina-monohidratada-30-servidas/</loc>
+    <loc>https://javysuplementos.com/producto/nutrex-creatina-monohidratada-300-g/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -487,7 +481,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/htp-h20-expulsion-60-tabletas/</loc>
+    <loc>https://javysuplementos.com/producto/hi-tech-pharmaceuticals-h20-expulsion-60-tabletas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -523,7 +517,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/inositol-500-mg-240-capsulas/</loc>
+    <loc>https://javysuplementos.com/producto/nutricost-inositol-500-mg-240-capsulas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -661,12 +655,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/liv52-protector-hepatico/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://javysuplementos.com/producto/mutant-madness-270-g/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
@@ -679,25 +667,19 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/magnesium-complex-240-capsulas/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://javysuplementos.com/producto/nutricost-magtein-magnesium-l-threonate-90-tabletas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/maltodextrin-2-lb/</loc>
+    <loc>https://javysuplementos.com/producto/nutricost-maltodextrin-2-lb/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/maltodextrin-8-lb/</loc>
+    <loc>https://javysuplementos.com/producto/nutricost-maltodextrin-8-lb/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -709,19 +691,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/maniac-extreme-pre-workout/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://javysuplementos.com/producto/mutant-mass-5-lb/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://javysuplementos.com/producto/mutant-mass-extreme-2500-6-lb/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -734,6 +704,12 @@
   </url>
   <url>
     <loc>https://javysuplementos.com/producto/mutant-mass-extreme-2500-15-lb/</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://javysuplementos.com/producto/mutant-mass-extreme-2500-6-lb/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -824,12 +800,6 @@
   </url>
   <url>
     <loc>https://javysuplementos.com/producto/olympus-nad-120-tabletas/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://javysuplementos.com/producto/nad/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -967,7 +937,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/olive-leaf-extract-75-mg-90-capsulas/</loc>
+    <loc>https://javysuplementos.com/producto/nutricost-olive-leaf-extract-75-mg-90-capsulas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1057,7 +1027,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/potassium-99-mg-30-capsulas/</loc>
+    <loc>https://javysuplementos.com/producto/nutricost-potassium-99-mg-30-capsulas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1069,19 +1039,19 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/htp-precision-protein-2-lb/</loc>
+    <loc>https://javysuplementos.com/producto/hi-tech-pharmaceuticals-precision-protein-2-lb/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/htp-precision-protein-5-lb/</loc>
+    <loc>https://javysuplementos.com/producto/hi-tech-pharmaceuticals-precision-protein-5-lb/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/htp-precision-protein-2-lb-8260e6/</loc>
+    <loc>https://javysuplementos.com/producto/hi-tech-pharmaceuticals-precision-protein-2-lb-8260e6/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1117,13 +1087,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/isopure-protein-powder-42-servidas/</loc>
+    <loc>https://javysuplementos.com/producto/isopure-protein-powder-44-servidas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/isopure-protein-powder-44-servidas/</loc>
+    <loc>https://javysuplementos.com/producto/isopure-protein-powder-42-servidas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1135,7 +1105,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/r-ala-alpha-lipoic-acid-120-capsulas/</loc>
+    <loc>https://javysuplementos.com/producto/nutricost-r-alpha-lipoic-acid-120-capsulas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1147,7 +1117,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/resveratrol-120-capsulas/</loc>
+    <loc>https://javysuplementos.com/producto/nutricost-resveratrol-120-capsulas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1195,13 +1165,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/mutant-shaker-unidad/</loc>
+    <loc>https://javysuplementos.com/producto/c4-shaker-unidad/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/c4-shaker-unidad/</loc>
+    <loc>https://javysuplementos.com/producto/mutant-shaker-unidad/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1273,13 +1243,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/optimum-nutrition-whey-gourmet-series-24-servidas/</loc>
+    <loc>https://javysuplementos.com/producto/optimum-nutrition-whey-gourmet-series-25-servidas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/optimum-nutrition-whey-gourmet-series-25-servidas/</loc>
+    <loc>https://javysuplementos.com/producto/optimum-nutrition-whey-gourmet-series-24-servidas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1315,7 +1285,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/xpel-diuretico/</loc>
+    <loc>https://javysuplementos.com/producto/mhp-xpel-diuretico/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1339,19 +1309,19 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/isopure-zero-carb-protein-66-servidas/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://javysuplementos.com/producto/isopure-zero-carb-protein-4-5-lb/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/zinc-chelate-50-mg-120-capsulas/</loc>
+    <loc>https://javysuplementos.com/producto/isopure-zero-carb-protein-66-servidas/</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://javysuplementos.com/producto/nutricost-zinc-chelate-50-mg-120-capsulas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -1363,7 +1333,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://javysuplementos.com/producto/zma-180-capsulas/</loc>
+    <loc>https://javysuplementos.com/producto/primaforce-zma-180-capsulas/</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
