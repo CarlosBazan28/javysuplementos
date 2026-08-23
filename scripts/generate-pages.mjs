@@ -260,13 +260,13 @@ const COMMON_SCRIPTS = [
   "/js/product-urls.js?v=seo-urls",
   "/js/db.js?v=solo-activos",
   "/js/auth.js?v=session-state",
-  "/js/icons.js?v=cat-icons",
+  "/js/icons.js?v=cat-icons-eye",
   "/js/dropdown.js?v=4",
   "/js/cart.js?v=ux-fix-1",
 ];
 
 function renderScripts(extra = []) {
-  return [...COMMON_SCRIPTS, ...extra, "/js/include-nav.js?v=ux-fix-1"]
+  return [...COMMON_SCRIPTS, ...extra, "/js/include-nav.js?v=visits-1"]
     .map((src) => `    <script src="${src}" defer></script>`)
     .join("\n");
 }

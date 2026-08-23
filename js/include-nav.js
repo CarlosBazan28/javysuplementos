@@ -79,6 +79,25 @@ async function initCategoriesSubmenu(host) {
   });
 }
 
+// Cuenta 1 visita por navegador por día, no por carga de página: un refresh
+// no debe inflar el número. El dedupe real vive en Supabase
+// (unique(visitor_id, day) + on conflict do nothing en record_visit()); acá
+// solo se genera/persiste el visitor_id y se dispara el RPC, sin bloquear
+// nada visual — si falla (offline, RPC caída) se reintenta en la próxima carga.
+function recordVisit() {
+  if (!window.supabaseClient) return;
+  const KEY = "javy_visitor_id";
+  let visitorId = localStorage.getItem(KEY);
+  if (!visitorId) {
+    visitorId = crypto.randomUUID();
+    localStorage.setItem(KEY, visitorId);
+  }
+  window.supabaseClient.rpc("record_visit", { p_visitor_id: visitorId }).then(({ error }) => {
+    if (error) console.warn("No se pudo registrar la visita:", error.message);
+  });
+}
+recordVisit();
+
 (async function () {
   const host = document.getElementById("site-header");
   if (!host) return;

@@ -566,6 +566,54 @@ body {
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
 }
 
+/* Badge de prueba social ("N visitas"): mismo lenguaje que ya usan los chips
+   de categoría (pill, --surface-input, --line) y no un widget nuevo. Arranca
+   en opacity:0 y solo pasa a --in cuando js/hero-visits.js confirma un número
+   real -- nunca se anima un placeholder inventado. */
+.hero__visits {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: clamp(16px, 2.4vw, 22px);
+  padding: 9px 18px 9px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+  background: var(--surface-input);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.hero__visits.hero__visits--in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero__visits-icon {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  color: var(--accent);
+}
+
+.hero__visits-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.hero__visits-count {
+  color: var(--text);
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.hero__visits-label {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .hero__img {
   width: min(48vw, 560px);
   max-width: 100%;
@@ -705,7 +753,8 @@ body.page-transition-in .hero__img {
   }
 
   .page-transition,
-  .hero__img {
+  .hero__img,
+  .hero__visits {
     transition: none;
     animation: none;
     transform: none;
