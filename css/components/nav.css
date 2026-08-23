@@ -459,10 +459,15 @@
   white-space: nowrap;
 }
 
+/* Va primero en la lista (js/include-nav.js), no último: el separador y el
+   aire pasan de arriba a abajo. text-align:center porque es la acción
+   destacada del submenú, no un ítem más de la lista de familias -las demás
+   quedan a la izquierda como texto normal-. */
 .nav__sub-all {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  margin-top: 4px;
-  padding-top: 8px !important;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 4px;
+  padding-bottom: 8px !important;
   color: var(--neon) !important;
 }
 

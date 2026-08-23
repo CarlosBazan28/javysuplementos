@@ -45,10 +45,10 @@ async function initCategoriesSubmenu(host) {
     ? `/categoria/${encodeURIComponent(slugOf(f))}/`
     : `/supplements-page.html?cat=${encodeURIComponent(slugOf(f))}`);
 
-  list.innerHTML = families
-    .map((f) => `<li><a href="${hrefFor(f)}">${escapeAttr(f.name)}</a></li>`)
-    .join("")
-    + `<li><a class="nav__sub-all" href="/supplements-page.html">Ver todo el catálogo</a></li>`;
+  list.innerHTML = `<li><a class="nav__sub-all" href="/supplements-page.html">Ver catálogo completo</a></li>`
+    + families
+      .map((f) => `<li><a href="${hrefFor(f)}">${escapeAttr(f.name)}</a></li>`)
+      .join("");
 
   const setOpen = (open) => {
     item.classList.toggle("is-open", open);
