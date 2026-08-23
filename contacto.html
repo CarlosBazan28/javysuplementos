@@ -51,12 +51,20 @@
         "latitude": 8.9824186,
         "longitude": -79.5198457
       },
-      "openingHoursSpecification": {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-        "opens": "08:00",
-        "closes": "20:00"
-      }
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          "opens": "09:30",
+          "closes": "17:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Saturday"],
+          "opens": "09:00",
+          "closes": "14:00"
+        }
+      ]
     }
     </script>
 
@@ -215,7 +223,7 @@
             </li>
             <li>
               <span data-javy-icon="clock" aria-hidden="true"></span>
-              <strong>Lunes a s&aacute;bado: 8:00 am - 8:00 pm</strong>
+              <strong>Lunes a viernes: 9:30 am - 5:00 pm &middot; S&aacute;bado: 9:00 am - 2:00 pm</strong>
             </li>
           </ul>
         </div>
@@ -312,8 +320,7 @@
             <ul class="footer__list footer__list--contact">
               <li>Edificio Frontenac, Calle 50, Panam&aacute;</li>
               <li><a data-javy-whatsapp data-javy-phone aria-label="WhatsApp de Javy" target="_blank" rel="noopener"></a></li>
-              <li><a href="mailto:correodejavito@pboom.com">correodejavito@pboom.com</a></li>
-              <li>Lunes a s&aacute;bado: 8:00 am - 8:00 pm</li>
+              <li>Lunes a viernes: 9:30 am - 5:00 pm &middot; S&aacute;bado: 9:00 am - 2:00 pm</li>
             </ul>
             <a class="footer__cta" data-javy-whatsapp data-whatsapp-message="Hola Javy, necesito asesoría sobre suplementos" target="_blank" rel="noopener">
               Hablar con un asesor
@@ -324,8 +331,6 @@
             <p class="footer__text">Siguenos para mas tips, guias y resultados reales.</p>
             <div class="footer__social">
               <a href="https://instagram.com/javy.suplementos" target="_blank" rel="noopener">Instagram</a>
-              <a href="https://tiktok.com/@javysuplementos" target="_blank" rel="noopener">TikTok</a>
-              <a href="https://facebook.com/javysuplementos" target="_blank" rel="noopener">Facebook</a>
             </div>
           </div>
         </div>

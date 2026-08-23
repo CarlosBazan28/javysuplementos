@@ -98,8 +98,6 @@ function entidadesDelSitio() {
       areaServed: "PA",
       sameAs: [
         "https://instagram.com/javy.suplementos",
-        "https://tiktok.com/@javysuplementos",
-        "https://facebook.com/javysuplementos",
       ],
     },
   ];
