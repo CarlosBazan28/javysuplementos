@@ -475,16 +475,20 @@
    destacada del submenú, no un ítem más de la lista de familias -las demás
    quedan a la izquierda como texto normal-.
 
-   El !important en padding/border-radius/background no es capricho: este
-   <a> vive dentro de .nav__links (el trigger "SUPLEMENTOS" es un <li> de esa
-   lista), así que hereda el look de píldora de .nav__links a (padding 8px
-   12px, border-radius 999px, fondo de marca al hover). Sin anularlo, el
-   texto queda centrado DENTRO de una píldora que no ocupa el ancho completo
-   del submenú -se ve centrado respecto de sí mismo, pero no respecto del
-   menú-, que es justo lo que se veía mal. */
+   El !important en padding/border-radius/background/min-height no es
+   capricho: este <a> vive dentro de .nav__links (el trigger "SUPLEMENTOS" es
+   un <li> de esa lista), así que hereda el look de píldora de .nav__links a
+   (padding 8px 12px, border-radius 999px, fondo de marca al hover) Y, en
+   mobile, el min-height:44px de .site-header .nav__links a (línea ~339,
+   pensado para el touch target de los ítems del menú principal). Con
+   display:block forzado ese min-height dejaba ~20px de hueco vacío debajo
+   del texto -el "se rompió más" era este hueco, no el centrado, que ya
+   estaba resuelto-. Sin anular todo esto, el texto queda centrado DENTRO de
+   una caja que no coincide con el resto del submenú. */
 .nav__sub-all {
   display: block !important;
   width: 100%;
+  min-height: 0 !important;
   text-align: center;
   padding: 0 0 8px !important;
   border-radius: 0 !important;

@@ -201,7 +201,7 @@ async function loadData() {
 function renderHead({ title, description, canonical, image, ogType, jsonLd, extraCss }) {
   const css = [
     "css/styles.css?v=anim-1",
-    "css/components/nav.css?v=nav-anim-1",
+    "css/components/nav.css?v=nav-fix-2",
     "css/components/auth.css?v=session-state",
     "css/tokens.css?v=anim-1",
     "css/components/cart.css?v=ux-fix-1",
