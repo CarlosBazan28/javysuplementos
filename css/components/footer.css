@@ -143,3 +143,23 @@
     margin-top: 4px;
     font-size: 0.8rem;
   }
+
+/* Acceso admin: discreto a proposito. No es para clientes -compran por
+   WhatsApp, nunca inician sesion- asi que no compite con el resto del nav ni
+   del footer. Vivia arriba, en el menu principal, con el mismo peso visual que
+   "Testimonios"; se mueve aca. */
+.footer__admin {
+  margin-top: 10px;
+  font-size: 0.75rem;
+  opacity: 0.55;
+}
+
+.footer__admin a {
+  color: inherit;
+}
+
+.footer__admin a:hover,
+.footer__admin a:focus-visible {
+  opacity: 1;
+  text-decoration: underline;
+}
