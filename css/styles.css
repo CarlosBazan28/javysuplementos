@@ -181,7 +181,10 @@ body {
   display: grid;
   place-items: center;
   width: 100%;
-  min-height: 520px;
+  /* Proporción real de un reel (9:16) en vez de una altura fija: antes eran
+     520px sin importar el ancho de la card, que en mobile (1 columna) se
+     traducía en ~4 x 500px+ de scroll solo para esta sección. */
+  aspect-ratio: 9 / 16;
   overflow: hidden;
   border-radius: 14px;
   background:
@@ -229,18 +232,34 @@ body {
     padding: 42px 12px;
   }
 
+  /* Carrusel horizontal en vez de columna apilada: con 4 reels a min-height
+     fijo, esta sección sola ocupaba ~2000px de scroll en mobile. El mismo
+     patrón de scroll-snap que ya usan los chips de categoría
+     (css/pages/supplements.css, .catalog-filters). */
   .instagram-videos__grid {
-    grid-template-columns: 1fr;
-    width: min(420px, 100%);
+    display: flex;
+    grid-template-columns: none;
+    width: 100%;
+    gap: 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scroll-padding-left: 4px;
+    padding-bottom: 4px;
+  }
+
+  .instagram-videos__grid::-webkit-scrollbar {
+    display: none;
   }
 
   .reel-card {
+    flex: 0 0 78%;
+    max-width: 300px;
     padding: 8px;
     border-radius: 16px;
-  }
-
-  .reel-card__frame {
-    min-height: 500px;
+    scroll-snap-align: start;
   }
 }
 
