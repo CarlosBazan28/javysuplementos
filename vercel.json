@@ -15,13 +15,81 @@
       "source": "/producto/nutrex-producto-sin-nombre-60-servidas",
       "destination": "/producto/nutrex-creatine-monohydrate-60-servidas",
       "permanent": true
+    },
+    {
+      "source": "/producto/biosport-magnesium-glycinate-60-capsulas",
+      "destination": "/producto/biosport-magnesium-glycinate-120-tabletas",
+      "permanent": true
+    },
+    {
+      "source": "/producto/biosport-absolute-iso-4-lb",
+      "destination": "/categoria/proteinas/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/raw-nutrition-grass-fed-isolate-protein-2-lb",
+      "destination": "/categoria/proteinas/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/bpi-sports-creatine-max-60-servidas",
+      "destination": "/categoria/creatina/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/skull-bcaa-eaa",
+      "destination": "/categoria/aminoacidos/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/primaforce-beta-alanine-100-servidas",
+      "destination": "/categoria/pre-entrenos-y-energia/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/h2o-diuretico",
+      "destination": "/categoria/quemadores/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/calcium-vitamin-d-240-capsulas",
+      "destination": "/categoria/salud-y-bienestar/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/mutant-multivitamin-60-tabletas",
+      "destination": "/categoria/salud-y-bienestar/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/cbum-energy-drink-355-ml",
+      "destination": "/supplements-page.html",
+      "permanent": true
+    },
+    {
+      "source": "/producto/tongkat-ali-complex-1000-mg-60-capsulas",
+      "destination": "/supplements-page.html",
+      "permanent": true
+    },
+    {
+      "source": "/categoria/potenciadores-hormonales",
+      "destination": "/supplements-page.html?fam=potenciadores",
+      "permanent": true
+    },
+    {
+      "source": "/categoria/potenciadores-hormonales/",
+      "destination": "/supplements-page.html?fam=potenciadores",
+      "permanent": true
     }
   ],
   "headers": [
     {
       "source": "/(.*).(js|mjs|css)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     }
   ]

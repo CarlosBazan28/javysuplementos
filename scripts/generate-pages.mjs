@@ -68,6 +68,59 @@ function escapeHTML(value = "") {
     .replace(/'/g, "&#039;");
 }
 
+// El negocio y el sitio, con los mismos @id que declara index.html. Van en el
+// grafo de cada página generada para que las referencias (`seller`, `about`,
+// `isPartOf`) resuelvan ahí mismo: Google no cruza @id entre URLs distintas.
+function entidadesDelSitio() {
+  return [
+    {
+      "@type": "WebSite",
+      "@id": `${SITE}/#website`,
+      url: `${SITE}/`,
+      name: "Javy Suplementos",
+      inLanguage: "es-PA",
+      publisher: { "@id": `${SITE}/#business` },
+    },
+    {
+      "@type": "SportingGoodsStore",
+      "@id": `${SITE}/#business`,
+      name: "Javy Suplementos",
+      url: `${SITE}/`,
+      image: `${SITE}/img/icons/javy-web-app-icon-1024.png`,
+      logo: `${SITE}/img/icons/javy-web-app-icon-1024.png`,
+      telephone: "+50766494509",
+      priceRange: "$$",
+      address: {
+        "@type": "PostalAddress",
+        addressRegion: "Panamá",
+        addressCountry: "PA",
+      },
+      areaServed: "PA",
+      sameAs: [
+        "https://instagram.com/javy.suplementos",
+        "https://tiktok.com/@javysuplementos",
+        "https://facebook.com/javysuplementos",
+      ],
+    },
+  ];
+}
+
+// Arma el BreadcrumbList numerando las posiciones solo. Google descarta el
+// breadcrumb completo si un tramo intermedio no trae `item`, así que los tramos
+// sin URL se caen antes de llegar acá (los filtra quien llama); el último sí
+// puede ir sin enlace.
+function breadcrumbList(tramos) {
+  return {
+    "@type": "BreadcrumbList",
+    itemListElement: tramos.map((tramo, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: tramo.name,
+      ...(tramo.item ? { item: tramo.item } : {}),
+    })),
+  };
+}
+
 // El JSON-LD va dentro de <script>: hay que neutralizar "</script>" y los
 // separadores de línea U+2028/U+2029, que rompen el parseo del navegador.
 function jsonForScript(data) {
@@ -163,7 +216,7 @@ function renderHead({ title, description, canonical, image, ogType, jsonLd, extr
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com" />
 
     <!-- Modo mantenimiento: bloquea el sitio público mientras esté activo (ver js/mantenimiento.js). -->
-    <script src="/js/mantenimiento.js?v=1"></script>
+    <script src="/js/mantenimiento.js?v=modos"></script>
     <title>${escapeHTML(title)}</title>
 
     <!-- SEO -->
@@ -223,7 +276,7 @@ function renderScripts(extra = []) {
 /* ---------------------------- página de producto -------------------------- */
 
 function renderProductPage(product, ctx) {
-  const { slug, familyName, familySlug, typeName } = ctx;
+  const { slug, familyName, familySlug, typeName, typeUrl } = ctx;
   // Etiqueta de categoría visible: la subcategoría es más precisa cuando existe.
   const categoryName = typeName || familyName;
   const url = `${SITE}${productPath(slug)}`;
@@ -265,22 +318,24 @@ function renderProductPage(product, ctx) {
                   ? "https://schema.org/InStock"
                   : "https://schema.org/OutOfStock",
                 url,
-                seller: { "@type": "Organization", name: "Javy Suplementos" },
+                // El mismo @id del negocio de index.html: así la oferta queda
+                // atada a la tienda y no a una organización suelta por página.
+                seller: { "@id": `${SITE}/#business` },
               },
             }
           : {}),
       },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Catálogo", item: `${SITE}/supplements-page.html` },
-          ...(familySlug
-            ? [{ "@type": "ListItem", position: 2, name: familyName, item: `${SITE}${categoryPath(familySlug)}` }]
-            : []),
-          ...(familySlug && typeName ? [{ "@type": "ListItem", position: 3, name: typeName }] : []),
-          { "@type": "ListItem", position: (familySlug ? 2 : 1) + (typeName && familySlug ? 2 : 1), name, item: url },
-        ],
-      },
+      breadcrumbList([
+        { name: "Inicio", item: `${SITE}/` },
+        { name: "Catálogo", item: `${SITE}/supplements-page.html` },
+        ...(familySlug ? [{ name: familyName, item: `${SITE}${categoryPath(familySlug)}` }] : []),
+        // La subcategoría no tiene página propia, pero sí una URL real: el
+        // catálogo ya filtrado. Sin `item` Google descarta el breadcrumb
+        // entero, porque solo el último tramo puede ir sin enlace.
+        ...(familySlug && typeName && typeUrl ? [{ name: typeName, item: typeUrl }] : []),
+        { name, item: url },
+      ]),
+      ...entidadesDelSitio(),
     ],
   });
 
@@ -467,6 +522,10 @@ function renderCategoryPage(category, products, slugMap, categorySlug, types = [
         name: title,
         description,
         url,
+        // Ata la página al sitio y al negocio declarados en index.html, para
+        // que Google no las trate como entidades sueltas.
+        isPartOf: { "@id": `${SITE}/#website` },
+        about: { "@id": `${SITE}/#business` },
       },
       {
         "@type": "ItemList",
@@ -496,13 +555,12 @@ function renderCategoryPage(category, products, slugMap, categorySlug, types = [
           },
         })),
       },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Catálogo", item: `${SITE}/supplements-page.html` },
-          { "@type": "ListItem", position: 2, name, item: url },
-        ],
-      },
+      breadcrumbList([
+        { name: "Inicio", item: `${SITE}/` },
+        { name: "Catálogo", item: `${SITE}/supplements-page.html` },
+        { name, item: url },
+      ]),
+      ...entidadesDelSitio(),
     ],
   });
 
@@ -520,25 +578,47 @@ ${types
 `
     : "";
 
+  // Misma estructura que renderProductCard() de js/supplements.js: la card del
+  // catálogo y la de una categoría tienen que ser la misma pieza. Acá se emite
+  // en HTML (para que el scraper la lea) y js/categoria.js le engancha la
+  // cotización al cargar, con el producto ya normalizado por catalogDb.
   const cards = products
     .map((p) => {
       const productSlug = slugMap.get(String(p.id));
+      const name = p.name || p.nombre || "Producto";
       const price = productPrice(p);
       const priceText = price > 0 ? `$${price.toFixed(2)}` : "Consultar";
+      const oldPrice = Number(p.old_price || 0);
+      const hasOffer = oldPrice > price && price > 0;
+      const discount = hasOffer ? Math.round(((oldPrice - price) / oldPrice) * 100) : 0;
+      const featured = p.featured === true || p.is_featured === true;
+      const available = isAvailable(p);
       const img = p.image_url || p.imagen_url || PLACEHOLDER_IMAGE;
-      return `        <article class="product-card">
-          <a class="product-card__media product-card__media-link" href="${productPath(productSlug)}" aria-label="Ver ${escapeHTML(p.name || p.nombre)}">
-            <img src="${escapeHTML(assetSrc(img))}" alt="${escapeHTML(p.name || p.nombre)}" class="product-card__img" loading="lazy" decoding="async" />
+      const href = productPath(productSlug);
+
+      // Los data-* llevan lo mínimo para cotizar sin depender de la red: si
+      // Supabase no responde, js/categoria.js arma el producto con esto y el
+      // botón sigue sirviendo (sin sabores, que sí requieren la base).
+      return `        <article class="product-card" data-product-id="${escapeHTML(String(p.id))}" data-legacy-id="${escapeHTML(String(p.legacy_id || p.id))}" data-name="${escapeHTML(name)}" data-brand="${escapeHTML(p.brand || "")}" data-category="${escapeHTML(p.category || "")}" data-price="${price}" data-presentation="${escapeHTML(p.presentation || "")}" data-image="${escapeHTML(assetSrc(img))}">
+${featured ? `          <span class="product-card__badge">Destacado</span>\n` : ""}          <a class="product-card__media product-card__media-link" href="${href}" aria-label="Ver ${escapeHTML(name)}">
+            <img src="${escapeHTML(assetSrc(img))}" alt="${escapeHTML(name)}" class="product-card__img" loading="lazy" decoding="async" />
           </a>
+
           <div class="product-card__info">
             <div class="product-card__meta">
               <span class="product-card__brand">${escapeHTML(p.brand || "Marca en revisión")}</span>
-              <span class="product-card__status ${isAvailable(p) ? "is-available" : "is-agotado"}">${isAvailable(p) ? "Disponible" : "Agotado"}</span>
+              <span class="product-card__status ${available ? "is-available" : "is-agotado"}">${available ? "Disponible" : "Agotado"}</span>
             </div>
-            <h2 class="product-card__name"><a class="product-card__name-link" href="${productPath(productSlug)}">${escapeHTML(p.name || p.nombre)}</a></h2>
+            <h2 class="product-card__name"><a class="product-card__name-link" href="${href}">${escapeHTML(name)}</a></h2>
             <div class="product-card__price-row">
-              <span class="product-card__price-group"><span class="product-card__price">${escapeHTML(priceText)}</span></span>
+              <span class="product-card__price-group"><span class="product-card__price">${escapeHTML(priceText)}</span>${hasOffer ? `<span class="product-card__price-old">$${oldPrice.toFixed(2)}</span><span class="product-card__discount">-${discount}%</span>` : ""}</span>
+              ${p.presentation ? `<span class="product-card__pres">${escapeHTML(p.presentation)}</span>` : ""}
             </div>
+          </div>
+
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn--${available ? "buy" : "quote"}" type="button">${available ? "Agregar a cotización" : "Consultar disponibilidad"}</button>
+            <a class="product-card__detail-link" href="${href}">Ver detalles</a>
           </div>
         </article>`;
     })
@@ -547,8 +627,8 @@ ${types
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
-${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-nav", "css/pages/supplements.css?v=cat-nav"] })}
-${renderScripts()}
+${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-unif", "css/pages/supplements.css?v=cat-unif"] })}
+${renderScripts(["/js/categoria.js?v=cat-unif"])}
   </head>
   <body>
     <div id="site-header"></div>
@@ -566,11 +646,11 @@ ${renderScripts()}
           ${products.length} producto${products.length === 1 ? "" : "s"} original${products.length === 1 ? "" : "es"} en stock con precio de catálogo.
           Agregá lo que te interese y enviá tu cotización por WhatsApp para confirmar disponibilidad.
         </p>
-        <p><a class="catalog-hero__link" href="/supplements-page.html">Ver el catálogo completo con filtros</a></p>
+        <a class="catalog-hero__link" href="/supplements-page.html">Ver el catálogo completo con filtros</a>
       </section>
 ${typeChips}
 
-      <section class="top-products__list" aria-label="Productos de ${escapeHTML(name)}">
+      <section class="catalog-grid" aria-label="Productos de ${escapeHTML(name)}">
 ${cards}
       </section>
     </main>
@@ -721,14 +801,18 @@ async function main() {
   for (const product of products) {
     const slug = slugMap.get(String(product.id));
     const category = product.category_id ? categoriesById.get(String(product.category_id)) : null;
-    // El breadcrumb enlaza a la familia (la que tiene página); la subcategoría
-    // se muestra como último tramo, sin enlace propio.
+    // El breadcrumb enlaza a la familia (la que tiene página) y a la
+    // subcategoría (que no tiene página, pero sí el catálogo ya filtrado).
     const family = category ? categoriesById.get(familyIdOf(category)) : null;
+    const esSubcategoria = !!(category && category.parent_id);
     const html = renderProductPage(product, {
       slug,
       familyName: family?.name || product.category || "Suplementos",
       familySlug: family ? categorySlugs.get(String(family.id)) || null : null,
-      typeName: category && category.parent_id ? category.name : "",
+      typeName: esSubcategoria ? category.name : "",
+      typeUrl: esSubcategoria && family
+        ? `${SITE}/supplements-page.html?fam=${encodeURIComponent(categoryFilterSlug(family))}&tipo=${encodeURIComponent(categoryFilterSlug(category))}`
+        : "",
     });
     const dir = join(ROOT, "producto", slug);
     await mkdir(dir, { recursive: true });

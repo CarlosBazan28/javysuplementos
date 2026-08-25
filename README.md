@@ -97,6 +97,10 @@ contenido de los módulos: si el panel cambió, el token cambia y la caché baja
   Facebook no ejecutan JS, así que sin esto el preview salía genérico). Se hidratan con
   Supabase al cargar; si Supabase no responde, conservan el contenido estático.
 - `categoria/<slug>/index.html` — **generadas**. Landing por categoría con al menos 3 productos.
+  Usan la misma card y la misma grilla (`.catalog-grid`) que `supplements-page.html`: la card va
+  escrita en el HTML (para el scraper) y `js/categoria.js` le engancha la cotización al cargar.
+  Los chips de subcategoría son `<a>` a `supplements-page.html?fam=…&tipo=…`, o sea que filtrar
+  lleva al catálogo completo y no a otra página aparte.
 - `contacto.html` — página Sobre nosotros, acceso a WhatsApp y selector Google Maps/Waze.
 - `testimonios.html` — testimonios de clientes.
 - `login.html` — login de admin (Supabase Auth). Lleva `noindex`.
@@ -107,18 +111,25 @@ contenido de los módulos: si el panel cambió, el token cambia y la caché baja
 
 ---
 
-## Modo mantenimiento
+## Modo del sitio (mantenimiento)
 
-`js/mantenimiento.js` es el interruptor global del sitio público. Cuando está activo, cualquier
-página pública redirige a `/construccion.html` **antes** de pintar nada, así el visitante no ve
-el catálogo ni puede armar una cotización.
+`js/mantenimiento.js` es el interruptor global del sitio público. La constante `MODO` acepta
+dos valores:
 
-- **Encender / apagar:** en `js/mantenimiento.js`, la constante `ACTIVO` (`true` = sitio cerrado,
-  `false` = sitio normal). Es la única línea que hay que tocar.
-- **Ver el sitio real mientras está cerrado:** entrar una vez a
-  `https://javysuplementos.com/?ver=javy`. El permiso queda guardado en `sessionStorage` mientras
-  dure la pestaña.
-- **No se bloquean:** `construccion.html`, `login.html`, `admin.html` y `404.html`.
+| Modo | Qué ve el visitante |
+|---|---|
+| `abierto` | El sitio normal. |
+| `cerrado` | Toda página pública redirige a `/construccion.html` antes de pintar nada. |
+
+- **Cambiar de modo:** la constante `MODO` en `js/mantenimiento.js`. Es la única línea.
+- **El modo solo aplica en producción** (`javysuplementos.com`). En los previews de Vercel y en
+  `localhost` el sitio está siempre abierto, así se trabaja sin que estorbe. Por eso `main` y las
+  ramas de desarrollo pueden tener el mismo valor sin pisarse.
+- **Probar un modo en cualquier lado:** agregar `?modo=cerrado` o `?modo=abierto` a la URL. Queda
+  en `sessionStorage` mientras dure la pestaña (`?ver=javy` sigue funcionando como atajo de
+  `abierto`). Cualquier valor que no sea `cerrado` deja el sitio abierto, así una pestaña con un
+  modo viejo guardado no queda trabada.
+- **Nunca se bloquean:** `construccion.html`, `login.html`, `admin.html` y `404.html`.
 - El script se inyecta sin `defer` justo debajo del `<meta>` de CSP en todas las páginas públicas
   (raíz + `producto/**` + `categoria/**`). El template de `scripts/generate-pages.mjs` ya lo
   incluye, así que las páginas regeneradas lo conservan.
@@ -141,6 +152,7 @@ Los scripts cargan con `defer` y se comunican por objetos en `window`:
 - `window.PRODUCTS` — `js/product-data.js`. ~180 productos hardcodeados (fallback, ver abajo).
 
 Otros archivos de `js/`: `script.js` (home), `supplements.js` (catálogo + filtros),
+`categoria.js` (engancha la cotización a las cards ya escritas de `categoria/**`),
 `product-page.js` (detalle + meta tags dinámicos), `contacto.js` (WhatsApp + ubicación), `login.js`,
 `testimonials.js`, `testimonials-data.js`, `supabase-config.js`, `whatsapp-config.js`.
 

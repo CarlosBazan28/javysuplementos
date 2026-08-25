@@ -1,47 +1,70 @@
 /* ============================================================================
-   MODO MANTENIMIENTO — interruptor global del sitio público.
+   MODO DEL SITIO — interruptor global del sitio público.
 
-   Cuando ACTIVO es true, cualquier página pública redirige a /construccion.html
-   antes de pintar nada: el visitante no ve el catálogo ni puede armar una
-   cotización.
+   Dos modos:
 
-   ▸ Para APAGAR el aviso y reabrir el sitio: poné ACTIVO en false (una línea).
-   ▸ Para revisar el sitio real estando en mantenimiento: entrá una vez a
-     https://javysuplementos.com/?ver=javy  (queda habilitado toda la pestaña).
+     "abierto"   El sitio funciona normal.
+     "cerrado"   Toda página pública redirige a /construccion.html antes de
+                 pintar nada. Nadie ve el catálogo.
+
+   ▸ Para cambiar de modo: la constante MODO, acá abajo. Es la única línea.
+
+   IMPORTANTE — el modo SOLO aplica en producción (javysuplementos.com).
+   En los previews de Vercel (ramas de desarrollo) y en localhost el sitio
+   está siempre abierto, así se puede trabajar sin que estorbe. Por eso no
+   hace falta que la rama de desarrollo y main tengan valores distintos.
+
+   ▸ Para probar un modo donde sea (incluido producción), agregá a la URL:
+       ?modo=cerrado   ?modo=abierto
+     Queda guardado mientras dure la pestaña. `?ver=javy` sigue funcionando
+     como atajo de "abierto".
 
    Este archivo se carga SIN defer y lo más arriba posible del <head> para que
-   el bloqueo ocurra antes de que se cargue el resto de la página.
+   el bloqueo ocurra antes de que se pinte la página.
    ============================================================================ */
 (function () {
   "use strict";
 
   /* ↓↓↓ EL INTERRUPTOR ↓↓↓ */
-  var ACTIVO = true;
-  /* ↑↑↑ poné false para reabrir el sitio ↑↑↑ */
+  var MODO = "cerrado";
+  /* ↑↑↑ "abierto" | "cerrado" ↑↑↑ */
 
-  if (!ACTIVO) return;
-
-  var PAGINA = "/construccion.html";
-  var PARAM = "ver";
-  var TOKEN = "javy";
-  var CLAVE = "javy-ver-sitio";
+  var PRODUCCION = ["javysuplementos.com", "www.javysuplementos.com"];
+  var PAGINA_CERRADO = "/construccion.html";
+  var CLAVE = "javy-modo";
 
   // Páginas que nunca se bloquean (la propia página de aviso y el panel admin).
   var LIBRES = ["/construccion.html", "/login.html", "/admin.html", "/404.html"];
+
+  function overrideDeLaUrl() {
+    try {
+      var m = /[?&]modo=([a-z-]+)/.exec(window.location.search);
+      if (m) {
+        window.sessionStorage.setItem(CLAVE, m[1]);
+        return m[1];
+      }
+      if (window.location.search.indexOf("ver=javy") !== -1) {
+        window.sessionStorage.setItem(CLAVE, "abierto");
+        return "abierto";
+      }
+      return window.sessionStorage.getItem(CLAVE);
+    } catch (e) {
+      return null; // sessionStorage bloqueado: se usa el modo configurado.
+    }
+  }
+
+  var enProduccion = PRODUCCION.indexOf(window.location.hostname) !== -1;
+  var modo = overrideDeLaUrl() || (enProduccion ? MODO : "abierto");
+
+  // Cualquier valor que no sea "cerrado" (incluido "solo-lectura", que ya no
+  // existe pero puede seguir guardado en sessionStorage de una pestaña vieja)
+  // deja el sitio abierto.
+  if (modo !== "cerrado") return;
 
   var ruta = window.location.pathname;
   for (var i = 0; i < LIBRES.length; i++) {
     if (ruta === LIBRES[i]) return;
   }
 
-  try {
-    if (window.location.search.indexOf(PARAM + "=" + TOKEN) !== -1) {
-      window.sessionStorage.setItem(CLAVE, "1");
-    }
-    if (window.sessionStorage.getItem(CLAVE) === "1") return;
-  } catch (e) {
-    // sessionStorage bloqueado (modo privado, cookies off): se aplica el bloqueo.
-  }
-
-  window.location.replace(PAGINA);
+  window.location.replace(PAGINA_CERRADO);
 })();
