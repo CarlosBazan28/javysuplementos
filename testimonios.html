@@ -41,7 +41,8 @@
     <link rel="stylesheet" href="css/components/auth.css?v=session-state" />
     <link rel="stylesheet" href="css/components/cart.css?v=ux-fix-1" />
     <link rel="stylesheet" href="css/components/footer.css?v=admin-footer" />
-    <link rel="stylesheet" href="css/pages/testimonials.css?v=anim-1" />
+    <link rel="stylesheet" href="css/pages/testimonials.css?v=proximamente-1" />
+    <link rel="stylesheet" href="css/pages/construccion.css?v=mantenimiento-2" />
     <link rel="stylesheet" href="css/dropdown.css?v=anim-1" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -65,67 +66,29 @@
     <script src="js/cart.js?v=ux-fix-1" defer></script>
     <script src="js/include-nav.js?v=nav-anim-1" defer></script>
     <script src="js/reveal.js?v=reveal-1" defer></script>
-    <script src="js/testimonials-data.js" defer></script>
-    <script src="js/testimonials.js" defer></script>
   </head>
   <body>
     <div id="site-header"></div>
 
     <main class="testimonials-page">
-      <section class="testimonials-hero testimonials-hero--simple" aria-labelledby="testimonialsHeroTitle">
-        <div class="testimonials-hero__content">
-          <p class="testimonials-eyebrow">Experiencias de clientes</p>
-          <h1 id="testimonialsHeroTitle">Testimonios de clientes</h1>
-          <p class="testimonials-hero__text">
-            Experiencias de personas que han recibido asesor&iacute;a para elegir suplementos
-            seg&uacute;n su objetivo, rutina y etapa de entrenamiento.
-          </p>
-          <div class="testimonials-hero__actions">
-            <a class="testimonials-btn testimonials-btn--primary" href="supplements-page.html">Ver cat&aacute;logo</a>
-            <a
-              class="testimonials-btn testimonials-btn--ghost"
-              data-javy-whatsapp
-              data-whatsapp-message="Hola Javy, quiero asesoria para elegir suplementos segun mi objetivo."
-              target="_blank"
-              rel="noopener"
-            >
-              Pedir asesor&iacute;a por WhatsApp
-            </a>
+      <section class="testimonials-soon">
+        <div class="construccion-card">
+          <div class="construccion-logo">
+            <img src="/img/icons/logo.png" alt="Javy Supplements" width="112" height="112" />
           </div>
-        </div>
-      </section>
 
-      <section class="stories-section stories-section--main reveal" aria-labelledby="storiesTitle">
-        <div class="section-heading">
-          <p class="testimonials-eyebrow">Clientes Javy</p>
-          <h2 id="storiesTitle">Resultados, asesor&iacute;as y experiencias de compra</h2>
-          <p>
-            Cada card resume el objetivo del cliente, el tipo de experiencia y los suplementos
-            recomendados dentro de su proceso.
+          <p class="construccion-badge">
+            <span class="construccion-badge__dot" aria-hidden="true"></span>
+            Pr&oacute;ximamente
+          </p>
+
+          <h1>Testimonios en camino</h1>
+
+          <p class="construccion-lead">
+            Pronto estaremos subiendo testimonios de nuestros clientes.
+            &iexcl;Vuelve pronto!
           </p>
         </div>
-
-        <!-- Las cards se generan desde js/testimonials-data.js (ver ese archivo para agregar testimonios). -->
-        <div class="stories-grid"></div>
-      </section>
-
-      <section class="testimonials-cta reveal" aria-labelledby="testimonialsCtaTitle">
-        <div>
-          <p class="testimonials-eyebrow">Asesor&iacute;a personalizada</p>
-          <h2 id="testimonialsCtaTitle">Encuentra suplementos para tu objetivo</h2>
-          <p>
-            Escr&iacute;benos para recibir una recomendaci&oacute;n seg&uacute;n tu etapa, rutina y presupuesto.
-          </p>
-        </div>
-        <a
-          class="testimonials-btn testimonials-btn--primary"
-          data-javy-whatsapp
-          data-whatsapp-message="Hola Javy, quiero una recomendacion de suplementos segun mi objetivo."
-          target="_blank"
-          rel="noopener"
-        >
-          Cotizar por WhatsApp
-        </a>
       </section>
     </main>
 
