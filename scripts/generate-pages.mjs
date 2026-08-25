@@ -50,11 +50,14 @@ const LEGACY_CATEGORY_REDIRECTS = {
   // Subcategorías que llegaron a tener página propia.
   "whey": "Proteínas",
   "iso-aislada": "Proteínas",
-  "mass-gainer": "Ganadores de Peso",
+  "mass-gainer": "Proteínas",
   // Familias cuyo slug cambió al fusionar Energía dentro de Pre-entrenos
   // (fase8-taxonomia.sql): el slug sale del nombre, y el nombre cambió.
   "pre-entrenos": "Pre-entrenos y energía",
   "energia-y-rendimiento": "Pre-entrenos y energía",
+  // "Ganadores de Peso" deja de ser familia propia: pasa a ser la
+  // subcategoría "Ganadores de peso" dentro de Proteínas (2026-08-23).
+  "ganadores-de-peso": "Proteínas",
 };
 
 /* ------------------------------- utilidades ------------------------------ */
@@ -98,8 +101,6 @@ function entidadesDelSitio() {
       areaServed: "PA",
       sameAs: [
         "https://instagram.com/javy.suplementos",
-        "https://tiktok.com/@javysuplementos",
-        "https://facebook.com/javysuplementos",
       ],
     },
   ];
@@ -199,13 +200,13 @@ async function loadData() {
 // subdirectorios (/producto/<slug>/), donde las relativas de la raíz romperían.
 function renderHead({ title, description, canonical, image, ogType, jsonLd, extraCss }) {
   const css = [
-    "css/styles.css?v=fase2-ui",
-    "css/components/nav.css?v=cat-nav",
+    "css/styles.css?v=anim-1",
+    "css/components/nav.css?v=nav-fix-2",
     "css/components/auth.css?v=session-state",
-    "css/tokens.css?v=fase2-ui",
-    "css/components/cart.css?v=fase2-ui",
-    "css/components/cards.css?v=fase2-ui",
-    "css/dropdown.css?v=4",
+    "css/tokens.css?v=anim-1",
+    "css/components/cart.css?v=ux-fix-1",
+    "css/components/cards.css?v=anim-1",
+    "css/dropdown.css?v=anim-1",
     ...(extraCss || []),
   ];
 
@@ -260,15 +261,15 @@ const COMMON_SCRIPTS = [
   "/js/whatsapp-config.js?v=num-2026-08",
   "/js/product-data.js",
   "/js/product-urls.js?v=seo-urls",
-  "/js/db.js?v=no-img-fallback",
+  "/js/db.js?v=solo-activos",
   "/js/auth.js?v=session-state",
-  "/js/icons.js?v=cat-icons",
+  "/js/icons.js?v=cat-icons-eye",
   "/js/dropdown.js?v=4",
-  "/js/cart.js?v=fase2-ui",
+  "/js/cart.js?v=ux-fix-1",
 ];
 
 function renderScripts(extra = []) {
-  return [...COMMON_SCRIPTS, ...extra, "/js/include-nav.js?v=cat-nav"]
+  return [...COMMON_SCRIPTS, ...extra, "/js/include-nav.js?v=nav-anim-1"]
     .map((src) => `    <script src="${src}" defer></script>`)
     .join("\n");
 }
@@ -290,7 +291,7 @@ function renderProductPage(product, ctx) {
 
   const shortDescription = String(product.description_short || product.subtitulo || "").trim();
   const description = shortDescription
-    || `${name}${brand ? ` de ${brand}` : ""}${presentation ? ` (${presentation})` : ""}. Cotizá por WhatsApp con Javy Suplementos en Panamá.`;
+    || `${name}${brand ? ` de ${brand}` : ""}${presentation ? ` (${presentation})` : ""}. Cotiza por WhatsApp con Javy Suplementos en Panamá.`;
 
   const title = `${name}${brand && !name.toLowerCase().includes(brand.toLowerCase()) ? ` ${brand}` : ""} | Javy Suplementos`;
 
@@ -362,8 +363,8 @@ function renderProductPage(product, ctx) {
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
-${renderHead({ title, description, canonical: url, image, ogType: "product", jsonLd, extraCss: ["css/pages/product.css?v=cat-nav"] })}
-${renderScripts(["/js/product-page.js?v=cat-nav"])}
+${renderHead({ title, description, canonical: url, image, ogType: "product", jsonLd, extraCss: ["css/pages/product.css?v=eyebrow-chip"] })}
+${renderScripts(["/js/product-page.js?v=eyebrow-chip"])}
   </head>
   <body>
     <div id="site-header"></div>
@@ -384,9 +385,8 @@ ${renderScripts(["/js/product-page.js?v=cat-nav"])}
           <section class="pdp__info" aria-labelledby="prod-title">
             <div class="pdp__eyebrow">
               <p class="pdp__context">
-                <span id="prod-category-label">${escapeHTML(categoryName)}</span>
-                <span class="pdp__context-sep" aria-hidden="true"${presentation ? "" : " hidden"}>·</span>
-                <span id="prod-presentation"${presentation ? "" : " hidden"}>${escapeHTML(presentation)}</span>
+                <span class="pdp__context-cat" id="prod-category-label">${escapeHTML(categoryName)}</span>
+                <span class="pdp__pres" id="prod-presentation"${presentation ? "" : " hidden"}>${escapeHTML(presentation)}</span>
               </p>
               <span class="pdp__status${available ? "" : " is-agotado"}" data-status-pill>${available ? "Disponible" : "Agotado"}</span>
             </div>
@@ -511,7 +511,7 @@ function renderCategoryPage(category, products, slugMap, categorySlug, types = [
   const url = `${SITE}${categoryPath(categorySlug)}`;
   const name = category.name || "Categoría";
   const title = `${name} en Panamá | Javy Suplementos`;
-  const description = `${name}: ${products.length} producto${products.length === 1 ? "" : "s"} original${products.length === 1 ? "" : "es"} con precio. Armá tu cotización y enviala por WhatsApp con Javy Suplementos.`;
+  const description = `${name}: ${products.length} producto${products.length === 1 ? "" : "s"} original${products.length === 1 ? "" : "es"} con precio. Arma tu cotización y envíala por WhatsApp con Javy Suplementos.`;
   const image = absoluteUrl(products[0]?.image_url || products[0]?.imagen_url);
 
   const jsonLd = jsonForScript({
@@ -627,7 +627,7 @@ ${featured ? `          <span class="product-card__badge">Destacado</span>\n` : 
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
-${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-unif", "css/pages/supplements.css?v=cat-unif"] })}
+${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-unif", "css/pages/supplements.css?v=tap-44"] })}
 ${renderScripts(["/js/categoria.js?v=cat-unif"])}
   </head>
   <body>

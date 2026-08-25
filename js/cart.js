@@ -12,7 +12,15 @@ function readStorage(key) {
 }
 
 function saveConsultation(items) {
-  localStorage.setItem(CONSULTATION_KEY, JSON.stringify(items));
+  // En Safari privado o con la cuota llena setItem lanza. Sin protección el
+  // error se propagaba por addItem y reventaba el handler del modal antes de
+  // cerrarlo: el usuario se quedaba con el modal abierto y sin explicación.
+  try {
+    localStorage.setItem(CONSULTATION_KEY, JSON.stringify(items));
+  } catch (error) {
+    console.warn("No se pudo guardar la cotización:", error.message);
+    showToast("No pudimos guardar tu cotización en este navegador");
+  }
   // Punto único por donde pasan add/remove/updateQuantity/clear: avisamos a la UI
   // (cards, detalle) para que sincronicen el estado de sus botones.
   document.dispatchEvent(new CustomEvent("consultation:change", { detail: { items } }));
@@ -57,6 +65,53 @@ function showToast(message) {
   toastTimerId = window.setTimeout(() => {
     toast.classList.remove("is-visible");
   }, 2200);
+}
+
+// Abre WhatsApp y, si el navegador bloquea el popup, deja un enlace de respaldo
+// visible. Sin esto el usuario pulsa "Enviar" y no pasa absolutamente nada
+// (iOS Safari bloquea window.open con frecuencia): es el último paso del embudo.
+function sendToWhatsapp(message) {
+  const url = typeof buildJavyWhatsappUrl === "function"
+    ? buildJavyWhatsappUrl(message)
+    : `https://wa.me/${JAVY_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+
+  const win = typeof openJavyWhatsapp === "function"
+    ? openJavyWhatsapp(message)
+    : window.open(url, "_blank");
+
+  if (win && !win.closed) {
+    hideWhatsappFallback();
+    return true;
+  }
+
+  showWhatsappFallback(url);
+  return false;
+}
+
+function hideWhatsappFallback() {
+  document.getElementById("javyWaFallback")?.classList.remove("is-visible");
+}
+
+function showWhatsappFallback(url) {
+  let box = document.getElementById("javyWaFallback");
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "javyWaFallback";
+    box.className = "javy-toast javy-toast--action";
+    box.setAttribute("role", "alert");
+    box.innerHTML = `
+      <span>Tu navegador bloqueó la ventana de WhatsApp.</span>
+      <a class="javy-toast__link" target="_blank" rel="noopener">Abrir WhatsApp</a>
+      <button type="button" class="javy-toast__close" aria-label="Cerrar aviso">×</button>
+    `;
+    box.querySelector(".javy-toast__close").addEventListener("click", hideWhatsappFallback);
+    document.body.appendChild(box);
+  }
+
+  const link = box.querySelector(".javy-toast__link");
+  link.href = url;
+  box.classList.add("is-visible");
+  link.focus();
 }
 
 function getLegacyProductSnapshot(id) {
@@ -157,7 +212,11 @@ function escapeHTML(value = "") {
     .replace(/'/g, "&#039;");
 }
 
-function formatPrice(price) {
+// Nombre propio (no `formatPrice`) a propósito: script.js y supplements.js son
+// scripts clásicos que comparten el scope global y declaran su propia
+// formatPrice; como cargan DESPUÉS de cart.js, sobrescribían esta y el total
+// del mensaje de WhatsApp salía sin el símbolo de moneda.
+function formatMoney(price) {
   const value = Number(price || 0);
   return value > 0 ? `$${value.toFixed(2)}` : "Consultar";
 }
@@ -208,7 +267,7 @@ function renderConsultationPanel() {
   const totalValueEl = document.getElementById("consultationTotalValue");
   if (totalEl && totalValueEl) {
     const { total } = computeQuoteTotals(items);
-    totalValueEl.textContent = formatPrice(total);
+    totalValueEl.textContent = formatMoney(total);
     totalEl.hidden = items.length === 0 || total <= 0;
   }
 
@@ -218,8 +277,8 @@ function renderConsultationPanel() {
     const presentation = getDisplayPresentation(item).trim();
     const priceLine = unit > 0
       ? (qty > 1
-          ? `${formatPrice(unit)} c/u · <strong>${formatPrice(unit * qty)}</strong>`
-          : formatPrice(unit))
+          ? `${formatMoney(unit)} c/u · <strong>${formatMoney(unit * qty)}</strong>`
+          : formatMoney(unit))
       : "Consultar";
 
     const row = document.createElement("li");
@@ -475,7 +534,7 @@ function buildConsultationMessage() {
   if (lineTotals.length) {
     const sumExpr = lineTotals.map((value) => value.toFixed(2)).join(" + ");
     lines.push(`${sumExpr} = ${total.toFixed(2)}`, "");
-    lines.push(`Total a pagar: ${formatPrice(total)}`);
+    lines.push(`Total a pagar: ${formatMoney(total)}`);
   }
   if (hasUnpriced) lines.push("* Productos con precio por confirmar.");
 
@@ -495,14 +554,7 @@ function openWhatsApp() {
   }
 
   showQuoteHint("");
-  const message = buildConsultationMessage();
-  if (typeof openJavyWhatsapp === "function") {
-    openJavyWhatsapp(message);
-    return;
-  }
-
-  const encodedMessage = encodeURIComponent(message);
-  window.open(`https://wa.me/${JAVY_WHATSAPP_NUMBER}?text=${encodedMessage}`, "_blank");
+  sendToWhatsapp(buildConsultationMessage());
 }
 
 function quoteSingleProduct(product, options = {}) {
@@ -519,9 +571,7 @@ function quoteSingleProduct(product, options = {}) {
     "Quiero saber disponibilidad, precio final y opciones de entrega.",
   ].filter(Boolean).join("\n");
 
-  if (typeof openJavyWhatsapp === "function") {
-    openJavyWhatsapp(message);
-  }
+  sendToWhatsapp(message);
 }
 
 function askAvailability(product, options = {}) {
@@ -535,9 +585,7 @@ function askAvailability(product, options = {}) {
     "Me confirmas disponibilidad, precio final y opciones de entrega?",
   ].filter(Boolean).join("\n");
 
-  if (typeof openJavyWhatsapp === "function") {
-    openJavyWhatsapp(message);
-  }
+  sendToWhatsapp(message);
 }
 
 function lockConsultationScroll() {
@@ -648,7 +696,7 @@ function openAddModal(productOrId) {
         <img class="quick-add__img" src="${escapeHTML(image)}" alt="" />
         <div class="quick-add__headinfo">
           <strong class="quick-add__name">${escapeHTML(name)}</strong>
-          <span class="quick-add__meta">${brand ? escapeHTML(brand) + " · " : ""}${escapeHTML(formatPrice(price))}</span>
+          <span class="quick-add__meta">${brand ? escapeHTML(brand) + " · " : ""}${escapeHTML(formatMoney(price))}</span>
         </div>
       </div>
       ${flavorField}

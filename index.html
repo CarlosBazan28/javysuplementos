@@ -10,15 +10,18 @@
     <script src="/js/mantenimiento.js?v=modos"></script>
     <title>Javy Suplementos | Suplementos originales en Panamá</title>
 
+    <!-- Verificación de dominio para Meta Business Manager -->
+    <meta name="facebook-domain-verification" content="3ckw0xhepvtctiv9gjkzxd09-ve4i6x" />
+
     <!-- SEO -->
-    <meta name="description" content="Suplementos deportivos 100% originales en Panamá. Mirá los precios, armá tu cotización y enviala directo por WhatsApp. Proteínas, creatinas, quemadores y más.">
+    <meta name="description" content="Suplementos deportivos 100% originales en Panamá. Mira los precios, arma tu cotización y envíala directo por WhatsApp. Proteínas, creatinas, quemadores y más.">
     <link rel="canonical" href="https://javysuplementos.com/">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://javysuplementos.com/">
     <meta property="og:title" content="Javy Suplementos | Suplementos originales en Panamá">
-    <meta property="og:description" content="Suplementos deportivos 100% originales en Panamá. Mirá los precios, armá tu cotización y enviala directo por WhatsApp.">
+    <meta property="og:description" content="Suplementos deportivos 100% originales en Panamá. Mira los precios, arma tu cotización y envíala directo por WhatsApp.">
     <meta property="og:image" content="https://javysuplementos.com/img/icons/javy-web-app-icon-1024.png">
     <meta property="og:locale" content="es_PA">
     <meta property="og:site_name" content="Javy Suplementos">
@@ -26,7 +29,7 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Javy Suplementos | Suplementos originales en Panamá">
-    <meta name="twitter:description" content="Suplementos deportivos 100% originales en Panamá. Mirá los precios, armá tu cotización y enviala directo por WhatsApp.">
+    <meta name="twitter:description" content="Suplementos deportivos 100% originales en Panamá. Mira los precios, arma tu cotización y envíala directo por WhatsApp.">
     <meta name="twitter:image" content="https://javysuplementos.com/img/icons/javy-web-app-icon-1024.png">
 
     <link rel="icon" type="image/png" sizes="32x32" href="/img/icons/javy-favicon-32x32.png?v=2" />
@@ -57,36 +60,51 @@
           "logo": "https://javysuplementos.com/img/icons/javy-web-app-icon-1024.png",
           "telephone": "+50766494509",
           "priceRange": "$$",
+          "hasMap": "https://maps.app.goo.gl/atWvfprVvfs3AW6MA",
           "address": {
             "@type": "PostalAddress",
-            "addressLocality": "San Miguelito",
-            "addressRegion": "Panamá",
+            "streetAddress": "Edificio Frontenac, Calle 50",
+            "addressLocality": "Panamá",
+            "addressRegion": "Provincia de Panamá",
             "addressCountry": "PA"
           },
-          "areaServed": "PA",
-          "openingHoursSpecification": {
-            "@type": "OpeningHoursSpecification",
-            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-            "opens": "08:00",
-            "closes": "20:00"
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 8.9824186,
+            "longitude": -79.5198457
           },
+          "areaServed": "PA",
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+              "opens": "09:30",
+              "closes": "17:00"
+            },
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Saturday"],
+              "opens": "09:00",
+              "closes": "14:00"
+            }
+          ],
           "sameAs": [
-            "https://instagram.com/javy.suplementos",
-            "https://tiktok.com/@javysuplementos",
-            "https://facebook.com/javysuplementos"
+            "https://instagram.com/javy.suplementos"
           ]
         }
       ]
     }
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=fase2-ui">
-    <link rel="stylesheet" href="css/components/nav.css?v=cat-nav">
+    <link rel="stylesheet" href="css/styles.css?v=visits-1">
+    <link rel="stylesheet" href="css/components/nav.css?v=nav-fix-2">
     <link rel="stylesheet" href="css/components/auth.css?v=session-state">
-    <link rel="stylesheet" href="css/tokens.css?v=fase2-ui">
-    <link rel="stylesheet" href="css/components/cards.css?v=fase2-ui">
-    <link rel="stylesheet" href="css/components/cart.css?v=fase2-ui">
-    <link rel="stylesheet" href="css/pages/home.css?v=cat-nav">
-    <link rel="stylesheet" href="css/dropdown.css?v=4">
+    <link rel="stylesheet" href="css/tokens.css?v=anim-1">
+    <link rel="stylesheet" href="css/components/reveal.css?v=reveal-1">
+    <link rel="stylesheet" href="css/components/buttons.css?v=anim-1">
+    <link rel="stylesheet" href="css/components/cards.css?v=anim-1">
+    <link rel="stylesheet" href="css/components/cart.css?v=ux-fix-1">
+    <link rel="stylesheet" href="css/pages/home.css?v=anim-1">
+    <link rel="stylesheet" href="css/dropdown.css?v=anim-1">
 
     <!-- Google Fonts -->
 
@@ -101,13 +119,15 @@
     <script src="js/whatsapp-config.js?v=num-2026-08" defer></script>
     <script src="js/product-data.js" defer></script>
     <script src="js/product-urls.js?v=seo-urls" defer></script>
-    <script src="js/db.js?v=no-img-fallback" defer></script>
+    <script src="js/db.js?v=solo-activos" defer></script>
     <script src="js/auth.js?v=session-state" defer></script>
-    <script src="js/icons.js?v=cat-icons" defer></script>
+    <script src="js/icons.js?v=cat-icons-eye" defer></script>
     <script src="js/dropdown.js?v=4" defer></script>
-    <script src="js/cart.js?v=fase2-ui" defer></script>
-    <script src="js/script.js?v=cat-nav" defer></script>
-    <script src="js/include-nav.js?v=cat-nav" defer></script>
+    <script src="js/cart.js?v=ux-fix-1" defer></script>
+    <script src="js/script.js?v=ux-fix-1" defer></script>
+    <script src="js/include-nav.js?v=nav-anim-1" defer></script>
+    <script src="js/reveal.js?v=reveal-1" defer></script>
+    <script src="js/hero-visits.js?v=1" defer></script>
   </head>
   <body>
     <div id="site-header"></div>
@@ -117,7 +137,18 @@
           <h1>Tu Salud y Bienestar es nuestra prioridad</h1>
           <p class="hero__copy">Suplementos originales, asesoria directa y cotizaciones por WhatsApp para elegir mejor.</p>
           <div class="hero__button">
-            <button class="hero__button--pri">Ver productos</button> <button class="hero__button--sec">Abrir cotización</button>
+            <button class="btn btn--primary btn--lg hero__button--pri">Ver productos</button>
+            <button class="btn btn--secondary btn--lg hero__button--sec">Abrir cotización</button>
+          </div>
+          <!-- Oculto hasta tener el número real (js/hero-visits.js): mejor sin
+               badge que con un placeholder inventado mientras carga. Con
+               fundido propio (no .reveal): el hero está en pantalla desde el
+               inicio, así que reveal.js lo marcaría "ya visible" antes de
+               tener el número, y al desocultarlo aparecería de golpe. -->
+          <div class="hero__visits" id="heroVisits" hidden>
+            <span class="hero__visits-icon" data-javy-icon="eye" aria-hidden="true"></span>
+            <span class="hero__visits-count"></span>
+            <span class="hero__visits-label"></span>
           </div>
         </div>
         <img
@@ -133,23 +164,23 @@
            explorar por categoría es la necesidad de navegación primaria.
            Lo rellena js/script.js con los datos y conteos reales. -->
       <section class="home-cats" id="categorias" aria-labelledby="home-cats-title">
-        <div class="title">
+        <div class="title reveal">
           <h2 id="home-cats-title">Compra por categoría</h2>
-          <p>Encontrá lo que buscás sin recorrer todo el catálogo.</p>
+          <p>Encuentra lo que buscas sin recorrer todo el catálogo.</p>
         </div>
-        <div class="home-cats__grid" id="home-cats__grid"></div>
+        <div class="home-cats__grid reveal reveal--stagger" id="home-cats__grid"></div>
       </section>
 
       <section class="home-goals" id="objetivos" aria-labelledby="home-goals-title" hidden>
-        <div class="title">
+        <div class="title reveal">
           <h2 id="home-goals-title">¿Cuál es tu objetivo?</h2>
-          <p>Te mostramos lo que sirve para lo que querés lograr.</p>
+          <p>Te mostramos lo que sirve para lo que quieres lograr.</p>
         </div>
-        <div class="home-goals__row" id="home-goals__row"></div>
+        <div class="home-goals__row reveal reveal--stagger" id="home-goals__row"></div>
       </section>
 
       <section class="top-products" id="productos">
-        <div class="title">
+        <div class="title reveal">
           <h2>Los Suplementos mas comprados</h2>
           <p>
             Estos son los suplementos que más resultados han generado entre
@@ -158,19 +189,19 @@
           </p>
         </div>
 
-        <div class="top-products__list" id="top-products__list"></div>
+        <div class="top-products__list reveal reveal--stagger" id="top-products__list"></div>
       </section>
 
       <section class="top-products home-combos" id="combos" hidden>
-        <div class="title">
+        <div class="title reveal">
           <h2>Combos</h2>
           <p>Paquetes armados para que rindas más y ahorres: lleva el combo completo a un precio especial.</p>
         </div>
-        <div class="top-products__list" id="home-combos__list"></div>
+        <div class="top-products__list reveal reveal--stagger" id="home-combos__list"></div>
       </section>
 
       <section class="instagram-videos" id="educacion">
-       <div class="title instagram-videos__header">
+       <div class="title instagram-videos__header reveal">
           <h2>Aprende sobre tus suplementos</h2>
           <p>
             Cómo funcionan proteínas, creatinas, quemadores y más.
@@ -178,41 +209,41 @@
           </p>
           <a class="instagram-videos__cta" href="https://www.instagram.com/javy.suplementos" target="_blank" rel="noopener">Ver mas reels</a>
         </div>
-      <div class="instagram-videos__grid" aria-label="Reels educativos de suplementos">
+      <div class="instagram-videos__grid reveal reveal--stagger" aria-label="Reels educativos de suplementos">
         <article class="reel-card">
           <div class="reel-card__frame">
             <blockquote
               class="instagram-media"
-              data-instgrm-permalink="https://www.instagram.com/reel/DPMRYfkiWX5/"
+              data-instgrm-permalink="https://www.instagram.com/reel/Db0_BOrBkPt/"
               data-instgrm-version="14"
-            ><a href="https://www.instagram.com/reel/DPMRYfkiWX5/" target="_blank" rel="noopener">Ver reel educativo</a></blockquote>
+            ><a href="https://www.instagram.com/reel/Db0_BOrBkPt/" target="_blank" rel="noopener">Ver reel educativo</a></blockquote>
           </div>
         </article>
         <article class="reel-card">
           <div class="reel-card__frame">
             <blockquote
               class="instagram-media"
-              data-instgrm-permalink="https://www.instagram.com/reel/DOC2RkSjOh1/"
+              data-instgrm-permalink="https://www.instagram.com/reel/Db1xz6zJFb3/"
               data-instgrm-version="14"
-            ><a href="https://www.instagram.com/reel/DOC2RkSjOh1/" target="_blank" rel="noopener">Ver reel educativo</a></blockquote>
+            ><a href="https://www.instagram.com/reel/Db1xz6zJFb3/" target="_blank" rel="noopener">Ver reel educativo</a></blockquote>
           </div>
         </article>
         <article class="reel-card">
           <div class="reel-card__frame">
             <blockquote
               class="instagram-media"
-              data-instgrm-permalink="https://www.instagram.com/reel/DOC1h45DB-h/"
-              data-instgrm-version="13"
-            ><a href="https://www.instagram.com/reel/DOC1h45DB-h/" target="_blank" rel="noopener">Ver reel educativo</a></blockquote>
+              data-instgrm-permalink="https://www.instagram.com/reel/Db_mD34Mcj7/"
+              data-instgrm-version="14"
+            ><a href="https://www.instagram.com/reel/Db_mD34Mcj7/" target="_blank" rel="noopener">Ver reel educativo</a></blockquote>
           </div>
         </article>
         <article class="reel-card">
           <div class="reel-card__frame">
             <blockquote
               class="instagram-media"
-              data-instgrm-permalink="https://www.instagram.com/reel/DOC1DRljGbi/"
+              data-instgrm-permalink="https://www.instagram.com/reel/Db_rjU4PY7t/"
               data-instgrm-version="14"
-            ><a href="https://www.instagram.com/reel/DOC1DRljGbi/" target="_blank" rel="noopener">Ver reel educativo</a></blockquote>
+            ><a href="https://www.instagram.com/reel/Db_rjU4PY7t/" target="_blank" rel="noopener">Ver reel educativo</a></blockquote>
           </div>
         </article>
       </div>
@@ -237,8 +268,9 @@
         <h3 class="footer__title">Navegación</h3>
         <ul class="footer__list">
           <li><a href="index.html">Inicio</a></li>
-          <li><a href="#productos">Productos</a></li>
-          <li><a href="#destacados">Productos destacados</a></li>
+          <li><a href="supplements-page.html">Productos</a></li>
+          <li><a href="#productos">Productos destacados</a></li>
+          <li><a href="#combos">Combos</a></li>
           <li><a href="#educacion">Reels educativos</a></li>
           <li><a href="contacto.html">Sobre nosotros</a></li>
         </ul>
@@ -246,10 +278,9 @@
       <div class="footer__block">
         <h3 class="footer__title">Contacto</h3>
         <ul class="footer__list footer__list--contact">
-          <li>📍 San Miguelito, Panama</li>
+          <li>📍 Edificio Frontenac, Calle 50, Panamá</li>
           <li>📞 <a data-javy-whatsapp data-javy-phone aria-label="WhatsApp de Javy" target="_blank" rel="noopener"></a></li>
-          <li>📧 <a href="mailto:correodejavito@pboom.com">correodejavito@pboom.com</a></li>
-          <li>🕐 Lunes a Sábado: 8:00 am – 8:00 pm</li>
+          <li>🕐 Lunes a viernes: 9:30 am – 5:00 pm · Sábado: 9:00 am – 2:00 pm</li>
         </ul>
         <a class="footer__cta" data-javy-whatsapp data-whatsapp-message="Hola Javy, necesito asesoría sobre suplementos" target="_blank" rel="noopener">
           Hablar con un asesor
@@ -260,14 +291,13 @@
         <p class="footer__text">Seguinos para más tips, guías y resultados reales.</p>
         <div class="footer__social">
           <a href="https://instagram.com/javy.suplementos" target="_blank" rel="noopener">Instagram</a>
-          <a href="https://tiktok.com/@javysuplementos" target="_blank" rel="noopener">TikTok</a>
-          <a href="https://facebook.com/javysuplementos" target="_blank" rel="noopener">Facebook</a>
         </div>
       </div>
     </div>
     <div class="footer__bottom">
       <p>© 2026 Javy Suplementos — Todos los derechos reservados.</p>
       <p class="footer__dev">Sitio desarrollado por Bazan Dev.</p>
+      <p class="footer__admin"><a href="/login.html" target="_blank" rel="noopener">Iniciar sesión</a></p>
     </div>
   </div>
 </footer>

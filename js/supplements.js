@@ -291,9 +291,11 @@ function sortProducts(list) {
   }
 }
 
+// Devuelve el símbolo incluido: si se deja fuera, en la plantilla, un producto
+// sin precio renderiza el literal "$Consultar".
 function formatPrice(price) {
   const value = Number(price || 0);
-  return value > 0 ? value.toFixed(2) : "Consultar";
+  return value > 0 ? `$${value.toFixed(2)}` : "Consultar";
 }
 
 function hasOffer(product) {
@@ -815,8 +817,8 @@ function renderProductCard(product) {
       </h3>
       <div class="product-card__price-row">
         <span class="product-card__price-group">
-          <span class="product-card__price">$${formatPrice(product.price)}</span>
-          ${hasOffer(product) ? `<span class="product-card__price-old">$${formatPrice(product.old_price)}</span><span class="product-card__discount">-${discountPercent(product)}%</span>` : ""}
+          <span class="product-card__price">${formatPrice(product.price)}</span>
+          ${hasOffer(product) ? `<span class="product-card__price-old">${formatPrice(product.old_price)}</span><span class="product-card__discount">-${discountPercent(product)}%</span>` : ""}
         </span>
         ${product.presentation ? `<span class="product-card__pres">${escapeHTML(product.presentation)}</span>` : ""}
       </div>

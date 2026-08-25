@@ -45,15 +45,27 @@ async function initCategoriesSubmenu(host) {
     ? `/categoria/${encodeURIComponent(slugOf(f))}/`
     : `/supplements-page.html?cat=${encodeURIComponent(slugOf(f))}`);
 
-  list.innerHTML = families
-    .map((f) => `<li><a href="${hrefFor(f)}">${escapeAttr(f.name)}</a></li>`)
-    .join("")
-    + `<li><a class="nav__sub-all" href="/supplements-page.html">Ver todo el catálogo</a></li>`;
+  list.innerHTML = `<li><a class="nav__sub-all" href="/supplements-page.html">Ver catálogo completo</a></li>`
+    + families
+      .map((f) => `<li><a href="${hrefFor(f)}">${escapeAttr(f.name)}</a></li>`)
+      .join("");
 
   const setOpen = (open) => {
     item.classList.toggle("is-open", open);
     trigger.setAttribute("aria-expanded", String(open));
-    list.hidden = !open;
+    if (open) {
+      list.hidden = false;
+      // Doble rAF: si la clase se agrega en el mismo tick que se quita
+      // [hidden], el navegador puede colapsar el estado inicial (opacity:0
+      // en css/components/nav.css) y la transición no se ve -arranca ya en
+      // opacity:1-. Mismo patrón que el badge de visitas del hero.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => list.classList.add("nav__sub--in"));
+      });
+    } else {
+      list.classList.remove("nav__sub--in");
+      list.hidden = true;
+    }
   };
 
   // Con categorías disponibles, "SUPLEMENTOS" abre el submenú en vez de
@@ -79,12 +91,46 @@ async function initCategoriesSubmenu(host) {
   });
 }
 
+// Cuenta 1 visita por navegador por día, no por carga de página: un refresh
+// no debe inflar el número. El dedupe real vive en Supabase
+// (unique(visitor_id, day) + on conflict do nothing en record_visit()); acá
+// solo se genera/persiste el visitor_id y se dispara el RPC, sin bloquear
+// nada visual — si falla (offline, RPC caída) se reintenta en la próxima carga.
+function recordVisit() {
+  if (!window.supabaseClient) return;
+  const KEY = "javy_visitor_id";
+  let visitorId = localStorage.getItem(KEY);
+  if (!visitorId) {
+    visitorId = crypto.randomUUID();
+    localStorage.setItem(KEY, visitorId);
+  }
+  window.supabaseClient.rpc("record_visit", { p_visitor_id: visitorId }).then(({ error }) => {
+    if (error) console.warn("No se pudo registrar la visita:", error.message);
+  });
+}
+recordVisit();
+
 (async function () {
   const host = document.getElementById("site-header");
   if (!host) return;
 
-  document.body.classList.add("page-transition");
-  const html = await fetch("/Editables/nav.html", { cache: "no-store" }).then((response) => response.text());
+  document.body.classList.add("page-transition"); // opacity: 0
+
+  // El fetch DEBE ir protegido: el body ya está en opacity 0 y la clase que lo
+  // vuelve visible (page-transition-in) se añade al final de esta IIFE. Si el
+  // fetch rechaza (offline, 404, despliegue parcial, CSP) la función aborta y
+  // la página entera queda invisible, sin nav y sin cotización.
+  let html = "";
+  try {
+    const response = await fetch("/Editables/nav.html");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    html = await response.text();
+  } catch (error) {
+    console.warn("No se pudo cargar el nav:", error.message);
+    document.body.classList.add("page-transition-in"); // la página sigue usable sin nav
+    return;
+  }
+
   host.innerHTML = html;
   window.javyIcons?.enhance?.(host);
   document.dispatchEvent(new CustomEvent("javy:nav-ready"));

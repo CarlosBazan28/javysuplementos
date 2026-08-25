@@ -180,7 +180,7 @@
 
 .stories-section,
 .testimonials-cta {
-  margin-top: clamp(52px, 7vw, 86px);
+  margin-top: var(--section-gap);
 }
 
 .section-heading {

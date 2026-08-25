@@ -2,9 +2,11 @@ const lista = document.getElementById("top-products__list");
 const heroProductsBtn = document.querySelector(".hero__button--pri");
 const heroAdvisorBtn = document.querySelector(".hero__button--sec");
 
+// Devuelve el símbolo incluido: si se deja fuera, en la plantilla, un producto
+// sin precio renderiza el literal "$Consultar".
 function formatPrice(price) {
   const value = Number(price || 0);
-  return value > 0 ? value.toFixed(2) : "Consultar";
+  return value > 0 ? `$${value.toFixed(2)}` : "Consultar";
 }
 
 function hasOffer(product) {
@@ -211,8 +213,8 @@ function renderFeaturedProducts(productos) {
         <h3 class="product-card__name"><a class="product-card__name-link" href="${detailUrl}">${escapeHTML(product.name)}</a></h3>
         <div class="product-card__price-row">
           <span class="product-card__price-group">
-            <span class="product-card__price">$${formatPrice(product.price)}</span>
-            ${hasOffer(product) ? `<span class="product-card__price-old">$${formatPrice(product.old_price)}</span><span class="product-card__discount">-${discountPercent(product)}%</span>` : ""}
+            <span class="product-card__price">${formatPrice(product.price)}</span>
+            ${hasOffer(product) ? `<span class="product-card__price-old">${formatPrice(product.old_price)}</span><span class="product-card__discount">-${discountPercent(product)}%</span>` : ""}
           </span>
           ${product.presentation ? `<span class="product-card__pres">${escapeHTML(product.presentation)}</span>` : ""}
         </div>
@@ -244,7 +246,10 @@ function renderFeaturedProducts(productos) {
 
 if (heroProductsBtn) {
   heroProductsBtn.addEventListener("click", () => {
-    document.getElementById("productos")?.scrollIntoView({ behavior: "smooth" });
+    // El CSS ya respeta prefers-reduced-motion (styles.css), pero el behavior
+    // en JS lo pisa: hay que consultarlo aquí también.
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.getElementById("productos")?.scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
   });
 }
 
@@ -316,8 +321,8 @@ function renderHomeCombos(combos) {
         <ul class="combo-card__items">${itemsHtml}</ul>
         <div class="product-card__price-row">
           <span class="product-card__price-group">
-            <span class="product-card__price">$${formatPrice(combo.price)}</span>
-            ${hasOffer(combo) ? `<span class="product-card__price-old">$${formatPrice(combo.old_price)}</span><span class="product-card__discount">-${discountPercent(combo)}%</span>` : ""}
+            <span class="product-card__price">${formatPrice(combo.price)}</span>
+            ${hasOffer(combo) ? `<span class="product-card__price-old">${formatPrice(combo.old_price)}</span><span class="product-card__discount">-${discountPercent(combo)}%</span>` : ""}
           </span>
         </div>
       </div>

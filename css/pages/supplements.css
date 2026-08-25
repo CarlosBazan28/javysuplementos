@@ -84,8 +84,8 @@
   margin:0;
   align-items:center;
   gap: 10px;
-  min-height: 48px;
-  padding: 6px 8px 6px 14px;
+  min-height: 52px;
+  padding: 4px 8px 4px 16px;
   border-radius: var(--radius-xl);
   background: var(--surface-input);
   border:1px solid rgba(255, 255, 255, .10);
@@ -130,19 +130,33 @@
   box-shadow:0 0 0 4px rgba(90, 180, 233, .18);
 }
 
+/* Ghost: no compite con el círculo de marca de al lado. Solo aparece cuando
+   hay texto (lo alterna supplements.js con [hidden]; el X nativo de
+   type="search" ya queda suprimido arriba, así que no hay dos X a la vez). */
 .search__clear{
   border:0;
-  background:var(--surface-input);
-  color:#fff;
+  background:transparent;
+  color:rgba(255, 255, 255, .55);
+  /* 44px de AREA tactil con el icono chico adentro: el circulo de hover se ve
+     discreto, pero el dedo tiene donde caer. */
   width: 44px;
   height: 44px;
-  border-radius: var(--radius-md);
+  border-radius: 50%;
   cursor:pointer;
-  font-size:18px;
   line-height:0;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
+}
+
+.search__clear .btn-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.search__clear:hover{
+  background: rgba(255, 255, 255, .06);
+  color: #fff;
 }
 
 /* display:grid/flex le ganarían al [hidden] del UA stylesheet */
@@ -151,16 +165,26 @@
   display: none;
 }
 
+/* Círculo de marca con lupa en vez del rectángulo con texto: mismo peso
+   visual que .search__clear, pero en --brand para que quede claro cuál es
+   la acción primaria. */
 .search__submit{
   border:0;
-  min-height: 44px;
+  width: 44px;
+  height: 44px;
   background: var(--brand);
   color:var(--on-brand);
-  padding: 0 16px;
-  border-radius: var(--radius-md);
+  border-radius: 50%;
   cursor:pointer;
-  font-weight: 500;
   flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+}
+
+.search__submit .btn-icon svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 2.25;
 }
 
 .search__submit:hover{
@@ -273,6 +297,16 @@
 /* Sub-filtros (Tipos) y facetas */
 .catalog-filters--types {
   margin-top: -2px;
+}
+
+/* En /categoria/<slug>/ el nav de tipos cuelga directo de .catalog-page, que es
+   un bloque sin gap: los chips quedaban pegados a la grilla, separados solo por
+   los 4px de padding del scroll. En el catálogo esto no pasa porque ahí los
+   sub-filtros van dentro de .catalog-tools, que ya trae margin-bottom: 24px. Se
+   repite ese mismo valor para que las dos páginas respiren igual.
+   El selector es de hijo directo a propósito: así no toca el caso del catálogo. */
+.catalog-page > .catalog-filters--types {
+  margin-bottom: 24px;
 }
 
 .catalog-filter--type {
@@ -1042,17 +1076,6 @@
     padding-top: 8px;
   }
 
-  .search {
-    border-radius: var(--radius-xl);
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-  }
-
-  .search__submit {
-    grid-column: 1 / -1;
-    width: 100%;
-  }
-
   .catalog-grid {
     grid-template-columns: repeat(auto-fit, minmax(min(136px, 100%), 180px));
     gap: 8px;
@@ -1200,8 +1223,8 @@
 .filter-sheet__close {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.04);
@@ -1249,7 +1272,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 13px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-pill);

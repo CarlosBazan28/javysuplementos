@@ -80,6 +80,15 @@
   --sp-7: 48px;
   --sp-8: 64px;
 
+  /* Separación entre SECCIONES principales de una página (hero -> categorías,
+     productos -> combos, etc.). Va aparte de la escala --sp-* porque no es
+     espaciado interno de un componente: es el aire que separa bloques enteros.
+     Antes cada sección resolvía esto por su cuenta (32px acá, 40px allá, 80px
+     antes del footer, y entre algunas ni margen: la separación salía de rebote
+     del padding interno del componente siguiente). Un solo token deja el ritmo
+     parejo y permite ajustarlo en un lugar. */
+  --section-gap: clamp(56px, 8vw, 96px);
+
   /* ---- Alias históricos (no usar en código nuevo) ---- */
   --bg: var(--bg-0);        /* body: antes #000 (negro puro) */
   --txt: var(--text);       /* unificado con --text */

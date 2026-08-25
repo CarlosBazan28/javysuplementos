@@ -188,7 +188,7 @@
 .about-process,
 .about-location,
 .about-final-cta {
-  margin-top: clamp(48px, 9vw, 96px);
+  margin-top: var(--section-gap);
 }
 
 .about-story {

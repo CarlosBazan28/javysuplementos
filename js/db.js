@@ -554,10 +554,13 @@ async function getProductsWithFlavors(options = {}) {
       // Las columnas de auditoría (email del editor) sólo se piden en el admin
       // (options.audit), nunca en el catálogo público, para no exponer correos.
       const productSelect = (options.audit && await auditEnabled()) ? PRODUCT_SELECT_AUDIT : PRODUCT_SELECT;
-      const { data, error } = await supabaseClient
-        .from("products")
-        .select(productSelect)
-        .order("created_at", { ascending: false });
+      // El catálogo público solo ve productos activos. Sin este filtro los
+      // borradores se cuelan: `available` se resuelve por
+      // `is_available ?? available ?? is_active`, y como los importados traen
+      // is_available=true, nunca se llega a mirar is_active.
+      let productQuery = supabaseClient.from("products").select(productSelect);
+      if (!options.includeInactive) productQuery = productQuery.eq("is_active", true);
+      const { data, error } = await productQuery.order("created_at", { ascending: false });
 
       if (error) throw error;
 

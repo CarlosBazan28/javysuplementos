@@ -34,7 +34,9 @@
       "Bash(command -v py)",
       "Bash(git config *)",
       "Bash(which python *)",
-      "Bash(py --version)"
+      "Bash(py --version)",
+      "Bash(git ls-tree *)",
+      "Bash(git rm *)"
     ]
   }
 }
