@@ -350,7 +350,8 @@ body.ad-body { min-height: 100vh; }
 
 /* product cards (mobile) */
 .ad-prod-cards { display: none; gap: 12px; }
-.ad-prod-card { border: 1px solid var(--pb-line); border-radius: var(--ad-radius); background: linear-gradient(145deg, rgba(17,25,37,0.88), rgba(9,14,20,0.88)); padding: 12px; display: grid; grid-template-columns: 64px minmax(0,1fr); gap: 12px; }
+.ad-prod-card { border: 1px solid var(--pb-line); border-radius: var(--ad-radius); background: linear-gradient(145deg, rgba(17,25,37,0.88), rgba(9,14,20,0.88)); padding: 12px; display: grid; grid-template-columns: auto 64px minmax(0,1fr); align-items: start; gap: 12px; }
+.ad-prod-card .ad-check { align-self: start; }
 .ad-prod-card img { width: 64px; height: 64px; border-radius: 12px; object-fit: contain; background: var(--pb-white-06); }
 .ad-prod-card h3 { font-size: 1rem; margin-bottom: 3px; }
 .ad-prod-card .ad-meta { color: var(--pb-muted); font-size: 0.8rem; margin: 0 0 9px; }
