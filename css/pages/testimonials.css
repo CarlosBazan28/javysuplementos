@@ -12,6 +12,17 @@
   color: inherit;
 }
 
+/* ---- Aviso "próximamente" mientras no hay testimonios cargados ----------- */
+.testimonials-soon {
+  display: grid;
+  place-items: center;
+  padding: clamp(56px, 12vw, 120px) 16px;
+}
+
+.testimonials-soon .construccion-card {
+  width: min(480px, 100%);
+}
+
 .testimonials-hero,
 .stories-section,
 .testimonials-cta {
