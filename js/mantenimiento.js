@@ -26,7 +26,7 @@
   "use strict";
 
   /* ↓↓↓ EL INTERRUPTOR ↓↓↓ */
-  var MODO = "cerrado";
+  var MODO = "abierto";
   /* ↑↑↑ "abierto" | "cerrado" ↑↑↑ */
 
   var PRODUCCION = ["javysuplementos.com", "www.javysuplementos.com"];
