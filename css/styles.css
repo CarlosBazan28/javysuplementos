@@ -512,6 +512,16 @@ body {
     linear-gradient(135deg, var(--bg-0) 0%, var(--surface-3) 46%, var(--bg-0) 100%);
 }
 
+/* En claro el glow azul a 0.64 se leía como un lavado celeste sobre todo el
+   hero (el fondo ya es claro de por sí, así que no hace falta tanta fuerza
+   para que se note). Se baja bastante la intensidad, no se saca del todo. */
+:root[data-theme="light"] .hero {
+  background:
+    radial-gradient(720px 420px at 24% 44%, rgba(1, 145, 198, 0.10), transparent 68%),
+    radial-gradient(520px 380px at 82% 68%, rgba(255, 46, 99, 0.10), transparent 70%),
+    linear-gradient(135deg, var(--bg-0) 0%, var(--surface-3) 46%, var(--bg-0) 100%);
+}
+
 .hero__slogan {
   /* display:flex + column son de la definicion vieja de arriba, que se borro
      por duplicada: sin ellos, align-items y justify-self quedan inertes y en
