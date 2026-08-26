@@ -17,7 +17,7 @@
 }
 
 .catalog-hero__title {
-  color: var(--blanco);
+  color: var(--text);
   font-size: clamp(1.8rem, 5vw, 3rem);
   font-weight: 900;
   line-height: 1.05;
@@ -88,14 +88,14 @@
   padding: 4px 8px 4px 16px;
   border-radius: var(--radius-xl);
   background: var(--surface-input);
-  border:1px solid rgba(255, 255, 255, .10);
+  border:1px solid color-mix(in srgb, var(--text) 10%, transparent);
   width:100%;
 }
 
 .search__icon{
   display:grid;
   place-items:center;
-  color:rgba(255, 255, 255, .65);
+  color:color-mix(in srgb, var(--text) 65%, transparent);
   flex: 0 0 auto;
   width: 20px;
   height: 20px;
@@ -107,13 +107,13 @@
   border:0;
   outline:none;
   background:transparent;
-  color:#fff;
+  color:var(--text);
   font-size:16px;
   padding: 5px;
 }
 
 .search__input::placeholder{
-  color:rgba(255, 255, 255, .45);
+  color:color-mix(in srgb, var(--text) 45%, transparent);
 }
 
 .search__input[type="search"]::-webkit-search-cancel-button,
@@ -136,7 +136,7 @@
 .search__clear{
   border:0;
   background:transparent;
-  color:rgba(255, 255, 255, .55);
+  color:color-mix(in srgb, var(--text) 55%, transparent);
   /* 44px de AREA tactil con el icono chico adentro: el circulo de hover se ve
      discreto, pero el dedo tiene donde caer. */
   width: 44px;
@@ -155,8 +155,8 @@
 }
 
 .search__clear:hover{
-  background: rgba(255, 255, 255, .06);
-  color: #fff;
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: var(--text);
 }
 
 /* display:grid/flex le ganarían al [hidden] del UA stylesheet */
@@ -251,9 +251,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.04);
-  color: var(--blanco);
+  border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  color: var(--text);
   border-radius: var(--radius-md);
   min-height: 44px;
   padding: 0 14px;
@@ -396,13 +396,13 @@
 }
 
 .filter-cat:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
 .filter-cat.is-active {
   background: rgba(1, 145, 198, 0.16);
   border-color: rgba(1, 145, 198, 0.5);
-  color: #fff;
+  color: var(--brand-tint-text);
 }
 
 .filter-cat--type {
@@ -413,7 +413,7 @@
 }
 
 .filter-cat--type.is-active {
-  color: #fff;
+  color: var(--brand-tint-text);
 }
 
 .filter-cat__label {
@@ -449,7 +449,7 @@
 }
 
 .filter-check:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
 }
 
 .filter-check__input {
@@ -468,7 +468,7 @@
   place-items: center;
   border: 1.5px solid var(--line-strong);
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.03);
+  background: color-mix(in srgb, var(--text) 3%, transparent);
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
@@ -531,7 +531,7 @@
   height: 22px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.14);
+  background: color-mix(in srgb, var(--text) 14%, transparent);
   transition: background 0.18s ease, border-color 0.18s ease;
 }
 
@@ -594,7 +594,7 @@
   padding: 0 13px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
   color: var(--text);
   font: inherit;
   font-size: 0.85rem;
@@ -724,10 +724,10 @@
 
 .catalog-sort__select {
   min-height: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
   border-radius: var(--radius-md);
   background: var(--surface-input);
-  color: #fff;
+  color: var(--text);
   font: inherit;
   font-size: 0.85rem;
   padding: 0 30px 0 12px;
@@ -748,11 +748,11 @@
 }
 
 .catalog-empty {
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
   background: linear-gradient(135deg, var(--surface-2), var(--surface-1));
   border-radius: var(--radius-lg);
   padding: 24px;
-  color: var(--blanco);
+  color: var(--text);
 }
 
 .catalog-empty h2 {
@@ -790,7 +790,7 @@
 .catalog-empty__btn--ghost {
   background: transparent;
   border: 1px solid rgba(90, 180, 233, 0.45);
-  color: var(--blanco);
+  color: var(--text);
 }
 
 .catalog-empty__btn--ghost:hover {
@@ -832,7 +832,7 @@
   border: 1px solid rgba(90, 180, 233, 0.4);
   border-radius: var(--radius-pill);
   background: rgba(90, 180, 233, 0.12);
-  color: var(--blanco);
+  color: var(--brand-tint-text);
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
@@ -856,14 +856,14 @@
 }
 
 .catalog-active-filter--clear {
-  border-color: rgba(255, 255, 255, 0.18);
+  border-color: color-mix(in srgb, var(--text) 18%, transparent);
   background: transparent;
   color: var(--muted);
 }
 
 .catalog-active-filter--clear:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.06);
+  border-color: color-mix(in srgb, var(--text) 40%, transparent);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
 }
 
 /* Botón/sentinel de carga incremental del grid */
@@ -884,7 +884,7 @@
   border: 1px solid rgba(90, 180, 233, 0.4);
   border-radius: var(--radius-pill);
   background: rgba(90, 180, 233, 0.1);
-  color: var(--blanco);
+  color: var(--brand-tint-text);
   font-weight: 700;
   cursor: pointer;
   transition: border-color 0.2s ease, background 0.2s ease;
@@ -1127,7 +1127,7 @@
   border: 1px solid rgba(90, 180, 233, 0.4);
   border-radius: var(--radius-pill);
   background: rgba(90, 180, 233, 0.1);
-  color: var(--blanco);
+  color: var(--brand-tint-text);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -1227,8 +1227,8 @@
   height: 44px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.04);
-  color: #fff;
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  color: var(--text);
   cursor: pointer;
 }
 
@@ -1274,10 +1274,10 @@
   gap: 6px;
   min-height: 44px;
   padding: 0 13px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--blanco);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  color: var(--text);
   font: inherit;
   font-size: 0.85rem;
   font-weight: 600;
@@ -1311,10 +1311,10 @@
 .filter-sheet__clear {
   min-height: 48px;
   padding: 0 16px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
   border-radius: var(--radius-md);
   background: transparent;
-  color: var(--blanco);
+  color: var(--text);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -1375,7 +1375,7 @@
   height: 46px;
   margin-bottom: 14px;
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
   border: 1px solid var(--line);
   color: var(--muted);
 }

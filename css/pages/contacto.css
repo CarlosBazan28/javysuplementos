@@ -60,7 +60,7 @@
   border-radius: clamp(20px, 4vw, 32px);
   background:
     radial-gradient(circle at 85% 18%, rgb(from var(--accent) r g b / 0.18), transparent 35%),
-    linear-gradient(145deg, rgba(26, 33, 48, 0.98), rgba(11, 14, 21, 0.98));
+    linear-gradient(145deg, var(--surface-1), var(--surface-2));
   box-shadow: var(--shadow-lg);
 }
 
@@ -127,7 +127,7 @@
 
 .about-btn--secondary {
   border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.045);
+  background: color-mix(in srgb, var(--text) 4.5%, transparent);
 }
 
 .about-btn:hover {
@@ -230,7 +230,7 @@
   padding: 22px;
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
-  background: linear-gradient(150deg, rgba(26, 33, 48, 0.9), rgba(16, 20, 29, 0.96));
+  background: linear-gradient(150deg, var(--surface-1), var(--surface-2));
   box-shadow: var(--shadow-sm);
 }
 
@@ -361,7 +361,7 @@
   padding: 12px 18px 16px;
   border: 1px solid rgb(from var(--accent) r g b / 0.3);
   border-radius: 26px;
-  background: rgba(11, 14, 21, 0.76);
+  background: color-mix(in srgb, var(--surface-1) 76%, transparent);
   color: var(--text);
   cursor: pointer;
   font: inherit;

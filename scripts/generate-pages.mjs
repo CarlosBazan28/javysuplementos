@@ -218,6 +218,8 @@ function renderHead({ title, description, canonical, image, ogType, jsonLd, extr
 
     <!-- Modo mantenimiento: bloquea el sitio público mientras esté activo (ver js/mantenimiento.js). -->
     <script src="/js/mantenimiento.js?v=abierto-1"></script>
+    <!-- Modo claro: aplica la preferencia guardada ANTES de pintar, para que no haya parpadeo (ver js/theme-init.js). -->
+    <script src="/js/theme-init.js"></script>
     <title>${escapeHTML(title)}</title>
 
     <!-- SEO -->
