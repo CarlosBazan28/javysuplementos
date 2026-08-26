@@ -634,6 +634,24 @@
     border-radius: var(--radius-lg);
     background: linear-gradient(180deg, var(--surface-1), var(--surface-2));
     scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  }
+
+  .catalog-sidebar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .catalog-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .catalog-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: var(--radius-pill);
+  }
+
+  .catalog-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.32);
   }
 
   .catalog-sidebar__head {
@@ -1244,6 +1262,25 @@
   display: grid;
   gap: 16px;
   align-content: start;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+.filter-sheet__body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.filter-sheet__body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-sheet__body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-pill);
+}
+
+.filter-sheet__body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.32);
 }
 
 .filter-sheet__group {
