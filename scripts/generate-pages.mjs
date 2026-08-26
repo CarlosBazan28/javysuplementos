@@ -201,7 +201,7 @@ async function loadData() {
 function renderHead({ title, description, canonical, image, ogType, jsonLd, extraCss }) {
   const css = [
     "css/styles.css?v=anim-1",
-    "css/components/nav.css?v=nav-opaque-1",
+    "css/components/nav.css?v=cat-cta-1",
     "css/components/auth.css?v=session-state",
     "css/tokens.css?v=anim-1",
     "css/components/cart.css?v=ux-fix-1",
@@ -263,13 +263,13 @@ const COMMON_SCRIPTS = [
   "/js/product-urls.js?v=seo-urls",
   "/js/db.js?v=solo-activos",
   "/js/auth.js?v=session-state",
-  "/js/icons.js?v=cat-icons-eye",
+  "/js/icons.js?v=cat-icons-grid-1",
   "/js/dropdown.js?v=resize-fix-1",
   "/js/cart.js?v=ferguson-label-1",
 ];
 
 function renderScripts(extra = []) {
-  return [...COMMON_SCRIPTS, ...extra, "/js/include-nav.js?v=nav-anim-1"]
+  return [...COMMON_SCRIPTS, ...extra, "/js/include-nav.js?v=cat-icon-row-1"]
     .map((src) => `    <script src="${src}" defer></script>`)
     .join("\n");
 }
