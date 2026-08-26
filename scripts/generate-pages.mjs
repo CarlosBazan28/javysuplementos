@@ -264,8 +264,8 @@ const COMMON_SCRIPTS = [
   "/js/db.js?v=solo-activos",
   "/js/auth.js?v=session-state",
   "/js/icons.js?v=cat-icons-eye",
-  "/js/dropdown.js?v=4",
-  "/js/cart.js?v=ux-fix-1",
+  "/js/dropdown.js?v=resize-fix-1",
+  "/js/cart.js?v=ferguson-label-1",
 ];
 
 function renderScripts(extra = []) {
