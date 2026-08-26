@@ -211,7 +211,12 @@
     document.addEventListener("click", dd._onDoc);
     document.addEventListener("keydown", dd._onKey, true);
     window.addEventListener("scroll", dd._onScroll, true);
-    dd._onResize = () => close(dd);
+    // Reposicionar, no cerrar: en móvil, enfocar el buscador abre el teclado y
+    // eso dispara "resize" (cambia la altura visible) -cerrar acá tiraba el
+    // menú apenas se abría, dejando el input con el teclado puesto y ninguna
+    // opción visible-. Un resize real (rotar pantalla, redimensionar la
+    // ventana) también se resuelve reposicionando: el menú sigue al campo.
+    dd._onResize = () => positionMenu(dd);
     window.addEventListener("resize", dd._onResize);
   }
 

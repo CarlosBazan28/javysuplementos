@@ -405,7 +405,7 @@ const QUOTE_METHODS = {
       { id: "quotePhone", label: "Telefono", type: "tel", placeholder: "Ej: 6000-0000", autocomplete: "tel", required: true },
       {
         id: "quoteDestino",
-        label: "Destino / sucursal Ferguson",
+        label: "Destino / sucursal",
         type: "select",
         placeholder: "Selecciona la sucursal",
         required: true,
