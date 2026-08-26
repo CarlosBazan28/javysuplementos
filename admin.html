@@ -17,7 +17,7 @@
          vista previa del formulario de producto (Fase 3). -->
     <link rel="stylesheet" href="css/tokens.css?v=anim-1" />
     <link rel="stylesheet" href="css/components/cards.css?v=anim-1" />
-    <link rel="stylesheet" href="css/admin-dashboard.css?v=prod-card-fix-1" />
+    <link rel="stylesheet" href="css/admin-dashboard.css?v=sidebar-toggle-1" />
     <link rel="stylesheet" href="css/dropdown.css?v=anim-1" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -33,7 +33,7 @@
     <script src="js/product-data.js" defer></script>
     <script src="js/db.js?v=solo-activos" defer></script>
     <script src="js/auth.js?v=session-guard" defer></script>
-    <script src="js/icons.js?v=cat-icons-grid-1" defer></script>
+    <script src="js/icons.js?v=sidebar-toggle-1" defer></script>
     <script src="js/dropdown.js?v=resize-fix-1" defer></script>
     <!-- Generación de PDF de los informes (vendorizado, sin depender de CDN en vivo) -->
     <script src="js/vendor/jspdf.umd.min.js?v=1" defer></script>
@@ -44,7 +44,7 @@
          scripts/bump-admin-version.mjs (lo corre solo scripts/guardar.sh).
          boot-guard.js carga main.js con import() dinámico para mostrar un error
          con botón Reintentar si algo falla (antes quedaba la pantalla en negro). -->
-    <script src="js/admin/boot-guard.js?v=adm-2c2b8694" defer></script>
+    <script src="js/admin/boot-guard.js?v=adm-e808fa3b" defer></script>
   </head>
   <body class="ad-body">
     <div class="ad-app" data-anim="on" id="adminApp">
@@ -79,9 +79,14 @@
 
         <main class="ad-main">
           <header class="ad-topbar">
-            <div class="ad-topbar__title">
-              <h1 id="adminTitle">Dashboard</h1>
-              <p id="adminSubtitle">Resumen de la tienda y acciones pendientes</p>
+            <div class="ad-topbar__start">
+              <button class="ad-topbar__sidebar-toggle" id="adminSidebarToggle" type="button" data-sidebar-toggle aria-pressed="false" title="Ocultar menú">
+                <span class="ad-ico" data-javy-icon="panel-left" aria-hidden="true"></span>
+              </button>
+              <div class="ad-topbar__title">
+                <h1 id="adminTitle">Dashboard</h1>
+                <p id="adminSubtitle">Resumen de la tienda y acciones pendientes</p>
+              </div>
             </div>
           </header>
 

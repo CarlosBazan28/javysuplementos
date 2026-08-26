@@ -265,7 +265,7 @@ const COMMON_SCRIPTS = [
   "/js/product-urls.js?v=seo-urls",
   "/js/db.js?v=solo-activos",
   "/js/auth.js?v=session-state",
-  "/js/icons.js?v=cat-icons-grid-1",
+  "/js/icons.js?v=sidebar-toggle-1",
   "/js/dropdown.js?v=resize-fix-1",
   "/js/cart.js?v=ferguson-label-1",
 ];
