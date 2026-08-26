@@ -105,9 +105,9 @@ Esto frena ataques de fuerza bruta a nivel de red, antes de llegar a Supabase.
 ## 1.4b — Formulario de contacto retirado
 
 `contacto.html` ahora es la página **Sobre nosotros** y no inserta registros en `leads`. La tabla,
-sus políticas RLS y la sección Mensajes del panel se conservan únicamente para consultar el
-historial existente. Si hay una regla de rate limiting o Managed Challenge exclusiva para los
-envíos del antiguo formulario, puede retirarse manualmente de Cloudflare.
+sus políticas RLS y la sección Mensajes del panel ya se eliminaron. Si hay una regla de rate
+limiting o Managed Challenge exclusiva para los envíos del antiguo formulario, puede retirarse
+manualmente de Cloudflare.
 
 ---
 

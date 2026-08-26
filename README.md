@@ -200,9 +200,8 @@ commitear). Para el sentido inverso (sembrar Supabase desde el fallback la prime
 4. CRUD de productos/sabores/categorías; las imágenes suben al bucket `product-images`.
 5. La seguridad real la impone **RLS en Supabase**, no la UI.
 
-El panel cubre: Dashboard, Productos, Sabores/variantes, Inicio (curación del home), Mensajes
-(historial de leads capturados por el formulario anterior), Categorías, Combos, Accesos y Ajustes, más el **drawer de
-edición de producto**. Filtros de revisión:
+El panel cubre: Dashboard, Productos, Sabores/variantes, Inicio (curación del home), Categorías,
+Combos, Accesos y Ajustes, más el **drawer de edición de producto**. Filtros de revisión:
 sin imagen, sin sabor, faltan sabores, sin sabores activos, revisar tipo de sabor, no disponibles,
 precio vacío, destacados.
 
@@ -215,9 +214,6 @@ precio vacío, destacados.
 - `categories` — categorías y tipos (Proteínas, Creatinas, Pre-entrenos, etc.).
 - `admin_profiles` — vincula usuarios de Auth con el rol admin.
 - `settings` — configuración tipo clave/valor (JSONB).
-- `leads` — historial de solicitudes del formulario anterior; la página pública ya no crea
-  registros, pero los admins conservan lectura/gestión vía RLS. Migración histórica:
-  `supabase/migrations/fase7-leads.sql`.
 
 **RLS activado** en todas las tablas: lectura pública, escritura solo para admins verificados vía
 la función `public.is_admin()`. En el frontend solo se usan claves públicas tipo `anon`

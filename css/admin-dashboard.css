@@ -922,8 +922,6 @@ body.ad-body { min-height: 100vh; }
 .ad-feed__icon--bad { background: rgba(255,79,118,0.16); color: #ffc1ce; }
 .ad-feed__body { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .ad-feed__text { font-size: 0.9rem; line-height: 1.35; word-break: break-word; }
-.ad-lead__msg { font-size: 0.86rem; line-height: 1.4; color: var(--pb-muted); word-break: break-word; }
-.ad-lead__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .ad-feed__text strong { color: #fff; }
 .ad-feed__meta { color: var(--pb-muted-2); font-size: 0.76rem; }
 .ad-feed__more { margin-top: 14px; display: flex; justify-content: center; }
