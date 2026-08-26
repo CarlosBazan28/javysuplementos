@@ -509,39 +509,47 @@
   white-space: nowrap;
 }
 
-/* Va primero en la lista (js/include-nav.js), no último: el separador y el
-   aire pasan de arriba a abajo. text-align:center porque es la acción
+/* Va primero en la lista (js/include-nav.js), no último: es la acción
    destacada del submenú, no un ítem más de la lista de familias -las demás
-   quedan a la izquierda como texto normal-.
+   quedan como texto normal, sin ícono ni fondo-. Fila con ícono + fondo
+   tenue (var(--brand-tint)) + flecha, para que se note de un vistazo sin
+   "flotar" como un botón aparte.
 
-   El !important en padding/border-radius/background/min-height no es
-   capricho: este <a> vive dentro de .nav__links (el trigger "SUPLEMENTOS" es
-   un <li> de esa lista), así que hereda el look de píldora de .nav__links a
-   (padding 8px 12px, border-radius 999px, fondo de marca al hover) Y, en
-   mobile, el min-height:44px de .site-header .nav__links a (línea ~339,
-   pensado para el touch target de los ítems del menú principal). Con
-   display:block forzado ese min-height dejaba ~20px de hueco vacío debajo
-   del texto -el "se rompió más" era este hueco, no el centrado, que ya
-   estaba resuelto-. Sin anular todo esto, el texto queda centrado DENTRO de
-   una caja que no coincide con el resto del submenú. */
+   El !important en display/padding/border-radius/background/min-height no
+   es capricho: este <a> vive dentro de .nav__links (el trigger "SUPLEMENTOS"
+   es un <li> de esa lista), así que hereda el look de píldora de
+   .nav__links a (padding 8px 12px, border-radius 999px, fondo de marca al
+   hover) y, en mobile, el min-height:44px de .site-header .nav__links a
+   (línea ~339). Sin anular todo esto, la fila queda con el padding/radio
+   equivocados y no coincide con el resto del submenú. */
 .nav__sub-all {
-  display: block !important;
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
   width: 100%;
-  min-height: 0 !important;
-  text-align: center;
-  padding: 0 0 8px !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  border-bottom: 1px solid var(--line-strong);
-  margin-bottom: 4px;
-  color: var(--neon) !important;
+  min-height: 40px !important;
+  padding: 0 12px !important;
+  border-radius: var(--radius-md) !important;
+  background: var(--brand-tint) !important;
+  margin-bottom: 8px;
+  color: var(--text) !important;
+  font-weight: 700;
 }
+
+.nav__sub-all-icon,
+.nav__sub-all-chevron {
+  color: var(--accent);
+}
+
+.nav__sub-all-icon { width: 16px; height: 16px; }
+.nav__sub-all-chevron { width: 16px; height: 16px; }
+
+.nav__sub-all-label { flex: 1; }
 
 .nav__sub-all:hover,
 .nav__sub-all:focus-visible {
-  background: transparent !important;
-  color: var(--brand) !important;
-  text-decoration: underline;
+  background: rgba(90, 180, 233, 0.2) !important;
+  color: var(--text) !important;
 }
 
 @media (min-width: 901px) {

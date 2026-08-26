@@ -5,23 +5,22 @@
    Mantiene un registro key → renderFn; las secciones piden re-render con
    requestRerender() en vez de llamarse entre sí.
    ============================================================================ */
-import { state } from "./state.js?v=adm-c96340be";
-import { NAV } from "./config.js?v=adm-c96340be";
-import { $, $$, esc, ico } from "./helpers.js?v=adm-c96340be";
-import { showViewError } from "./view.js?v=adm-c96340be";
-import { renderDashboard } from "./sections/dashboard.js?v=adm-c96340be";
-import { renderProducts } from "./sections/products.js?v=adm-c96340be";
-import { renderHome } from "./sections/home.js?v=adm-c96340be";
-import { renderLeads } from "./sections/leads.js?v=adm-c96340be";
-import { renderCategories } from "./sections/categories.js?v=adm-c96340be";
-import { renderCombos } from "./sections/combos.js?v=adm-c96340be";
-import { renderAccess } from "./sections/access.js?v=adm-c96340be";
-import { renderSettings } from "./sections/settings.js?v=adm-c96340be";
-import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-c96340be";
+import { state } from "./state.js?v=adm-2c2b8694";
+import { NAV } from "./config.js?v=adm-2c2b8694";
+import { $, $$, esc, ico } from "./helpers.js?v=adm-2c2b8694";
+import { showViewError } from "./view.js?v=adm-2c2b8694";
+import { renderDashboard } from "./sections/dashboard.js?v=adm-2c2b8694";
+import { renderProducts } from "./sections/products.js?v=adm-2c2b8694";
+import { renderHome } from "./sections/home.js?v=adm-2c2b8694";
+import { renderCategories } from "./sections/categories.js?v=adm-2c2b8694";
+import { renderCombos } from "./sections/combos.js?v=adm-2c2b8694";
+import { renderAccess } from "./sections/access.js?v=adm-2c2b8694";
+import { renderSettings } from "./sections/settings.js?v=adm-2c2b8694";
+import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-2c2b8694";
 
 const renderers = {
   dashboard: renderDashboard, products: renderProducts,
-  home: renderHome, leads: renderLeads, categories: renderCategories, combos: renderCombos,
+  home: renderHome, categories: renderCategories, combos: renderCombos,
   access: renderAccess, settings: renderSettings,
 };
 
