@@ -347,6 +347,10 @@ body.ad-body { min-height: 100vh; }
 .ad-icon-btn:hover { border-color: rgba(90,180,233,0.45); }
 .ad-icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .ad-icon-btn--danger:hover { border-color: rgba(255,79,118,0.5); color: #ffc1ce; }
+/* Producto oculto del sitio: se marca de entrada (sin esperar el hover) para
+   que se note de un vistazo cual esta apagado en medio de la lista. */
+.ad-icon-btn--off { border-color: rgba(255,179,0,0.35); background: var(--pb-amber-tint-12); color: var(--ad-amber); }
+.ad-icon-btn--off:hover { border-color: rgba(255,179,0,0.55); }
 
 /* product cards (mobile) */
 .ad-prod-cards { display: none; gap: 12px; }
