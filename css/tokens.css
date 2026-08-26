@@ -56,12 +56,19 @@
   --cta-tint: rgba(0, 230, 118, 0.14);
   --danger-tint: rgba(255, 79, 107, 0.14);
   --warning-tint: rgba(255, 179, 0, 0.14);
+  /* Texto sobre chips con --brand-tint (aclarado para AA en fondo oscuro) */
+  --brand-tint-text: #e9f6ff;
 
   /* ---- Sombras / foco ---- */
   --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.35);
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.55);
   --ring: 0 0 0 3px rgba(1, 145, 198, 0.35);
+  /* Multiplicador de opacidad de las sombras negras sueltas (box-shadow /
+     drop-shadow con rgba(0,0,0,X) directo, no a través de --shadow-*): en
+     modo claro una sombra negra pesa más sobre un fondo claro que sobre uno
+     oscuro, así que se atenúa un poco acá. 1 = sin cambio. */
+  --shadow-a: 1;
 
   /* ---- Radios (usar en vez de valores sueltos) ---- */
   --radius-sm: 10px;
@@ -106,4 +113,62 @@
   --footer-line: var(--line);
   --footer-accent: var(--accent);
   --footer-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+
+  /* ---- Fondos "glass" del header/menús (no derivan de --bg-*: llevan su
+     propio tono casi negro con transparencia, para que se note el blur
+     encima de cualquier contenido que pase debajo al hacer scroll). ---- */
+  --header-glass: rgba(5, 7, 9, 0.78);
+  --header-glass-scrolled: rgba(5, 7, 9, 0.94);
+  --menu-glass: rgba(5, 7, 9, 0.97);
+  --menu-glass-solid: #050709;
+}
+
+/* ============================================================================
+   MODO CLARO — activado con [data-theme="light"] en <html> (ver
+   js/theme-init.js). Gris-azulado frío en capas, mismo criterio que el
+   oscuro (más elevado = más claro), sin blanco puro plano. Los acentos de
+   marca (--brand, --neon, --accent, --cta, --danger, --warning, --hot) se
+   mantienen: lo que cambia es el fondo, no la identidad de color.
+   ============================================================================ */
+:root[data-theme="light"] {
+  --bg-0: #eef1f7;
+  --bg-1: #f4f6fb;
+  --bg-2: #ffffff;
+
+  --surface-1: #ffffff;
+  --surface-2: #f3f6fb;
+  --surface-3: #e8edf5;
+  --surface-input: #ffffff;
+  --surface: rgba(255, 255, 255, 0.75);
+
+  --line: rgba(10, 25, 45, 0.10);
+  --line-strong: rgba(10, 25, 45, 0.18);
+
+  --text: #10182a;
+  --muted: #4c5871;
+  --muted-2: #6b7690;
+  --blanco: #ffffff;
+
+  /* Variantes "-soft": pensadas como texto chico sobre fondo oscuro (AA);
+     sobre fondo claro necesitan la versión oscura del mismo color para
+     seguir pasando contraste. */
+  --cta-soft: #0a9b52;
+  --danger-soft: #b3243f;
+  --warning-soft: #8a5a00;
+  --brand-tint-text: #0b4a6b;
+
+  --shadow-sm: 0 4px 14px rgba(20, 30, 50, 0.10);
+  --shadow: 0 10px 30px rgba(20, 30, 50, 0.14);
+  --shadow-lg: 0 18px 48px rgba(20, 30, 50, 0.18);
+  --shadow-a: 0.7;
+
+  --footer-bg: var(--bg-1);
+  --footer-surface: #ffffff;
+  --footer-surface-soft: #f3f6fb;
+  --footer-shadow: 0 10px 30px rgba(20, 30, 50, 0.12);
+
+  --header-glass: rgba(255, 255, 255, 0.82);
+  --header-glass-scrolled: rgba(255, 255, 255, 0.94);
+  --menu-glass: rgba(255, 255, 255, 0.97);
+  --menu-glass-solid: #ffffff;
 }
