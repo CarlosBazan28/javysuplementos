@@ -42,7 +42,7 @@
 .jdd__menu {
   position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 90;
   background: var(--dd-surface); border: 1px solid var(--dd-line-strong, var(--line-strong));
-  border-radius: var(--dd-radius, 12px); box-shadow: 0 18px 40px rgba(0,0,0,0.5);
+  border-radius: var(--dd-radius, 12px); box-shadow: 0 18px 40px rgba(0, 0, 0, calc(0.5 * var(--shadow-a)));
   padding: 6px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; max-height: 320px; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
 }
 .jdd__menu[hidden] { display: none; }

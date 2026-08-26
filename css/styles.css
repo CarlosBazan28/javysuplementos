@@ -173,7 +173,7 @@ body {
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--text) 6%, transparent), color-mix(in srgb, var(--text) 2.5%, transparent)),
     color-mix(in srgb, var(--surface-2) 82%, transparent);
-  box-shadow: 0 22px 45px rgba(0, 0, 0, 0.44);
+  box-shadow: 0 22px 45px rgba(0, 0, 0, calc(0.44 * var(--shadow-a)));
 }
 
 .reel-card__frame {
@@ -523,7 +523,7 @@ body {
   width: min(100%, 590px);
   font-style: normal;
   text-align: left;
-  text-shadow: 0 3px 18px rgba(0, 0, 0, 0.44);
+  text-shadow: 0 3px 18px rgba(0, 0, 0, calc(0.44 * var(--shadow-a)));
 }
 
 /* El markup usa <h1> (index.html:125). La regla apuntaba solo a h2, asi que no
@@ -563,7 +563,7 @@ body {
 .hero__button .btn {
   min-height: 48px;
   min-width: 154px;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, calc(0.28 * var(--shadow-a)));
 }
 
 /* Badge de prueba social ("N visitas"): mismo lenguaje que ya usan los chips
@@ -622,7 +622,7 @@ body {
   justify-self: center;
   filter:
     drop-shadow(0 0 24px rgba(90, 180, 233, 0.72))
-    drop-shadow(0 20px 40px rgba(0, 0, 0, 0.52));
+    drop-shadow(0 20px 40px rgba(0, 0, 0, calc(0.52 * var(--shadow-a))));
   animation: heroFloat 5.6s ease-in-out infinite;
 }
 

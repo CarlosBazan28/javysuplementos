@@ -82,7 +82,7 @@
   flex: 0 0 auto;
   border-radius: 12px;
   border: 1px solid var(--line-strong);
-  background: color-mix(in srgb, var(--text) 4%, transparent);
+  background: color-mix(in srgb, var(--text) 9%, transparent);
   color: var(--text);
   cursor: pointer;
   padding: 0;
@@ -186,7 +186,7 @@
     border: 1px solid var(--line-strong);
     border-radius: 16px;
     background: var(--menu-glass);
-    box-shadow: 0 18px 42px rgba(0,0,0,0.45);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, calc(0.45 * var(--shadow-a)));
     transform: translate(-50%, -8px);
     opacity: 0;
     pointer-events: none;
@@ -243,7 +243,7 @@
 .site-header.is-scrolled {
   border-color: rgba(90, 180, 233, 0.2);
   background: var(--header-glass-scrolled);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.48);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, calc(0.48 * var(--shadow-a)));
 }
 
 .site-header .nav {
@@ -272,7 +272,7 @@
 .site-header .nav__logo {
   width: clamp(92px, 10vw, 124px);
   height: auto;
-  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.32));
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, calc(0.32 * var(--shadow-a))));
   transition: width 0.25s ease, transform 0.25s ease;
 }
 
@@ -320,13 +320,22 @@
 
 .site-header .nav__toggle:hover,
 .site-header .nav__toggle:focus-visible,
-.site-header .theme-toggle:hover,
-.site-header .theme-toggle:focus-visible,
 .site-header .cart-btn:hover,
 .site-header .cart-btn:focus-visible {
   border-color: rgba(90, 180, 233, 0.45);
   background: rgba(90, 180, 233, 0.12);
   box-shadow: 0 0 0 3px rgba(90, 180, 233, 0.12);
+}
+
+/* Gris neutro, sin el halo azul de marca del resto de los botones del header:
+   es un ajuste de preferencia (no una acción de marca), así que se mantiene
+   discreto en vez de competir por atención. */
+.site-header .theme-toggle:hover,
+.site-header .theme-toggle:focus-visible {
+  border-color: color-mix(in srgb, var(--text) 28%, transparent);
+  background: color-mix(in srgb, var(--text) 14%, transparent);
+  box-shadow: none;
+  outline: none;
 }
 
 @media (max-width: 900px) {

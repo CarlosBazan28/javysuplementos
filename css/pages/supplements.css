@@ -804,7 +804,7 @@
   border: 1px solid rgba(255, 179, 0, 0.35);
   border-radius: var(--radius-md);
   background: rgba(255, 179, 0, 0.1);
-  color: #ffd27d;
+  color: var(--warning-soft);
   font-size: 0.85rem;
   line-height: 1.45;
 }
@@ -919,7 +919,7 @@
     linear-gradient(135deg, rgba(0, 200, 83, 0.96), rgba(0, 167, 225, 0.96));
   color: #031015;
   cursor: pointer;
-  box-shadow: 0 18px 42px rgba(0, 207, 255, 0.2), 0 10px 28px rgba(0, 0, 0, 0.36);
+  box-shadow: 0 18px 42px rgba(0, 207, 255, 0.2), 0 10px 28px rgba(0, 0, 0, calc(0.36 * var(--shadow-a)));
   opacity: 0;
   transform: translateY(18px) scale(0.96);
   transition: opacity 0.24s ease, transform 0.24s ease, box-shadow 0.2s ease;
@@ -938,7 +938,7 @@
 .catalog-floating-quote:focus-visible {
   outline: none;
   transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 22px 52px rgba(0, 207, 255, 0.28), 0 12px 30px rgba(0, 0, 0, 0.42);
+  box-shadow: 0 22px 52px rgba(0, 207, 255, 0.28), 0 12px 30px rgba(0, 0, 0, calc(0.42 * var(--shadow-a)));
 }
 
 .catalog-floating-quote__icon {
@@ -1017,7 +1017,7 @@
     radial-gradient(circle at 35% 20%, rgba(90, 180, 233, 0.24), transparent 42%),
     linear-gradient(135deg, rgba(5, 7, 9, 0.94), rgba(16, 23, 36, 0.94));
   color: #e9f6ff;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.42), 0 0 26px rgba(0, 207, 255, 0.16);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, calc(0.42 * var(--shadow-a))), 0 0 26px rgba(0, 207, 255, 0.16);
   cursor: pointer;
   opacity: 0;
   transform: translateY(12px) scale(0.96);
@@ -1036,7 +1036,7 @@
 .catalog-scroll-top:hover,
 .catalog-scroll-top:focus-visible {
   border-color: rgba(90, 180, 233, 0.84);
-  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.46), 0 0 34px rgba(0, 207, 255, 0.28);
+  box-shadow: 0 20px 42px rgba(0, 0, 0, calc(0.46 * var(--shadow-a))), 0 0 34px rgba(0, 207, 255, 0.28);
   outline: none;
   transform: translateY(-2px) scale(1.01);
 }
@@ -1199,7 +1199,7 @@
   border-radius: 18px 18px 0 0;
   background: linear-gradient(180deg, var(--surface-1, #111925), var(--surface-2, #0c141d));
   color: var(--text);
-  box-shadow: 0 -18px 60px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 -18px 60px rgba(0, 0, 0, calc(0.55 * var(--shadow-a)));
   animation: filterSheetIn 0.24s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

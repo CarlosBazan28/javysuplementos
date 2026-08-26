@@ -170,7 +170,7 @@
   display: block;
   width: min(76vw, 340px);
   height: auto;
-  filter: drop-shadow(0 24px 38px rgba(0, 0, 0, 0.42));
+  filter: drop-shadow(0 24px 38px rgba(0, 0, 0, calc(0.42 * var(--shadow-a))));
 }
 
 .about-hero__visual figcaption {
@@ -380,7 +380,7 @@
   width: min(66vw, 210px);
   height: auto;
   margin-bottom: 4px;
-  filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 16px 26px rgba(0, 0, 0, calc(0.4 * var(--shadow-a))));
 }
 
 .about-final-cta {

@@ -64,6 +64,11 @@
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.55);
   --ring: 0 0 0 3px rgba(1, 145, 198, 0.35);
+  /* Multiplicador de opacidad de las sombras negras sueltas (box-shadow /
+     drop-shadow con rgba(0,0,0,X) directo, no a través de --shadow-*): en
+     modo claro una sombra negra pesa más sobre un fondo claro que sobre uno
+     oscuro, así que se atenúa un poco acá. 1 = sin cambio. */
+  --shadow-a: 1;
 
   /* ---- Radios (usar en vez de valores sueltos) ---- */
   --radius-sm: 10px;
@@ -155,6 +160,7 @@
   --shadow-sm: 0 4px 14px rgba(20, 30, 50, 0.10);
   --shadow: 0 10px 30px rgba(20, 30, 50, 0.14);
   --shadow-lg: 0 18px 48px rgba(20, 30, 50, 0.18);
+  --shadow-a: 0.7;
 
   --footer-bg: var(--bg-1);
   --footer-surface: #ffffff;

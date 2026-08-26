@@ -27,7 +27,7 @@
   padding: 18px;
   background: linear-gradient(180deg, var(--surface-2), var(--surface-1));
   border-left: 1px solid rgba(90, 180, 233, 0.22);
-  box-shadow: -24px 0 60px rgba(0,0,0,0.55);
+  box-shadow: -24px 0 60px rgba(0, 0, 0, calc(0.55 * var(--shadow-a)));
   color: var(--text);
   opacity: 0;
   pointer-events: none;
@@ -271,7 +271,7 @@
 
 .consultation-item__remove:hover {
   background: rgba(255,90,90,0.14);
-  color: #ff6b6b;
+  color: var(--danger-soft);
 }
 
 .consultation-item__remove .btn-icon {
@@ -343,7 +343,7 @@
 
 .consultation-form__hint {
   margin: 2px 0 0;
-  color: #ffb300;
+  color: var(--warning-soft);
   font-size: 0.82rem;
   font-weight: 700;
 }
@@ -373,7 +373,7 @@
   border: 1px solid rgba(255, 90, 90, 0.32);
   border-radius: var(--radius-xl);
   background: linear-gradient(180deg, var(--surface-2), var(--surface-1));
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, calc(0.55 * var(--shadow-a)));
 }
 
 .consultation-confirm__title {
@@ -547,7 +547,7 @@
   font-size: 0.85rem;
   font-weight: 600;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, calc(0.4 * var(--shadow-a)));
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease, transform 0.25s ease;
@@ -628,7 +628,7 @@
   background: linear-gradient(180deg, var(--surface-1, #111925), var(--surface-2, #0c141d));
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-xl);
-  box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, calc(0.55 * var(--shadow-a)));
   padding: 22px;
   display: grid; gap: 16px;
   color: var(--text);
