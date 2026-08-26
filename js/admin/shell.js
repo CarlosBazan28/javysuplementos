@@ -5,18 +5,18 @@
    Mantiene un registro key → renderFn; las secciones piden re-render con
    requestRerender() en vez de llamarse entre sí.
    ============================================================================ */
-import { state } from "./state.js?v=adm-2c2b8694";
-import { NAV } from "./config.js?v=adm-2c2b8694";
-import { $, $$, esc, ico } from "./helpers.js?v=adm-2c2b8694";
-import { showViewError } from "./view.js?v=adm-2c2b8694";
-import { renderDashboard } from "./sections/dashboard.js?v=adm-2c2b8694";
-import { renderProducts } from "./sections/products.js?v=adm-2c2b8694";
-import { renderHome } from "./sections/home.js?v=adm-2c2b8694";
-import { renderCategories } from "./sections/categories.js?v=adm-2c2b8694";
-import { renderCombos } from "./sections/combos.js?v=adm-2c2b8694";
-import { renderAccess } from "./sections/access.js?v=adm-2c2b8694";
-import { renderSettings } from "./sections/settings.js?v=adm-2c2b8694";
-import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-2c2b8694";
+import { state } from "./state.js?v=adm-e808fa3b";
+import { NAV } from "./config.js?v=adm-e808fa3b";
+import { $, $$, esc, ico } from "./helpers.js?v=adm-e808fa3b";
+import { showViewError } from "./view.js?v=adm-e808fa3b";
+import { renderDashboard } from "./sections/dashboard.js?v=adm-e808fa3b";
+import { renderProducts } from "./sections/products.js?v=adm-e808fa3b";
+import { renderHome } from "./sections/home.js?v=adm-e808fa3b";
+import { renderCategories } from "./sections/categories.js?v=adm-e808fa3b";
+import { renderCombos } from "./sections/combos.js?v=adm-e808fa3b";
+import { renderAccess } from "./sections/access.js?v=adm-e808fa3b";
+import { renderSettings } from "./sections/settings.js?v=adm-e808fa3b";
+import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-e808fa3b";
 
 const renderers = {
   dashboard: renderDashboard, products: renderProducts,
@@ -24,11 +24,39 @@ const renderers = {
   access: renderAccess, settings: renderSettings,
 };
 
+/* ----------------------------- sidebar (desktop) ----------------------------- */
+const SIDEBAR_KEY = "javy:admin:sidebarCollapsed";
+
+function getSidebarCollapsed() {
+  try {
+    return localStorage.getItem(SIDEBAR_KEY) === "1";
+  } catch (_) {
+    return false;
+  }
+}
+
+function applySidebarState(collapsed) {
+  const btn = $("#adminSidebarToggle");
+  $("#adminShell")?.classList.toggle("is-sidebar-collapsed", collapsed);
+  btn?.setAttribute("aria-pressed", String(collapsed));
+  btn?.setAttribute("title", collapsed ? "Mostrar menú" : "Ocultar menú");
+}
+
+function toggleSidebar() {
+  const next = !getSidebarCollapsed();
+  try {
+    localStorage.setItem(SIDEBAR_KEY, next ? "1" : "0");
+  } catch (_) {}
+  applySidebarState(next);
+}
+
 /* ----------------------------- chrome (nav) ----------------------------- */
 export function buildChrome() {
   const nav = $("#adminNav");
   const primary = NAV.filter((n) => n.primary);
   const secondary = NAV.filter((n) => !n.primary);
+
+  applySidebarState(getSidebarCollapsed());
 
   nav.innerHTML =
     `<span class="ad-nav__group-label">Operación</span>` +
@@ -58,6 +86,7 @@ export function buildChrome() {
     if (e.target.closest("[data-sheet-open]")) { openSheet(); return; }
     if (e.target.closest("[data-close-sheet]")) { closeSheet(); return; }
     if (e.target.closest("[data-logout]") || e.target.closest("#adminLogoutBtn")) { logout(); return; }
+    if (e.target.closest("[data-sidebar-toggle]")) { toggleSidebar(); return; }
   });
 
 }

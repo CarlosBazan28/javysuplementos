@@ -8,6 +8,8 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com" />
     <!-- Modo mantenimiento: bloquea el sitio público mientras esté activo (ver js/mantenimiento.js). -->
     <script src="/js/mantenimiento.js?v=abierto-1"></script>
+    <!-- Modo claro: aplica la preferencia guardada ANTES de pintar, para que no haya parpadeo (ver js/theme-init.js). -->
+    <script src="/js/theme-init.js"></script>
     <title>Catálogo de suplementos | Javy Suplementos</title>
 
     <!-- SEO -->
@@ -41,7 +43,7 @@
     <link rel="stylesheet" href="css/components/cards.css?v=anim-1">
     <link rel="stylesheet" href="css/components/cart.css?v=ux-fix-1">
     <link rel="stylesheet" href="css/components/footer.css?v=admin-footer">
-    <link rel="stylesheet" href="css/pages/supplements.css?v=tap-44">
+    <link rel="stylesheet" href="css/pages/supplements.css?v=scroll-fix-1">
     <link rel="stylesheet" href="css/dropdown.css?v=anim-1">
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -58,7 +60,7 @@
     <script src="js/product-urls.js?v=seo-urls" defer></script>
     <script src="js/db.js?v=solo-activos" defer></script>
     <script src="js/auth.js?v=session-state" defer></script>
-    <script src="js/icons.js?v=cat-icons-grid-1" defer></script>
+    <script src="js/icons.js?v=sidebar-toggle-1" defer></script>
     <script src="js/dropdown.js?v=resize-fix-1" defer></script>
     <script src="js/cart.js?v=ferguson-label-1" defer></script>
     <script src="js/supplements.js?v=ux-fix-1" defer></script>

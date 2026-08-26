@@ -4,9 +4,9 @@
   justify-content: center;
   gap: 8px;
   min-height: 42px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.035);
+  background: color-mix(in srgb, var(--text) 3.5%, transparent);
   color: var(--muted, #a9b4c6);
   cursor: pointer;
   font: inherit;
@@ -52,7 +52,7 @@
 .admin-nav-btn__icon {
   width: 18px;
   height: 18px;
-  color: #8dd9ff;
+  color: var(--accent);
 }
 
 @media (max-width: 900px) {

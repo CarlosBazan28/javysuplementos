@@ -34,7 +34,7 @@
 
   background: linear-gradient(180deg, var(--surface-1) 0%, var(--surface-2) 100%);
   border: 1px solid var(--line);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, calc(0.35 * var(--shadow-a)));
 
   transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
 }
@@ -42,7 +42,7 @@
 .product-card:hover {
   transform: translateY(-5px);
   border-color: rgba(1, 145, 198, 0.55);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(1,145,198,0.3), 0 0 32px rgba(1,145,198,0.1);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, calc(0.5 * var(--shadow-a))), 0 0 0 1px rgba(1,145,198,0.3), 0 0 32px rgba(1,145,198,0.1);
 }
 
 .product-card:focus-within {
@@ -65,7 +65,7 @@
   background: rgba(0,0,0,0.55);
   border: 1px solid rgba(255,255,255,0.18);
   backdrop-filter: blur(6px);
-  box-shadow: 0 10px 22px rgba(0,0,0,0.35);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, calc(0.35 * var(--shadow-a)));
   z-index: 2;
 }
 
@@ -77,8 +77,8 @@
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: color-mix(in srgb, var(--text) 3%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text) 6%, transparent);
 }
 
 .product-card__media img {
@@ -86,7 +86,13 @@
   height: 100%;
   display: block;
   object-fit: contain;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.55));
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, calc(0.55 * var(--shadow-a))));
+}
+
+/* En claro la sombra negra bajo el recorte del producto se ve como una mancha
+   flotando sobre el fondo blanco: se saca en vez de solo atenuarla. */
+:root[data-theme="light"] .product-card__media img {
+  filter: none;
 }
 
 /* Enlaces reales a la página de producto (SEO + UX) */
@@ -115,7 +121,7 @@
 .product-card--image-pending .product-card__media {
   background:
     radial-gradient(circle at 50% 30%, rgba(90,180,233,0.18), transparent 55%),
-    rgba(255,255,255,0.03);
+    color-mix(in srgb, var(--text) 3%, transparent);
 }
 
 .product-card--image-pending .product-card__img {
@@ -130,7 +136,7 @@
 
 .product-card__img[data-loading="true"] {
   animation: card-skeleton 1.4s ease-in-out infinite;
-  background: rgba(255,255,255,0.06);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
 }
 
 /* Skeleton de carga del catálogo */
@@ -140,7 +146,7 @@
 
 .skeleton-box,
 .skeleton-line {
-  background: rgba(255,255,255,0.06);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
   border-radius: 8px;
   animation: card-skeleton 1.4s ease-in-out infinite;
 }
@@ -195,17 +201,17 @@
 .product-card__status.is-unavailable {
   background: rgba(255,179,0,0.14);
   border: 1px solid rgba(255,179,0,0.35);
-  color: #ffb300;
+  color: var(--warning-soft); /* aclarado vs --warning para pasar contraste AA en texto pequeño */
 }
 
 .product-card__status.is-agotado {
   background: rgba(255,46,99,0.14);
   border: 1px solid rgba(255,46,99,0.4);
-  color: #ff6b89; /* aclarado vs --hot para pasar contraste AA en texto pequeño */
+  color: var(--danger-soft); /* aclarado vs --hot para pasar contraste AA en texto pequeño */
 }
 
 .product-card__name {
-  color: var(--blanco);
+  color: var(--text);
   font-weight: 700;
   font-size: 1rem;
   line-height: 1.25;
@@ -246,7 +252,7 @@
   font-size: 0.95rem;
   font-weight: 600;
   text-decoration: line-through;
-  text-decoration-color: rgba(255, 255, 255, 0.45);
+  text-decoration-color: color-mix(in srgb, var(--text) 45%, transparent);
 }
 
 .product-card__discount {
@@ -307,7 +313,7 @@
   flex-shrink: 0;
   padding: 4px 10px;
   border-radius: var(--radius-pill);
-  background: rgba(255,255,255,0.06);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
   border: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.72rem;
@@ -316,7 +322,7 @@
 }
 
 .product-card__flavors {
-  color: #d9e8f5;
+  color: var(--text);
   display: grid;
   gap: 6px;
   margin-top: 2px;
@@ -342,7 +348,7 @@
   border: 1px solid rgba(90,180,233,0.28);
   border-radius: var(--radius-sm);
   background: var(--surface-input);
-  color: #e9f6ff;
+  color: var(--text);
   cursor: pointer;
   font: inherit;
   font-size: 0.82rem;
@@ -402,8 +408,8 @@
   height: 40px;
   border: none;
   border-radius: 8px;
-  background: rgba(255,255,255,0.06);
-  color: #e9f6ff;
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: var(--text);
   font-size: 1.1rem;
   font-weight: 500;
   cursor: pointer;
@@ -429,7 +435,7 @@
   min-width: 24px;
   text-align: center;
   font-weight: 500;
-  color: #e9f6ff;
+  color: var(--text);
 }
 
 /* Selector de cantidad para mobile: oculto en desktop (se usa el stepper) */
@@ -440,7 +446,7 @@
   border: 1px solid rgba(90,180,233,0.28);
   border-radius: 4px;
   background: var(--surface-input);
-  color: #e9f6ff;
+  color: var(--text);
   cursor: pointer;
   font: inherit;
   font-size: 0.8rem;
@@ -505,14 +511,14 @@
 
 .product-card__btn--info {
   background: transparent;
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.18);
+  color: var(--text);
+  border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
   font-weight: 600;
   text-decoration: none;
 }
 
 .product-card__btn--info:hover{
-  background: rgba(255,255,255,0.06);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
 }
 
 .product-card__btn--buy {
@@ -544,7 +550,7 @@
 
 .product-card__btn--quote {
   background: rgba(90,180,233,0.16);
-  color: #e9f6ff;
+  color: var(--brand-tint-text);
   border: 1px solid rgba(90,180,233,0.35);
 }
 
