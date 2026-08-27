@@ -724,7 +724,6 @@ body.page-transition-in .hero__img {
 
   .hero__img {
     width: min(86vw, 520px);
-    margin-bottom: -8px;
   }
 }
 
