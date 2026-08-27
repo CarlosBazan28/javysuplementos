@@ -1059,3 +1059,124 @@ body.ad-body { min-height: 100vh; }
 .ad-cat__loose:hover { background: var(--pb-amber); color: var(--pb-brand-ink); }
 .ad-cat__loose:focus-visible { outline: 2px solid var(--pb-brand); outline-offset: 2px; }
 .ad-cat__loose .ad-ico { width: 14px; height: 14px; }
+
+/* ============================================================================
+   Fase 9 — Usuarios, roles y chip del usuario conectado
+   ============================================================================ */
+
+/* ---- chip del usuario en la topbar ---- */
+#adminUser { display: flex; min-width: 0; }
+.ad-user { position: relative; }
+.ad-user__btn {
+  display: inline-flex; align-items: center; gap: 9px;
+  min-height: 42px; padding: 0 10px 0 6px;
+  border: 1px solid var(--pb-line); border-radius: 999px;
+  background: var(--pb-white-04); color: #fff; cursor: pointer;
+}
+.ad-user__btn:hover { border-color: rgba(90,180,233,0.45); }
+.ad-user__btn:focus-visible { outline: 2px solid var(--pb-brand-bright); outline-offset: 2px; }
+.ad-user__btn .ad-ico { width: 15px; height: 15px; color: var(--pb-muted); }
+.ad-user__avatar {
+  display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 32px;
+  border-radius: 50%; background: var(--pb-blue-tint-18); color: var(--pb-brand-bright);
+  font-size: 0.78rem; font-weight: 800;
+}
+.ad-user__id { display: grid; text-align: left; min-width: 0; }
+.ad-user__id strong { font-size: 0.85rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 16ch; }
+.ad-user__id small { color: var(--pb-muted); font-size: 0.72rem; font-weight: 600; }
+
+.ad-user__menu {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 60;
+  min-width: 230px; padding: 8px; display: grid; gap: 2px;
+  border: 1px solid var(--pb-line-strong); border-radius: var(--ad-radius-sm);
+  background: linear-gradient(180deg, #0d141d, #090d13);
+  box-shadow: 0 18px 44px rgba(0,0,0,0.5);
+}
+.ad-user__menu[hidden] { display: none; }
+.ad-user__email {
+  padding: 6px 10px 8px; margin: 0;
+  color: var(--pb-muted); font-size: 0.76rem;
+  border-bottom: 1px solid var(--pb-line);
+  overflow: hidden; text-overflow: ellipsis;
+}
+.ad-user__item {
+  display: flex; align-items: center; gap: 9px;
+  width: 100%; min-height: 38px; padding: 0 10px;
+  border: 0; border-radius: 9px; background: transparent;
+  color: var(--pb-text); font-size: 0.85rem; font-weight: 600; text-align: left; cursor: pointer;
+}
+.ad-user__item .ad-ico { width: 16px; height: 16px; color: var(--pb-muted); }
+.ad-user__item:hover { background: var(--pb-white-06); }
+.ad-user__item--danger { color: #ffc1ce; }
+.ad-user__item--danger .ad-ico { color: #ffc1ce; }
+
+/* ---- modo solo lectura (rol Lector) ---- */
+/* Solo cosmético: esconde lo que el usuario no podría usar. Quien realmente
+   bloquea la escritura es RLS en Supabase (can_write / can_manage_users). */
+.ad-readonly [data-write-only] { display: none !important; }
+/* Lo que no se puede esconder sin romper la lectura, se deja mirar pero no tocar. */
+.ad-readonly .ad-switch input,
+.ad-readonly .ad-type-chip__name,
+.ad-readonly .ad-ops__item--link { pointer-events: none; }
+.ad-readonly .ad-ops__item--link { cursor: default; }
+.ad-readonly-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 30px; padding: 0 11px; border-radius: 999px;
+  background: var(--pb-white-06); color: var(--pb-muted);
+  font-size: 0.76rem; font-weight: 700; white-space: nowrap;
+}
+.ad-readonly-badge .ad-ico { width: 14px; height: 14px; }
+
+/* ---- roles ---- */
+.ad-pill--role { border: 1px solid transparent; }
+.ad-pill--role-admin  { background: var(--pb-blue-tint-18); color: #d2ecff; border-color: rgba(90,180,233,0.35); }
+.ad-pill--role-editor { background: rgba(255,179,0,0.14); color: var(--pb-amber-soft); border-color: rgba(255,179,0,0.32); }
+.ad-pill--role-viewer { background: var(--pb-white-06); color: var(--pb-muted); border-color: var(--pb-line); }
+
+.ad-roles-legend {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 10px;
+  margin-bottom: 14px;
+}
+.ad-roles-legend__item {
+  display: grid; gap: 6px; align-content: start;
+  padding: 11px 13px; border: 1px solid var(--pb-line); border-radius: var(--ad-radius-sm);
+  background: var(--pb-white-04);
+}
+.ad-roles-legend__item .ad-pill { justify-self: start; }
+.ad-roles-legend__item p { color: var(--pb-muted); font-size: 0.8rem; line-height: 1.45; margin: 0; }
+
+.ad-section-intro__note {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 8px !important; font-size: 0.82rem !important;
+}
+.ad-section-intro__note .ad-ico { width: 15px; height: 15px; flex: 0 0 15px; }
+
+/* ---- fila de usuario ---- */
+.ad-row--user { grid-template-columns: auto minmax(0,1fr) auto auto; }
+.ad-row--user.is-off { opacity: 0.62; }
+.ad-row__tags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+/* ---- modal de formulario ---- */
+.ad-confirm--form { width: min(430px, 100%); }
+.ad-form-modal__fields { display: grid; gap: 12px; }
+.ad-btn.is-loading { opacity: 0.65; cursor: progress; }
+
+@media (max-width: 620px) {
+  .ad-row--user {
+    grid-template-columns: auto minmax(0,1fr) auto;
+    grid-template-areas: "avatar main actions" ". tags tags";
+    row-gap: 9px;
+  }
+  .ad-row--user .ad-row__avatar  { grid-area: avatar; }
+  .ad-row--user .ad-row__main    { grid-area: main; }
+  .ad-row--user .ad-row__tags    { grid-area: tags; justify-content: flex-start; }
+  .ad-row--user .ad-row__actions { grid-area: actions; }
+  .ad-roles-legend { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  /* La topbar se apila y .ad-topbar__actions > * pasa a flex:1; el chip se
+     mantiene pegado a la derecha y con el nombre más corto. */
+  #adminUser { justify-content: flex-end; }
+  .ad-user__id strong { max-width: 12ch; }
+}

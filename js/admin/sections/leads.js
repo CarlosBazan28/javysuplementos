@@ -4,9 +4,9 @@
    WhatsApp y marca su estado. Lee de window.catalogDb.getLeads(); degrada
    elegante si falta la migración fase7-leads.sql.
    ============================================================================ */
-import { esc, ico, agoLabel } from "../helpers.js?v=adm-5be64504";
-import { setView, paint } from "../view.js?v=adm-5be64504";
-import { toast, emptyFeature } from "../ui.js?v=adm-5be64504";
+import { esc, ico, agoLabel } from "../helpers.js?v=adm-c2f81e29";
+import { setView, paint } from "../view.js?v=adm-c2f81e29";
+import { toast, emptyFeature } from "../ui.js?v=adm-c2f81e29";
 
 const STATUS = [["", "Todos"], ["nuevo", "Nuevos"], ["atendido", "Atendidos"], ["archivado", "Archivados"]];
 const STATUS_LABEL = { nuevo: "Nuevo", atendido: "Atendido", archivado: "Archivado" };
@@ -93,8 +93,8 @@ function card(r) {
         <span class="ad-feed__meta">${esc(r.email || "—")} · ${esc(r.phone || "—")} · ${esc(agoLabel(r.created_at))}</span>
         <div class="ad-lead__actions">
           ${wa ? `<a class="ad-btn ad-btn--sm" href="${esc(wa)}" target="_blank" rel="noopener">${ico("message-circle")} Responder</a>` : ""}
-          ${r.status !== "atendido" ? `<button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-lead-action="atendido" data-lead-id="${esc(r.id)}">Marcar atendido</button>` : ""}
-          ${r.status !== "archivado" ? `<button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-lead-action="archivado" data-lead-id="${esc(r.id)}">Archivar</button>` : ""}
+          ${r.status !== "atendido" ? `<button class="ad-btn ad-btn--ghost ad-btn--sm" data-write-only type="button" data-lead-action="atendido" data-lead-id="${esc(r.id)}">Marcar atendido</button>` : ""}
+          ${r.status !== "archivado" ? `<button class="ad-btn ad-btn--ghost ad-btn--sm" data-write-only type="button" data-lead-action="archivado" data-lead-id="${esc(r.id)}">Archivar</button>` : ""}
         </div>
       </div>
     </article>`;

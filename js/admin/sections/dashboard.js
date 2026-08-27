@@ -1,11 +1,11 @@
 /* ============================================================================
    Sección Dashboard: stats, centro de operaciones y últimos agregados.
    ============================================================================ */
-import { state } from "../state.js?v=adm-5be64504";
-import { STALE_DAYS, HOME_MAX, HOME_MIN } from "../config.js?v=adm-5be64504";
-import { $, esc, ico, imgTag, peso, isAvailable, isMissingImage, hasOffer, discountPct, daysSince, agoLabel } from "../helpers.js?v=adm-5be64504";
-import { setView } from "../view.js?v=adm-5be64504";
-import { go, bindEditClicks } from "../shell.js?v=adm-5be64504";
+import { state } from "../state.js?v=adm-c2f81e29";
+import { STALE_DAYS, HOME_MAX, HOME_MIN } from "../config.js?v=adm-c2f81e29";
+import { $, esc, ico, imgTag, peso, isAvailable, isMissingImage, hasOffer, discountPct, daysSince, agoLabel } from "../helpers.js?v=adm-c2f81e29";
+import { setView } from "../view.js?v=adm-c2f81e29";
+import { go, bindEditClicks } from "../shell.js?v=adm-c2f81e29";
 
 export function renderDashboard() {
   const p = state.products;
@@ -89,7 +89,7 @@ export function renderDashboard() {
             ${imgTag(p2.image)}
             <div class="ad-recent__info"><strong>${esc(p2.name)}</strong><small>${esc(p2.brand || "")}${p2.category ? " · " + esc(p2.category) : ""}</small></div>
             <span class="ad-price">${esc(peso(p2.price))}</span>
-            <button class="ad-icon-btn" type="button" title="Editar" data-edit="${esc(p2.id)}">${ico("pencil")}</button>
+            <button class="ad-icon-btn" type="button" title="Editar" data-edit="${esc(p2.id)}" data-write-only>${ico("pencil")}</button>
           </div>`).join("") || `<p class="ad-ops__empty">Aún no hay productos.</p>`}
       </div>
     </div>

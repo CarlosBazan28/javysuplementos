@@ -5,19 +5,21 @@
    Mantiene un registro key → renderFn; las secciones piden re-render con
    requestRerender() en vez de llamarse entre sí.
    ============================================================================ */
-import { state } from "./state.js?v=adm-5be64504";
-import { NAV } from "./config.js?v=adm-5be64504";
-import { $, $$, esc, ico } from "./helpers.js?v=adm-5be64504";
-import { showViewError } from "./view.js?v=adm-5be64504";
-import { renderDashboard } from "./sections/dashboard.js?v=adm-5be64504";
-import { renderProducts } from "./sections/products.js?v=adm-5be64504";
-import { renderHome } from "./sections/home.js?v=adm-5be64504";
-import { renderLeads } from "./sections/leads.js?v=adm-5be64504";
-import { renderCategories } from "./sections/categories.js?v=adm-5be64504";
-import { renderCombos } from "./sections/combos.js?v=adm-5be64504";
-import { renderAccess } from "./sections/access.js?v=adm-5be64504";
-import { renderSettings } from "./sections/settings.js?v=adm-5be64504";
-import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-5be64504";
+import { state } from "./state.js?v=adm-c2f81e29";
+import { NAV } from "./config.js?v=adm-c2f81e29";
+import { $, $$, esc, ico } from "./helpers.js?v=adm-c2f81e29";
+import { showViewError } from "./view.js?v=adm-c2f81e29";
+import { renderDashboard } from "./sections/dashboard.js?v=adm-c2f81e29";
+import { renderProducts } from "./sections/products.js?v=adm-c2f81e29";
+import { renderHome } from "./sections/home.js?v=adm-c2f81e29";
+import { renderLeads } from "./sections/leads.js?v=adm-c2f81e29";
+import { renderCategories } from "./sections/categories.js?v=adm-c2f81e29";
+import { renderCombos } from "./sections/combos.js?v=adm-c2f81e29";
+import { renderAccess } from "./sections/access.js?v=adm-c2f81e29";
+import { renderSettings } from "./sections/settings.js?v=adm-c2f81e29";
+import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-c2f81e29";
+import { canWrite } from "./permissions.js?v=adm-c2f81e29";
+import { renderUserChip } from "./user-chip.js?v=adm-c2f81e29";
 
 const renderers = {
   dashboard: renderDashboard, products: renderProducts,
@@ -27,6 +29,12 @@ const renderers = {
 
 /* ----------------------------- chrome (nav) ----------------------------- */
 export function buildChrome() {
+  // Modo solo lectura (rol Lector): el CSS esconde todo lo marcado con
+  // [data-write-only]. Es comodidad visual; el bloqueo real lo hace RLS.
+  document.body.classList.toggle("ad-readonly", !canWrite());
+
+  renderUserChip();
+
   const nav = $("#adminNav");
   const primary = NAV.filter((n) => n.primary);
   const secondary = NAV.filter((n) => !n.primary);

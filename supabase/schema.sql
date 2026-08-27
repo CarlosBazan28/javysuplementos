@@ -269,9 +269,13 @@ set name = excluded.name,
 create table if not exists public.admin_profiles (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade unique,
-  role text not null default 'admin',
-  is_active boolean default true,
-  created_at timestamptz default now()
+  email text,
+  display_name text,
+  role text not null default 'admin' check (role in ('admin', 'editor', 'viewer')),
+  is_active boolean not null default true,
+  created_by text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
 );
 
 create table if not exists public.settings (
@@ -333,7 +337,52 @@ where f.id = d.id
 create unique index if not exists product_flavors_unique_name_idx
 on public.product_flavors (product_id, lower(name));
 
-create or replace function public.is_admin()
+-- ============================================================================
+-- Permisos por rol (Fase 9). admin_profiles.role vale 'admin', 'editor' o
+-- 'viewer':
+--   admin  → todo, incluida la gestión de usuarios del panel.
+--   editor → escribe en el catálogo, pero no toca usuarios.
+--   viewer → solo lectura.
+--
+-- OJO: is_admin() ya NO significa "es administrador". Quedó como ALIAS de
+-- can_write() (admin + editor) para no reescribir las ~20 políticas que la
+-- usan aquí y en supabase/migrations/*. Si cambias esa definición, los
+-- editores pierden la escritura de golpe.
+-- ============================================================================
+
+-- Cualquier perfil activo: puede entrar al panel y leer lo privado.
+create or replace function public.is_staff()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.admin_profiles
+    where user_id = auth.uid()
+      and is_active = true
+  );
+$$;
+
+-- Admin o Editor: puede escribir en el catálogo.
+create or replace function public.can_write()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.admin_profiles
+    where user_id = auth.uid()
+      and role in ('admin', 'editor')
+      and is_active = true
+  );
+$$;
+
+-- Solo Admin: crea, edita y elimina usuarios del panel.
+create or replace function public.can_manage_users()
 returns boolean
 language sql
 security definer
@@ -348,7 +397,20 @@ as $$
   );
 $$;
 
-grant execute on function public.is_admin() to anon, authenticated;
+-- Alias retrocompatible: "puede escribir".
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select public.can_write();
+$$;
+
+grant execute on function public.is_staff()         to anon, authenticated;
+grant execute on function public.can_write()        to anon, authenticated;
+grant execute on function public.can_manage_users() to anon, authenticated;
+grant execute on function public.is_admin()         to anon, authenticated;
 
 alter table public.products enable row level security;
 alter table public.product_flavors enable row level security;
@@ -429,7 +491,7 @@ create policy "Categories are readable by everyone"
 on public.categories
 for select
 to anon, authenticated
-using (is_active = true or public.is_admin());
+using (is_active = true or public.is_staff());
 
 create policy "Admins can manage categories"
 on public.categories
@@ -441,18 +503,19 @@ with check (public.is_admin());
 drop policy if exists "Users can read own admin profile" on public.admin_profiles;
 drop policy if exists "Admins can manage admin profiles" on public.admin_profiles;
 
+-- Todo el equipo ve quién tiene acceso; solo un Admin puede modificarlo.
 create policy "Users can read own admin profile"
 on public.admin_profiles
 for select
 to authenticated
-using (user_id = auth.uid() or public.is_admin());
+using (user_id = auth.uid() or public.is_staff());
 
 create policy "Admins can manage admin profiles"
 on public.admin_profiles
 for all
 to authenticated
-using (public.is_admin())
-with check (public.is_admin());
+using (public.can_manage_users())
+with check (public.can_manage_users());
 
 drop policy if exists "Settings are readable by everyone" on public.settings;
 drop policy if exists "Admins can manage settings" on public.settings;
