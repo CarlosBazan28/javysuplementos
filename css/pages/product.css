@@ -604,7 +604,7 @@
   color: var(--brand-tint-text);
   font-size: 0.82rem;
   font-weight: 900;
-  content: counter(usage-step, decimal-leading-zero);
+  content: counter(usage-step);
 }
 
 /* ---------- Barra de compra móvil ---------- */
