@@ -204,6 +204,7 @@ export function ensureMenuListeners() {
         menu.classList.add("is-open");
         toggle.setAttribute("aria-expanded", "true");
         menu.querySelector(".ad-menu__panel").hidden = false;
+        positionMenuPanel(menu);
       }
       return;
     }
@@ -211,6 +212,24 @@ export function ensureMenuListeners() {
     if (!e.target.closest(".ad-menu__panel")) closeAllMenus();
   });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAllMenus(); });
+}
+
+// Si no hay espacio abajo (p.ej. la tabbar fija en mobile), abre el panel
+// hacia arriba en vez de dejarlo cortado detrás de la barra inferior.
+function positionMenuPanel(menu) {
+  const panel = menu.querySelector(".ad-menu__panel");
+  if (!panel) return;
+  menu.classList.remove("is-flip-up");
+  const rect = menu.getBoundingClientRect();
+  const panelHeight = panel.offsetHeight;
+  const tabbar = document.querySelector(".ad-tabbar");
+  const tabbarTop = tabbar && getComputedStyle(tabbar).display !== "none"
+    ? tabbar.getBoundingClientRect().top
+    : window.innerHeight;
+  const spaceBelow = tabbarTop - rect.bottom - 6;
+  if (spaceBelow < panelHeight && rect.top > panelHeight) {
+    menu.classList.add("is-flip-up");
+  }
 }
 
 /* ----------------------------- gate ----------------------------- */
