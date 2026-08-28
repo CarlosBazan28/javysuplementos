@@ -201,7 +201,7 @@ async function loadData() {
 function renderHead({ title, description, canonical, image, ogType, jsonLd, extraCss }) {
   const css = [
     "css/styles.css?v=anim-1",
-    "css/components/nav.css?v=nav-fix-2",
+    "css/components/nav.css?v=cat-cta-1",
     "css/components/auth.css?v=session-state",
     "css/tokens.css?v=anim-1",
     "css/components/cart.css?v=ux-fix-1",
@@ -217,7 +217,9 @@ function renderHead({ title, description, canonical, image, ogType, jsonLd, extr
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com" />
 
     <!-- Modo mantenimiento: bloquea el sitio público mientras esté activo (ver js/mantenimiento.js). -->
-    <script src="/js/mantenimiento.js?v=modos"></script>
+    <script src="/js/mantenimiento.js?v=abierto-1"></script>
+    <!-- Modo claro: aplica la preferencia guardada ANTES de pintar, para que no haya parpadeo (ver js/theme-init.js). -->
+    <script src="/js/theme-init.js"></script>
     <title>${escapeHTML(title)}</title>
 
     <!-- SEO -->
@@ -263,13 +265,13 @@ const COMMON_SCRIPTS = [
   "/js/product-urls.js?v=seo-urls",
   "/js/db.js?v=solo-activos",
   "/js/auth.js?v=session-state",
-  "/js/icons.js?v=cat-icons-eye",
-  "/js/dropdown.js?v=4",
-  "/js/cart.js?v=ux-fix-1",
+  "/js/icons.js?v=sidebar-toggle-1",
+  "/js/dropdown.js?v=resize-fix-1",
+  "/js/cart.js?v=ferguson-label-1",
 ];
 
 function renderScripts(extra = []) {
-  return [...COMMON_SCRIPTS, ...extra, "/js/include-nav.js?v=nav-anim-1"]
+  return [...COMMON_SCRIPTS, ...extra, "/js/include-nav.js?v=cat-icon-row-1"]
     .map((src) => `    <script src="${src}" defer></script>`)
     .join("\n");
 }
@@ -627,7 +629,7 @@ ${featured ? `          <span class="product-card__badge">Destacado</span>\n` : 
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
-${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-unif", "css/pages/supplements.css?v=tap-44"] })}
+${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-unif", "css/pages/supplements.css?v=scroll-fix-1"] })}
 ${renderScripts(["/js/categoria.js?v=cat-unif"])}
   </head>
   <body>

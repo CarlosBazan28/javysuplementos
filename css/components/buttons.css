@@ -71,7 +71,7 @@
   --_fg: var(--text);
   --_bd: var(--line-strong);
 }
-.btn--ghost:hover { --_bg: rgba(255, 255, 255, 0.06); }
+.btn--ghost:hover { --_bg: color-mix(in srgb, var(--text) 6%, transparent); }
 
 .btn--danger {    /* destructiva */
   --_bg: var(--danger-tint);

@@ -5,27 +5,52 @@
    Mantiene un registro key → renderFn; las secciones piden re-render con
    requestRerender() en vez de llamarse entre sí.
    ============================================================================ */
-import { state } from "./state.js?v=adm-c2f81e29";
-import { NAV } from "./config.js?v=adm-c2f81e29";
-import { $, $$, esc, ico } from "./helpers.js?v=adm-c2f81e29";
-import { showViewError } from "./view.js?v=adm-c2f81e29";
-import { renderDashboard } from "./sections/dashboard.js?v=adm-c2f81e29";
-import { renderProducts } from "./sections/products.js?v=adm-c2f81e29";
-import { renderHome } from "./sections/home.js?v=adm-c2f81e29";
-import { renderLeads } from "./sections/leads.js?v=adm-c2f81e29";
-import { renderCategories } from "./sections/categories.js?v=adm-c2f81e29";
-import { renderCombos } from "./sections/combos.js?v=adm-c2f81e29";
-import { renderAccess } from "./sections/access.js?v=adm-c2f81e29";
-import { renderSettings } from "./sections/settings.js?v=adm-c2f81e29";
-import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-c2f81e29";
-import { canWrite } from "./permissions.js?v=adm-c2f81e29";
-import { renderUserChip } from "./user-chip.js?v=adm-c2f81e29";
+import { state } from "./state.js?v=adm-716eeeea";
+import { NAV } from "./config.js?v=adm-716eeeea";
+import { $, $$, esc, ico } from "./helpers.js?v=adm-716eeeea";
+import { showViewError } from "./view.js?v=adm-716eeeea";
+import { renderDashboard } from "./sections/dashboard.js?v=adm-716eeeea";
+import { renderProducts } from "./sections/products.js?v=adm-716eeeea";
+import { renderHome } from "./sections/home.js?v=adm-716eeeea";
+import { renderCategories } from "./sections/categories.js?v=adm-716eeeea";
+import { renderCombos } from "./sections/combos.js?v=adm-716eeeea";
+import { renderAccess } from "./sections/access.js?v=adm-716eeeea";
+import { renderSettings } from "./sections/settings.js?v=adm-716eeeea";
+import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-716eeeea";
+import { canWrite } from "./permissions.js?v=adm-716eeeea";
+import { renderUserChip } from "./user-chip.js?v=adm-716eeeea";
 
 const renderers = {
   dashboard: renderDashboard, products: renderProducts,
-  home: renderHome, leads: renderLeads, categories: renderCategories, combos: renderCombos,
+  home: renderHome, categories: renderCategories, combos: renderCombos,
   access: renderAccess, settings: renderSettings,
 };
+
+/* ----------------------------- sidebar (desktop) ----------------------------- */
+const SIDEBAR_KEY = "javy:admin:sidebarCollapsed";
+
+function getSidebarCollapsed() {
+  try {
+    return localStorage.getItem(SIDEBAR_KEY) === "1";
+  } catch (_) {
+    return false;
+  }
+}
+
+function applySidebarState(collapsed) {
+  const btn = $("#adminSidebarToggle");
+  $("#adminShell")?.classList.toggle("is-sidebar-collapsed", collapsed);
+  btn?.setAttribute("aria-pressed", String(collapsed));
+  btn?.setAttribute("title", collapsed ? "Mostrar menú" : "Ocultar menú");
+}
+
+function toggleSidebar() {
+  const next = !getSidebarCollapsed();
+  try {
+    localStorage.setItem(SIDEBAR_KEY, next ? "1" : "0");
+  } catch (_) {}
+  applySidebarState(next);
+}
 
 /* ----------------------------- chrome (nav) ----------------------------- */
 export function buildChrome() {
@@ -38,6 +63,8 @@ export function buildChrome() {
   const nav = $("#adminNav");
   const primary = NAV.filter((n) => n.primary);
   const secondary = NAV.filter((n) => !n.primary);
+
+  applySidebarState(getSidebarCollapsed());
 
   nav.innerHTML =
     `<span class="ad-nav__group-label">Operación</span>` +
@@ -67,6 +94,7 @@ export function buildChrome() {
     if (e.target.closest("[data-sheet-open]")) { openSheet(); return; }
     if (e.target.closest("[data-close-sheet]")) { closeSheet(); return; }
     if (e.target.closest("[data-logout]") || e.target.closest("#adminLogoutBtn")) { logout(); return; }
+    if (e.target.closest("[data-sidebar-toggle]")) { toggleSidebar(); return; }
   });
 
 }

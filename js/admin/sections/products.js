@@ -2,13 +2,13 @@
    Sección Productos: barra de búsqueda + filtros (familia + estado) y la
    tabla/cards con acciones por fila.
    ============================================================================ */
-import { state, families, typesOf, catById } from "../state.js?v=adm-c2f81e29";
-import { $, esc, ico, imgTag, peso, hasOffer, isAvailable, isMissingImage, stockTone, wireImageFallbacks } from "../helpers.js?v=adm-c2f81e29";
-import { setView } from "../view.js?v=adm-c2f81e29";
-import { bindEditClicks } from "../shell.js?v=adm-c2f81e29";
-import { confirmModal, toast } from "../ui.js?v=adm-c2f81e29";
-import { reloadProducts } from "../data.js?v=adm-c2f81e29";
-import { openProductDrawer } from "../drawers/product-drawer.js?v=adm-c2f81e29";
+import { state, families, typesOf, catById } from "../state.js?v=adm-716eeeea";
+import { $, esc, ico, imgTag, peso, hasOffer, isAvailable, isMissingImage, stockTone, wireImageFallbacks } from "../helpers.js?v=adm-716eeeea";
+import { setView } from "../view.js?v=adm-716eeeea";
+import { bindEditClicks } from "../shell.js?v=adm-716eeeea";
+import { confirmModal, toast } from "../ui.js?v=adm-716eeeea";
+import { reloadProducts } from "../data.js?v=adm-716eeeea";
+import { openProductDrawer } from "../drawers/product-drawer.js?v=adm-716eeeea";
 
 const STATUS_FILTERS = [
   ["all", "Todos"], ["home", "En inicio"], ["offers", "En oferta"], ["out", "Agotados"], ["noimg", "Sin imagen"],
@@ -61,6 +61,14 @@ const countLabel = (list) => `${list.length} ${list.length === 1 ? "producto" : 
 const pill = (p) => { const [tone, label] = stockTone(p); return `<span class="ad-pill ad-pill--${tone}">${label}</span>`; };
 const priceCell = (p) => `<span class="ad-price">${hasOffer(p) ? `<s>${esc(peso(p.old_price))}</s>` : ""}${esc(peso(p.price))}</span>`;
 
+// Apaga/prende el producto (agotado ⇄ disponible) sin abrir el drawer de
+// edición completo: es la acción de un clic para sacar algo de la vista
+// pública (home + catálogo) sin tener que tocar el resto de sus datos.
+const toggleButton = (p) => {
+  const on = isAvailable(p);
+  return `<button class="ad-icon-btn${on ? "" : " ad-icon-btn--off"}" type="button" title="${on ? "Ocultar del sitio" : "Mostrar en el sitio"}" data-toggle="${esc(p.id)}">${ico("power")}</button>`;
+};
+
 /* Selección múltiple para mover productos de categoría en lote. Sin esto,
    repartir los productos que cuelgan de una familia exige abrir un formulario
    por producto. Se guarda por id y se limpia al cambiar de filtro. */
@@ -90,6 +98,7 @@ function resultsHTML(list) {
       <td><div style="display:flex;gap:6px;flex-wrap:wrap">${pill(p)}${p.show_on_home ? `<span class="ad-pill ad-pill--home">Inicio</span>` : ""}</div></td>
       <td><div class="ad-row-actions" data-write-only>
         <button class="ad-icon-btn" type="button" title="Editar" data-edit="${esc(p.id)}">${ico("pencil")}</button>
+        ${toggleButton(p)}
         <button class="ad-icon-btn" type="button" title="Duplicar" data-dup="${esc(p.id)}">${ico("plus")}</button>
         <button class="ad-icon-btn ad-icon-btn--danger" type="button" title="Eliminar" data-del="${esc(p.id)}">${ico("trash")}</button>
       </div></td>
@@ -106,6 +115,7 @@ function resultsHTML(list) {
       </div>
       <div class="ad-card-actions" data-write-only>
         <button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-edit="${esc(p.id)}">Editar</button>
+        ${toggleButton(p)}
         <button class="ad-icon-btn" type="button" title="Duplicar" data-dup="${esc(p.id)}">${ico("plus")}</button>
         <button class="ad-icon-btn ad-icon-btn--danger" type="button" title="Eliminar" data-del="${esc(p.id)}">${ico("trash")}</button>
       </div>
@@ -271,6 +281,7 @@ function updateResults(view) {
 function wireRowActions(view) {
   view.querySelectorAll("[data-dup]").forEach((b) => b.addEventListener("click", () => duplicateProduct(b.getAttribute("data-dup"))));
   view.querySelectorAll("[data-del]").forEach((b) => b.addEventListener("click", () => deleteProductFlow(b.getAttribute("data-del"))));
+  view.querySelectorAll("[data-toggle]").forEach((b) => b.addEventListener("click", () => toggleAvailabilityFlow(b.getAttribute("data-toggle"))));
 
   view.querySelectorAll("[data-sel]").forEach((box) => box.addEventListener("change", () => {
     const id = String(box.getAttribute("data-sel"));
@@ -333,6 +344,18 @@ async function duplicateProduct(id) {
   const p = state.products.find((x) => String(x.id) === String(id));
   if (!p) return;
   openProductDrawer({ ...p, id: null, name: `${p.name} (copia)`, show_on_home: false, home_order: null, flavors: p.flavors.map((f) => ({ name: f.name, available: f.available })), updated_at: null }, { duplicateOf: p.name });
+}
+
+async function toggleAvailabilityFlow(id) {
+  const p = state.products.find((x) => String(x.id) === String(id));
+  if (!p) return;
+  const next = !isAvailable(p);
+  try {
+    await window.catalogDb.setProductAvailability(p.id, next);
+    await reloadProducts();
+    toast({ tone: next ? "ok" : "err", msg: next ? "Producto visible" : "Producto oculto", sub: p.name });
+    renderProducts();
+  } catch (e) { toast({ tone: "err", msg: "No se pudo cambiar", sub: e.message }); }
 }
 
 async function deleteProductFlow(id) {

@@ -34,7 +34,7 @@
     <script src="js/db.js?v=roles-usuarios" defer></script>
     <script src="js/auth.js?v=roles-usuarios" defer></script>
     <script src="js/icons.js?v=roles-usuarios" defer></script>
-    <script src="js/dropdown.js?v=4" defer></script>
+    <script src="js/dropdown.js?v=resize-fix-1" defer></script>
     <!-- Generación de PDF de los informes (vendorizado, sin depender de CDN en vivo) -->
     <script src="js/vendor/jspdf.umd.min.js?v=1" defer></script>
     <script src="js/vendor/jspdf.plugin.autotable.min.js?v=1" defer></script>
@@ -44,7 +44,7 @@
          scripts/bump-admin-version.mjs (lo corre solo scripts/guardar.sh).
          boot-guard.js carga main.js con import() dinámico para mostrar un error
          con botón Reintentar si algo falla (antes quedaba la pantalla en negro). -->
-    <script src="js/admin/boot-guard.js?v=adm-c2f81e29" defer></script>
+    <script src="js/admin/boot-guard.js?v=adm-716eeeea" defer></script>
   </head>
   <body class="ad-body">
     <div class="ad-app" data-anim="on" id="adminApp">
@@ -79,9 +79,14 @@
 
         <main class="ad-main">
           <header class="ad-topbar">
-            <div class="ad-topbar__title">
-              <h1 id="adminTitle">Dashboard</h1>
-              <p id="adminSubtitle">Resumen de la tienda y acciones pendientes</p>
+            <div class="ad-topbar__start">
+              <button class="ad-topbar__sidebar-toggle" id="adminSidebarToggle" type="button" data-sidebar-toggle aria-pressed="false" title="Ocultar menú">
+                <span class="ad-ico" data-javy-icon="panel-left" aria-hidden="true"></span>
+              </button>
+              <div class="ad-topbar__title">
+                <h1 id="adminTitle">Dashboard</h1>
+                <p id="adminSubtitle">Resumen de la tienda y acciones pendientes</p>
+              </div>
             </div>
             <div class="ad-topbar__actions">
               <!-- Chip del usuario conectado (nombre + rol + menú). Lo pinta shell.js. -->

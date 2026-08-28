@@ -209,7 +209,7 @@ Hay tres roles, guardados en `admin_profiles.role`:
 | Rol | Valor | Puede |
 | --- | --- | --- |
 | Admin | `admin` | Todo. El único que crea, edita y elimina usuarios y resetea contraseñas ajenas. |
-| Editor | `editor` | Catálogo completo (productos, combos, categorías, inicio, mensajes). No toca usuarios. |
+| Editor | `editor` | Catálogo completo (productos, combos, categorías, inicio). No toca usuarios. |
 | Lector | `viewer` | Solo consulta. Entra al panel y ve todo, pero no modifica nada. |
 
 Tres funciones de Postgres deciden el permiso (`supabase/migrations/fase9-roles.sql`):
@@ -230,9 +230,8 @@ un sitio estático. Por eso existe la **Edge Function `admin-users`**
 Supabase sola. Cambiar la **propia** contraseña no pasa por ahí (lo hace el chip de usuario de la
 esquina superior derecha con `auth.updateUser`).
 
-El panel cubre: Dashboard, Productos, Sabores/variantes, Inicio (curación del home), Mensajes
-(historial de leads capturados por el formulario anterior), Categorías, Combos, Accesos y Ajustes, más el **drawer de
-edición de producto**. Filtros de revisión:
+El panel cubre: Dashboard, Productos, Sabores/variantes, Inicio (curación del home), Categorías,
+Combos, Accesos y Ajustes, más el **drawer de edición de producto**. Filtros de revisión:
 sin imagen, sin sabor, faltan sabores, sin sabores activos, revisar tipo de sabor, no disponibles,
 precio vacío, destacados.
 
@@ -247,9 +246,6 @@ precio vacío, destacados.
   (`admin` / `editor` / `viewer`), su nombre visible y si tiene el acceso activo. Un trigger
   impide que la tabla quede sin ningún Admin activo.
 - `settings` — configuración tipo clave/valor (JSONB).
-- `leads` — historial de solicitudes del formulario anterior; la página pública ya no crea
-  registros, pero los admins conservan lectura/gestión vía RLS. Migración histórica:
-  `supabase/migrations/fase7-leads.sql`.
 
 **RLS activado** en todas las tablas: lectura pública, escritura solo para quien pase
 `public.is_admin()` (que desde la Fase 9 significa **Admin o Editor**, ver *Roles y usuarios*).

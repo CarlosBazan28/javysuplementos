@@ -45,7 +45,9 @@ async function initCategoriesSubmenu(host) {
     ? `/categoria/${encodeURIComponent(slugOf(f))}/`
     : `/supplements-page.html?cat=${encodeURIComponent(slugOf(f))}`);
 
-  list.innerHTML = `<li><a class="nav__sub-all" href="/supplements-page.html">Ver catálogo completo</a></li>`
+  const catalogIcon = window.javyIcons?.get?.("grid", "btn-icon nav__sub-all-icon") || "";
+  const chevronIcon = window.javyIcons?.get?.("chevron-right", "btn-icon nav__sub-all-chevron") || "";
+  list.innerHTML = `<li><a class="nav__sub-all" href="/supplements-page.html">${catalogIcon}<span class="nav__sub-all-label">Ver catálogo completo</span>${chevronIcon}</a></li>`
     + families
       .map((f) => `<li><a href="${hrefFor(f)}">${escapeAttr(f.name)}</a></li>`)
       .join("");
@@ -191,6 +193,34 @@ recordVisit();
   const consultationBtn = document.getElementById("consultationBtn") || document.getElementById("cartBtn");
   consultationBtn?.addEventListener("click", () => {
     window.consultation?.openPanel?.();
+  });
+
+  const themeToggle = document.getElementById("themeToggle");
+  const themeToggleIcon = themeToggle?.querySelector("[data-javy-icon]");
+
+  const syncThemeToggle = () => {
+    const isLight = document.documentElement.getAttribute("data-theme") === "light";
+    themeToggle?.setAttribute("aria-pressed", String(isLight));
+    themeToggle?.setAttribute("aria-label", isLight ? "Cambiar a modo oscuro" : "Cambiar a modo claro");
+    themeToggleIcon?.setAttribute("data-javy-icon", isLight ? "sun" : "moon");
+    window.javyIcons?.enhance?.(themeToggle || document);
+  };
+
+  syncThemeToggle();
+
+  themeToggle?.addEventListener("click", () => {
+    const isLight = document.documentElement.getAttribute("data-theme") === "light";
+    if (isLight) {
+      document.documentElement.removeAttribute("data-theme");
+    } else {
+      document.documentElement.setAttribute("data-theme", "light");
+    }
+    try {
+      localStorage.setItem("javy-theme", isLight ? "dark" : "light");
+    } catch (error) {
+      // Sin localStorage: el tema cambia igual, solo que no se recuerda para la próxima visita.
+    }
+    syncThemeToggle();
   });
 
   const navToggle = document.getElementById("navToggle");

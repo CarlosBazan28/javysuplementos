@@ -26,7 +26,7 @@
 
 .nav__links a {
   text-decoration: none;
-  color: var(--blanco);
+  color: var(--text);
   font-size: 1.125rem;
   font-weight: 500;
   border-radius:999px;
@@ -45,7 +45,7 @@
   outline: 2px solid var(--brand);
   outline-offset: 2px;
   border-radius:999px;
-  background-color: #ffffff14;
+  background-color: color-mix(in srgb, var(--text) 8%, transparent);
 }
 
 .nav__toggle {
@@ -53,10 +53,10 @@
   position: relative;
   width: 44px;
   height: 44px;
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
-  background: rgba(255,255,255,0.04);
-  color: var(--blanco);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  color: var(--text);
   cursor: pointer;
   padding: 0;
 }
@@ -64,13 +64,36 @@
 .nav__toggle-icon {
   width: 22px;
   height: 22px;
-  color: var(--blanco);
+  color: var(--text);
   margin: auto;
   transition: transform 0.2s ease;
 }
 
 .nav__toggle.is-open .nav__toggle-icon {
   transform: rotate(90deg);
+}
+
+.theme-toggle{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  border-radius: 12px;
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--text) 9%, transparent);
+  color: var(--text);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.16s ease;
+}
+
+.theme-toggle__icon{
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  color: currentColor;
 }
 
 .cart-btn{
@@ -84,9 +107,9 @@
   height: 46px;
   padding: 0 12px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.04);
-  color: var(--blanco);
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  color: var(--text);
   font-weight: 700;
   cursor: pointer;
 }
@@ -118,7 +141,7 @@
   font-weight: 700;
   background: var(--brand);
   color: #0b1a24;
-  border: 2px solid #0b1a24;
+  border: 2px solid var(--bg-2);
 }
 
 .cart-badge[hidden]{
@@ -160,10 +183,10 @@
     flex: initial;
     justify-content: stretch;
     padding: 10px;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid var(--line-strong);
     border-radius: 16px;
-    background: rgba(5, 7, 9, 0.96);
-    box-shadow: 0 18px 42px rgba(0,0,0,0.45);
+    background: var(--menu-glass);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, calc(0.45 * var(--shadow-a)));
     transform: translate(-50%, -8px);
     opacity: 0;
     pointer-events: none;
@@ -210,8 +233,8 @@
 
 .site-header {
   width: 100%;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(5, 7, 9, 0.78);
+  border-bottom: 1px solid var(--line);
+  background: var(--header-glass);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
@@ -219,8 +242,8 @@
 
 .site-header.is-scrolled {
   border-color: rgba(90, 180, 233, 0.2);
-  background: rgba(5, 7, 9, 0.94);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.48);
+  background: var(--header-glass-scrolled);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, calc(0.48 * var(--shadow-a)));
 }
 
 .site-header .nav {
@@ -249,7 +272,7 @@
 .site-header .nav__logo {
   width: clamp(92px, 10vw, 124px);
   height: auto;
-  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.32));
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, calc(0.32 * var(--shadow-a))));
   transition: width 0.25s ease, transform 0.25s ease;
 }
 
@@ -290,6 +313,7 @@
 }
 
 .site-header .nav__toggle,
+.site-header .theme-toggle,
 .site-header .cart-btn {
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.16s ease;
 }
@@ -301,6 +325,17 @@
   border-color: rgba(90, 180, 233, 0.45);
   background: rgba(90, 180, 233, 0.12);
   box-shadow: 0 0 0 3px rgba(90, 180, 233, 0.12);
+}
+
+/* Gris neutro, sin el halo azul de marca del resto de los botones del header:
+   es un ajuste de preferencia (no una acción de marca), así que se mantiene
+   discreto en vez de competir por atención. */
+.site-header .theme-toggle:hover,
+.site-header .theme-toggle:focus-visible {
+  border-color: color-mix(in srgb, var(--text) 28%, transparent);
+  background: color-mix(in srgb, var(--text) 14%, transparent);
+  box-shadow: none;
+  outline: none;
 }
 
 @media (max-width: 900px) {
@@ -332,7 +367,10 @@
     width: min(420px, calc(100vw - 24px));
     padding: 12px;
     border-radius: 16px;
-    background: rgba(5, 7, 9, 0.98);
+    /* Opaco del todo: con 0.98 se alcanzaba a leer el contenido de la página
+       detrás (más notorio en huecos vacíos del menú, como debajo de "Ver
+       catálogo completo"), aunque el hueco en sí no era ningún bug de layout. */
+    background: var(--menu-glass-solid);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
   }
@@ -357,7 +395,8 @@
   /* No bajan de 44px: son los dos controles mas usados del sitio y en el
      telefono mas chico es justamente donde peor se le pega a un target de
      40px. El aire se recorta del gap y del logo, no del area tactil. */
-  .site-header .nav__toggle {
+  .site-header .nav__toggle,
+  .site-header .theme-toggle {
     flex-basis: 44px;
     width: 44px;
     height: 44px;
@@ -470,46 +509,47 @@
   white-space: nowrap;
 }
 
-/* Va primero en la lista (js/include-nav.js), no último: el separador y el
-   aire pasan de arriba a abajo. text-align:center porque es la acción
+/* Va primero en la lista (js/include-nav.js), no último: es la acción
    destacada del submenú, no un ítem más de la lista de familias -las demás
-   quedan a la izquierda como texto normal-.
+   quedan como texto normal, sin ícono ni fondo-. Fila con ícono + fondo
+   tenue (var(--brand-tint)) + flecha, para que se note de un vistazo sin
+   "flotar" como un botón aparte.
 
-   El !important en padding/border-radius/background/min-height no es
-   capricho: este <a> vive dentro de .nav__links (el trigger "SUPLEMENTOS" es
-   un <li> de esa lista), así que hereda el look de píldora de .nav__links a
-   (padding 8px 12px, border-radius 999px, fondo de marca al hover) Y, en
-   mobile, el min-height:44px de .site-header .nav__links a (línea ~339,
-   pensado para el touch target de los ítems del menú principal). Con
-   display:block forzado ese min-height dejaba ~20px de hueco vacío debajo
-   del texto -el "se rompió más" era este hueco, no el centrado, que ya
-   estaba resuelto-. Sin anular todo esto, el texto queda centrado DENTRO de
-   una caja que no coincide con el resto del submenú. */
+   El !important en display/padding/border-radius/background/min-height no
+   es capricho: este <a> vive dentro de .nav__links (el trigger "SUPLEMENTOS"
+   es un <li> de esa lista), así que hereda el look de píldora de
+   .nav__links a (padding 8px 12px, border-radius 999px, fondo de marca al
+   hover) y, en mobile, el min-height:44px de .site-header .nav__links a
+   (línea ~339). Sin anular todo esto, la fila queda con el padding/radio
+   equivocados y no coincide con el resto del submenú. */
 .nav__sub-all {
   display: flex !important;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
   width: 100%;
-  min-height: 0 !important;
-  text-align: center;
-  padding: 9px 12px !important;
-  border-radius: 10px !important;
-  background: rgba(1, 145, 198, 0.12) !important;
-  border: 1px solid rgba(90, 180, 233, 0.22);
-  margin-bottom: 6px;
-  color: var(--neon) !important;
-  font-weight: 600;
-  text-decoration: none !important;
-  transition: background 0.18s ease, border-color 0.18s ease, transform 0.16s ease;
+  min-height: 40px !important;
+  padding: 0 12px !important;
+  border-radius: var(--radius-md) !important;
+  background: var(--brand-tint) !important;
+  margin-bottom: 8px;
+  color: var(--text) !important;
+  font-weight: 700;
 }
+
+.nav__sub-all-icon,
+.nav__sub-all-chevron {
+  color: var(--accent);
+}
+
+.nav__sub-all-icon { width: 16px; height: 16px; }
+.nav__sub-all-chevron { width: 16px; height: 16px; }
+
+.nav__sub-all-label { flex: 1; }
 
 .nav__sub-all:hover,
 .nav__sub-all:focus-visible {
-  background: rgba(1, 145, 198, 0.22) !important;
-  border-color: rgba(90, 180, 233, 0.5);
-  color: var(--neon) !important;
-  text-decoration: none !important;
-  transform: translateY(-1px);
+  background: rgba(90, 180, 233, 0.2) !important;
+  color: var(--text) !important;
 }
 
 @media (min-width: 901px) {
@@ -522,9 +562,9 @@
     gap: 2px;
     min-width: 220px;
     padding: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--line-strong);
     border-radius: 14px;
-    background: rgba(5, 7, 9, 0.97);
+    background: var(--menu-glass);
     box-shadow: var(--shadow-lg);
   }
 }
@@ -540,7 +580,7 @@
     display: grid;
     gap: 2px;
     padding: 4px 0 4px 12px;
-    border-left: 2px solid rgba(255, 255, 255, 0.12);
+    border-left: 2px solid var(--line-strong);
     margin: 4px 0 4px 8px;
   }
 
