@@ -265,7 +265,7 @@ const COMMON_SCRIPTS = [
   "/js/product-urls.js?v=seo-urls",
   "/js/db.js?v=solo-activos",
   "/js/auth.js?v=session-state",
-  "/js/icons.js?v=cat-icons-grid-1",
+  "/js/icons.js?v=sidebar-toggle-1",
   "/js/dropdown.js?v=resize-fix-1",
   "/js/cart.js?v=ferguson-label-1",
 ];
@@ -629,7 +629,7 @@ ${featured ? `          <span class="product-card__badge">Destacado</span>\n` : 
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
-${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-unif", "css/pages/supplements.css?v=tap-44"] })}
+${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-unif", "css/pages/supplements.css?v=scroll-fix-1"] })}
 ${renderScripts(["/js/categoria.js?v=cat-unif"])}
   </head>
   <body>

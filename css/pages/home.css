@@ -148,6 +148,49 @@
   }
 }
 
+/* ---- Texto indexable del home ------------------------------------------ */
+/* Prosa real al pie de la home (ver index.html). Mismo ancho y ritmo vertical
+   que .home-cats para que no se lea como un parche pegado al final. La medida
+   de lectura se acota aparte: a 1180px de ancho la línea de texto es tan larga
+   que el ojo pierde el renglón al volver. */
+.home-about {
+  width: min(100% - 24px, 1180px);
+  margin-inline: auto;
+  margin-top: var(--section-gap);
+}
+
+.home-about__title {
+  /* Misma medida que la prosa: si el título ocupa los 1180px del contenedor y
+     los párrafos cortan a 68ch, el bloque se lee desbalanceado. */
+  max-width: 68ch;
+  margin: 0;
+  font-size: clamp(1.35rem, 3.4vw, 1.9rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.home-about__prose {
+  max-width: 68ch;
+  margin-top: var(--sp-3);
+}
+
+.home-about__prose p {
+  margin: 0 0 var(--sp-3);
+  color: color-mix(in srgb, var(--text) 82%, transparent);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.home-about__prose p:last-child {
+  margin-bottom: 0;
+}
+
+@media (min-width: 768px) {
+  .home-about__prose p {
+    font-size: 1.05rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-cat {
     transition: none;

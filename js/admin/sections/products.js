@@ -2,13 +2,13 @@
    Sección Productos: barra de búsqueda + filtros (familia + estado) y la
    tabla/cards con acciones por fila.
    ============================================================================ */
-import { state, families, typesOf, catById } from "../state.js?v=adm-2c2b8694";
-import { $, esc, ico, imgTag, peso, hasOffer, isAvailable, isMissingImage, stockTone, wireImageFallbacks } from "../helpers.js?v=adm-2c2b8694";
-import { setView } from "../view.js?v=adm-2c2b8694";
-import { bindEditClicks } from "../shell.js?v=adm-2c2b8694";
-import { confirmModal, toast } from "../ui.js?v=adm-2c2b8694";
-import { reloadProducts } from "../data.js?v=adm-2c2b8694";
-import { openProductDrawer } from "../drawers/product-drawer.js?v=adm-2c2b8694";
+import { state, families, typesOf, catById } from "../state.js?v=adm-9973a1e9";
+import { $, esc, ico, imgTag, peso, hasOffer, isAvailable, isMissingImage, stockTone, wireImageFallbacks } from "../helpers.js?v=adm-9973a1e9";
+import { setView } from "../view.js?v=adm-9973a1e9";
+import { bindEditClicks } from "../shell.js?v=adm-9973a1e9";
+import { confirmModal, toast } from "../ui.js?v=adm-9973a1e9";
+import { reloadProducts } from "../data.js?v=adm-9973a1e9";
+import { openProductDrawer } from "../drawers/product-drawer.js?v=adm-9973a1e9";
 
 const STATUS_FILTERS = [
   ["all", "Todos"], ["home", "En inicio"], ["offers", "En oferta"], ["out", "Agotados"], ["noimg", "Sin imagen"],
@@ -78,7 +78,7 @@ const selectedProducts = () => state.products.filter((p) => selection.has(String
 
 function checkboxCell(p) {
   const on = selection.has(String(p.id));
-  return `<label class="ad-check" title="Seleccionar">
+  return `<label class="ad-check" title="Seleccionar" data-write-only>
     <input type="checkbox" data-sel="${esc(p.id)}"${on ? " checked" : ""} aria-label="Seleccionar ${esc(p.name)}" />
   </label>`;
 }
@@ -96,7 +96,7 @@ function resultsHTML(list) {
       <td>${priceCell(p)}</td>
       <td><small style="color:var(--pb-muted)">${p.flavors.length} ${p.flavors.length === 1 ? "sabor" : "sabores"}</small></td>
       <td><div style="display:flex;gap:6px;flex-wrap:wrap">${pill(p)}${p.show_on_home ? `<span class="ad-pill ad-pill--home">Inicio</span>` : ""}</div></td>
-      <td><div class="ad-row-actions">
+      <td><div class="ad-row-actions" data-write-only>
         <button class="ad-icon-btn" type="button" title="Editar" data-edit="${esc(p.id)}">${ico("pencil")}</button>
         ${toggleButton(p)}
         <button class="ad-icon-btn" type="button" title="Duplicar" data-dup="${esc(p.id)}">${ico("plus")}</button>
@@ -113,7 +113,7 @@ function resultsHTML(list) {
         <p class="ad-meta">${esc(p.brand || "")}${p.category ? " · " + esc(p.category) : ""}</p>
         <div class="ad-card-tags">${pill(p)}${p.show_on_home ? `<span class="ad-pill ad-pill--home">Inicio</span>` : ""}<span class="ad-price" style="margin-left:auto">${hasOffer(p) ? `<s>${esc(peso(p.old_price))}</s>` : ""}${esc(peso(p.price))}</span></div>
       </div>
-      <div class="ad-card-actions">
+      <div class="ad-card-actions" data-write-only>
         <button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-edit="${esc(p.id)}">Editar</button>
         ${toggleButton(p)}
         <button class="ad-icon-btn" type="button" title="Duplicar" data-dup="${esc(p.id)}">${ico("plus")}</button>
@@ -124,7 +124,7 @@ function resultsHTML(list) {
   const allOn = list.length > 0 && list.every((p) => selection.has(String(p.id)));
   return `<div class="ad-table-wrap"><table class="ad-table">
       <thead><tr>
-        <th><label class="ad-check" title="Seleccionar todo"><input type="checkbox" data-sel-all${allOn ? " checked" : ""} aria-label="Seleccionar todos los resultados" /></label></th>
+        <th data-write-only><label class="ad-check" title="Seleccionar todo"><input type="checkbox" data-sel-all${allOn ? " checked" : ""} aria-label="Seleccionar todos los resultados" /></label></th>
         <th>Producto</th><th>Categoría</th><th>Precio</th><th>Sabores</th><th>Estado</th><th></th></tr></thead>
       <tbody>${rows}</tbody></table></div>
      <div class="ad-prod-cards">${cards}</div>`;
@@ -140,7 +140,7 @@ function bulkBarHTML() {
     ...typesOf(f.id).map((t) => `<option value="${esc(t.id)}">&nbsp;&nbsp;└ ${esc(t.name)}</option>`),
   ]).join("");
 
-  return `<div class="ad-bulkbar" role="region" aria-label="Acciones sobre la selección">
+  return `<div class="ad-bulkbar" data-write-only role="region" aria-label="Acciones sobre la selección">
     <span class="ad-bulkbar__count">${n} seleccionado${n === 1 ? "" : "s"}</span>
     <select class="ad-select ad-bulkbar__select" data-bulk-target aria-label="Categoría destino">
       <option value="">Mover a…</option>
@@ -192,7 +192,7 @@ export function renderProducts() {
           </div>
           <div class="ad-filterbar__sel"><select class="ad-select" data-cat aria-label="Filtrar por categoría">${catOpts}</select></div>
           <div class="ad-filterbar__sel"><select class="ad-select" data-sub aria-label="Filtrar por subcategoría" ${subDisabled ? "disabled" : ""}>${subOpts}</select></div>
-          <button class="ad-btn ad-btn--primary" type="button" data-add>${ico("plus")}Agregar producto</button>
+          <button class="ad-btn ad-btn--primary" type="button" data-add data-write-only>${ico("plus")}Agregar producto</button>
         </div>
         <div class="ad-filterbar__row ad-filterbar__row--chips">
           <div class="ad-toolbar__filters">

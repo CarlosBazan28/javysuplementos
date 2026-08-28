@@ -81,6 +81,8 @@ contenido de los módulos: si el panel cambió, el token cambia y la caché baja
 /img                   /products, /images, /icons, /testimonials (preferir .webp)
 /scripts               estado-ramas.sh, guardar.sh (flujo de git)
 /supabase/schema.sql   esquema de la base de datos
+/supabase/migrations   migraciones incrementales (fase3 … fase9-roles)
+/supabase/functions    Edge Functions (admin-users: crear/eliminar usuarios del panel)
 /Editables/nav.html    markup del nav compartido
 ```
 
@@ -194,11 +196,39 @@ commitear). Para el sentido inverso (sembrar Supabase desde el fallback la prime
 ## Panel administrativo
 
 1. Login en `login.html` con email + password (Supabase Auth).
-2. Se verifica que el usuario exista en `admin_profiles` con `role='admin'` e `is_active=true`; si
+2. Se verifica que el usuario exista en `admin_profiles` con `is_active=true` (cualquier rol); si
    no, sign-out automático.
-3. `protectAdminPage()` valida sesión antes de mostrar el dashboard.
+3. `requireAdminSession()` (en `js/auth.js`) valida sesión antes de mostrar el dashboard.
 4. CRUD de productos/sabores/categorías; las imágenes suben al bucket `product-images`.
 5. La seguridad real la impone **RLS en Supabase**, no la UI.
+
+### Roles y usuarios (sección *Accesos*)
+
+Hay tres roles, guardados en `admin_profiles.role`:
+
+| Rol | Valor | Puede |
+| --- | --- | --- |
+| Admin | `admin` | Todo. El único que crea, edita y elimina usuarios y resetea contraseñas ajenas. |
+| Editor | `editor` | Catálogo completo (productos, combos, categorías, inicio). No toca usuarios. |
+| Lector | `viewer` | Solo consulta. Entra al panel y ve todo, pero no modifica nada. |
+
+Tres funciones de Postgres deciden el permiso (`supabase/migrations/fase9-roles.sql`):
+`is_staff()` (cualquier perfil activo), `can_write()` (Admin + Editor) y `can_manage_users()`
+(solo Admin). ⚠️ **`is_admin()` quedó como alias de `can_write()`**, no significa "es
+administrador": se mantuvo el nombre para no reescribir las ~20 políticas que ya la usaban.
+
+En el panel, `js/admin/permissions.js` expone `canWrite()` / `canManageUsers()`. Cuando el usuario
+es Lector, `shell.js` pone la clase `ad-readonly` en el `<body>` y el CSS esconde todo lo marcado
+con `data-write-only`. **Eso es cosmética**: si querés verificar un permiso de verdad, probalo
+contra la base, no contra la UI.
+
+Crear y eliminar usuarios toca `auth.users` y necesita la `service_role key`, que no puede vivir en
+un sitio estático. Por eso existe la **Edge Function `admin-users`**
+(`supabase/functions/admin-users/index.ts`), la única pieza de servidor del proyecto: verifica con
+`can_manage_users()` que quien llama sea Admin y recién ahí usa la llave. Se despliega con
+`supabase functions deploy admin-users`; `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` las inyecta
+Supabase sola. Cambiar la **propia** contraseña no pasa por ahí (lo hace el chip de usuario de la
+esquina superior derecha con `auth.updateUser`).
 
 El panel cubre: Dashboard, Productos, Sabores/variantes, Inicio (curación del home), Categorías,
 Combos, Accesos y Ajustes, más el **drawer de edición de producto**. Filtros de revisión:
@@ -212,11 +242,14 @@ precio vacío, destacados.
 - `products` — catálogo (tiene columnas redundantes: `name`/`nombre`, `price`/`precio_centavos`).
 - `product_flavors` — sabores/variantes de cada producto, con disponibilidad individual.
 - `categories` — categorías y tipos (Proteínas, Creatinas, Pre-entrenos, etc.).
-- `admin_profiles` — vincula usuarios de Auth con el rol admin.
+- `admin_profiles` — usuarios del panel: vincula la cuenta de Auth con su rol
+  (`admin` / `editor` / `viewer`), su nombre visible y si tiene el acceso activo. Un trigger
+  impide que la tabla quede sin ningún Admin activo.
 - `settings` — configuración tipo clave/valor (JSONB).
 
-**RLS activado** en todas las tablas: lectura pública, escritura solo para admins verificados vía
-la función `public.is_admin()`. En el frontend solo se usan claves públicas tipo `anon`
+**RLS activado** en todas las tablas: lectura pública, escritura solo para quien pase
+`public.is_admin()` (que desde la Fase 9 significa **Admin o Editor**, ver *Roles y usuarios*).
+En el frontend solo se usan claves públicas tipo `anon`
 (configuradas en `js/supabase-config.js`). **Nunca** guardar service role keys en el frontend.
 
 ---

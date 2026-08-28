@@ -9,6 +9,8 @@ export const state = {
   admins: [],
   userId: null,
   userEmail: null,
+  userName: null,
+  role: null,
   active: "dashboard",
   settingsTab: "estado",
   productFilter: "all",

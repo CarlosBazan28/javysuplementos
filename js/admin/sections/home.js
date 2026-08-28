@@ -1,13 +1,13 @@
 /* ============================================================================
    Sección Inicio: curación de los productos destacados del home (orden + cupo).
    ============================================================================ */
-import { state } from "../state.js?v=adm-2c2b8694";
-import { HOME_MAX, HOME_MIN } from "../config.js?v=adm-2c2b8694";
-import { $, esc, ico, imgTag, peso } from "../helpers.js?v=adm-2c2b8694";
-import { setView } from "../view.js?v=adm-2c2b8694";
-import { bindEditClicks } from "../shell.js?v=adm-2c2b8694";
-import { toast } from "../ui.js?v=adm-2c2b8694";
-import { reloadProducts } from "../data.js?v=adm-2c2b8694";
+import { state } from "../state.js?v=adm-9973a1e9";
+import { HOME_MAX, HOME_MIN } from "../config.js?v=adm-9973a1e9";
+import { $, esc, ico, imgTag, peso } from "../helpers.js?v=adm-9973a1e9";
+import { setView } from "../view.js?v=adm-9973a1e9";
+import { bindEditClicks } from "../shell.js?v=adm-9973a1e9";
+import { toast } from "../ui.js?v=adm-9973a1e9";
+import { reloadProducts } from "../data.js?v=adm-9973a1e9";
 
 export function renderHome() {
   let ids = state.products
@@ -35,7 +35,7 @@ export function renderHome() {
               <span class="ad-slot__order">${i + 1}</span>
               ${imgTag(p.image, "ad-slot__img")}
               <div class="ad-slot__main"><strong>${esc(p.name)}</strong><small>${esc(p.brand || "")} · ${esc(peso(p.price))}</small></div>
-              <div class="ad-row__actions">
+              <div class="ad-row__actions" data-write-only>
                 <button class="ad-icon-btn" type="button" title="Subir" data-move="${i}|-1" ${i === 0 ? "disabled" : ""}>${ico("arrow-up")}</button>
                 <button class="ad-icon-btn" type="button" title="Bajar" data-move="${i}|1" ${i === items.length - 1 ? "disabled" : ""}>${ico("arrow-down")}</button>
                 <button class="ad-icon-btn" type="button" title="Editar" data-edit="${esc(p.id)}">${ico("pencil")}</button>
@@ -45,14 +45,14 @@ export function renderHome() {
           ${Array.from({ length: emptySlots }).map((_, i) => `
             <div class="ad-slot ad-slot--empty"><span class="ad-slot__order">${ids.length + i + 1}</span><span>Espacio libre — agregá un producto destacado</span></div>`).join("")}
         </div>
-        <div class="ad-field" style="margin-top:14px;max-width:420px">
+        <div class="ad-field" style="margin-top:14px;max-width:420px" data-write-only>
           <label class="ad-field__label">Agregar producto al inicio</label>
           <div style="display:flex;gap:8px">
             <select class="ad-select" data-pool aria-label="Agregar producto al inicio" ${full ? "disabled" : ""}><option value="">Elegir…</option>${poolOptions}</select>
           </div>
           ${full ? `<span class="ad-field__help">Cupo lleno (${HOME_MAX}). Quitá uno para agregar otro.</span>` : ""}
         </div>
-        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap" data-write-only>
           <button class="ad-btn ad-btn--primary" type="button" data-save-home>${ico("save")}Guardar inicio</button>
           <span class="ad-field__help" style="align-self:center">${ids.length < HOME_MIN ? `Necesitás al menos ${HOME_MIN} productos para guardar.` : "Listo para guardar."}</span>
         </div>

@@ -3,7 +3,7 @@
    y generación de PDF (jsPDF + autotable, vendorizados en js/vendor) con guardado
    en el dispositivo o compartir nativo (Web Share API).
    ============================================================================ */
-import { esc } from "./helpers.js?v=adm-2c2b8694";
+import { esc } from "./helpers.js?v=adm-9973a1e9";
 
 // Tabla HTML simple desde columnas + filas (celdas en texto plano, se escapan aquí).
 export function buildTable(columns, rows, className = "") {

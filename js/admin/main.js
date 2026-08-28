@@ -4,13 +4,13 @@
    El controlador está dividido en módulos bajo js/admin/:
    config · state · helpers · ui · view · data · shell · sections/* · drawers/*
    ============================================================================ */
-import { state } from "./state.js?v=adm-2c2b8694";
-import { $, withTimeout } from "./helpers.js?v=adm-2c2b8694";
-import { setGate, setGateError } from "./ui.js?v=adm-2c2b8694";
-import { showViewError } from "./view.js?v=adm-2c2b8694";
-import { loadAll } from "./data.js?v=adm-2c2b8694";
-import { buildChrome, go } from "./shell.js?v=adm-2c2b8694";
-import { startIdleGuard } from "./session.js?v=adm-2c2b8694";
+import { state } from "./state.js?v=adm-9973a1e9";
+import { $, withTimeout } from "./helpers.js?v=adm-9973a1e9";
+import { setGate, setGateError } from "./ui.js?v=adm-9973a1e9";
+import { showViewError } from "./view.js?v=adm-9973a1e9";
+import { loadAll } from "./data.js?v=adm-9973a1e9";
+import { buildChrome, go } from "./shell.js?v=adm-9973a1e9";
+import { startIdleGuard } from "./session.js?v=adm-9973a1e9";
 
 // Le avisa al watchdog de boot-guard.js que el grafo de módulos evaluó bien;
 // de acá en más los errores los muestra boot() en el gate.
@@ -31,6 +31,8 @@ async function boot() {
     }
     state.userId = session.user.id;
     state.userEmail = session.user.email || null;
+    state.role = profile.role || "viewer";
+    state.userName = profile.display_name || (state.userEmail ? state.userEmail.split("@")[0] : "Usuario");
     setGate("Cargando catálogo…");
     // loadAll casi nunca rechaza (cada fuente trae su .catch), pero sí puede
     // colgarse si un fetch queda pendiente; el timeout es la única defensa.

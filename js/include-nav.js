@@ -229,7 +229,15 @@ recordVisit();
   const navToggleIcon = navToggle?.querySelector("[data-javy-icon]");
 
   const updateHeaderState = () => {
-    siteHeader?.classList.toggle("is-scrolled", window.scrollY > 10);
+    if (!siteHeader) return;
+    // Histéresis para evitar parpadeo cuando el scroll queda justo en el umbral
+    // (achicar el header sticky reacomoda el contenido y hace oscilar scrollY).
+    const isScrolled = siteHeader.classList.contains("is-scrolled");
+    if (!isScrolled && window.scrollY > 24) {
+      siteHeader.classList.add("is-scrolled");
+    } else if (isScrolled && window.scrollY < 8) {
+      siteHeader.classList.remove("is-scrolled");
+    }
   };
 
   const currentPage = window.location.pathname.split("/").pop() || "index.html";

@@ -731,9 +731,8 @@ async function getAdminProfile(userId) {
 
   const { data, error } = await supabaseClient
     .from("admin_profiles")
-    .select("id, user_id, role, is_active")
+    .select("id, user_id, email, display_name, role, is_active")
     .eq("user_id", userId)
-    .eq("role", "admin")
     .eq("is_active", true)
     .maybeSingle();
 
@@ -746,7 +745,7 @@ async function getAdminProfiles() {
   ensureSupabaseForWrite();
   const { data, error } = await supabaseClient
     .from("admin_profiles")
-    .select("id, user_id, email, role, is_active, created_at")
+    .select("id, user_id, email, display_name, role, is_active, created_at")
     .order("created_at", { ascending: true });
 
   if (error) throw error;
@@ -759,7 +758,7 @@ async function setAdminProfileActive(id, active) {
     .from("admin_profiles")
     .update({ is_active: Boolean(active) })
     .eq("id", id)
-    .select("id, user_id, email, role, is_active, created_at")
+    .select("id, user_id, email, display_name, role, is_active, created_at")
     .single();
 
   if (error) throw error;
@@ -768,6 +767,91 @@ async function setAdminProfileActive(id, active) {
     new_value: data.is_active ? "activo" : "inactivo",
     summary: `${data.is_active ? "activó" : "desactivó"} el acceso de ${data.email || "un administrador"}`,
   });
+  return data;
+}
+
+/* ---------------------------------------------------------------------------
+   Gestión de usuarios del panel.
+
+   Leer, cambiar rol/nombre y activar/desactivar se hace directo contra la
+   tabla: RLS deja pasar solo a un Admin (can_manage_users()).
+
+   Crear, eliminar y resetear contraseñas toca auth.users, y eso exige la
+   service_role key. Esa llave no puede estar en el navegador, así que va por
+   la Edge Function `admin-users` (supabase/functions/admin-users/index.ts),
+   que vuelve a verificar el permiso del lado del servidor.
+   --------------------------------------------------------------------------- */
+
+async function callAdminUsersFn(action, payload = {}) {
+  ensureSupabaseForWrite();
+
+  const { data, error } = await supabaseClient.functions.invoke("admin-users", {
+    body: { action, ...payload },
+  });
+
+  if (error) {
+    // La función responde el detalle en el cuerpo; sin esto solo se vería un
+    // "Edge Function returned a non-2xx status code" que no le dice nada a nadie.
+    let message = error.message || "No se pudo completar la operación.";
+    try {
+      const body = await error.context?.json?.();
+      if (body?.error) message = body.error;
+    } catch (_) {
+      // el cuerpo no era JSON; nos quedamos con el mensaje genérico
+    }
+    throw new Error(message);
+  }
+
+  if (data?.error) throw new Error(data.error);
+  return data;
+}
+
+async function createAdminUser({ email, password, role = "viewer", displayName = "" }) {
+  const data = await callAdminUsersFn("create", {
+    email: String(email || "").trim().toLowerCase(),
+    password,
+    role,
+    display_name: displayName,
+  });
+  return data?.profile || null;
+}
+
+async function deleteAdminUser(id) {
+  await callAdminUsersFn("delete", { id });
+  return true;
+}
+
+async function setAdminUserPassword(id, password) {
+  await callAdminUsersFn("set_password", { id, password });
+  return true;
+}
+
+async function updateAdminProfile(id, { role, displayName } = {}) {
+  ensureSupabaseForWrite();
+
+  const patch = {};
+  if (role !== undefined) patch.role = role;
+  if (displayName !== undefined) patch.display_name = String(displayName || "").trim() || null;
+  if (!Object.keys(patch).length) throw new Error("No hay nada que actualizar.");
+
+  const { data, error } = await supabaseClient
+    .from("admin_profiles")
+    .update(patch)
+    .eq("id", id)
+    .select("id, user_id, email, display_name, role, is_active, created_at")
+    .single();
+
+  if (error) throw error;
+
+  await logActivity({
+    action: "update", entity_type: "admin", entity_id: data.user_id || null, entity_name: data.email,
+    field: role !== undefined ? "rol" : "nombre",
+    new_value: role !== undefined ? data.role : data.display_name,
+    summary: role !== undefined
+      ? `cambió el rol de ${data.email || "un usuario"} a ${data.role}`
+      : `renombró a ${data.email || "un usuario"} como ${data.display_name || "(sin nombre)"}`,
+  });
+
   return data;
 }
 
@@ -1399,6 +1483,10 @@ window.catalogDb = {
   getAdminProfile,
   getAdminProfiles,
   setAdminProfileActive,
+  updateAdminProfile,
+  createAdminUser,
+  deleteAdminUser,
+  setAdminUserPassword,
   getHomeProducts,
   updateHomeProducts,
   uploadProductImage,
