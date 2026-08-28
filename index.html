@@ -105,7 +105,7 @@
     <link rel="stylesheet" href="css/components/buttons.css?v=anim-1">
     <link rel="stylesheet" href="css/components/cards.css?v=anim-1">
     <link rel="stylesheet" href="css/components/cart.css?v=ux-fix-1">
-    <link rel="stylesheet" href="css/pages/home.css?v=anim-1">
+    <link rel="stylesheet" href="css/pages/home.css?v=seo-home-1">
     <link rel="stylesheet" href="css/dropdown.css?v=anim-1">
 
     <!-- Google Fonts -->
@@ -136,8 +136,8 @@
     <main class="main__container">
       <section class="hero">
         <div class="hero__slogan">
-          <h1>Tu Salud y Bienestar es nuestra prioridad</h1>
-          <p class="hero__copy">Suplementos originales, asesoria directa y cotizaciones por WhatsApp para elegir mejor.</p>
+          <h1>Suplementos originales en Panamá</h1>
+          <p class="hero__copy">Tu salud y bienestar son nuestra prioridad. Proteínas, creatinas, pre-entrenos y más, con asesoría directa y cotización por WhatsApp.</p>
           <div class="hero__button">
             <button class="btn btn--primary btn--lg hero__button--pri">Ver productos</button>
             <button class="btn btn--secondary btn--lg hero__button--sec">Abrir cotización</button>
@@ -250,6 +250,35 @@
         </article>
       </div>
     </section>
+      <!-- Texto indexable del home. Existe por SEO: hasta ahora la única prosa
+           de la página era el hero, y el resto del markup lo rellena JS desde
+           Supabase, así que Google no tenía contenido que leer en la página que
+           más autoridad acumula. Los horarios y la dirección deben coincidir
+           con el openingHoursSpecification del JSON-LD de arriba y con el
+           Perfil de Empresa de Google: si los tres no coinciden, Google
+           desconfía de los tres. -->
+      <section class="home-about reveal" aria-labelledby="home-about-title">
+        <h2 class="home-about__title" id="home-about-title">Suplementos deportivos en Panamá, con precio a la vista</h2>
+        <div class="home-about__prose">
+          <p>
+            En Javy Suplementos vendemos suplementos deportivos 100 % originales en Panamá:
+            proteínas, creatinas, pre-entrenos, quemadores, aminoácidos y vitaminas de marcas
+            como Optimum Nutrition, Dymatize, Mutant, MuscleTech, Nutrex, Nutricost, Cellucor y
+            BSN. Todo el catálogo tiene el precio publicado, así que puedes comparar sin
+            escribir para preguntar cuánto cuesta.
+          </p>
+          <p>
+            Estamos en el Edificio Frontenac, Calle 50, en la ciudad de Panamá. Atendemos de
+            lunes a viernes de 9:30 a.m. a 5:00 p.m. y los sábados de 9:00 a.m. a 2:00 p.m.
+          </p>
+          <p>
+            Para comprar, arma tu cotización desde el catálogo agregando los productos que te
+            interesan y envíala por WhatsApp: te confirmamos disponibilidad, precio final y
+            forma de entrega. Si no sabes cuál te conviene, escríbenos y te orientamos según
+            tu objetivo.
+          </p>
+        </div>
+      </section>
     </main>
 
     <footer class="footer">
