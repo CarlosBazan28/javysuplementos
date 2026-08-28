@@ -3,7 +3,7 @@
    toasts, modales (confirm/prompt), gate, markup de formulario y chips-input.
    Solo depende de helpers (esc, ico, DOM).
    ============================================================================ */
-import { $, $$, esc, ico } from "./helpers.js?v=adm-e808fa3b";
+import { $, $$, esc, ico } from "./helpers.js?v=adm-716eeeea";
 
 /* ----------------------------- toasts ----------------------------- */
 export function toast({ tone = "ok", msg = "", sub = "" }) {
@@ -80,6 +80,137 @@ export function promptModal({ title, label = "", value = "", confirmLabel = "Gua
     input.focus();
     input.select();
   });
+}
+
+/* Modal de formulario: la versión multi-campo de promptModal(). La usan Accesos
+   (crear usuario, cambiar rol, resetear contraseña) y el cambio de contraseña
+   propia del chip de usuario.
+
+   fields: [{ key, label, type = "text" | "password" | "email" | "select",
+              value, options: [{value,label,hint}], help, required, placeholder }]
+
+   Si se pasa onSubmit, se ejecuta con los valores ANTES de cerrar: si lanza,
+   el error se muestra dentro del modal y el usuario no pierde lo que escribió.
+   Resuelve con el objeto de valores, o null si se canceló. */
+export function formModal({ title, intro = "", fields = [], confirmLabel = "Guardar", danger = false, onSubmit = null }) {
+  return new Promise((resolve) => {
+    const host = $("#adminConfirmHost");
+    const overlay = document.createElement("div");
+    overlay.className = "ad-confirm-overlay";
+
+    const control = (f) => {
+      if (f.type === "select") {
+        const opts = (f.options || []).map((o) =>
+          `<option value="${esc(o.value)}"${String(o.value) === String(f.value) ? " selected" : ""}>${esc(o.label)}</option>`
+        ).join("");
+        return `<select class="ad-select" data-key="${esc(f.key)}">${opts}</select>`;
+      }
+      return `<input class="ad-input" type="${esc(f.type || "text")}" data-key="${esc(f.key)}"
+        value="${esc(f.value || "")}" placeholder="${esc(f.placeholder || "")}"
+        autocomplete="${esc(f.autocomplete || "off")}" />`;
+    };
+
+    overlay.innerHTML = `
+      <div class="ad-confirm ad-confirm--form" role="dialog" aria-modal="true">
+        <h3>${esc(title)}</h3>
+        ${intro ? `<p>${esc(intro)}</p>` : ""}
+        <div class="ad-form-modal__fields">
+          ${fields.map((f) => `
+            <div class="ad-field">
+              ${f.label ? `<label class="ad-field__label">${esc(f.label)}${f.required ? `<span class="ad-field__req" title="Obligatorio">*</span>` : ""}</label>` : ""}
+              ${control(f)}
+              ${f.help ? `<span class="ad-field__help">${esc(f.help)}</span>` : ""}
+            </div>`).join("")}
+        </div>
+        <span class="ad-field__error" data-form-error></span>
+        <div class="ad-confirm__actions">
+          <button class="ad-btn ad-btn--ghost" data-cancel type="button">Cancelar</button>
+          <button class="ad-btn ${danger ? "ad-btn--danger" : "ad-btn--primary"}" data-ok type="button">${esc(confirmLabel)}</button>
+        </div>
+      </div>`;
+
+    const okBtn = overlay.querySelector("[data-ok]");
+    const errBox = overlay.querySelector("[data-form-error]");
+    const inputs = $$("[data-key]", overlay);
+
+    const close = (val) => { overlay.remove(); document.removeEventListener("keydown", onKey); resolve(val); };
+    const values = () => Object.fromEntries(inputs.map((i) => [i.getAttribute("data-key"), i.value.trim()]));
+    const setError = (msg) => {
+      errBox.textContent = msg || "";
+      overlay.querySelector(".ad-confirm").classList.toggle("has-error", Boolean(msg));
+    };
+
+    const submit = async () => {
+      setError("");
+      const data = values();
+      const faltante = fields.find((f) => f.required && !data[f.key]);
+      if (faltante) {
+        setError(`Falta completar: ${faltante.label}.`);
+        overlay.querySelector(`[data-key="${faltante.key}"]`)?.focus();
+        return;
+      }
+      if (!onSubmit) { close(data); return; }
+
+      okBtn.disabled = true;
+      okBtn.classList.add("is-loading");
+      try {
+        await onSubmit(data);
+        close(data);
+      } catch (e) {
+        setError(e?.message || "No se pudo completar la operación.");
+        okBtn.disabled = false;
+        okBtn.classList.remove("is-loading");
+      }
+    };
+
+    const onKey = (e) => {
+      if (e.key === "Escape") close(null);
+      if (e.key === "Enter" && e.target.tagName === "INPUT") { e.preventDefault(); submit(); }
+    };
+
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) close(null); });
+    overlay.querySelector("[data-cancel]").addEventListener("click", () => close(null));
+    okBtn.addEventListener("click", submit);
+    document.addEventListener("keydown", onKey);
+    host.appendChild(overlay);
+    inputs[0]?.focus();
+  });
+}
+
+/* ----------------------------- menús "⋯" ----------------------------- */
+/* Menú contextual de una fila (.ad-menu > [data-menu-toggle] + .ad-menu__panel).
+   Los listeners se delegan en document y se cablean una sola vez, así sirven
+   para el markup que cada sección vuelve a pintar en cada render. */
+export function closeAllMenus() {
+  document.querySelectorAll(".ad-menu.is-open").forEach((m) => {
+    m.classList.remove("is-open");
+    m.querySelector("[data-menu-toggle]")?.setAttribute("aria-expanded", "false");
+    const panel = m.querySelector(".ad-menu__panel");
+    if (panel) panel.hidden = true;
+  });
+}
+
+let menusWired = false;
+export function ensureMenuListeners() {
+  if (menusWired) return;
+  menusWired = true;
+  document.addEventListener("click", (e) => {
+    const toggle = e.target.closest("[data-menu-toggle]");
+    if (toggle) {
+      const menu = toggle.closest(".ad-menu");
+      const willOpen = !menu.classList.contains("is-open");
+      closeAllMenus();
+      if (willOpen) {
+        menu.classList.add("is-open");
+        toggle.setAttribute("aria-expanded", "true");
+        menu.querySelector(".ad-menu__panel").hidden = false;
+      }
+      return;
+    }
+    // clic fuera del panel cierra (un clic en un ítem lo maneja su propia acción)
+    if (!e.target.closest(".ad-menu__panel")) closeAllMenus();
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAllMenus(); });
 }
 
 /* ----------------------------- gate ----------------------------- */

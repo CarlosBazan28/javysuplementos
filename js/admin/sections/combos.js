@@ -1,11 +1,11 @@
 /* ============================================================================
    Sección Combos: paquetes a precio especial con ahorro vs. precio de lista.
    ============================================================================ */
-import { state } from "../state.js?v=adm-e808fa3b";
-import { $, esc, ico, imgTag, peso } from "../helpers.js?v=adm-e808fa3b";
-import { setView } from "../view.js?v=adm-e808fa3b";
-import { emptyFeature, switchMarkup, confirmModal, toast } from "../ui.js?v=adm-e808fa3b";
-import { openComboDrawer } from "../drawers/combo-drawer.js?v=adm-e808fa3b";
+import { state } from "../state.js?v=adm-716eeeea";
+import { $, esc, ico, imgTag, peso } from "../helpers.js?v=adm-716eeeea";
+import { setView } from "../view.js?v=adm-716eeeea";
+import { emptyFeature, switchMarkup, confirmModal, toast } from "../ui.js?v=adm-716eeeea";
+import { openComboDrawer } from "../drawers/combo-drawer.js?v=adm-716eeeea";
 
 export function renderCombos() {
   if (!state.combosSupported) {
@@ -35,7 +35,7 @@ export function renderCombos() {
         ${listPrice > 0 ? `<s>${esc(peso(listPrice))}</s>` : ""}
         ${save > 0 ? `<span class="ad-pill ad-pill--ok ad-combo-card__save">Ahorro ${esc(peso(save))}</span>` : ""}
       </div>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px" data-write-only>
         <button class="ad-btn ad-btn--ghost ad-btn--sm ad-btn--block" type="button" data-combo-edit="${esc(c.id)}">${ico("pencil")}Editar</button>
         <button class="ad-icon-btn ad-icon-btn--danger" type="button" title="Eliminar" data-combo-del="${esc(c.id)}">${ico("trash")}</button>
       </div>
@@ -45,7 +45,7 @@ export function renderCombos() {
   setView(`
     <div class="ad-section-intro">
       <div><p class="ad-kicker">Paquetes</p><p>Combos de productos a precio especial. Cada combo muestra el ahorro frente al precio de lista.</p></div>
-      <button class="ad-btn ad-btn--primary" type="button" data-combo-new>${ico("plus")}Crear combo</button>
+      <button class="ad-btn ad-btn--primary" type="button" data-combo-new data-write-only>${ico("plus")}Crear combo</button>
     </div>
     ${state.combos.length ? `<div class="ad-combos-grid">${cards}</div>` : `<div class="ad-panel"><p class="ad-ops__empty">Aún no hay combos. Creá el primero.</p></div>`}`);
 

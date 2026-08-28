@@ -5,18 +5,20 @@
    Mantiene un registro key → renderFn; las secciones piden re-render con
    requestRerender() en vez de llamarse entre sí.
    ============================================================================ */
-import { state } from "./state.js?v=adm-e808fa3b";
-import { NAV } from "./config.js?v=adm-e808fa3b";
-import { $, $$, esc, ico } from "./helpers.js?v=adm-e808fa3b";
-import { showViewError } from "./view.js?v=adm-e808fa3b";
-import { renderDashboard } from "./sections/dashboard.js?v=adm-e808fa3b";
-import { renderProducts } from "./sections/products.js?v=adm-e808fa3b";
-import { renderHome } from "./sections/home.js?v=adm-e808fa3b";
-import { renderCategories } from "./sections/categories.js?v=adm-e808fa3b";
-import { renderCombos } from "./sections/combos.js?v=adm-e808fa3b";
-import { renderAccess } from "./sections/access.js?v=adm-e808fa3b";
-import { renderSettings } from "./sections/settings.js?v=adm-e808fa3b";
-import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-e808fa3b";
+import { state } from "./state.js?v=adm-716eeeea";
+import { NAV } from "./config.js?v=adm-716eeeea";
+import { $, $$, esc, ico } from "./helpers.js?v=adm-716eeeea";
+import { showViewError } from "./view.js?v=adm-716eeeea";
+import { renderDashboard } from "./sections/dashboard.js?v=adm-716eeeea";
+import { renderProducts } from "./sections/products.js?v=adm-716eeeea";
+import { renderHome } from "./sections/home.js?v=adm-716eeeea";
+import { renderCategories } from "./sections/categories.js?v=adm-716eeeea";
+import { renderCombos } from "./sections/combos.js?v=adm-716eeeea";
+import { renderAccess } from "./sections/access.js?v=adm-716eeeea";
+import { renderSettings } from "./sections/settings.js?v=adm-716eeeea";
+import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-716eeeea";
+import { canWrite } from "./permissions.js?v=adm-716eeeea";
+import { renderUserChip } from "./user-chip.js?v=adm-716eeeea";
 
 const renderers = {
   dashboard: renderDashboard, products: renderProducts,
@@ -52,6 +54,12 @@ function toggleSidebar() {
 
 /* ----------------------------- chrome (nav) ----------------------------- */
 export function buildChrome() {
+  // Modo solo lectura (rol Lector): el CSS esconde todo lo marcado con
+  // [data-write-only]. Es comodidad visual; el bloqueo real lo hace RLS.
+  document.body.classList.toggle("ad-readonly", !canWrite());
+
+  renderUserChip();
+
   const nav = $("#adminNav");
   const primary = NAV.filter((n) => n.primary);
   const secondary = NAV.filter((n) => !n.primary);

@@ -3,12 +3,12 @@
    imagen, chips de sabores/tags, objetivos, validación inline y guardado con
    sincronización de sabores. Comportamiento idéntico al monolito original.
    ============================================================================ */
-import { state, catById, families, typesOf } from "../state.js?v=adm-e808fa3b";
-import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-e808fa3b";
-import { $, esc, ico } from "../helpers.js?v=adm-e808fa3b";
-import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-e808fa3b";
-import { requestRerender } from "../shell.js?v=adm-e808fa3b";
-import { reloadProducts } from "../data.js?v=adm-e808fa3b";
+import { state, catById, families, typesOf } from "../state.js?v=adm-716eeeea";
+import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-716eeeea";
+import { $, esc, ico } from "../helpers.js?v=adm-716eeeea";
+import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-716eeeea";
+import { requestRerender } from "../shell.js?v=adm-716eeeea";
+import { reloadProducts } from "../data.js?v=adm-716eeeea";
 
 // Arreglos de texto (beneficios/uso/descripción) ⇄ textarea (una línea por ítem).
 const linesToText = (v) => Array.isArray(v) ? v.join("\n") : (v || "");
@@ -186,7 +186,7 @@ export function openProductDrawer(product, opts = {}) {
       </div>
       <div class="ad-modal__foot">
         <button class="ad-btn ad-btn--ghost" type="button" data-close>Cancelar</button>
-        <button class="ad-btn ad-btn--primary" type="button" data-save>${ico("save")}${isNew ? "Crear producto" : "Guardar cambios"}</button>
+        <button class="ad-btn ad-btn--primary" type="button" data-save data-write-only>${ico("save")}${isNew ? "Crear producto" : "Guardar cambios"}</button>
       </div>
     </div>`;
 

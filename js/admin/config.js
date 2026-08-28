@@ -23,7 +23,7 @@ export const NAV = [
   { key: "combos", label: "Combos", icon: "package", primary: false,
     subtitle: "Paquetes con precio especial" },
   { key: "access", label: "Accesos", icon: "log-in", primary: false,
-    subtitle: "Administradores con acceso al panel" },
+    subtitle: "Usuarios del panel y sus permisos" },
   { key: "settings", label: "Ajustes", icon: "settings", primary: false,
     subtitle: "Estado del sistema y configuración" },
 ];
