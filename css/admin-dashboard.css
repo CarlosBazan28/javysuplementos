@@ -852,9 +852,12 @@ body.ad-body { min-height: 100vh; }
   .ad-topbar__sidebar-toggle { display: none; }
   .ad-main { padding: 14px 14px calc(78px + env(safe-area-inset-bottom, 0px)); }
 
-  .ad-topbar { position: relative; top: auto; flex-direction: column; align-items: stretch; gap: 12px; margin: -14px -14px 14px; padding: 14px; }
-  .ad-topbar__actions { justify-content: stretch; }
-  .ad-topbar__actions > * { flex: 1; }
+  /* La fila se mantiene (título a la izquierda, chip a la derecha): si el
+     subtítulo es largo, se trunca con "…" en vez de empujar el chip a otro
+     renglón. */
+  .ad-topbar { position: relative; top: auto; gap: 10px; margin: -14px -14px 14px; padding: 14px; }
+  .ad-topbar__title { min-width: 0; }
+  .ad-topbar__title h1, .ad-topbar__title p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ad-search { flex: 1 1 100%; }
   .ad-search input { width: 100%; }
 
@@ -1196,8 +1199,8 @@ body.ad-body { min-height: 100vh; }
 }
 
 @media (max-width: 768px) {
-  /* La topbar se apila y .ad-topbar__actions > * pasa a flex:1; el chip se
-     mantiene pegado a la derecha y con el nombre más corto. */
-  #adminUser { justify-content: flex-end; }
+  /* El chip se mantiene pegado a la derecha, en la misma línea que el
+     título, con el nombre más corto para dejarle espacio. */
+  #adminUser { justify-content: flex-end; flex: 0 0 auto; }
   .ad-user__id strong { max-width: 12ch; }
 }
