@@ -414,16 +414,29 @@ const FAMILY_ICONS = {
   "salud": "heart-pulse",
 };
 
-// Objetivos que se ofrecen como atajo, en el idioma del cliente. Hick: 6 y no
-// los 30+ valores sueltos que hay en la base.
+/* Objetivos que se ofrecen como atajo, en el idioma del cliente (etiqueta
+   corta) y no con los 30+ valores sueltos que hay en la base.
+
+   `slugs` son los valores REALES del catálogo que caen bajo esa etiqueta. Hacen
+   falta porque no coinciden con el nombre corto: la base guarda "Ganar masa",
+   "Fuerza y rendimiento" y "Energía y enfoque", así que un único slug corto
+   ("fuerza", "energia", "masa-muscular") no matcheaba nada y de los 6 chips
+   solo aparecían 3. El enlace manda todos los que sí existen separados por
+   coma, que es como el catálogo espera un OR dentro de la faceta (?obj=). */
 const HOME_GOALS = [
-  { label: "Ganar masa", slug: "masa-muscular" },
-  { label: "Definición", slug: "definicion" },
-  { label: "Fuerza", slug: "fuerza" },
-  { label: "Energía", slug: "energia" },
-  { label: "Recuperación", slug: "recuperacion" },
-  { label: "Salud general", slug: "salud-general" },
+  { label: "Ganar masa", icon: "dumbbell", slugs: ["ganar-masa", "ganar-masa-muscular", "masa-muscular"] },
+  { label: "Definición", icon: "flame", slugs: ["definicion"] },
+  { label: "Fuerza", icon: "shield", slugs: ["fuerza-y-rendimiento", "fuerza", "rendimiento"] },
+  { label: "Energía", icon: "zap", slugs: ["energia-y-enfoque", "energia", "energia-y-foco"] },
+  { label: "Recuperación", icon: "heart-pulse", slugs: ["recuperacion"] },
+  { label: "Descanso", icon: "moon", slugs: ["descanso-y-estres", "descanso", "sueno"] },
+  { label: "Salud general", icon: "leaf", slugs: ["salud-general", "salud"] },
+  { label: "Belleza", icon: "pill", slugs: ["belleza", "piel-cabello-y-unas"] },
 ];
+
+// Marcas del muro de cierre de la home. 8 y no las 30+ del catálogo: es un
+// bloque de confianza, no un índice. El resto vive en el filtro del catálogo.
+const HOME_BRANDS_LIMIT = 8;
 
 /* Las páginas /categoria/<slug>/ las genera scripts/generate-pages.mjs con un
    slug derivado del NOMBRE (slugTokens), no de la columna `slug` de Supabase
@@ -469,13 +482,17 @@ async function initHomeCategories() {
   if (!usableHierarchy) {
     renderHomeCategoriesFlat(products);
     renderHomeGoals(products);
+    renderHomeBrands(products);
     return;
   }
 
   const families = categories.filter((c) => !c.parent_id);
   if (!families.length) {
-    // Sin datos, la sección entera se retira: mejor que dejar un hueco.
+    // Sin datos, la sección entera se retira: mejor que dejar un hueco. Los
+    // objetivos y las marcas sí se pintan: no dependen de la jerarquía.
     document.getElementById("categorias")?.setAttribute("hidden", "");
+    renderHomeGoals(products);
+    renderHomeBrands(products);
     return;
   }
 
@@ -505,6 +522,8 @@ async function initHomeCategories() {
 
   if (!cards.length) {
     document.getElementById("categorias")?.setAttribute("hidden", "");
+    renderHomeGoals(products);
+    renderHomeBrands(products);
     return;
   }
 
@@ -512,6 +531,7 @@ async function initHomeCategories() {
   window.javyIcons?.enhance?.(homeCatsGrid);
 
   renderHomeGoals(products);
+  renderHomeBrands(products);
 }
 
 /* Respaldo sin jerarquía: agrupa por el texto `category` de cada producto y
@@ -547,22 +567,76 @@ function renderHomeCategoriesFlat(products) {
   window.javyIcons?.enhance?.(homeCatsGrid);
 }
 
-// Los chips de objetivo solo aparecen si el objetivo existe en el catálogo:
-// un atajo que lleva a cero resultados es peor que no ofrecerlo.
+/* Los chips de objetivo solo aparecen si el objetivo existe en el catálogo: un
+   atajo que lleva a cero resultados es peor que no ofrecerlo. Cada chip lleva
+   además el conteo, que es lo que convierte una etiqueta en información (mismo
+   criterio que las cards de categoría). */
 function renderHomeGoals(products) {
   if (!homeGoalsRow) return;
 
-  const available = new Set(
-    products.flatMap((p) => (p.goals || []).map((g) => slugify(g))),
-  );
-  const chips = HOME_GOALS.filter((goal) => available.has(goal.slug));
+  const goalSlugsOf = (p) => (p.goals || p.objetivos || []).map((g) => slugify(g));
+
+  const chips = HOME_GOALS
+    .map((goal) => {
+      const wanted = new Set(goal.slugs);
+      const matched = new Set();
+      let count = 0;
+      products.forEach((p) => {
+        const hits = goalSlugsOf(p).filter((slug) => wanted.has(slug));
+        if (!hits.length) return;
+        count += 1;
+        hits.forEach((slug) => matched.add(slug));
+      });
+      // Se conserva el orden declarado en HOME_GOALS para que el enlace sea
+      // estable entre cargas (y no dependa del orden de los productos).
+      return { ...goal, count, slugs: goal.slugs.filter((slug) => matched.has(slug)) };
+    })
+    .filter((goal) => goal.count > 0);
+
   if (!chips.length) return;
 
   homeGoalsRow.innerHTML = chips.map((goal) => `
-    <a class="home-goal" href="/supplements-page.html?obj=${encodeURIComponent(goal.slug)}">
-      ${escapeHTML(goal.label)}
+    <a class="home-goal" href="/supplements-page.html?obj=${encodeURIComponent(goal.slugs.join(","))}"
+       aria-label="${escapeHTML(`${goal.label}, ${goal.count} producto${goal.count === 1 ? "" : "s"}`)}">
+      <span class="home-goal__icon" aria-hidden="true" data-javy-icon="${escapeHTML(goal.icon)}"></span>
+      <span class="home-goal__label">${escapeHTML(goal.label)}</span>
+      <span class="home-goal__count" aria-hidden="true">${goal.count}</span>
     </a>`).join("");
+  window.javyIcons?.enhance?.(homeGoalsRow);
   document.getElementById("objetivos")?.removeAttribute("hidden");
+}
+
+/* Muro de marcas del bloque de cierre. Sale del catálogo real (no de una lista
+   escrita a mano) para que no anuncie marcas que ya no se venden, y cada una
+   enlaza al catálogo filtrado por esa marca (?marca=). */
+function renderHomeBrands(products) {
+  const grid = document.getElementById("home-brands__grid");
+  if (!grid) return;
+
+  const counts = new Map();
+  products.forEach((p) => {
+    const brand = (p.brand || p.marca || "").trim();
+    if (!brand) return;
+    counts.set(brand, (counts.get(brand) || 0) + 1);
+  });
+
+  const brands = [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "es"))
+    .slice(0, HOME_BRANDS_LIMIT);
+
+  // El muro nace oculto (atributo hidden en el HTML) y solo se muestra si hay
+  // marcas que pintar: sin JS, con Supabase caído o con el catálogo vacío, la
+  // prosa se queda sola a una columna en vez de dejar una caja vacía al lado.
+  if (!brands.length) return;
+
+  grid.innerHTML = brands.map(([brand, count]) => `
+    <a class="home-brand" href="/supplements-page.html?marca=${encodeURIComponent(slugify(brand))}"
+       aria-label="${escapeHTML(`${brand}, ${count} producto${count === 1 ? "" : "s"}`)}">
+      <span class="home-brand__name">${escapeHTML(brand)}</span>
+      <span class="home-brand__count" aria-hidden="true">${count} producto${count === 1 ? "" : "s"}</span>
+    </a>`).join("");
+  grid.closest(".home-about__brands")?.removeAttribute("hidden");
+  document.getElementById("marcas")?.classList.add("home-about--with-brands");
 }
 
 initHomeCategories();
