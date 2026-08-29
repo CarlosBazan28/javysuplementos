@@ -3,10 +3,10 @@
    panel (quién creó/editó/eliminó qué) con filtros y paginación "Ver más".
    Lee de window.catalogDb.getActivityLog(). Degrada elegante si no hay tabla.
    ============================================================================ */
-import { state } from "../state.js?v=adm-148a5e7f";
-import { esc, ico } from "../helpers.js?v=adm-148a5e7f";
-import { paint } from "../view.js?v=adm-148a5e7f";
-import { emptyFeature } from "../ui.js?v=adm-148a5e7f";
+import { state } from "../state.js?v=adm-9250919f";
+import { esc, ico } from "../helpers.js?v=adm-9250919f";
+import { paint } from "../view.js?v=adm-9250919f";
+import { emptyFeature } from "../ui.js?v=adm-9250919f";
 
 const PAGE = 30;
 
