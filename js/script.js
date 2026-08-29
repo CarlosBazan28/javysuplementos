@@ -422,7 +422,14 @@ const FAMILY_ICONS = {
    "Fuerza y rendimiento" y "Energía y enfoque", así que un único slug corto
    ("fuerza", "energia", "masa-muscular") no matcheaba nada y de los 6 chips
    solo aparecían 3. El enlace manda todos los que sí existen separados por
-   coma, que es como el catálogo espera un OR dentro de la faceta (?obj=). */
+   coma, que es como el catálogo espera un OR dentro de la faceta (?obj=).
+
+   El vocabulario canónico son los 8 objetivos de
+   supabase/migrations/fase8-taxonomia.sql, que el panel admin ofrece en
+   GOAL_SUGGESTIONS (js/admin/config.js). Los sinónimos que quedan acá
+   ("masa-muscular", "fuerza", "energia"…) son red de seguridad: hasta hoy el
+   panel los reintroducía, y aunque ya no puede, un producto viejo o un UPDATE
+   a mano podría traerlos de vuelta. */
 const HOME_GOALS = [
   { label: "Ganar masa", icon: "dumbbell", slugs: ["ganar-masa", "ganar-masa-muscular", "masa-muscular"] },
   { label: "Definición", icon: "flame", slugs: ["definicion"] },
