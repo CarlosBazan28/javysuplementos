@@ -136,8 +136,8 @@
     <main class="main__container">
       <section class="hero">
         <div class="hero__slogan">
-          <h1>Tu Salud y Bienestar es nuestra prioridad</h1>
-          <p class="hero__copy">Suplementos originales, asesoria directa y cotizaciones por WhatsApp para elegir mejor.</p>
+          <h1>Suplementos originales en Panamá</h1>
+          <p class="hero__copy">Tu salud y bienestar son nuestra prioridad. Proteínas, creatinas, pre-entrenos y más, con asesoría directa y cotización por WhatsApp.</p>
           <div class="hero__button">
             <button class="btn btn--primary btn--lg hero__button--pri">Ver productos</button>
             <button class="btn btn--secondary btn--lg hero__button--sec">Abrir cotización</button>
@@ -251,17 +251,24 @@
       </div>
     </section>
 
-      <!-- Cierre de la home: quiénes somos + marcas que trabajamos.
+      <!-- Cierre de la home: texto indexable + marcas que trabajamos.
+           Existe por SEO: el resto del markup lo rellena JS desde Supabase, así
+           que sin esta prosa Google no tiene nada que leer en la página que más
+           autoridad acumula. Los horarios y la dirección deben coincidir con el
+           openingHoursSpecification del JSON-LD de arriba y con el Perfil de
+           Empresa de Google: si los tres no coinciden, Google desconfía de los
+           tres.
            Va al final a propósito: primero el camino de compra (categorías,
-           objetivos, destacados, combos) y recién después el bloque de
-           contexto, que es el que necesita quien llega desde un buscador.
+           objetivos, destacados, combos) y recién después el contexto.
            Dos columnas en desktop: texto a la izquierda, muro de marcas a la
-           derecha. Las marcas las pinta js/script.js con el catálogo real,
-           así que la lista nunca miente sobre lo que hay en stock. -->
+           derecha. El texto es HTML servido (visible sin JS); las marcas las
+           pinta js/script.js con el catálogo real, así que la lista nunca
+           miente sobre lo que hay en stock, y si el JS no corre el muro no
+           aparece y la prosa se queda a una columna. -->
       <section class="home-about" id="marcas" aria-labelledby="home-about-title">
         <div class="home-about__grid reveal">
           <div class="home-about__copy">
-            <h2 id="home-about-title">Suplementos deportivos originales en Panamá</h2>
+            <h2 id="home-about-title">Tu tienda de suplementos deportivos en Panamá</h2>
             <p>
               En Javy Suplementos trabajamos suplementación deportiva 100 % original:
               proteínas, creatinas, pre-entrenos, quemadores, aminoácidos y vitaminas
@@ -271,8 +278,8 @@
             </p>
             <p>
               Estamos en el Edificio Frontenac, Calle 50, en la ciudad de Panamá.
-              Atendemos de lunes a viernes de 9:30 a. m. a 5:00 p. m. y los sábados
-              de 9:00 a. m. a 2:00 p. m.
+              Atendemos de lunes a viernes de 9:30 a.m. a 5:00 p.m. y los sábados
+              de 9:00 a.m. a 2:00 p.m.
             </p>
             <p>
               ¿Ya sabes lo que buscas? Arma tu cotización desde el catálogo y envíala
@@ -287,7 +294,7 @@
             </div>
           </div>
 
-          <aside class="home-about__brands" aria-labelledby="home-brands-title">
+          <aside class="home-about__brands" aria-labelledby="home-brands-title" hidden>
             <h3 class="home-about__brands-title" id="home-brands-title">Marcas que trabajamos</h3>
             <div class="home-brands__grid" id="home-brands__grid"></div>
             <a class="home-about__brands-link" href="supplements-page.html">Ver todas las marcas</a>

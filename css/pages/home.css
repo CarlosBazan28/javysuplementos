@@ -293,9 +293,10 @@
   text-decoration: underline;
 }
 
-/* Sin marcas que mostrar (catálogo vacío o Supabase caído) el muro se retira y
-   el texto se queda solo, a una columna. */
-.home-about--no-brands .home-about__brands {
+/* El muro nace oculto y js/script.js lo destapa cuando tiene marcas que pintar
+   (ver renderHomeBrands). Hace falta la regla porque .home-about__brands es
+   `display: flex` y eso le gana al hidden del HTML. */
+.home-about__brands[hidden] {
   display: none;
 }
 
@@ -326,14 +327,16 @@
 
 @media (min-width: 1024px) {
   .home-about__grid {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
     gap: var(--sp-7);
     padding: var(--sp-7);
-    align-items: start;
   }
 
-  .home-about--no-brands .home-about__grid {
-    grid-template-columns: minmax(0, 1fr);
+  /* Las dos columnas solo existen si hay muro que poner al lado: sin JS (o con
+     el catálogo caído) la prosa se queda a lo ancho en vez de dejar media
+     sección vacía. */
+  .home-about--with-brands .home-about__grid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: start;
   }
 
   .home-brands__grid {

@@ -1,11 +1,11 @@
 /* ============================================================================
    Sección Combos: paquetes a precio especial con ahorro vs. precio de lista.
    ============================================================================ */
-import { state } from "../state.js?v=adm-716eeeea";
-import { $, esc, ico, imgTag, peso } from "../helpers.js?v=adm-716eeeea";
-import { setView } from "../view.js?v=adm-716eeeea";
-import { emptyFeature, switchMarkup, confirmModal, toast } from "../ui.js?v=adm-716eeeea";
-import { openComboDrawer } from "../drawers/combo-drawer.js?v=adm-716eeeea";
+import { state } from "../state.js?v=adm-148a5e7f";
+import { $, esc, ico, imgTag, peso } from "../helpers.js?v=adm-148a5e7f";
+import { setView } from "../view.js?v=adm-148a5e7f";
+import { emptyFeature, switchMarkup, confirmModal, toast } from "../ui.js?v=adm-148a5e7f";
+import { openComboDrawer } from "../drawers/combo-drawer.js?v=adm-148a5e7f";
 
 export function renderCombos() {
   if (!state.combosSupported) {

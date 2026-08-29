@@ -624,11 +624,10 @@ function renderHomeBrands(products) {
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "es"))
     .slice(0, HOME_BRANDS_LIMIT);
 
-  if (!brands.length) {
-    // Sin marcas el muro queda vacío: se retira y el texto se queda a lo ancho.
-    document.getElementById("marcas")?.classList.add("home-about--no-brands");
-    return;
-  }
+  // El muro nace oculto (atributo hidden en el HTML) y solo se muestra si hay
+  // marcas que pintar: sin JS, con Supabase caído o con el catálogo vacío, la
+  // prosa se queda sola a una columna en vez de dejar una caja vacía al lado.
+  if (!brands.length) return;
 
   grid.innerHTML = brands.map(([brand, count]) => `
     <a class="home-brand" href="/supplements-page.html?marca=${encodeURIComponent(slugify(brand))}"
@@ -636,6 +635,8 @@ function renderHomeBrands(products) {
       <span class="home-brand__name">${escapeHTML(brand)}</span>
       <span class="home-brand__count" aria-hidden="true">${count} producto${count === 1 ? "" : "s"}</span>
     </a>`).join("");
+  grid.closest(".home-about__brands")?.removeAttribute("hidden");
+  document.getElementById("marcas")?.classList.add("home-about--with-brands");
 }
 
 initHomeCategories();
