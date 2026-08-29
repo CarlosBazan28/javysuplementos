@@ -20,6 +20,9 @@ body {
 
 /*---- Titulos de secciones ----*/
 
+/* Encabezado de sección (solo la home). `align-items: center` centra las cajas,
+   pero no el texto de adentro: en móvil, donde el h2 se parte en dos líneas,
+   el título quedaba alineado a la izquierda dentro de su caja centrada. */
 .title {
   display: flex;
   flex-direction: column;
@@ -30,6 +33,7 @@ body {
   padding: 30px;
   font-weight: 700;
   font-size: 1.2rem;
+  text-align: center;
 }
 
 .title p {

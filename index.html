@@ -97,7 +97,7 @@
       ]
     }
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=visits-1">
+    <link rel="stylesheet" href="css/styles.css?v=marcas-1">
     <link rel="stylesheet" href="css/components/nav.css?v=cat-cta-1">
     <link rel="stylesheet" href="css/components/auth.css?v=session-state">
     <link rel="stylesheet" href="css/tokens.css?v=anim-1">
@@ -105,7 +105,7 @@
     <link rel="stylesheet" href="css/components/buttons.css?v=anim-1">
     <link rel="stylesheet" href="css/components/cards.css?v=anim-1">
     <link rel="stylesheet" href="css/components/cart.css?v=ux-fix-1">
-    <link rel="stylesheet" href="css/pages/home.css?v=anim-1">
+    <link rel="stylesheet" href="css/pages/home.css?v=marcas-1">
     <link rel="stylesheet" href="css/dropdown.css?v=anim-1">
 
     <!-- Google Fonts -->
@@ -126,7 +126,7 @@
     <script src="js/icons.js?v=sidebar-toggle-1" defer></script>
     <script src="js/dropdown.js?v=resize-fix-1" defer></script>
     <script src="js/cart.js?v=ferguson-label-1" defer></script>
-    <script src="js/script.js?v=ux-fix-1" defer></script>
+    <script src="js/script.js?v=marcas-1" defer></script>
     <script src="js/include-nav.js?v=cat-icon-row-1" defer></script>
     <script src="js/reveal.js?v=reveal-1" defer></script>
     <script src="js/hero-visits.js?v=1" defer></script>
@@ -250,6 +250,50 @@
         </article>
       </div>
     </section>
+
+      <!-- Cierre de la home: quiénes somos + marcas que trabajamos.
+           Va al final a propósito: primero el camino de compra (categorías,
+           objetivos, destacados, combos) y recién después el bloque de
+           contexto, que es el que necesita quien llega desde un buscador.
+           Dos columnas en desktop: texto a la izquierda, muro de marcas a la
+           derecha. Las marcas las pinta js/script.js con el catálogo real,
+           así que la lista nunca miente sobre lo que hay en stock. -->
+      <section class="home-about" id="marcas" aria-labelledby="home-about-title">
+        <div class="home-about__grid reveal">
+          <div class="home-about__copy">
+            <h2 id="home-about-title">Suplementos deportivos originales en Panamá</h2>
+            <p>
+              En Javy Suplementos trabajamos suplementación deportiva 100 % original:
+              proteínas, creatinas, pre-entrenos, quemadores, aminoácidos y vitaminas
+              de marcas reconocidas como Optimum Nutrition, Dymatize, Mutant,
+              MuscleTech, Nutrex, Nutricost, Cellucor y BSN. Cada producto del catálogo
+              muestra su precio, para que compares con calma antes de escribirnos.
+            </p>
+            <p>
+              Estamos en el Edificio Frontenac, Calle 50, en la ciudad de Panamá.
+              Atendemos de lunes a viernes de 9:30 a. m. a 5:00 p. m. y los sábados
+              de 9:00 a. m. a 2:00 p. m.
+            </p>
+            <p>
+              ¿Ya sabes lo que buscas? Arma tu cotización desde el catálogo y envíala
+              por WhatsApp: te confirmamos disponibilidad, precio final y forma de
+              entrega. ¿Todavía no? Escríbenos y te orientamos según tu objetivo.
+            </p>
+            <div class="home-about__actions">
+              <a class="btn btn--primary" href="supplements-page.html">Ver catálogo</a>
+              <a class="btn btn--secondary" data-javy-whatsapp
+                 data-whatsapp-message="Hola Javy, necesito asesoría sobre suplementos"
+                 target="_blank" rel="noopener">Escribir por WhatsApp</a>
+            </div>
+          </div>
+
+          <aside class="home-about__brands" aria-labelledby="home-brands-title">
+            <h3 class="home-about__brands-title" id="home-brands-title">Marcas que trabajamos</h3>
+            <div class="home-brands__grid" id="home-brands__grid"></div>
+            <a class="home-about__brands-link" href="supplements-page.html">Ver todas las marcas</a>
+          </aside>
+        </div>
+      </section>
     </main>
 
     <footer class="footer">
