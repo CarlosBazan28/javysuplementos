@@ -36,7 +36,8 @@ const DRY_RUN = process.argv.includes("--dry-run");
 const INPUT_INDEX = process.argv.indexOf("--input");
 const INPUT_FILE = INPUT_INDEX > -1 ? process.argv[INPUT_INDEX + 1] : null;
 
-const DEFAULT_IMAGE = `${SITE}/img/icons/javy-web-app-icon-1024.png`;
+const SOCIAL_IMAGE = `${SITE}/img/images/javy-og-social-1200x630.png`;
+const DEFAULT_IMAGE = SOCIAL_IMAGE;
 const PLACEHOLDER_IMAGE = "/img/products/product-placeholder.svg";
 
 // Una categoría con uno o dos productos es contenido pobre para Google: no
@@ -89,7 +90,7 @@ function entidadesDelSitio() {
       "@id": `${SITE}/#business`,
       name: "Javy Suplementos",
       url: `${SITE}/`,
-      image: `${SITE}/img/icons/javy-web-app-icon-1024.png`,
+      image: SOCIAL_IMAGE,
       logo: `${SITE}/img/icons/javy-web-app-icon-1024.png`,
       telephone: "+50766494509",
       priceRange: "$$",
@@ -143,6 +144,12 @@ function absoluteUrl(path) {
   if (!path) return DEFAULT_IMAGE;
   if (/^https?:\/\//i.test(path)) return path;
   return `${SITE}/${String(path).replace(/^\/+/, "")}`;
+}
+
+// El marcador visual sirve dentro de la interfaz, pero no representa al SKU.
+// Nunca debe llegar a Open Graph ni a datos estructurados de producto.
+function hasRealProductImage(path) {
+  return Boolean(path) && !String(path).includes("product-placeholder.svg");
 }
 
 function toList(value) {
@@ -288,8 +295,10 @@ function renderProductPage(product, ctx) {
   const presentation = product.presentation || "";
   const price = productPrice(product);
   const available = isAvailable(product);
-  const image = absoluteUrl(product.image_url || product.imagen_url);
-  const imageSrc = product.image_url || product.imagen_url || PLACEHOLDER_IMAGE;
+  const productImage = product.image_url || product.imagen_url;
+  const hasProductImage = hasRealProductImage(productImage);
+  const image = hasProductImage ? absoluteUrl(productImage) : SOCIAL_IMAGE;
+  const imageSrc = productImage || PLACEHOLDER_IMAGE;
 
   const shortDescription = String(product.description_short || product.subtitulo || "").trim();
   const description = shortDescription
@@ -307,7 +316,7 @@ function renderProductPage(product, ctx) {
       {
         "@type": "Product",
         name,
-        image,
+        ...(hasProductImage ? { image } : {}),
         description,
         url,
         ...(brand ? { brand: { "@type": "Brand", name: brand } } : {}),
@@ -514,7 +523,8 @@ function renderCategoryPage(category, products, slugMap, categorySlug, types = [
   const name = category.name || "Categoría";
   const title = `${name} en Panamá | Javy Suplementos`;
   const description = `${name}: ${products.length} producto${products.length === 1 ? "" : "s"} original${products.length === 1 ? "" : "es"} con precio. Arma tu cotización y envíala por WhatsApp con Javy Suplementos.`;
-  const image = absoluteUrl(products[0]?.image_url || products[0]?.imagen_url);
+  const categoryImage = products[0]?.image_url || products[0]?.imagen_url;
+  const image = hasRealProductImage(categoryImage) ? absoluteUrl(categoryImage) : SOCIAL_IMAGE;
 
   const jsonLd = jsonForScript({
     "@context": "https://schema.org",
@@ -539,7 +549,9 @@ function renderCategoryPage(category, products, slugMap, categorySlug, types = [
           item: {
             "@type": "Product",
             name: p.name || p.nombre,
-            image: absoluteUrl(p.image_url || p.imagen_url),
+            ...(hasRealProductImage(p.image_url || p.imagen_url)
+              ? { image: absoluteUrl(p.image_url || p.imagen_url) }
+              : {}),
             url: `${SITE}${productPath(slugMap.get(String(p.id)))}`,
             ...(p.brand ? { brand: { "@type": "Brand", name: p.brand } } : {}),
             ...(productPrice(p) > 0
@@ -859,7 +871,6 @@ async function main() {
       priority: "0.7",
     })),
     { loc: `${SITE}/contacto.html`, changefreq: "monthly", priority: "0.7" },
-    { loc: `${SITE}/testimonios.html`, changefreq: "monthly", priority: "0.6" },
   ];
   await writeFile(join(ROOT, "sitemap.xml"), renderSitemap(urls), "utf8");
 
