@@ -38,7 +38,7 @@ const INPUT_FILE = INPUT_INDEX > -1 ? process.argv[INPUT_INDEX + 1] : null;
 
 // Cambiar esta versión cuando se reemplace el creativo: fuerza a los rastreadores
 // sociales a volver a descargar la miniatura, incluso si cachearon una previa sin imagen.
-const SOCIAL_IMAGE = `${SITE}/img/images/javy-og-social-1200x630.png?v=20260831-2`;
+const SOCIAL_IMAGE = `${SITE}/img/images/javy-og-social-1200x630.jpg?v=20260831-3`;
 const DEFAULT_IMAGE = SOCIAL_IMAGE;
 const PLACEHOLDER_IMAGE = "/img/products/product-placeholder.svg";
 
@@ -148,6 +148,16 @@ function absoluteUrl(path) {
   return `${SITE}/${String(path).replace(/^\/+/, "")}`;
 }
 
+function imageMimeType(imageUrl) {
+  const extension = new URL(imageUrl, SITE).pathname.split(".").pop()?.toLowerCase();
+  return {
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    webp: "image/webp",
+  }[extension] || null;
+}
+
 // El marcador visual sirve dentro de la interfaz, pero no representa al SKU.
 // Nunca debe llegar a Open Graph ni a datos estructurados de producto.
 function hasRealProductImage(path) {
@@ -208,6 +218,8 @@ async function loadData() {
 // Head compartido. Las rutas van absolutas porque estas páginas viven en
 // subdirectorios (/producto/<slug>/), donde las relativas de la raíz romperían.
 function renderHead({ title, description, canonical, image, ogType, jsonLd, extraCss }) {
+  const imageType = imageMimeType(image);
+  const isSocialImage = image === SOCIAL_IMAGE;
   const css = [
     "css/styles.css?v=anim-1",
     "css/components/nav.css?v=cat-cta-1",
@@ -242,9 +254,8 @@ function renderHead({ title, description, canonical, image, ogType, jsonLd, extr
     <meta property="og:description" content="${escapeHTML(description)}">
     <meta property="og:image" content="${escapeHTML(image)}">
     <meta property="og:image:secure_url" content="${escapeHTML(image)}">
-    <meta property="og:image:type" content="image/png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    ${imageType ? `<meta property="og:image:type" content="${imageType}">` : ""}
+    ${isSocialImage ? '<meta property="og:image:width" content="1200">\n    <meta property="og:image:height" content="630">' : ""}
     <meta property="og:locale" content="es_PA">
     <meta property="og:site_name" content="Javy Suplementos">
 
