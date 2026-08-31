@@ -36,7 +36,9 @@ const DRY_RUN = process.argv.includes("--dry-run");
 const INPUT_INDEX = process.argv.indexOf("--input");
 const INPUT_FILE = INPUT_INDEX > -1 ? process.argv[INPUT_INDEX + 1] : null;
 
-const SOCIAL_IMAGE = `${SITE}/img/images/javy-og-social-1200x630.png`;
+// Cambiar esta versión cuando se reemplace el creativo: fuerza a los rastreadores
+// sociales a volver a descargar la miniatura, incluso si cachearon una previa sin imagen.
+const SOCIAL_IMAGE = `${SITE}/img/images/javy-og-social-1200x630.png?v=20260831-2`;
 const DEFAULT_IMAGE = SOCIAL_IMAGE;
 const PLACEHOLDER_IMAGE = "/img/products/product-placeholder.svg";
 
@@ -239,6 +241,10 @@ function renderHead({ title, description, canonical, image, ogType, jsonLd, extr
     <meta property="og:title" content="${escapeHTML(title)}">
     <meta property="og:description" content="${escapeHTML(description)}">
     <meta property="og:image" content="${escapeHTML(image)}">
+    <meta property="og:image:secure_url" content="${escapeHTML(image)}">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:locale" content="es_PA">
     <meta property="og:site_name" content="Javy Suplementos">
 
