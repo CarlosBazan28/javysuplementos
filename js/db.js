@@ -510,39 +510,6 @@ async function getActivityLog(options = {}) {
   return data || [];
 }
 
-// Historial de leads del formulario retirado (más reciente primero). Solo admins (RLS).
-async function getLeads(options = {}) {
-  ensureSupabaseForWrite();
-  const { limit = 100, offset = 0, status } = options;
-  let query = supabaseClient
-    .from("leads")
-    .select("id, created_at, name, email, phone, product, message, status, source")
-    .order("created_at", { ascending: false })
-    .range(offset, offset + limit - 1);
-  if (status) query = query.eq("status", status);
-  const { data, error } = await query;
-  if (error) throw error;
-  return data || [];
-}
-
-// Cambia el estado de un lead ('nuevo' | 'atendido' | 'archivado').
-async function updateLeadStatus(id, status) {
-  ensureSupabaseForWrite();
-  const { data, error } = await supabaseClient
-    .from("leads")
-    .update({ status })
-    .eq("id", id)
-    .select("id, name, status")
-    .single();
-  if (error) throw error;
-  await logActivity({
-    action: "update", entity_type: "lead", entity_id: id, entity_name: data.name,
-    new_value: status,
-    summary: `marcó el mensaje de ${data.name || "un cliente"} como ${status}`,
-  });
-  return data;
-}
-
 async function getProductsWithFlavors(options = {}) {
   const useCache = options.cache !== false;
   const allowFallback = options.fallback !== false;
@@ -554,10 +521,13 @@ async function getProductsWithFlavors(options = {}) {
       // Las columnas de auditoría (email del editor) sólo se piden en el admin
       // (options.audit), nunca en el catálogo público, para no exponer correos.
       const productSelect = (options.audit && await auditEnabled()) ? PRODUCT_SELECT_AUDIT : PRODUCT_SELECT;
-      const { data, error } = await supabaseClient
-        .from("products")
-        .select(productSelect)
-        .order("created_at", { ascending: false });
+      // El catálogo público solo ve productos activos. Sin este filtro los
+      // borradores se cuelan: `available` se resuelve por
+      // `is_available ?? available ?? is_active`, y como los importados traen
+      // is_available=true, nunca se llega a mirar is_active.
+      let productQuery = supabaseClient.from("products").select(productSelect);
+      if (!options.includeInactive) productQuery = productQuery.eq("is_active", true);
+      const { data, error } = await productQuery.order("created_at", { ascending: false });
 
       if (error) throw error;
 
@@ -640,10 +610,55 @@ function categorySlugify(value = "") {
     .replace(/^-+|-+$/g, "");
 }
 
+// Mueve varios productos a una categoría de una sola vez. Es lo que hace
+// viable repartir los productos que cuelgan de una familia sin abrir un
+// formulario por producto.
+async function updateProductsCategory(ids = [], categoryId) {
+  ensureSupabaseForWrite();
+  const list = ids.map(String).filter(Boolean);
+  if (!list.length) return 0;
+
+  // `category` (texto) se deriva de la categoría destino para que no se
+  // desincronice del category_id, que es la fuente de verdad.
+  const { data: cat, error: catError } = await supabaseClient
+    .from("categories").select("id, name").eq("id", categoryId).maybeSingle();
+  if (catError) throw catError;
+  if (!cat) throw new Error("La categoría destino no existe.");
+
+  const { error } = await supabaseClient
+    .from("products")
+    .update({ category_id: cat.id, category: cat.name, ...(await auditStamp()) })
+    .in("id", list);
+  if (error) throw error;
+
+  productsCache = null;
+  await logActivity({
+    action: "update",
+    entity_type: "product",
+    entity_name: `${list.length} productos`,
+    summary: `movió ${list.length} producto(s) a la categoría «${cat.name}»`,
+  });
+  return list.length;
+}
+
 async function createCategory({ name, parentId = null, sortOrder = 100 }) {
   ensureSupabaseForWrite();
   const trimmed = name?.trim();
   if (!trimmed) throw new Error("El nombre de la categoría es obligatorio.");
+
+  // El slug lleva sufijo de timestamp, así que nunca choca y los duplicados
+  // pasaban sin aviso: así nacieron "ISO" e "ISO (aislada)" conviviendo.
+  let siblingsQuery = supabaseClient.from("categories").select("id, name");
+  siblingsQuery = parentId
+    ? siblingsQuery.eq("parent_id", parentId)
+    : siblingsQuery.is("parent_id", null);
+  const { data: siblings } = await siblingsQuery;
+  const clash = (siblings || []).find(
+    (c) => (c.name || "").trim().toLowerCase() === trimmed.toLowerCase(),
+  );
+  if (clash) {
+    throw new Error(`Ya existe «${clash.name}» en este nivel. Usá esa o elegí otro nombre.`);
+  }
   // Slug único: fam- para familias, tipo- para tipos, + base del nombre.
   const base = categorySlugify(trimmed) || "categoria";
   const slug = `${parentId ? "tipo" : "fam"}-${base}-${Date.now().toString(36)}`;
@@ -716,9 +731,8 @@ async function getAdminProfile(userId) {
 
   const { data, error } = await supabaseClient
     .from("admin_profiles")
-    .select("id, user_id, role, is_active")
+    .select("id, user_id, email, display_name, role, is_active")
     .eq("user_id", userId)
-    .eq("role", "admin")
     .eq("is_active", true)
     .maybeSingle();
 
@@ -731,7 +745,7 @@ async function getAdminProfiles() {
   ensureSupabaseForWrite();
   const { data, error } = await supabaseClient
     .from("admin_profiles")
-    .select("id, user_id, email, role, is_active, created_at")
+    .select("id, user_id, email, display_name, role, is_active, created_at")
     .order("created_at", { ascending: true });
 
   if (error) throw error;
@@ -744,7 +758,7 @@ async function setAdminProfileActive(id, active) {
     .from("admin_profiles")
     .update({ is_active: Boolean(active) })
     .eq("id", id)
-    .select("id, user_id, email, role, is_active, created_at")
+    .select("id, user_id, email, display_name, role, is_active, created_at")
     .single();
 
   if (error) throw error;
@@ -753,6 +767,91 @@ async function setAdminProfileActive(id, active) {
     new_value: data.is_active ? "activo" : "inactivo",
     summary: `${data.is_active ? "activó" : "desactivó"} el acceso de ${data.email || "un administrador"}`,
   });
+  return data;
+}
+
+/* ---------------------------------------------------------------------------
+   Gestión de usuarios del panel.
+
+   Leer, cambiar rol/nombre y activar/desactivar se hace directo contra la
+   tabla: RLS deja pasar solo a un Admin (can_manage_users()).
+
+   Crear, eliminar y resetear contraseñas toca auth.users, y eso exige la
+   service_role key. Esa llave no puede estar en el navegador, así que va por
+   la Edge Function `admin-users` (supabase/functions/admin-users/index.ts),
+   que vuelve a verificar el permiso del lado del servidor.
+   --------------------------------------------------------------------------- */
+
+async function callAdminUsersFn(action, payload = {}) {
+  ensureSupabaseForWrite();
+
+  const { data, error } = await supabaseClient.functions.invoke("admin-users", {
+    body: { action, ...payload },
+  });
+
+  if (error) {
+    // La función responde el detalle en el cuerpo; sin esto solo se vería un
+    // "Edge Function returned a non-2xx status code" que no le dice nada a nadie.
+    let message = error.message || "No se pudo completar la operación.";
+    try {
+      const body = await error.context?.json?.();
+      if (body?.error) message = body.error;
+    } catch (_) {
+      // el cuerpo no era JSON; nos quedamos con el mensaje genérico
+    }
+    throw new Error(message);
+  }
+
+  if (data?.error) throw new Error(data.error);
+  return data;
+}
+
+async function createAdminUser({ email, password, role = "viewer", displayName = "" }) {
+  const data = await callAdminUsersFn("create", {
+    email: String(email || "").trim().toLowerCase(),
+    password,
+    role,
+    display_name: displayName,
+  });
+  return data?.profile || null;
+}
+
+async function deleteAdminUser(id) {
+  await callAdminUsersFn("delete", { id });
+  return true;
+}
+
+async function setAdminUserPassword(id, password) {
+  await callAdminUsersFn("set_password", { id, password });
+  return true;
+}
+
+async function updateAdminProfile(id, { role, displayName } = {}) {
+  ensureSupabaseForWrite();
+
+  const patch = {};
+  if (role !== undefined) patch.role = role;
+  if (displayName !== undefined) patch.display_name = String(displayName || "").trim() || null;
+  if (!Object.keys(patch).length) throw new Error("No hay nada que actualizar.");
+
+  const { data, error } = await supabaseClient
+    .from("admin_profiles")
+    .update(patch)
+    .eq("id", id)
+    .select("id, user_id, email, display_name, role, is_active, created_at")
+    .single();
+
+  if (error) throw error;
+
+  await logActivity({
+    action: "update", entity_type: "admin", entity_id: data.user_id || null, entity_name: data.email,
+    field: role !== undefined ? "rol" : "nombre",
+    new_value: role !== undefined ? data.role : data.display_name,
+    summary: role !== undefined
+      ? `cambió el rol de ${data.email || "un usuario"} a ${data.role}`
+      : `renombró a ${data.email || "un usuario"} como ${data.display_name || "(sin nombre)"}`,
+  });
+
   return data;
 }
 
@@ -1370,6 +1469,7 @@ window.catalogDb = {
   getProductById,
   getCategories,
   getAllCategories,
+  updateProductsCategory,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -1383,6 +1483,10 @@ window.catalogDb = {
   getAdminProfile,
   getAdminProfiles,
   setAdminProfileActive,
+  updateAdminProfile,
+  createAdminUser,
+  deleteAdminUser,
+  setAdminUserPassword,
   getHomeProducts,
   updateHomeProducts,
   uploadProductImage,
@@ -1400,7 +1504,5 @@ window.catalogDb = {
   seedProductsFromLocalData,
   getProductsCacheSource,
   getActivityLog,
-  getLeads,
-  updateLeadStatus,
   isUuid,
 };

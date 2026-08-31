@@ -2,7 +2,7 @@
    Helpers de bajo nivel: DOM, escape, formato, fechas e imágenes.
    Puros o casi puros; no conocen el estado de la app.
    ============================================================================ */
-import { PLACEHOLDER } from "./config.js?v=adm-38070a5c";
+import { PLACEHOLDER } from "./config.js?v=adm-716eeeea";
 
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -30,6 +30,17 @@ export function esc(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+// Iniciales para los avatares del equipo: corta por @ . y espacios, así
+// "javy@tienda.com" → "JT" y "Ana Pérez" → "AP".
+export function initials(value) {
+  return String(value || "?")
+    .split(/[@._\s-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
 }
 
 export function ico(name) {

@@ -2,11 +2,11 @@
    Drawer de combos: builder de filas (producto/sabor/cantidad), cálculo de
    ahorro vs. precio de lista, imagen y guardado de items.
    ============================================================================ */
-import { state } from "../state.js?v=adm-38070a5c";
-import { PLACEHOLDER } from "../config.js?v=adm-38070a5c";
-import { $, esc, ico, peso, wireImageFallbacks } from "../helpers.js?v=adm-38070a5c";
-import { field, affix, switchRow, toast } from "../ui.js?v=adm-38070a5c";
-import { requestRerender } from "../shell.js?v=adm-38070a5c";
+import { state } from "../state.js?v=adm-716eeeea";
+import { PLACEHOLDER } from "../config.js?v=adm-716eeeea";
+import { $, esc, ico, peso, wireImageFallbacks } from "../helpers.js?v=adm-716eeeea";
+import { field, affix, switchRow, toast } from "../ui.js?v=adm-716eeeea";
+import { requestRerender } from "../shell.js?v=adm-716eeeea";
 
 export function openComboDrawer(combo) {
   const isNew = !combo;
@@ -84,7 +84,7 @@ export function openComboDrawer(combo) {
       </div>
       <div class="ad-modal__foot">
         <button class="ad-btn ad-btn--ghost" type="button" data-close>Cancelar</button>
-        <button class="ad-btn ad-btn--primary" type="button" data-save>${ico("save")}${isNew ? "Crear combo" : "Guardar cambios"}</button>
+        <button class="ad-btn ad-btn--primary" type="button" data-save data-write-only>${ico("save")}${isNew ? "Crear combo" : "Guardar cambios"}</button>
       </div>
     </div>`;
 

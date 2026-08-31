@@ -10,6 +10,16 @@ function escapeHTML(value = "") {
     .replace(/'/g, "&#039;");
 }
 
+// Las rutas guardadas en la BD son relativas ("img/products/x.webp"). Esta
+// ficha vive en /producto/<slug>/, donde el navegador las resolvería contra ese
+// directorio y daría 404, así que se anclan a la raíz del sitio.
+function productImageSrc(path) {
+  const clean = String(path || "").trim();
+  if (!clean) return "/img/images/javi.webp";
+  if (clean.startsWith("http://") || clean.startsWith("https://") || clean.startsWith("//")) return clean;
+  return clean.startsWith("/") ? clean : "/" + clean;
+}
+
 function productCanBeQuoted(product) {
   if (product.available === false) return false;
   if (!product.flavors?.length) return true;
@@ -62,6 +72,49 @@ function renderFlavorField(product) {
   if (window.javyDropdown) window.javyDropdown.enhanceSelects(flavorsEl);
 }
 
+function injectProductStructuredData(product, { pageUrl, imageUrl, metaDescription, canQuote }) {
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        name: product.name,
+        image: imageUrl,
+        description: metaDescription,
+        url: pageUrl,
+        ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),
+        ...(product.price > 0
+          ? {
+              offers: {
+                "@type": "Offer",
+                price: Number(product.price).toFixed(2),
+                priceCurrency: "USD",
+                availability: canQuote ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                url: pageUrl,
+              },
+            }
+          : {}),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Catálogo", item: "https://javysuplementos.com/supplements-page.html" },
+          { "@type": "ListItem", position: 2, name: product.name, item: pageUrl },
+        ],
+      },
+    ],
+  };
+
+  let script = document.getElementById("product-jsonld");
+  if (!script) {
+    script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = "product-jsonld";
+    document.head.appendChild(script);
+  }
+  script.textContent = JSON.stringify(data);
+}
+
 function wireQuantityStepper(onChange) {
   const valueEl = document.querySelector("[data-qty-value]");
   if (!valueEl) return;
@@ -81,18 +134,217 @@ function getQuantity() {
   return Math.max(1, parseInt(document.querySelector("[data-qty-value]")?.textContent, 10) || 1);
 }
 
+/* Slug de categoría para las páginas /categoria/<slug>/. Réplica de
+   `slugTokens(category.name).join("-")` en scripts/generate-pages.mjs: esas
+   páginas se generan a partir del NOMBRE, no de la columna `slug` de
+   Supabase (que trae prefijos "fam-"/"tipo-" y no coincide con la carpeta
+   generada, ej. "fam-salud" -> "salud" en vez de "salud-y-bienestar"). Si
+   cambia allá, cambia acá. */
+function categoryFilterSlug(category) {
+  return String(category?.name || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+/* Familia y subcategoría de un producto a partir de su category_id. Devuelve
+   `type` solo cuando el producto cuelga de un segundo nivel. */
+function resolveProductCategories(product, categories = []) {
+  const byId = (id) => categories.find((c) => String(c.id) === String(id)) || null;
+  const own = byId(product.category_id);
+  if (!own) return { family: null, type: null };
+  return own.parent_id
+    ? { family: byId(own.parent_id), type: own }
+    : { family: own, type: null };
+}
+
+/* Pinta el breadcrumb y el dato "Categoría" de la ficha técnica. Cuando la
+   familia tiene página estática se enlaza; si no, queda como texto. */
+function renderCategoryTrail(family, type, fallbackLabel) {
+  const familyHref = family ? `/categoria/${categoryFilterSlug(family)}/` : "";
+  const link = (label) => `<a href="${escapeHTML(familyHref)}">${escapeHTML(label)}</a>`;
+
+  const breadcrumbCat = document.getElementById("pdp-breadcrumb-cat");
+  if (breadcrumbCat) breadcrumbCat.textContent = type?.name || family?.name || fallbackLabel;
+
+  // El tramo de familia vive antes del span del breadcrumb; se inserta una sola
+  // vez (la hidratación puede correr después de un HTML ya prerenderizado).
+  const breadcrumb = document.querySelector(".pdp__breadcrumb");
+  if (breadcrumb && family && type && !breadcrumb.querySelector("[data-breadcrumb-family]")) {
+    const sep = document.createElement("span");
+    sep.className = "pdp__breadcrumb-sep";
+    sep.textContent = "/";
+    const anchor = document.createElement("a");
+    anchor.href = familyHref;
+    anchor.textContent = family.name;
+    anchor.setAttribute("data-breadcrumb-family", "");
+    breadcrumbCat?.before(anchor, sep);
+  }
+
+  const categoryCell = document.getElementById("prod-category");
+  if (!categoryCell) return;
+  if (family) {
+    categoryCell.innerHTML = `${link(family.name)}${type ? ` · ${escapeHTML(type.name)}` : ""}`;
+  } else {
+    categoryCell.textContent = fallbackLabel;
+  }
+}
+
+/* Precio/oferta con el mismo formato que el catálogo (js/supplements.js). */
+function relFormatPrice(price) {
+  const value = Number(price || 0);
+  return value > 0 ? `${value.toFixed(2)}` : "Consultar";
+}
+
+function relHasOffer(product) {
+  const price = Number(product?.price || 0);
+  const oldPrice = Number(product?.old_price || 0);
+  return price > 0 && oldPrice > price;
+}
+
+function relDiscountPercent(product) {
+  if (!relHasOffer(product)) return 0;
+  return Math.round((1 - Number(product.price) / Number(product.old_price)) * 100);
+}
+
+function relSyncAddButton(card, product) {
+  const button = card.querySelector(".product-card__btn--buy");
+  if (!button) return;
+  const inQuote = (window.consultation?.getAddedFlavors?.(product.id)?.length || 0) > 0
+    || !!window.consultation?.hasItem?.(product.id, "");
+  button.classList.toggle("is-added", inQuote);
+  button.textContent = inQuote ? "✓ En cotización" : "Agregar a cotización";
+}
+
+/* Misma card que el catálogo y la home: destacado, disponibilidad, oferta,
+   presentación, botón de cotización y "Ver detalles". Se construye aquí porque
+   la ficha no carga js/supplements.js; si esa card cambia, hay que reflejarlo. */
+function renderRelatedCard(product) {
+  const canQuote = productCanBeQuoted(product);
+  const detailUrl = escapeHTML(
+    window.javyProductUrl?.forProduct?.(product)
+    || window.javyProductUrl?.forId?.(product.id)
+    || `/product-page.html?id=${encodeURIComponent(product.id)}`,
+  );
+
+  const card = document.createElement("article");
+  card.className = `product-card${product.imagenPendiente ? " product-card--image-pending" : ""}`;
+  card.innerHTML = `
+    ${product.featured ? '<span class="product-card__badge">Destacado</span>' : ""}
+
+    <a class="product-card__media product-card__media-link" href="${detailUrl}" aria-label="Ver ${escapeHTML(product.name)}">
+      <img src="${escapeHTML(productImageSrc(product.image))}" alt="${escapeHTML(product.name)}" class="product-card__img" loading="lazy" decoding="async" />
+    </a>
+
+    <div class="product-card__info">
+      <div class="product-card__meta">
+        <span class="product-card__brand">${escapeHTML(product.brand || "Marca en revision")}</span>
+        <span class="product-card__status ${canQuote ? "is-available" : "is-agotado"}">
+          ${canQuote ? "Disponible" : "Agotado"}
+        </span>
+      </div>
+      <h3 class="product-card__name">
+        <a class="product-card__name-link" href="${detailUrl}">${escapeHTML(product.name)}</a>
+      </h3>
+      <div class="product-card__price-row">
+        <span class="product-card__price-group">
+          <span class="product-card__price">${relFormatPrice(product.price)}</span>
+          ${relHasOffer(product) ? `<span class="product-card__price-old">${relFormatPrice(product.old_price)}</span><span class="product-card__discount">-${relDiscountPercent(product)}%</span>` : ""}
+        </span>
+        ${product.presentation ? `<span class="product-card__pres">${escapeHTML(product.presentation)}</span>` : ""}
+      </div>
+    </div>
+
+    <div class="product-card__actions">
+      ${canQuote
+        ? '<button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>'
+        : '<button class="product-card__btn product-card__btn--quote" type="button">Consultar disponibilidad</button>'
+      }
+      <a class="product-card__detail-link" href="${detailUrl}">Ver detalles</a>
+    </div>
+  `;
+
+  card._javyProduct = product;
+
+  card.querySelector(".product-card__btn--buy")?.addEventListener("click", () => {
+    window.consultation?.openAddModal?.(product);
+  });
+  card.querySelector(".product-card__btn--quote")?.addEventListener("click", () => {
+    window.consultation?.askAvailability?.(product, {});
+  });
+  relSyncAddButton(card, product);
+
+  return card;
+}
+
+/* Hasta 4 productos de la misma familia, priorizando los de la misma
+   subcategoría (más parecidos) y los disponibles. Da salida a una ficha que
+   hoy termina en nada. */
+function renderRelatedProducts(product, family, type, allProducts, categories) {
+  const section = document.getElementById("pdp-related");
+  const grid = document.getElementById("pdp-related-grid");
+  if (!section || !grid || !family) return;
+
+  // Un producto pertenece a la familia si cuelga de ella o de una de sus
+  // subcategorías (mismo criterio que productInFamily en js/supplements.js).
+  const childIds = new Set(
+    categories.filter((c) => String(c.parent_id) === String(family.id)).map((c) => String(c.id)),
+  );
+  const inFamily = allProducts.filter((p) => {
+    if (String(p.id) === String(product.id)) return false;
+    const own = String(p.category_id);
+    return own === String(family.id) || childIds.has(own);
+  });
+
+  const score = (p) => (String(p.category_id) === String(type?.id) ? 2 : 0)
+    + (productCanBeQuoted(p) ? 1 : 0);
+  const picks = inFamily.sort((a, b) => score(b) - score(a)).slice(0, 4);
+  if (!picks.length) return;
+
+  const titleEl = document.getElementById("pdp-related-title");
+  if (titleEl) titleEl.textContent = `Más de ${family.name}`;
+  const linkEl = document.getElementById("pdp-related-link");
+  if (linkEl) linkEl.href = `/categoria/${categoryFilterSlug(family)}/`;
+
+  grid.replaceChildren(...picks.map(renderRelatedCard));
+
+  // Las cards reflejan la cotización: si se agrega/quita algo, sus botones se
+  // actualizan igual que en el catálogo.
+  if (!grid._javySyncBound) {
+    grid._javySyncBound = true;
+    document.addEventListener("consultation:change", () => {
+      grid.querySelectorAll(".product-card").forEach((card) => {
+        if (card._javyProduct) relSyncAddButton(card, card._javyProduct);
+      });
+    });
+  }
+
+  section.hidden = false;
+}
+
 async function initProductPage() {
   const params = new URLSearchParams(window.location.search);
-  const productId = params.get("id");
+  // En /producto/<slug>/ no hay ?id=: la página generada lo declara en
+  // data-product-id (un <script> inline lo bloquearía la CSP).
+  const prerenderedId = document.querySelector(".pdp[data-product-id]")?.dataset.productId || "";
+  const productId = params.get("id") || prerenderedId;
 
   if (!productId || !window.catalogDb) {
-    renderNotFound();
+    if (!prerenderedId) renderNotFound();
     return;
   }
 
-  const product = await window.catalogDb.getProductById(productId);
+  const [product, categories] = await Promise.all([
+    window.catalogDb.getProductById(productId),
+    window.catalogDb.getCategories?.().catch(() => []) ?? [],
+  ]);
   if (!product) {
-    renderNotFound();
+    // En /producto/<slug>/ el HTML ya trae nombre, precio y descripción escritos.
+    // Si Supabase no responde, conservarlo es mejor que borrarlo: la página
+    // sigue siendo útil y legible en vez de mostrar "no encontrado".
+    if (!prerenderedId) renderNotFound();
     return;
   }
 
@@ -107,10 +359,15 @@ async function initProductPage() {
     return SITE_BASE + String(path).replace(/^\/+/, "");
   };
 
-  const pageUrl = `${SITE_BASE}product-page.html?id=${encodeURIComponent(productId)}`;
+  // Canonical siempre a la URL limpia: si se entra por el enlace viejo
+  // (product-page.html?id=), Google consolida la autoridad en /producto/<slug>/.
+  const cleanPath = window.javyProductUrl?.forId?.(productId) || "";
+  const pageUrl = cleanPath.startsWith("/producto/")
+    ? SITE_BASE + cleanPath.replace(/^\/+/, "")
+    : `${SITE_BASE}product-page.html?id=${encodeURIComponent(productId)}`;
   const imageUrl = toAbsoluteUrl(product.image);
   const shortDescription = String(product.description_short || product.subtitulo || "").trim();
-  const metaDescription = shortDescription || `${product.name} — Cotizá ahora por WhatsApp con Javy Suplementos.`;
+  const metaDescription = shortDescription || `${product.name} — Cotiza ahora por WhatsApp con Javy Suplementos.`;
   const setMeta = (sel, val) => { const el = document.querySelector(sel); if (el) el.setAttribute("content", val); };
   setMeta('meta[property="og:title"]', `${product.name} | Javy Suplementos`);
   setMeta('meta[property="og:description"]', metaDescription);
@@ -126,6 +383,7 @@ async function initProductPage() {
   if (canonicalEl) canonicalEl.setAttribute("href", pageUrl);
 
   const canQuote = productCanBeQuoted(product);
+  injectProductStructuredData(product, { pageUrl, imageUrl, metaDescription, canQuote });
   const category = product.category || "Producto";
   const presentation = product.presentation || "";
   const priceText = product.price > 0 ? `$${product.price.toFixed(2)}` : "Consultar precio";
@@ -136,8 +394,8 @@ async function initProductPage() {
     : priceText;
 
   const imgEl = document.getElementById("prod-image");
-  imgEl.src = product.image || "img/images/javi.webp";
-  imgEl.onerror = () => { imgEl.onerror = null; imgEl.src = "img/images/javi.webp"; };
+  imgEl.src = productImageSrc(product.image);
+  imgEl.onerror = () => { imgEl.onerror = null; imgEl.src = "/img/images/javi.webp"; };
   imgEl.alt = product.name;
 
   document.getElementById("prod-title").textContent = product.name;
@@ -148,13 +406,11 @@ async function initProductPage() {
 
   const categoryLabel = document.getElementById("prod-category-label");
   const presentationEl = document.getElementById("prod-presentation");
-  const contextSeparator = document.querySelector(".pdp__context-sep");
   if (categoryLabel) categoryLabel.textContent = category;
   if (presentationEl) {
     presentationEl.textContent = presentation;
     presentationEl.hidden = !presentation;
   }
-  if (contextSeparator) contextSeparator.hidden = !presentation;
 
   const brandLabel = document.getElementById("prod-brand-label");
   if (brandLabel) brandLabel.textContent = product.brand || "Marca por confirmar";
@@ -162,11 +418,18 @@ async function initProductPage() {
   const barPriceEl = document.getElementById("pdp-bar-price");
   if (barPriceEl) barPriceEl.innerHTML = priceHTML;
 
-  const breadcrumbCat = document.getElementById("pdp-breadcrumb-cat");
-  if (breadcrumbCat) breadcrumbCat.textContent = category;
+  // Breadcrumb Catálogo / Familia / Subcategoría, con la familia enlazada a su
+  // página. Sin esto la ficha es un callejón sin salida: no hay camino de vuelta
+  // a "todas las proteínas" desde un producto concreto.
+  const { family, type } = resolveProductCategories(product, categories);
+  renderCategoryTrail(family, type, category);
+
+  // No bloquea el render de la ficha: el bloque aparece cuando el catálogo esté.
+  window.catalogDb.getProductsWithFlavors?.()
+    .then((all) => renderRelatedProducts(product, family, type, all || [], categories))
+    .catch(() => {});
 
   document.getElementById("prod-brand").textContent = product.brand || "Por confirmar";
-  document.getElementById("prod-category").textContent = category;
 
   document.querySelectorAll("[data-status-pill]").forEach((pill) => {
     pill.textContent = canQuote ? "Disponible" : "Agotado";
@@ -291,7 +554,7 @@ function renderNotFound() {
       <div>
         <h1 style="margin-bottom:0.75rem;">Producto no encontrado</h1>
         <p style="margin-bottom:1rem;color:#A9B4C6;">Verifica el enlace o vuelve al catalogo.</p>
-        <a href="supplements-page.html" style="color:#5AB4E9;text-decoration:none;font-weight:500;">Volver al catalogo</a>
+        <a href="/supplements-page.html" style="color:#5AB4E9;text-decoration:none;font-weight:500;">Volver al catalogo</a>
       </div>
     </main>
   `;

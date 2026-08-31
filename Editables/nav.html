@@ -1,27 +1,27 @@
 <header class="site-header">
       <nav class="nav">
-        <a class="nav__brand" href="index.html" aria-label="Ir al inicio">
-          <img class="nav__logo" src="img/icons/logo.png" alt="Logo Javy Supplements" />
+        <a class="nav__brand" href="/" aria-label="Ir al inicio">
+          <img class="nav__logo" src="/img/icons/logo.png" alt="Logo Javy Suplementos" />
         </a>
         <button class="nav__toggle" id="navToggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="navMenu">
           <span class="btn-icon nav__toggle-icon" data-javy-icon="menu" aria-hidden="true"></span>
         </button>
         <ul class="nav__links" id="navMenu">
-          <li><a href="index.html">INICIO</a></li>
-          <li><a href="supplements-page.html">SUPLEMENTOS</a></li>
-          <li><a href="testimonios.html">TESTIMONIOS</a></li>
-          <li><a href="contacto.html">SOBRE NOSOTROS</a></li>
-          <li class="nav__admin-mobile">
-            <a class="admin-nav-btn" href="login.html" target="_blank" rel="noopener">
-              <span class="btn-icon admin-nav-btn__icon" data-javy-icon="log-in" aria-hidden="true"></span>
-              Iniciar sesión
+          <li><a href="/">INICIO</a></li>
+          <li class="nav__has-sub" data-nav-categories>
+            <a class="nav__has-sub-trigger" href="/supplements-page.html" aria-haspopup="true" aria-expanded="false" aria-controls="navCategories">
+              SUPLEMENTOS
+              <span class="btn-icon nav__sub-caret" data-javy-icon="arrow-down" aria-hidden="true"></span>
             </a>
+            <!-- Lo rellena js/include-nav.js con las familias reales. -->
+            <ul class="nav__sub" id="navCategories" hidden></ul>
           </li>
+          <li><a href="/testimonios.html">TESTIMONIOS</a></li>
+          <li><a href="/contacto.html">SOBRE NOSOTROS</a></li>
         </ul>
-        <a class="admin-nav-btn nav__admin-desktop" href="login.html" target="_blank" rel="noopener">
-          <span class="btn-icon admin-nav-btn__icon" data-javy-icon="log-in" aria-hidden="true"></span>
-          Iniciar sesión
-        </a>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar a modo claro" aria-pressed="false">
+          <span class="btn-icon theme-toggle__icon" data-javy-icon="moon" aria-hidden="true"></span>
+        </button>
         <button class="cart-btn" id="consultationBtn" type="button" aria-label="Abrir cotización">
           <span class="btn-icon cart-icon" data-javy-icon="message-circle" aria-hidden="true"></span>
           <span class="cart-label">Cotización</span>

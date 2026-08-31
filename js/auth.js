@@ -37,14 +37,16 @@
     return error?.message || "No se pudo iniciar sesión. Intenta nuevamente.";
   }
 
+  // Devuelve el perfil del usuario si tiene acceso al panel, sin importar el
+  // rol: un Lector también entra, solo que no puede modificar nada (eso lo
+  // decide RLS con can_write() / can_manage_users(), no esta función).
   async function getAdminProfile(userId) {
     if (!hasSupabase() || !userId) return null;
 
     const { data, error } = await supabaseClient
       .from("admin_profiles")
-      .select("id, user_id, role, is_active")
+      .select("id, user_id, email, display_name, role, is_active")
       .eq("user_id", userId)
-      .eq("role", "admin")
       .eq("is_active", true)
       .maybeSingle();
 

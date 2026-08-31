@@ -1,10 +1,11 @@
 /* ============================================================================
    Sección Categorías: familias y tipos (jerarquía), orden, ocultar y borrar.
    ============================================================================ */
-import { state, families, typesOf, catById } from "../state.js?v=adm-38070a5c";
-import { $, esc, ico } from "../helpers.js?v=adm-38070a5c";
-import { setView } from "../view.js?v=adm-38070a5c";
-import { emptyFeature, promptModal, confirmModal, toast } from "../ui.js?v=adm-38070a5c";
+import { state, families, typesOf, catById } from "../state.js?v=adm-716eeeea";
+import { $, esc, ico } from "../helpers.js?v=adm-716eeeea";
+import { setView } from "../view.js?v=adm-716eeeea";
+import { go } from "../shell.js?v=adm-716eeeea";
+import { emptyFeature, promptModal, confirmModal, toast, ensureMenuListeners } from "../ui.js?v=adm-716eeeea";
 
 export function renderCategories() {
   if (!state.categoriesSupported) {
@@ -17,14 +18,21 @@ export function renderCategories() {
     const ids = [cat.id, ...childIds];
     return state.products.filter((p) => ids.includes(p.category_id)).length;
   };
+  // Productos asignados a la familia SIN bajar a una subcategoría. Es el número
+  // que explica por qué el segundo nivel no aparece en el catálogo público.
+  const looseCountFor = (cat) =>
+    state.products.filter((p) => String(p.category_id) === String(cat.id)).length;
+  const typeCountFor = (type) =>
+    state.products.filter((p) => String(p.category_id) === String(type.id)).length;
 
   const cards = fams.map((c, i) => {
     const subs = typesOf(c.id);
+    const loose = looseCountFor(c);
     return `
     <div class="ad-cat${c.is_active === false ? " is-hidden" : ""}" data-cat="${esc(c.id)}">
       <div class="ad-cat__head">
         <div class="ad-cat__title"><strong>${esc(c.name)}</strong><small>${productCountFor(c)} productos</small></div>
-        <div class="ad-cat__actions">
+        <div class="ad-cat__actions" data-write-only>
           <button class="ad-icon-btn" type="button" title="Subir" data-cat-move="${i}|-1" ${i === 0 ? "disabled" : ""}>${ico("arrow-up")}</button>
           <button class="ad-icon-btn" type="button" title="Bajar" data-cat-move="${i}|1" ${i === fams.length - 1 ? "disabled" : ""}>${ico("arrow-down")}</button>
           <button class="ad-icon-btn" type="button" title="Renombrar" data-cat-rename="${esc(c.id)}">${ico("pencil")}</button>
@@ -40,10 +48,29 @@ export function renderCategories() {
       <div class="ad-cat__types">
         <span class="ad-cat__sublabel">Subcategorías</span>
         <div class="ad-cat__chips">
-          ${subs.map((t) => `<span class="ad-type-chip">${esc(t.name)}<button type="button" aria-label="Eliminar subcategoría ${esc(t.name)}" data-type-del="${esc(t.id)}">${ico("x")}</button></span>`).join("")}
+          ${subs.map((t) => {
+            const n = typeCountFor(t);
+            // El nombre y el conteo se ocultan a lectores de pantalla y se
+            // reemplazan por una sola etiqueta que incluye el número: antes el
+            // conteo era aria-hidden y no llegaba a anunciarse nunca.
+            const etiqueta = `${t.name}: ${n} producto${n === 1 ? "" : "s"}`;
+            return `<span class="ad-type-chip${n ? "" : " is-empty"}">
+              <button class="ad-type-chip__name" type="button" data-type-rename="${esc(t.id)}" title="Renombrar “${esc(t.name)}”">
+                <span class="ad-type-chip__label" aria-hidden="true">${esc(t.name)}</span>
+                <span class="ad-type-chip__count" aria-hidden="true">${n}</span>
+                <span class="ad-sr-only">${esc(etiqueta)}. Renombrar</span>
+              </button>
+              <button class="ad-type-chip__del" data-write-only type="button" aria-label="Eliminar subcategoría ${esc(t.name)}" title="Eliminar “${esc(t.name)}”" data-type-del="${esc(t.id)}">${ico("x")}</button>
+            </span>`;
+          }).join("")}
           ${subs.length ? "" : `<span class="ad-cat__empty">Aún sin subcategorías.</span>`}
-          <button class="ad-type-chip ad-type-chip--add" type="button" data-type-add="${esc(c.id)}">${ico("plus")}Añadir</button>
+          <button class="ad-type-chip ad-type-chip--add" data-write-only type="button" data-type-add="${esc(c.id)}">${ico("plus")}Añadir</button>
         </div>
+        ${loose && subs.length
+          ? `<button class="ad-cat__loose" data-write-only type="button" data-cat-loose="${esc(c.id)}">
+               ${ico("filter")}${loose} producto${loose === 1 ? "" : "s"} sin subcategoría — repartir
+             </button>`
+          : ""}
       </div>
     </div>`;
   }).join("");
@@ -51,8 +78,9 @@ export function renderCategories() {
   setView(`
     <div class="ad-section-intro">
       <div><p class="ad-kicker">Catálogo</p><p>Categorías del catálogo y sus subcategorías. Reordená con las flechas u ocultá una categoría sin borrar sus productos.</p></div>
-      <button class="ad-btn ad-btn--primary" type="button" data-fam-add>${ico("plus")}Nueva categoría</button>
+      <button class="ad-btn ad-btn--primary" type="button" data-fam-add data-write-only>${ico("plus")}Nueva categoría</button>
     </div>
+    <p class="ad-sr-only" role="status" aria-live="polite" data-cat-status></p>
     <div class="ad-panel">${cards || `<p class="ad-ops__empty">Todavía no hay categorías. Creá la primera.</p>`}</div>`);
 
   const view = $("#adminView");
@@ -63,39 +91,34 @@ export function renderCategories() {
   view.querySelectorAll("[data-cat-del]").forEach((b) => b.addEventListener("click", () => deleteFamily(b.getAttribute("data-cat-del"))));
   view.querySelectorAll("[data-type-add]").forEach((b) => b.addEventListener("click", () => addType(b.getAttribute("data-type-add"))));
   view.querySelectorAll("[data-type-del]").forEach((b) => b.addEventListener("click", () => deleteType(b.getAttribute("data-type-del"))));
+  view.querySelectorAll("[data-type-rename]").forEach((b) => b.addEventListener("click", () => renameCategory(b.getAttribute("data-type-rename"))));
+  view.querySelectorAll("[data-cat-loose]").forEach((b) => b.addEventListener("click", () => showLooseProducts(b.getAttribute("data-cat-loose"))));
   ensureMenuListeners();
 }
 
-/* Menú "⋯" de cada categoría: delegado en document (se cablea una sola vez). */
-function closeAllMenus() {
-  document.querySelectorAll(".ad-menu.is-open").forEach((m) => {
-    m.classList.remove("is-open");
-    m.querySelector("[data-menu-toggle]")?.setAttribute("aria-expanded", "false");
-    const panel = m.querySelector(".ad-menu__panel");
-    if (panel) panel.hidden = true;
-  });
+/* Devuelve el foco a la flecha que se acaba de usar, ya en la fila nueva. Si esa
+   flecha quedó deshabilitada (la categoría llegó al borde), pasa a la opuesta
+   para no dejar el foco en la nada. */
+function restoreMoveFocus(index, dir) {
+  const view = $("#adminView");
+  if (!view) return;
+  const pick = (d) => view.querySelector(`[data-cat-move="${index}|${d}"]:not([disabled])`);
+  (pick(dir) || pick(-dir))?.focus();
 }
-let menusWired = false;
-function ensureMenuListeners() {
-  if (menusWired) return;
-  menusWired = true;
-  document.addEventListener("click", (e) => {
-    const toggle = e.target.closest("[data-menu-toggle]");
-    if (toggle) {
-      const menu = toggle.closest(".ad-menu");
-      const willOpen = !menu.classList.contains("is-open");
-      closeAllMenus();
-      if (willOpen) {
-        menu.classList.add("is-open");
-        toggle.setAttribute("aria-expanded", "true");
-        menu.querySelector(".ad-menu__panel").hidden = false;
-      }
-      return;
-    }
-    // clic fuera del panel cierra (un clic en un ítem lo maneja su propia acción)
-    if (!e.target.closest(".ad-menu__panel")) closeAllMenus();
-  });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAllMenus(); });
+
+function announce(msg) {
+  const box = $("#adminView")?.querySelector("[data-cat-status]");
+  if (box) box.textContent = msg;
+}
+
+/* Salta a Productos ya filtrado por los que cuelgan de esta familia sin
+   subcategoría, que es donde están las herramientas para repartirlos. */
+function showLooseProducts(famId) {
+  state.productFilter = "nosub";
+  state.productCategory = famId;
+  state.productSubcategory = "all";
+  state.search = "";
+  go("products");
 }
 
 async function addFamily() {
@@ -157,7 +180,12 @@ async function moveFamily(spec) {
     if (cat.sort_order !== newOrder) { cat.sort_order = newOrder; changed.push(cat); }
   });
 
+  const movida = ordered[j];
   renderCategories(); // optimista: el nuevo orden se ve al instante
+  // renderCategories() reconstruye el DOM, así que el foco se perdía en cada
+  // clic: quien reordena con el teclado quedaba sin posición y sin aviso.
+  restoreMoveFocus(j, dir);
+  announce(`${movida.name} movida a la posición ${j + 1} de ${ordered.length}.`);
 
   try {
     await Promise.all(changed.map((cat) =>

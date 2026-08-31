@@ -49,6 +49,10 @@ manual, por chat.
 | `/aligerar-imagenes` | Convierte PNG pesados a WebP y actualiza las referencias. |
 | `/revisar-cambios` | Lanza en paralelo la revisión de diseño + lógica de tus cambios. |
 
+Además, `node scripts/generate-pages.mjs` regenera las páginas estáticas del catálogo
+(`producto/`, `categoria/`, `js/product-urls.js` y `sitemap.xml`) desde Supabase. **Corrélo
+cada vez que cambien productos o categorías** y revisá el `git diff` antes de commitear.
+
 La lógica de `/guardar` y `/estado-ramas` vive en `scripts/guardar.sh` y `scripts/estado-ramas.sh`
 (usables también desde cualquier terminal, por Claude y por Codex).
 
@@ -64,6 +68,8 @@ contenido de los módulos: si el panel cambió, el token cambia y la caché baja
 
 ```text
 /                      páginas .html (7)
+/producto/<slug>/      fichas estáticas generadas (una por producto)
+/categoria/<slug>/     landings de categoría generadas
 /css                   estilos
   /components          nav, auth, cards, cart, buttons, footer (reutilizables)
   /pages               home, supplements, products, contacto, login, testimonials
@@ -75,6 +81,8 @@ contenido de los módulos: si el panel cambió, el token cambia y la caché baja
 /img                   /products, /images, /icons, /testimonials (preferir .webp)
 /scripts               estado-ramas.sh, guardar.sh (flujo de git)
 /supabase/schema.sql   esquema de la base de datos
+/supabase/migrations   migraciones incrementales (fase3 … fase9-roles)
+/supabase/functions    Edge Functions (admin-users: crear/eliminar usuarios del panel)
 /Editables/nav.html    markup del nav compartido
 ```
 
@@ -84,11 +92,51 @@ contenido de los módulos: si el panel cambió, el token cambia y la caché baja
 
 - `index.html` — home: hero, productos destacados, reels de Instagram, footer.
 - `supplements-page.html` — catálogo filtrable.
-- `product-page.html` — detalle de producto, carga por `?id=` (UUID o legacy_id).
+- `product-page.html` — detalle de producto, carga por `?id=` (UUID o legacy_id). Sigue vivo
+  para no romper enlaces ya compartidos, pero su `canonical` apunta a `/producto/<slug>/`.
+- `producto/<slug>/index.html` — **generadas** por `scripts/generate-pages.mjs`. Traen title,
+  meta description, Open Graph y JSON-LD ya escritos en el HTML (los scrapers de WhatsApp y
+  Facebook no ejecutan JS, así que sin esto el preview salía genérico). Se hidratan con
+  Supabase al cargar; si Supabase no responde, conservan el contenido estático.
+- `categoria/<slug>/index.html` — **generadas**. Landing por categoría con al menos 3 productos.
+  Usan la misma card y la misma grilla (`.catalog-grid`) que `supplements-page.html`: la card va
+  escrita en el HTML (para el scraper) y `js/categoria.js` le engancha la cotización al cargar.
+  Los chips de subcategoría son `<a>` a `supplements-page.html?fam=…&tipo=…`, o sea que filtrar
+  lleva al catálogo completo y no a otra página aparte.
 - `contacto.html` — página Sobre nosotros, acceso a WhatsApp y selector Google Maps/Waze.
 - `testimonios.html` — testimonios de clientes.
 - `login.html` — login de admin (Supabase Auth). Lleva `noindex`.
 - `admin.html` — panel de gestión de productos (protegido). Lleva `noindex`.
+- `construccion.html` — aviso de "sitio en construcción". Lleva `noindex`. No carga catálogo
+  ni carrito: solo logo, mensaje y dos enlaces (WhatsApp e Instagram). Ver "Modo
+  mantenimiento".
+
+---
+
+## Modo del sitio (mantenimiento)
+
+`js/mantenimiento.js` es el interruptor global del sitio público. La constante `MODO` acepta
+dos valores:
+
+| Modo | Qué ve el visitante |
+|---|---|
+| `abierto` | El sitio normal. |
+| `cerrado` | Toda página pública redirige a `/construccion.html` antes de pintar nada. |
+
+- **Cambiar de modo:** la constante `MODO` en `js/mantenimiento.js`. Es la única línea.
+- **El modo solo aplica en producción** (`javysuplementos.com`). En los previews de Vercel y en
+  `localhost` el sitio está siempre abierto, así se trabaja sin que estorbe. Por eso `main` y las
+  ramas de desarrollo pueden tener el mismo valor sin pisarse.
+- **Probar un modo en cualquier lado:** agregar `?modo=cerrado` o `?modo=abierto` a la URL. Queda
+  en `sessionStorage` mientras dure la pestaña (`?ver=javy` sigue funcionando como atajo de
+  `abierto`). Cualquier valor que no sea `cerrado` deja el sitio abierto, así una pestaña con un
+  modo viejo guardado no queda trabada.
+- **Nunca se bloquean:** `construccion.html`, `login.html`, `admin.html` y `404.html`.
+- El script se inyecta sin `defer` justo debajo del `<meta>` de CSP en todas las páginas públicas
+  (raíz + `producto/**` + `categoria/**`). El template de `scripts/generate-pages.mjs` ya lo
+  incluye, así que las páginas regeneradas lo conservan.
+- Si cambia el contenido del script, subir el `?v=` en las páginas para saltear caché de
+  Cloudflare/GitHub Pages.
 
 ---
 
@@ -106,6 +154,7 @@ Los scripts cargan con `defer` y se comunican por objetos en `window`:
 - `window.PRODUCTS` — `js/product-data.js`. ~180 productos hardcodeados (fallback, ver abajo).
 
 Otros archivos de `js/`: `script.js` (home), `supplements.js` (catálogo + filtros),
+`categoria.js` (engancha la cotización a las cards ya escritas de `categoria/**`),
 `product-page.js` (detalle + meta tags dinámicos), `contacto.js` (WhatsApp + ubicación), `login.js`,
 `testimonials.js`, `testimonials-data.js`, `supabase-config.js`, `whatsapp-config.js`.
 
@@ -147,15 +196,42 @@ commitear). Para el sentido inverso (sembrar Supabase desde el fallback la prime
 ## Panel administrativo
 
 1. Login en `login.html` con email + password (Supabase Auth).
-2. Se verifica que el usuario exista en `admin_profiles` con `role='admin'` e `is_active=true`; si
+2. Se verifica que el usuario exista en `admin_profiles` con `is_active=true` (cualquier rol); si
    no, sign-out automático.
-3. `protectAdminPage()` valida sesión antes de mostrar el dashboard.
+3. `requireAdminSession()` (en `js/auth.js`) valida sesión antes de mostrar el dashboard.
 4. CRUD de productos/sabores/categorías; las imágenes suben al bucket `product-images`.
 5. La seguridad real la impone **RLS en Supabase**, no la UI.
 
-El panel cubre: Dashboard, Productos, Sabores/variantes, Inicio (curación del home), Mensajes
-(historial de leads capturados por el formulario anterior), Categorías, Combos, Accesos y Ajustes, más el **drawer de
-edición de producto**. Filtros de revisión:
+### Roles y usuarios (sección *Accesos*)
+
+Hay tres roles, guardados en `admin_profiles.role`:
+
+| Rol | Valor | Puede |
+| --- | --- | --- |
+| Admin | `admin` | Todo. El único que crea, edita y elimina usuarios y resetea contraseñas ajenas. |
+| Editor | `editor` | Catálogo completo (productos, combos, categorías, inicio). No toca usuarios. |
+| Lector | `viewer` | Solo consulta. Entra al panel y ve todo, pero no modifica nada. |
+
+Tres funciones de Postgres deciden el permiso (`supabase/migrations/fase9-roles.sql`):
+`is_staff()` (cualquier perfil activo), `can_write()` (Admin + Editor) y `can_manage_users()`
+(solo Admin). ⚠️ **`is_admin()` quedó como alias de `can_write()`**, no significa "es
+administrador": se mantuvo el nombre para no reescribir las ~20 políticas que ya la usaban.
+
+En el panel, `js/admin/permissions.js` expone `canWrite()` / `canManageUsers()`. Cuando el usuario
+es Lector, `shell.js` pone la clase `ad-readonly` en el `<body>` y el CSS esconde todo lo marcado
+con `data-write-only`. **Eso es cosmética**: si querés verificar un permiso de verdad, probalo
+contra la base, no contra la UI.
+
+Crear y eliminar usuarios toca `auth.users` y necesita la `service_role key`, que no puede vivir en
+un sitio estático. Por eso existe la **Edge Function `admin-users`**
+(`supabase/functions/admin-users/index.ts`), la única pieza de servidor del proyecto: verifica con
+`can_manage_users()` que quien llama sea Admin y recién ahí usa la llave. Se despliega con
+`supabase functions deploy admin-users`; `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` las inyecta
+Supabase sola. Cambiar la **propia** contraseña no pasa por ahí (lo hace el chip de usuario de la
+esquina superior derecha con `auth.updateUser`).
+
+El panel cubre: Dashboard, Productos, Sabores/variantes, Inicio (curación del home), Categorías,
+Combos, Accesos y Ajustes, más el **drawer de edición de producto**. Filtros de revisión:
 sin imagen, sin sabor, faltan sabores, sin sabores activos, revisar tipo de sabor, no disponibles,
 precio vacío, destacados.
 
@@ -166,14 +242,14 @@ precio vacío, destacados.
 - `products` — catálogo (tiene columnas redundantes: `name`/`nombre`, `price`/`precio_centavos`).
 - `product_flavors` — sabores/variantes de cada producto, con disponibilidad individual.
 - `categories` — categorías y tipos (Proteínas, Creatinas, Pre-entrenos, etc.).
-- `admin_profiles` — vincula usuarios de Auth con el rol admin.
+- `admin_profiles` — usuarios del panel: vincula la cuenta de Auth con su rol
+  (`admin` / `editor` / `viewer`), su nombre visible y si tiene el acceso activo. Un trigger
+  impide que la tabla quede sin ningún Admin activo.
 - `settings` — configuración tipo clave/valor (JSONB).
-- `leads` — historial de solicitudes del formulario anterior; la página pública ya no crea
-  registros, pero los admins conservan lectura/gestión vía RLS. Migración histórica:
-  `supabase/migrations/fase7-leads.sql`.
 
-**RLS activado** en todas las tablas: lectura pública, escritura solo para admins verificados vía
-la función `public.is_admin()`. En el frontend solo se usan claves públicas tipo `anon`
+**RLS activado** en todas las tablas: lectura pública, escritura solo para quien pase
+`public.is_admin()` (que desde la Fase 9 significa **Admin o Editor**, ver *Roles y usuarios*).
+En el frontend solo se usan claves públicas tipo `anon`
 (configuradas en `js/supabase-config.js`). **Nunca** guardar service role keys en el frontend.
 
 ---

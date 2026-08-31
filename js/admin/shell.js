@@ -5,31 +5,66 @@
    Mantiene un registro key → renderFn; las secciones piden re-render con
    requestRerender() en vez de llamarse entre sí.
    ============================================================================ */
-import { state } from "./state.js?v=adm-38070a5c";
-import { NAV } from "./config.js?v=adm-38070a5c";
-import { $, $$, esc, ico } from "./helpers.js?v=adm-38070a5c";
-import { showViewError } from "./view.js?v=adm-38070a5c";
-import { renderDashboard } from "./sections/dashboard.js?v=adm-38070a5c";
-import { renderProducts } from "./sections/products.js?v=adm-38070a5c";
-import { renderHome } from "./sections/home.js?v=adm-38070a5c";
-import { renderLeads } from "./sections/leads.js?v=adm-38070a5c";
-import { renderCategories } from "./sections/categories.js?v=adm-38070a5c";
-import { renderCombos } from "./sections/combos.js?v=adm-38070a5c";
-import { renderAccess } from "./sections/access.js?v=adm-38070a5c";
-import { renderSettings } from "./sections/settings.js?v=adm-38070a5c";
-import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-38070a5c";
+import { state } from "./state.js?v=adm-716eeeea";
+import { NAV } from "./config.js?v=adm-716eeeea";
+import { $, $$, esc, ico } from "./helpers.js?v=adm-716eeeea";
+import { showViewError } from "./view.js?v=adm-716eeeea";
+import { renderDashboard } from "./sections/dashboard.js?v=adm-716eeeea";
+import { renderProducts } from "./sections/products.js?v=adm-716eeeea";
+import { renderHome } from "./sections/home.js?v=adm-716eeeea";
+import { renderCategories } from "./sections/categories.js?v=adm-716eeeea";
+import { renderCombos } from "./sections/combos.js?v=adm-716eeeea";
+import { renderAccess } from "./sections/access.js?v=adm-716eeeea";
+import { renderSettings } from "./sections/settings.js?v=adm-716eeeea";
+import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-716eeeea";
+import { canWrite } from "./permissions.js?v=adm-716eeeea";
+import { renderUserChip } from "./user-chip.js?v=adm-716eeeea";
 
 const renderers = {
   dashboard: renderDashboard, products: renderProducts,
-  home: renderHome, leads: renderLeads, categories: renderCategories, combos: renderCombos,
+  home: renderHome, categories: renderCategories, combos: renderCombos,
   access: renderAccess, settings: renderSettings,
 };
 
+/* ----------------------------- sidebar (desktop) ----------------------------- */
+const SIDEBAR_KEY = "javy:admin:sidebarCollapsed";
+
+function getSidebarCollapsed() {
+  try {
+    return localStorage.getItem(SIDEBAR_KEY) === "1";
+  } catch (_) {
+    return false;
+  }
+}
+
+function applySidebarState(collapsed) {
+  const btn = $("#adminSidebarToggle");
+  $("#adminShell")?.classList.toggle("is-sidebar-collapsed", collapsed);
+  btn?.setAttribute("aria-pressed", String(collapsed));
+  btn?.setAttribute("title", collapsed ? "Mostrar menú" : "Ocultar menú");
+}
+
+function toggleSidebar() {
+  const next = !getSidebarCollapsed();
+  try {
+    localStorage.setItem(SIDEBAR_KEY, next ? "1" : "0");
+  } catch (_) {}
+  applySidebarState(next);
+}
+
 /* ----------------------------- chrome (nav) ----------------------------- */
 export function buildChrome() {
+  // Modo solo lectura (rol Lector): el CSS esconde todo lo marcado con
+  // [data-write-only]. Es comodidad visual; el bloqueo real lo hace RLS.
+  document.body.classList.toggle("ad-readonly", !canWrite());
+
+  renderUserChip();
+
   const nav = $("#adminNav");
   const primary = NAV.filter((n) => n.primary);
   const secondary = NAV.filter((n) => !n.primary);
+
+  applySidebarState(getSidebarCollapsed());
 
   nav.innerHTML =
     `<span class="ad-nav__group-label">Operación</span>` +
@@ -59,6 +94,7 @@ export function buildChrome() {
     if (e.target.closest("[data-sheet-open]")) { openSheet(); return; }
     if (e.target.closest("[data-close-sheet]")) { closeSheet(); return; }
     if (e.target.closest("[data-logout]") || e.target.closest("#adminLogoutBtn")) { logout(); return; }
+    if (e.target.closest("[data-sidebar-toggle]")) { toggleSidebar(); return; }
   });
 
 }

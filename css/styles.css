@@ -55,68 +55,6 @@ body {
   flex-direction: column;
 }
 
-/*Hero*/
-
-.hero {
-  color: var(--blanco);
-  width: 100%;
-  height: 500px;
-  padding: 0 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  gap: 160px;
-  background: radial-gradient(
-      800px 450px at 25% 50%,
-      rgba(1, 145, 198, 0.7),
-      transparent 70%
-    ),
-    linear-gradient(180deg, #264378 0%, #26517b 70%);
-  overflow: hidden;
-}
-
-.hero__slogan {
-  font-style: italic;
-  font-size: 1.5rem;
-  text-shadow: #000 0 3px 3px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.hero__button button{
-  margin-top: 30px;
-  line-height: 1;
-  color: var(--blanco);
-  border: none;
-  border-radius: 10px;
-  padding: 10px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.hero__button--pri{
-  background:#ff002bcc;
-}
-
-.hero__button--sec{
-  background: var(--Cyan);
-}
-
-.hero__slogan button:hover {
-  transform: translateY(-1px);
-  
-}
-
-.hero__img {
-  height: 500px;
-  filter: drop-shadow(15px 0 25px rgba(1, 145, 198, 0.65))
-    drop-shadow(-5px 0 15px rgba(1, 146, 198, 0.5));
-}
-
 /* Productos mas vendidos cards */
 
 
@@ -141,6 +79,10 @@ body {
   position: relative;
   align-items: stretch;
   padding: clamp(48px, 7vw, 86px) clamp(16px, 4vw, 32px);
+  /* Esta sección tiene fondo propio, así que el aire con la anterior tiene que
+     ser margen (fuera del fondo) y no padding: si fuera padding, el degradado
+     se estiraría hacia arriba y se comería la separación. */
+  margin-top: var(--section-gap);
   overflow: hidden;
   background:
     radial-gradient(760px 360px at 12% 10%, rgba(90, 180, 233, 0.16), transparent 70%),
@@ -154,8 +96,8 @@ body {
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    linear-gradient(color-mix(in srgb, var(--text) 3.5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 2.5%, transparent) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: linear-gradient(180deg, transparent, #000 18%, #000 82%, transparent);
   opacity: 0.36;
@@ -172,7 +114,7 @@ body {
 
 .instagram-videos__header h2 {
   margin: 0;
-  color: var(--blanco);
+  color: var(--text);
   font-size: clamp(1.9rem, 4vw, 3.35rem);
   line-height: 1.02;
   font-weight: 900;
@@ -182,7 +124,7 @@ body {
 .instagram-videos__header p {
   width: min(680px, 100%);
   margin: 0 auto;
-  color: rgba(233, 238, 247, 0.74);
+  color: color-mix(in srgb, var(--text) 74%, transparent);
   font-size: clamp(0.98rem, 1.5vw, 1.1rem);
   font-weight: 500;
   line-height: 1.6;
@@ -197,7 +139,7 @@ body {
   padding: 0 18px;
   border: 1px solid rgba(90, 180, 233, 0.45);
   border-radius: 999px;
-  color: #e9eef7;
+  color: var(--brand-tint-text);
   background: rgba(90, 180, 233, 0.1);
   font-size: 0.92rem;
   font-weight: 700;
@@ -226,12 +168,12 @@ body {
 .reel-card {
   min-width: 0;
   padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   border-radius: 18px;
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025)),
-    rgba(9, 13, 22, 0.82);
-  box-shadow: 0 22px 45px rgba(0, 0, 0, 0.44);
+    linear-gradient(180deg, color-mix(in srgb, var(--text) 6%, transparent), color-mix(in srgb, var(--text) 2.5%, transparent)),
+    color-mix(in srgb, var(--surface-2) 82%, transparent);
+  box-shadow: 0 22px 45px rgba(0, 0, 0, calc(0.44 * var(--shadow-a)));
 }
 
 .reel-card__frame {
@@ -239,7 +181,10 @@ body {
   display: grid;
   place-items: center;
   width: 100%;
-  min-height: 520px;
+  /* Proporción real de un reel (9:16) en vez de una altura fija: antes eran
+     520px sin importar el ancho de la card, que en mobile (1 columna) se
+     traducía en ~4 x 500px+ de scroll solo para esta sección. */
+  aspect-ratio: 9 / 16;
   overflow: hidden;
   border-radius: 14px;
   background:
@@ -252,7 +197,7 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   border-radius: inherit;
 }
 
@@ -287,18 +232,34 @@ body {
     padding: 42px 12px;
   }
 
+  /* Carrusel horizontal en vez de columna apilada: con 4 reels a min-height
+     fijo, esta sección sola ocupaba ~2000px de scroll en mobile. El mismo
+     patrón de scroll-snap que ya usan los chips de categoría
+     (css/pages/supplements.css, .catalog-filters). */
   .instagram-videos__grid {
-    grid-template-columns: 1fr;
-    width: min(420px, 100%);
+    display: flex;
+    grid-template-columns: none;
+    width: 100%;
+    gap: 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scroll-padding-left: 4px;
+    padding-bottom: 4px;
+  }
+
+  .instagram-videos__grid::-webkit-scrollbar {
+    display: none;
   }
 
   .reel-card {
+    flex: 0 0 78%;
+    max-width: 300px;
     padding: 8px;
     border-radius: 16px;
-  }
-
-  .reel-card__frame {
-    min-height: 500px;
+    scroll-snap-align: start;
   }
 }
 
@@ -306,7 +267,7 @@ body {
 .footer {
     background: var(--footer-bg);
     color: var(--footer-text);
-    margin-top: 80px;
+    margin-top: var(--section-gap);
     border-top: 1px solid rgba(90,180,233,0.18);
   }
 
@@ -366,7 +327,7 @@ body {
   .footer__micro {
     margin: 0;
     font-size: 0.85rem;
-    color: rgba(173,186,204,0.95);
+    color: var(--footer-muted);
   }
 
   .footer__block {
@@ -379,7 +340,7 @@ body {
     font-weight: 700;
     letter-spacing: 0.03em;
     text-transform: uppercase;
-    color: #ffffff;
+    color: var(--footer-text);
   }
 
   .footer__list {
@@ -413,7 +374,7 @@ body {
     font-size: 0.9rem;
     font-weight: 500;
     border: 1px solid rgba(90,180,233,0.8);
-    color: #ffffff;
+    color: var(--brand-tint-text);
     background: radial-gradient(circle at 0% 0%,
       rgba(90,180,233,0.4),
       rgba(90,180,233,0.15),
@@ -439,7 +400,7 @@ body {
     padding-top: 16px;
     border-top: 1px solid var(--footer-line);
     font-size: 0.85rem;
-    color: #6F7A87;
+    color: var(--muted-2);
     text-align: center;
   }
 
@@ -448,6 +409,26 @@ body {
     font-size: 0.8rem;
     opacity: 0.85;
   }
+
+/* Acceso admin: discreto a proposito. No es para clientes -compran por
+   WhatsApp, nunca inician sesion- asi que no compite con el resto del nav ni
+   del footer. Vivia arriba, en el menu principal, con el mismo peso visual que
+   "Testimonios"; se mueve aca. */
+.footer__admin {
+  margin-top: 10px;
+  font-size: 0.75rem;
+  opacity: 0.55;
+}
+
+.footer__admin a {
+  color: inherit;
+}
+
+.footer__admin a:hover,
+.footer__admin a:focus-visible {
+  opacity: 1;
+  text-decoration: underline;
+}
 
 /* Responsive */
 
@@ -521,20 +502,44 @@ body {
   align-items: center;
   justify-content: center;
   gap: clamp(24px, 6vw, 92px);
+  /* Los dos glows radiales usan --brand y --hot (acentos reales del token
+     system); la base ya no son hex sueltos: son las mismas capas --bg-0 /
+     --surface-3 que arma el resto del sitio, así el hero queda DENTRO de la
+     misma familia de azules oscuros en vez de tener su propio tono. */
   background:
     radial-gradient(720px 420px at 24% 44%, rgba(1, 145, 198, 0.64), transparent 68%),
     radial-gradient(520px 380px at 82% 68%, rgba(255, 46, 99, 0.22), transparent 70%),
-    linear-gradient(135deg, #07111d 0%, #123457 46%, #06101a 100%);
+    linear-gradient(135deg, var(--bg-0) 0%, var(--surface-3) 46%, var(--bg-0) 100%);
+}
+
+/* En claro el glow azul a 0.64 se leía como un lavado celeste sobre todo el
+   hero (el fondo ya es claro de por sí, así que no hace falta tanta fuerza
+   para que se note). Se baja bastante la intensidad, no se saca del todo. */
+:root[data-theme="light"] .hero {
+  background:
+    radial-gradient(720px 420px at 24% 44%, rgba(1, 145, 198, 0.10), transparent 68%),
+    radial-gradient(520px 380px at 82% 68%, rgba(255, 46, 99, 0.10), transparent 70%),
+    linear-gradient(135deg, var(--bg-0) 0%, var(--surface-3) 46%, var(--bg-0) 100%);
 }
 
 .hero__slogan {
+  /* display:flex + column son de la definicion vieja de arriba, que se borro
+     por duplicada: sin ellos, align-items y justify-self quedan inertes y en
+     movil el titulo (max-width en ch) se pega a la izquierda en vez de
+     centrarse. */
+  display: flex;
+  flex-direction: column;
   align-items: flex-start;
   width: min(100%, 590px);
   font-style: normal;
   text-align: left;
-  text-shadow: 0 3px 18px rgba(0, 0, 0, 0.44);
+  text-shadow: 0 3px 18px rgba(0, 0, 0, calc(0.44 * var(--shadow-a)));
 }
 
+/* El markup usa <h1> (index.html:125). La regla apuntaba solo a h2, asi que no
+   aplicaba a nada y el titulo caia al h1 por defecto del navegador (~32px en vez
+   del clamp de hasta 89px). Se cubren los dos para no depender de la etiqueta. */
+.hero__slogan h1,
 .hero__slogan h2 {
   max-width: 12ch;
   margin: 0;
@@ -547,7 +552,7 @@ body {
 .hero__copy {
   max-width: 540px;
   margin-top: clamp(16px, 2.4vw, 24px);
-  color: rgba(233, 238, 247, 0.86);
+  color: color-mix(in srgb, var(--text) 86%, transparent);
   font-size: clamp(1rem, 1.55vw, 1.22rem);
   font-weight: 500;
   line-height: 1.55;
@@ -560,22 +565,63 @@ body {
   margin-top: clamp(22px, 3vw, 34px);
 }
 
-.hero__button button {
+/* El color y el estado (hover/focus/disabled) ya los da .btn / .btn--primary /
+   .btn--secondary — los mismos que usa el resto del sitio (Agregar a
+   cotización = verde --cta, acciones secundarias = azul --brand). Acá solo
+   se ajusta el tamaño para que respiren más grande que un botón normal,
+   como corresponde al CTA más importante de la página. */
+.hero__button .btn {
   min-height: 48px;
   min-width: 154px;
-  margin-top: 0;
-  padding: 0 20px;
-  border-radius: 14px;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, calc(0.28 * var(--shadow-a)));
 }
 
-.hero__button--pri {
-  background: #ff2e63;
+/* Badge de prueba social ("N visitas"): mismo lenguaje que ya usan los chips
+   de categoría (pill, --surface-input, --line) y no un widget nuevo. Arranca
+   en opacity:0 y solo pasa a --in cuando js/hero-visits.js confirma un número
+   real -- nunca se anima un placeholder inventado. */
+.hero__visits {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: clamp(16px, 2.4vw, 22px);
+  padding: 9px 18px 9px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+  background: var(--surface-input);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-.hero__button--sec {
-  background: #5ab4e9;
-  color: #07101a;
+.hero__visits.hero__visits--in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero__visits-icon {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  color: var(--accent);
+}
+
+.hero__visits-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.hero__visits-count {
+  color: var(--text);
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.hero__visits-label {
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 .hero__img {
@@ -586,8 +632,63 @@ body {
   justify-self: center;
   filter:
     drop-shadow(0 0 24px rgba(90, 180, 233, 0.72))
-    drop-shadow(0 20px 40px rgba(0, 0, 0, 0.52));
+    drop-shadow(0 20px 40px rgba(0, 0, 0, calc(0.52 * var(--shadow-a))));
   animation: heroFloat 5.6s ease-in-out infinite;
+}
+
+/* ---- Entrada del hero ----------------------------------------------------
+   Se engancha a .page-transition-in, la clase que js/include-nav.js ya le pone
+   al <body> cuando termina de inyectar el nav. No hace falta JS nuevo: el
+   momento en que la pagina se vuelve visible es exactamente el que queremos.
+
+   El orden del stagger sigue la lectura: titulo -> bajada -> botones -> imagen.
+   ------------------------------------------------------------------------- */
+/* El estado oculto va colgado de .page-transition, que la agrega el propio JS
+   (include-nav.js). Si el JS no corre, esa clase no existe y el hero se pinta
+   normal: la animacion se pierde, el contenido no. */
+body.page-transition .hero__slogan h1,
+body.page-transition .hero__slogan h2,
+body.page-transition .hero__copy,
+body.page-transition .hero__button {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+body.page-transition-in .hero__slogan h1,
+body.page-transition-in .hero__slogan h2,
+body.page-transition-in .hero__copy,
+body.page-transition-in .hero__button {
+  opacity: 1;
+  transform: none;
+}
+
+body.page-transition-in .hero__slogan h1,
+body.page-transition-in .hero__slogan h2 { transition-delay: 0.06s; }
+body.page-transition-in .hero__copy      { transition-delay: 0.16s; }
+body.page-transition-in .hero__button    { transition-delay: 0.26s; }
+
+/* La imagen NO puede usar transition para entrar: su heroFloat anima transform
+   en bucle y le ganaria al translateY de entrada (misma propiedad). Se resuelve
+   encadenando dos animaciones: heroEnter corre una vez y heroFloat arranca justo
+   despues, con delay = inicio + duracion de la entrada. */
+body.page-transition .hero__img {
+  opacity: 0;
+}
+
+body.page-transition-in .hero__img {
+  /* El opacity va declarado ADEMAS de la animacion: mientras heroEnter corre
+     manda el keyframe, pero si la animacion no llegara a ejecutarse la imagen
+     igual queda visible. La animacion aporta el movimiento, no la visibilidad. */
+  opacity: 1;
+  animation:
+    heroEnter 0.7s ease 0.34s both,
+    heroFloat 5.6s ease-in-out 1.04s infinite;
+}
+
+@keyframes heroEnter {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes heroFloat {
@@ -615,6 +716,8 @@ body {
     text-align: center;
   }
 
+  /* Mismo caso que la regla base: el markup usa h1. */
+  .hero__slogan h1,
   .hero__slogan h2 {
     max-width: 13ch;
     font-size: clamp(2.15rem, 11vw, 4.4rem);
@@ -631,7 +734,6 @@ body {
 
   .hero__img {
     width: min(86vw, 520px);
-    margin-bottom: -8px;
   }
 }
 
@@ -660,9 +762,25 @@ body {
   }
 
   .page-transition,
-  .hero__img {
+  .hero__img,
+  .hero__visits {
     transition: none;
     animation: none;
     transform: none;
+  }
+
+  /* Sin movimiento, pero el hero tiene que quedar VISIBLE: hay que reponer la
+     opacidad, porque el estado inicial de la entrada es opacity 0 y sin
+     animacion nadie lo devuelve a 1. */
+  body.page-transition .hero__slogan h1,
+  body.page-transition .hero__slogan h2,
+  body.page-transition .hero__copy,
+  body.page-transition .hero__button,
+  body.page-transition .hero__img,
+  body.page-transition-in .hero__img {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    animation: none;
   }
 }

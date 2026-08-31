@@ -8,7 +8,7 @@
   padding: clamp(1rem, 4vw, 2.5rem) 1rem calc(7rem + env(safe-area-inset-bottom));
   background:
     radial-gradient(760px 420px at 8% 0%, rgba(90, 180, 233, 0.16), transparent 64%),
-    linear-gradient(180deg, #050709 0%, #070b12 58%, #050709 100%);
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 58%, var(--bg-1) 100%);
 }
 
 .pdp [hidden] {
@@ -93,8 +93,8 @@
   border-radius: 20px;
   background:
     radial-gradient(circle at 50% 48%, rgba(90, 180, 233, 0.16), transparent 64%),
-    linear-gradient(145deg, rgba(17, 25, 36, 0.96), rgba(8, 12, 18, 0.98));
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.38);
+    linear-gradient(145deg, var(--surface-1), var(--surface-2));
+  box-shadow: 0 20px 48px rgba(0, 0, 0, calc(0.38 * var(--shadow-a)));
 }
 
 .pdp__media::after {
@@ -115,7 +115,13 @@
   width: min(100%, 360px);
   height: clamp(225px, 68vw, 350px);
   object-fit: contain;
-  filter: drop-shadow(0 20px 28px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 20px 28px rgba(0, 0, 0, calc(0.5 * var(--shadow-a))));
+}
+
+/* En claro la sombra negra bajo el recorte del producto se ve como una mancha
+   flotando sobre el fondo blanco: se saca en vez de solo atenuarla. */
+:root[data-theme="light"] .pdp__img {
+  filter: none;
 }
 
 /* ---------- Panel de compra ---------- */
@@ -127,8 +133,8 @@
   padding: clamp(1.15rem, 4vw, 1.65rem);
   border: 1px solid var(--line);
   border-radius: 20px;
-  background: linear-gradient(145deg, rgba(14, 21, 31, 0.98), rgba(10, 15, 23, 0.98));
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.38);
+  background: linear-gradient(145deg, var(--surface-1), var(--surface-2));
+  box-shadow: 0 20px 48px rgba(0, 0, 0, calc(0.38 * var(--shadow-a)));
 }
 
 .pdp__eyebrow {
@@ -139,9 +145,19 @@
   min-width: 0;
 }
 
+/* Categoría y presentación son dos datos distintos, así que se distinguen por
+   forma —etiqueta versus chip— en vez de por un separador. El chip es el mismo
+   de .product-card__pres, para que la ficha hable el idioma del catálogo. */
 .pdp__context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
   min-width: 0;
   margin: 0;
+}
+
+.pdp__context-cat {
   color: var(--muted);
   font-size: 0.75rem;
   font-weight: 700;
@@ -151,9 +167,16 @@
   overflow-wrap: anywhere;
 }
 
-.pdp__context-sep {
-  margin: 0 0.3rem;
-  color: var(--accent);
+.pdp__pres {
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
 }
 
 .pdp__status {
@@ -162,7 +185,7 @@
   border: 1px solid rgba(0, 230, 118, 0.34);
   border-radius: 999px;
   background: rgba(0, 230, 118, 0.12);
-  color: #76f1ad;
+  color: var(--cta-soft);
   font-size: 0.72rem;
   font-weight: 800;
   white-space: nowrap;
@@ -171,12 +194,12 @@
 .pdp__status.is-agotado {
   border-color: rgba(255, 79, 118, 0.38);
   background: rgba(255, 79, 118, 0.12);
-  color: #ff9eb3;
+  color: var(--danger-soft);
 }
 
 .pdp__brand {
   margin: 0.15rem 0 -0.25rem;
-  color: #a8dcf8;
+  color: var(--accent);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.075em;
@@ -197,7 +220,7 @@
 .pdp__subtitle {
   max-width: 62ch;
   margin: 0;
-  color: #b8c4d5;
+  color: var(--muted);
   font-size: clamp(0.92rem, 2.8vw, 1rem);
   line-height: 1.62;
   overflow-wrap: anywhere;
@@ -229,7 +252,7 @@
   padding: 0.3rem 0.55rem;
   border-radius: 999px;
   background: rgba(0, 230, 118, 0.14);
-  color: #76f1ad;
+  color: var(--cta-soft);
   font-size: 0.38em;
   font-weight: 900;
   text-shadow: none;
@@ -247,7 +270,7 @@
   padding: 0.75rem 0.85rem;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.035);
+  background: color-mix(in srgb, var(--text) 3.5%, transparent);
 }
 
 .pdp__data dt {
@@ -300,7 +323,7 @@
   border: 1px solid rgba(90, 180, 233, 0.28);
   border-radius: 11px;
   background: var(--footer-surface-soft);
-  color: #e9f6ff;
+  color: var(--text);
   cursor: pointer;
   font: inherit;
   font-size: 0.9rem;
@@ -345,8 +368,8 @@
   padding: 0;
   border: 0;
   border-radius: 9px;
-  background: rgba(255, 255, 255, 0.055);
-  color: #e9f6ff;
+  background: color-mix(in srgb, var(--text) 5.5%, transparent);
+  color: var(--text);
   cursor: pointer;
   font: inherit;
   font-size: 1.2rem;
@@ -366,7 +389,7 @@
 
 .pdp__qty-value {
   min-width: 42px;
-  color: #e9f6ff;
+  color: var(--text);
   font-weight: 800;
   text-align: center;
   font-variant-numeric: tabular-nums;
@@ -380,7 +403,7 @@
 }
 
 .pdp__added-note {
-  color: #76f1ad;
+  color: var(--cta-soft);
   font-weight: 700;
 }
 
@@ -425,7 +448,7 @@
   border-color: var(--cta);
   background: rgba(0, 230, 118, 0.08);
   box-shadow: none;
-  color: #76f1ad;
+  color: var(--cta-soft);
 }
 
 .pdp__cta.is-added:hover {
@@ -437,7 +460,7 @@
   border-color: rgba(90, 180, 233, 0.3);
   background: rgba(90, 180, 233, 0.14);
   box-shadow: none;
-  color: #e9f6ff;
+  color: var(--brand-tint-text);
 }
 
 .pdp__cta--ghost:hover {
@@ -451,8 +474,8 @@
   padding: clamp(1.25rem, 4vw, 2rem);
   border: 1px solid var(--line);
   border-radius: 20px;
-  background: linear-gradient(145deg, rgba(12, 18, 27, 0.98), rgba(8, 12, 18, 0.98));
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.32);
+  background: linear-gradient(145deg, var(--surface-1), var(--surface-2));
+  box-shadow: 0 20px 48px rgba(0, 0, 0, calc(0.32 * var(--shadow-a)));
 }
 
 .pdp__details-head {
@@ -503,7 +526,7 @@
 
 .pdp__prose {
   max-width: 72ch;
-  color: #b8c4d5;
+  color: var(--muted);
   font-size: 0.95rem;
   line-height: 1.75;
   overflow-wrap: anywhere;
@@ -526,7 +549,7 @@
 .pdp__benefit {
   position: relative;
   padding-left: 1.15rem;
-  color: #d2dbe7;
+  color: var(--text);
   font-size: 0.92rem;
   line-height: 1.55;
   overflow-wrap: anywhere;
@@ -557,7 +580,7 @@
   position: relative;
   min-height: 44px;
   padding: 0.7rem 0 0.7rem 3.25rem;
-  color: #d2dbe7;
+  color: var(--text);
   font-size: 0.92rem;
   line-height: 1.55;
   overflow-wrap: anywhere;
@@ -575,7 +598,7 @@
   border: 1px solid rgba(90, 180, 233, 0.28);
   border-radius: 10px;
   background: rgba(90, 180, 233, 0.1);
-  color: #a8dcf8;
+  color: var(--brand-tint-text);
   font-size: 0.82rem;
   font-weight: 900;
   content: counter(usage-step, decimal-leading-zero);
@@ -595,8 +618,8 @@
   gap: 0.6rem;
   padding: 0.7rem 0.75rem calc(0.7rem + env(safe-area-inset-bottom));
   border-top: 1px solid rgba(90, 180, 233, 0.2);
-  background: rgba(8, 12, 18, 0.96);
-  box-shadow: 0 -12px 34px rgba(0, 0, 0, 0.48);
+  background: color-mix(in srgb, var(--surface-1) 96%, transparent);
+  box-shadow: 0 -12px 34px rgba(0, 0, 0, calc(0.48 * var(--shadow-a)));
   backdrop-filter: blur(16px);
   opacity: 0;
   pointer-events: none;
@@ -722,7 +745,7 @@
     padding: 0.9rem 1rem 0.9rem 2rem;
     border: 1px solid var(--line);
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.025);
+    background: color-mix(in srgb, var(--text) 2.5%, transparent);
   }
 
   .pdp__benefit::before {
@@ -807,5 +830,66 @@
   .pdp__bar,
   .pdp__cta {
     transition: none;
+  }
+}
+
+/* ===== Productos relacionados de la misma familia =====================
+   Cierra el callejón sin salida de la ficha: desde un producto concreto no
+   había camino de vuelta a su categoría. Mobile primero: 2 columnas, 4 en
+   pantallas grandes. */
+.pdp__related {
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--line);
+}
+
+.pdp__related[hidden] {
+  display: none;
+}
+
+.pdp__related-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.pdp__related-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.pdp__related-link {
+  color: var(--accent);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  /* Objetivo táctil cómodo sin agrandar el texto. */
+  padding: var(--sp-2);
+  margin: calc(var(--sp-2) * -1);
+  border-radius: var(--radius-sm);
+}
+
+.pdp__related-link:hover {
+  text-decoration: underline;
+}
+
+.pdp__related-link:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.pdp__related-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+
+@media (min-width: 768px) {
+  .pdp__related-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--sp-4);
   }
 }

@@ -34,7 +34,12 @@
       "Bash(command -v py)",
       "Bash(git config *)",
       "Bash(which python *)",
-      "Bash(py --version)"
+      "Bash(py --version)",
+      "Bash(git ls-tree *)",
+      "Bash(git rm *)",
+      "mcp__76b7ca35-38d2-48b9-8c7d-73088201e1bd__execute_sql",
+      "Bash(git show *)",
+      "Read(//tmp/**)"
     ]
   }
 }

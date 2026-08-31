@@ -9,7 +9,7 @@
   --dd-text: var(--pb-text, var(--text, #e9eef7));
   --dd-muted: var(--pb-muted, var(--muted, #a9b4c6));
   --dd-accent: var(--pb-brand-bright, var(--accent, #5ab4e9));
-  --dd-hover: var(--pb-white-06, rgba(255,255,255,0.06));
+  --dd-hover: var(--pb-white-06, color-mix(in srgb, var(--text) 6%, transparent));
   --dd-active: var(--pb-blue-tint-12, rgba(90,180,233,0.16));
 }
 .jdd { position: relative; display: block; width: 100%; }
@@ -22,7 +22,7 @@
 
 .jdd__btn {
   width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  padding: 0 12px; border: 1px solid var(--dd-line, rgba(255,255,255,0.14));
+  padding: 0 12px; border: 1px solid var(--dd-line, var(--line-strong));
   border-radius: var(--dd-radius, 12px);
   background: var(--dd-field); color: var(--dd-text);
   font: inherit; font-size: 0.92rem; text-align: left; cursor: pointer;
@@ -41,13 +41,13 @@
 
 .jdd__menu {
   position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 90;
-  background: var(--dd-surface); border: 1px solid var(--dd-line-strong, rgba(255,255,255,0.16));
-  border-radius: var(--dd-radius, 12px); box-shadow: 0 18px 40px rgba(0,0,0,0.5);
+  background: var(--dd-surface); border: 1px solid var(--dd-line-strong, var(--line-strong));
+  border-radius: var(--dd-radius, 12px); box-shadow: 0 18px 40px rgba(0, 0, 0, calc(0.5 * var(--shadow-a)));
   padding: 6px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; max-height: 320px; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
 }
 .jdd__menu[hidden] { display: none; }
 .jdd__opt {
-  display: flex; align-items: center; min-height: 40px; padding: 0 12px; width: 100%;
+  display: flex; align-items: center; min-height: 44px; padding: 0 12px; width: 100%;
   border: 0; border-radius: 9px; background: transparent; color: var(--dd-text);
   font: inherit; font-size: 0.9rem; text-align: left; cursor: pointer;
 }
@@ -64,7 +64,7 @@
 /* combobox editable (listas largas): el campo mismo es el buscador */
 .jdd__combo {
   width: 100%; min-height: 44px; display: flex; align-items: center; gap: 6px;
-  padding: 0 8px 0 12px; border: 1px solid var(--dd-line, rgba(255,255,255,0.14));
+  padding: 0 8px 0 12px; border: 1px solid var(--dd-line, var(--line-strong));
   border-radius: var(--dd-radius, 12px); background: var(--dd-field); color: var(--dd-text);
   transition: border-color .16s ease, box-shadow .16s ease;
 }
@@ -82,8 +82,11 @@
 .jdd.is-open .jdd__input { cursor: text; }
 .jdd__input:disabled { cursor: not-allowed; }
 .jdd__combo:has(.jdd__input:disabled) { opacity: .55; }
+/* El icono mide 18px: sin min-* el area tactil quedaba en ~26px. Se agranda el
+   AREA, no el icono, para no cambiar la densidad visual del combo. */
 .jdd__toggle {
   flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; min-height: 44px;
   padding: 4px; border: 0; background: transparent; color: var(--dd-muted); cursor: pointer;
 }
 .jdd__toggle .jdd__ico, .jdd__toggle svg { width: 18px; height: 18px; transition: transform .18s ease; }
@@ -91,7 +94,7 @@
 
 /* facetas / orden del catálogo público: en línea, ancho por contenido */
 .catalog-facet .jdd, .catalog-sort .jdd { display: inline-flex; width: auto; min-width: 150px; vertical-align: middle; }
-.catalog-facet .jdd__btn, .catalog-sort .jdd__btn, .ad-filterbar__sel .jdd__btn { min-height: 40px; }
+.catalog-facet .jdd__btn, .catalog-sort .jdd__btn, .ad-filterbar__sel .jdd__btn { min-height: 44px; }
 
 /* la tarjeta con un dropdown abierto pasa por encima de las vecinas */
 .product-card:has(.jdd.is-open) { z-index: 20; }

@@ -15,6 +15,9 @@
 begin;
 
 -- Por si se aplica esta migración en un proyecto sin schema.sql completo.
+-- OJO (Fase 9): este bloque recrea is_admin() con la definición VIEJA
+-- (role = 'admin'), que deja fuera a los editores. Si vuelves a correr esta
+-- migración, corre después supabase/migrations/fase9-roles.sql.
 create or replace function public.is_admin()
 returns boolean
 language sql

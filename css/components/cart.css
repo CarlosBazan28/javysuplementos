@@ -25,10 +25,10 @@
   flex-direction: column;
   gap: 16px;
   padding: 18px;
-  background: linear-gradient(180deg, #070b12, #0d1420);
+  background: linear-gradient(180deg, var(--surface-2), var(--surface-1));
   border-left: 1px solid rgba(90, 180, 233, 0.22);
-  box-shadow: -24px 0 60px rgba(0,0,0,0.55);
-  color: #fff;
+  box-shadow: -24px 0 60px rgba(0, 0, 0, calc(0.55 * var(--shadow-a)));
+  color: var(--text);
   opacity: 0;
   pointer-events: none;
   transform: translateY(8px);
@@ -68,10 +68,10 @@
   place-items: center;
   width: 38px;
   height: 38px;
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
   border-radius: var(--radius-sm);
-  background: rgba(255,255,255,0.05);
-  color: #fff;
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+  color: var(--text);
   cursor: pointer;
 }
 
@@ -109,7 +109,7 @@
 
 .consultation-section__title {
   margin: 0;
-  color: #a9b4c6;
+  color: var(--muted);
   font-size: 0.8rem;
   font-weight: 500;
   letter-spacing: 0.04em;
@@ -117,8 +117,8 @@
 }
 
 .consultation-empty {
-  color: #a9b4c6;
-  border: 1px dashed rgba(255,255,255,0.16);
+  color: var(--muted);
+  border: 1px dashed color-mix(in srgb, var(--text) 16%, transparent);
   border-radius: var(--radius-md);
   padding: 14px;
 }
@@ -145,9 +145,9 @@
   gap: 12px;
   align-items: start;
   padding: 12px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   border-radius: var(--radius-lg);
-  background: rgba(255,255,255,0.04);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
 }
 
 .consultation-item__img {
@@ -155,7 +155,7 @@
   height: 56px;
   object-fit: contain;
   border-radius: var(--radius-sm);
-  background: rgba(255,255,255,0.05);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
 .consultation-item__info {
@@ -171,13 +171,13 @@
 }
 
 .consultation-item__meta {
-  color: #8b97a8;
+  color: var(--muted-2);
   font-size: 0.78rem;
   line-height: 1.3;
 }
 
 .consultation-item__price {
-  color: #d9e8f5;
+  color: var(--text);
   font-size: 0.85rem;
   font-weight: 500;
 }
@@ -194,7 +194,7 @@
   border-radius: var(--radius-pill);
   background: rgba(90,180,233,0.14);
   border: 1px solid rgba(90,180,233,0.28);
-  color: #cfe6f6;
+  color: var(--brand-tint-text);
   font-size: 0.72rem;
   font-weight: 600;
   line-height: 1.4;
@@ -208,7 +208,7 @@
 }
 
 .consultation-item__quantity-label {
-  color: #a9b4c6;
+  color: var(--muted);
   font-size: 0.75rem;
   font-weight: 500;
 }
@@ -218,7 +218,7 @@
   display: inline-grid;
   grid-template-columns: 32px 38px 32px;
   align-items: center;
-  border: 1px solid rgba(255,255,255,0.14);
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
   border-radius: var(--radius-sm);
   background: var(--surface-input);
   overflow: hidden;
@@ -230,14 +230,14 @@
   place-items: center;
   border: 0;
   background: transparent;
-  color: #fff;
+  color: var(--text);
   font-size: 1.15rem;
   line-height: 1;
   cursor: pointer;
 }
 
 .consultation-item__step:hover:not(:disabled) {
-  background: rgba(255,255,255,0.08);
+  background: color-mix(in srgb, var(--text) 8%, transparent);
 }
 
 .consultation-item__step:disabled {
@@ -249,8 +249,8 @@
   height: 32px;
   display: grid;
   place-items: center;
-  border-left: 1px solid rgba(255,255,255,0.1);
-  border-right: 1px solid rgba(255,255,255,0.1);
+  border-left: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
   font-size: 0.9rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -264,14 +264,14 @@
   border: 0;
   border-radius: 9px;
   background: transparent;
-  color: #8b97a8;
+  color: var(--muted-2);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .consultation-item__remove:hover {
   background: rgba(255,90,90,0.14);
-  color: #ff6b6b;
+  color: var(--danger-soft);
 }
 
 .consultation-item__remove .btn-icon {
@@ -295,7 +295,7 @@
 }
 
 .consultation-form label {
-  color: #d9e8f5;
+  color: var(--text);
   font-size: 0.85rem;
   font-weight: 500;
 }
@@ -304,10 +304,10 @@
 .consultation-form input,
 .consultation-form textarea {
   width: 100%;
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
   border-radius: var(--radius-md);
   background: var(--surface-input);
-  color: #fff;
+  color: var(--text);
   font: inherit;
   padding: 11px;
 }
@@ -329,7 +329,7 @@
 }
 
 .consultation-total span {
-  color: #a9b4c6;
+  color: var(--muted);
   font-size: 0.82rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -343,7 +343,7 @@
 
 .consultation-form__hint {
   margin: 2px 0 0;
-  color: #ffb300;
+  color: var(--warning-soft);
   font-size: 0.82rem;
   font-weight: 700;
 }
@@ -372,22 +372,22 @@
   padding: 20px;
   border: 1px solid rgba(255, 90, 90, 0.32);
   border-radius: var(--radius-xl);
-  background: linear-gradient(180deg, #131a26, #0d131e);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+  background: linear-gradient(180deg, var(--surface-2), var(--surface-1));
+  box-shadow: 0 20px 50px rgba(0, 0, 0, calc(0.55 * var(--shadow-a)));
 }
 
 .consultation-confirm__title {
   margin: 0;
   font-size: 1.05rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text);
 }
 
 .consultation-confirm__text {
   margin: 0;
   font-size: 0.85rem;
   line-height: 1.4;
-  color: #a9b4c6;
+  color: var(--muted);
 }
 
 .consultation-confirm__actions {
@@ -406,12 +406,12 @@
 }
 
 .consultation-confirm__cancel {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  color: var(--text);
 }
 
 .consultation-confirm__cancel:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: color-mix(in srgb, var(--text) 14%, transparent);
 }
 
 .consultation-confirm__accept {
@@ -441,8 +441,8 @@
 .consultation-panel__clear,
 .consultation-nav__back {
   flex: 0 0 auto;
-  background: rgba(255,255,255,0.08);
-  color: #fff;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  color: var(--text);
 }
 
 .consultation-panel__send,
@@ -503,7 +503,7 @@
   }
 
   .consultation-panel__checkout {
-    border-left: 1px solid rgba(255,255,255,0.08);
+    border-left: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
     padding-left: 22px;
     margin-left: 0;
   }
@@ -541,13 +541,13 @@
   max-width: min(90vw, 360px);
   padding: 12px 18px;
   border-radius: var(--radius-pill);
-  background: rgba(16, 23, 36, 0.96);
+  background: color-mix(in srgb, var(--surface-1) 96%, transparent);
   border: 1px solid rgba(0, 230, 118, 0.45);
-  color: #e9f6ff;
+  color: var(--text);
   font-size: 0.85rem;
   font-weight: 600;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, calc(0.4 * var(--shadow-a)));
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease, transform 0.25s ease;
@@ -556,6 +556,52 @@
 .javy-toast.is-visible {
   opacity: 1;
   transform: translate(-50%, 0);
+}
+
+/* Variante persistente y clicable: respaldo cuando el navegador bloquea el
+   popup de WhatsApp. No se auto-oculta — el usuario debe poder pulsar el enlace. */
+.javy-toast--action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(94vw, 420px);
+  text-align: left;
+  border-color: rgba(255, 193, 7, 0.55);
+}
+
+.javy-toast--action.is-visible {
+  pointer-events: auto;
+}
+
+.javy-toast__link {
+  flex: none;
+  padding: 8px 14px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--neon, #00e676);
+  color: #04240f;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.javy-toast__close {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.javy-toast__close:hover,
+.javy-toast__close:focus-visible {
+  background: color-mix(in srgb, var(--text) 12%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -582,7 +628,7 @@
   background: linear-gradient(180deg, var(--surface-1, #111925), var(--surface-2, #0c141d));
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-xl);
-  box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, calc(0.55 * var(--shadow-a)));
   padding: 22px;
   display: grid; gap: 16px;
   color: var(--text);
@@ -593,14 +639,14 @@
   position: absolute; top: 12px; right: 12px;
   display: grid; place-items: center; width: 34px; height: 34px;
   border: 1px solid var(--line); border-radius: var(--radius-sm);
-  background: rgba(255,255,255,0.04); color: #fff; cursor: pointer;
+  background: color-mix(in srgb, var(--text) 4%, transparent); color: var(--text); cursor: pointer;
 }
-.quick-add__close:hover { background: rgba(255,255,255,0.08); }
+.quick-add__close:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
 .quick-add__close .btn-icon { width: 16px; height: 16px; }
 .quick-add__head { display: flex; gap: 12px; align-items: center; padding-right: 40px; }
 .quick-add__img {
   width: 60px; height: 60px; border-radius: var(--radius-md); object-fit: contain; flex: 0 0 auto;
-  background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--text) 5%, transparent); border: 1px solid var(--line);
 }
 .quick-add__headinfo { min-width: 0; display: grid; gap: 3px; }
 .quick-add__name { font-size: 1rem; font-weight: 700; line-height: 1.2; }
@@ -609,14 +655,14 @@
 .quick-add__label { font-size: 0.82rem; font-weight: 600; color: var(--muted); }
 .quick-add__stepper {
   display: inline-flex; align-items: center; gap: 4px; justify-self: start;
-  border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 4px; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 4px; background: color-mix(in srgb, var(--text) 4%, transparent);
 }
 .quick-add__qty-btn {
   width: 44px; height: 44px; border: 0; border-radius: 8px;
-  background: rgba(255,255,255,0.06); color: #fff; font-size: 1.2rem; cursor: pointer;
+  background: color-mix(in srgb, var(--text) 6%, transparent); color: var(--text); font-size: 1.2rem; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
 }
-.quick-add__qty-btn:hover { background: rgba(255,255,255,0.12); }
+.quick-add__qty-btn:hover { background: color-mix(in srgb, var(--text) 12%, transparent); }
 .quick-add__qty-btn--plus { color: var(--cta); }
 .quick-add__qty { min-width: 40px; text-align: center; font-weight: 700; font-size: 1.05rem; }
 .quick-add__submit {

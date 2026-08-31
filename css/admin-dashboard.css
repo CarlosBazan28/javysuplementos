@@ -47,6 +47,7 @@
   --pb-amber-tint-12: rgba(255, 179, 0, 0.12);
   --pb-white-04: rgba(255, 255, 255, 0.04);
   --pb-white-06: rgba(255, 255, 255, 0.06);
+  --pb-white-10: rgba(255, 255, 255, 0.10);
 }
 
 html, body { margin: 0; background: var(--pb-bg-0); }
@@ -121,6 +122,11 @@ body.ad-body { min-height: 100vh; }
 /* ---- shell grid ---- */
 .ad-shell { min-height: 100vh; display: grid; grid-template-columns: 264px minmax(0,1fr); }
 
+@media (min-width: 761px) {
+  .ad-shell.is-sidebar-collapsed { grid-template-columns: minmax(0,1fr); }
+  .ad-shell.is-sidebar-collapsed .ad-sidebar { display: none; }
+}
+
 /* ---- sidebar ---- */
 .ad-sidebar {
   position: sticky; top: 0; height: 100vh;
@@ -169,6 +175,17 @@ body.ad-body { min-height: 100vh; }
   background: rgba(12,16,24,0.82);
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
 }
+.ad-topbar__start { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.ad-topbar__sidebar-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; flex: 0 0 auto;
+  border: 1px solid var(--pb-line); border-radius: var(--ad-radius-sm);
+  background: transparent; color: var(--pb-text); cursor: pointer;
+  transition: background .18s ease, color .18s ease, border-color .18s ease;
+}
+.ad-topbar__sidebar-toggle .ad-ico { width: 18px; height: 18px; }
+.ad-topbar__sidebar-toggle:hover, .ad-topbar__sidebar-toggle:focus-visible { background: var(--pb-blue-tint-08); color: #fff; outline: none; }
+.ad-topbar__sidebar-toggle[aria-pressed="true"] { background: var(--pb-blue-tint-12); border-color: rgba(90,180,233,0.38); color: #fff; }
 .ad-topbar__title { display: grid; gap: 3px; }
 .ad-topbar__title h1 { font-family: var(--font-heading); font-weight: 900; font-size: 1.5rem; line-height: 1; }
 .ad-topbar__title p { color: var(--pb-muted); font-size: 0.85rem; }
@@ -346,10 +363,15 @@ body.ad-body { min-height: 100vh; }
 .ad-icon-btn:hover { border-color: rgba(90,180,233,0.45); }
 .ad-icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .ad-icon-btn--danger:hover { border-color: rgba(255,79,118,0.5); color: #ffc1ce; }
+/* Producto oculto del sitio: se marca de entrada (sin esperar el hover) para
+   que se note de un vistazo cual esta apagado en medio de la lista. */
+.ad-icon-btn--off { border-color: rgba(255,179,0,0.35); background: var(--pb-amber-tint-12); color: var(--ad-amber); }
+.ad-icon-btn--off:hover { border-color: rgba(255,179,0,0.55); }
 
 /* product cards (mobile) */
 .ad-prod-cards { display: none; gap: 12px; }
-.ad-prod-card { border: 1px solid var(--pb-line); border-radius: var(--ad-radius); background: linear-gradient(145deg, rgba(17,25,37,0.88), rgba(9,14,20,0.88)); padding: 12px; display: grid; grid-template-columns: 64px minmax(0,1fr); gap: 12px; }
+.ad-prod-card { border: 1px solid var(--pb-line); border-radius: var(--ad-radius); background: linear-gradient(145deg, rgba(17,25,37,0.88), rgba(9,14,20,0.88)); padding: 12px; display: grid; grid-template-columns: auto 64px minmax(0,1fr); align-items: start; gap: 12px; }
+.ad-prod-card .ad-check { align-self: start; }
 .ad-prod-card img { width: 64px; height: 64px; border-radius: 12px; object-fit: contain; background: var(--pb-white-06); }
 .ad-prod-card h3 { font-size: 1rem; margin-bottom: 3px; }
 .ad-prod-card .ad-meta { color: var(--pb-muted); font-size: 0.8rem; margin: 0 0 9px; }
@@ -741,7 +763,7 @@ body.ad-body { min-height: 100vh; }
 .ad-cat__title small { color: var(--pb-muted); font-size: 0.78rem; white-space: nowrap; }
 .ad-cat__actions { display: flex; gap: 7px; align-items: center; }
 .ad-cat__types { display: grid; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--pb-line); }
-.ad-cat__sublabel { color: var(--pb-muted-2); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.ad-cat__sublabel { color: var(--pb-muted); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
 .ad-cat__chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .ad-cat__empty { color: var(--pb-muted); font-size: 0.82rem; }
 
@@ -769,8 +791,11 @@ body.ad-body { min-height: 100vh; }
   .ad-cat__head { grid-template-columns: 1fr; gap: 10px; }
 }
 .ad-type-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 11px; border-radius: 999px; background: var(--pb-white-06); color: var(--pb-text); font-size: 0.8rem; font-weight: 600; }
-.ad-type-chip button { display: grid; place-items: center; width: 16px; height: 16px; border: 0; background: transparent; color: var(--pb-muted); cursor: pointer; padding: 0; }
-.ad-type-chip button .ad-ico { width: 12px; height: 12px; }
+/* Solo el botón de borrar es cuadrado. Ojo: NO usar `.ad-type-chip button`,
+   porque el nombre de la subcategoría también es un <button> y quedaba
+   aplastado a 16px con el texto desbordado encima del contador y de la ×. */
+.ad-type-chip__del { display: grid; place-items: center; width: 16px; height: 16px; border: 0; background: transparent; color: var(--pb-muted); cursor: pointer; padding: 0; }
+.ad-type-chip__del .ad-ico { width: 12px; height: 12px; }
 .ad-type-chip--add { cursor: pointer; color: var(--pb-muted); border: 1px dashed var(--pb-line-strong); background: transparent; }
 
 /* ---- combos ---- */
@@ -823,6 +848,7 @@ body.ad-body { min-height: 100vh; }
 @media (max-width: 760px) {
   .ad-shell { grid-template-columns: 1fr; }
   .ad-sidebar { display: none; }
+  .ad-topbar__sidebar-toggle { display: none; }
   .ad-main { padding: 14px 14px calc(78px + env(safe-area-inset-bottom, 0px)); }
 
   .ad-topbar { position: relative; top: auto; flex-direction: column; align-items: stretch; gap: 12px; margin: -14px -14px 14px; padding: 14px; }
@@ -913,8 +939,6 @@ body.ad-body { min-height: 100vh; }
 .ad-feed__icon--bad { background: rgba(255,79,118,0.16); color: #ffc1ce; }
 .ad-feed__body { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .ad-feed__text { font-size: 0.9rem; line-height: 1.35; word-break: break-word; }
-.ad-lead__msg { font-size: 0.86rem; line-height: 1.4; color: var(--pb-muted); word-break: break-word; }
-.ad-lead__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .ad-feed__text strong { color: #fff; }
 .ad-feed__meta { color: var(--pb-muted-2); font-size: 0.76rem; }
 .ad-feed__more { margin-top: 14px; display: flex; justify-content: center; }
@@ -948,4 +972,231 @@ body.ad-body { min-height: 100vh; }
   .ad-filters .ad-select { flex: 1 1 140px; min-width: 0; }
   /* las tablas de informe SÍ se muestran en móvil (con scroll), a diferencia de .ad-table-wrap */
   .ad-rep-scroll .ad-table { min-width: 640px; }
+}
+
+/* ---- selección múltiple de productos + acciones en lote ----------------- */
+/* La barra aparece solo con algo seleccionado: no ocupa espacio permanente ni
+   compite con los filtros. */
+.ad-bulkbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--pb-brand);
+  border-radius: var(--ad-radius);
+  background: var(--pb-blue-tint-12);
+}
+.ad-bulkbar__count { font-size: 0.86rem; font-weight: 700; color: var(--pb-text); }
+.ad-bulkbar__select { min-width: 200px; }
+.ad-bulkbar .ad-link-btn { margin-left: auto; }
+
+/* Objetivo táctil de 44px sin agrandar la casilla visible. */
+.ad-check {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: -10px;
+  cursor: pointer;
+}
+.ad-check input { width: 17px; height: 17px; accent-color: var(--pb-brand); cursor: pointer; }
+.ad-table tr.is-selected { background: var(--pb-blue-tint-08); }
+.ad-prod-card.is-selected { border-color: var(--pb-brand); background: var(--pb-blue-tint-08); }
+
+/* ---- conteo por subcategoría y aviso de productos sueltos --------------- */
+/* El nombre es un botón que renombra. Antes se veía como texto plano y nadie
+   descubría que era clicleable, así que ahora se comporta como un control:
+   fondo al pasar por encima y anillo de foco propio. */
+.ad-type-chip__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  margin: -3px 0 -3px -5px;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.ad-type-chip__name:hover { background: var(--pb-white-10); }
+.ad-type-chip__name:hover .ad-type-chip__label { text-decoration: underline; }
+.ad-type-chip__name:focus-visible { outline: 2px solid var(--pb-brand); outline-offset: 1px; }
+.ad-type-chip__count {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--pb-white-10);
+  color: var(--pb-text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+}
+/* Una subcategoría vacía se marca con un borde punteado, no bajándole la
+   opacidad: atenuarla la volvía ilegible (contraste 2.0) y la hacía parecer
+   deshabilitada cuando en realidad es la que más atención necesita. */
+.ad-type-chip.is-empty {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--pb-line-strong);
+}
+.ad-type-chip.is-empty .ad-type-chip__count { background: transparent; color: var(--pb-muted); }
+
+/* La × es destructiva: se mantiene discreta hasta que el chip recibe atención,
+   y se separa del nombre para no comerse el clic de renombrar. */
+.ad-type-chip__del { margin-left: 2px; opacity: 0.6; transition: opacity 0.12s ease, color 0.12s ease; }
+.ad-type-chip:hover .ad-type-chip__del,
+.ad-type-chip:focus-within .ad-type-chip__del { opacity: 1; }
+.ad-type-chip__del:hover { color: #ffc1ce; }
+.ad-type-chip__del:focus-visible { outline: 2px solid var(--pb-brand); outline-offset: 1px; border-radius: 999px; opacity: 1; }
+
+/* Texto solo para lectores de pantalla. */
+.ad-sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* Convierte un dato invisible ("22 sin subcategoría") en una tarea de un clic. */
+.ad-cat__loose {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--pb-amber);
+  border-radius: 999px;
+  background: var(--pb-amber-tint-12);
+  color: var(--pb-amber-soft);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ad-cat__loose:hover { background: var(--pb-amber); color: var(--pb-brand-ink); }
+.ad-cat__loose:focus-visible { outline: 2px solid var(--pb-brand); outline-offset: 2px; }
+.ad-cat__loose .ad-ico { width: 14px; height: 14px; }
+
+/* ============================================================================
+   Fase 9 — Usuarios, roles y chip del usuario conectado
+   ============================================================================ */
+
+/* ---- chip del usuario en la topbar ---- */
+#adminUser { display: flex; min-width: 0; }
+.ad-user { position: relative; }
+.ad-user__btn {
+  display: inline-flex; align-items: center; gap: 9px;
+  min-height: 42px; padding: 0 10px 0 6px;
+  border: 1px solid var(--pb-line); border-radius: 999px;
+  background: var(--pb-white-04); color: #fff; cursor: pointer;
+}
+.ad-user__btn:hover { border-color: rgba(90,180,233,0.45); }
+.ad-user__btn:focus-visible { outline: 2px solid var(--pb-brand-bright); outline-offset: 2px; }
+.ad-user__btn .ad-ico { width: 15px; height: 15px; color: var(--pb-muted); }
+.ad-user__avatar {
+  display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 32px;
+  border-radius: 50%; background: var(--pb-blue-tint-18); color: var(--pb-brand-bright);
+  font-size: 0.78rem; font-weight: 800;
+}
+.ad-user__id { display: grid; text-align: left; min-width: 0; }
+.ad-user__id strong { font-size: 0.85rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 16ch; }
+.ad-user__id small { color: var(--pb-muted); font-size: 0.72rem; font-weight: 600; }
+
+.ad-user__menu {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 60;
+  min-width: 230px; padding: 8px; display: grid; gap: 2px;
+  border: 1px solid var(--pb-line-strong); border-radius: var(--ad-radius-sm);
+  background: var(--pb-surface-3);
+  box-shadow: 0 18px 44px rgba(0,0,0,0.5);
+}
+.ad-user__menu[hidden] { display: none; }
+.ad-user__email {
+  padding: 6px 10px 8px; margin: 0;
+  color: var(--pb-muted); font-size: 0.76rem;
+  border-bottom: 1px solid var(--pb-line);
+  overflow: hidden; text-overflow: ellipsis;
+}
+.ad-user__item {
+  display: flex; align-items: center; gap: 9px;
+  width: 100%; min-height: 38px; padding: 0 10px;
+  border: 0; border-radius: 9px; background: transparent;
+  color: var(--pb-text); font-size: 0.85rem; font-weight: 600; text-align: left; cursor: pointer;
+}
+.ad-user__item .ad-ico { width: 16px; height: 16px; color: var(--pb-muted); }
+.ad-user__item:hover { background: var(--pb-white-06); }
+.ad-user__item--danger { color: #ffc1ce; }
+.ad-user__item--danger .ad-ico { color: #ffc1ce; }
+
+/* ---- modo solo lectura (rol Lector) ---- */
+/* Solo cosmético: esconde lo que el usuario no podría usar. Quien realmente
+   bloquea la escritura es RLS en Supabase (can_write / can_manage_users). */
+.ad-readonly [data-write-only] { display: none !important; }
+/* Lo que no se puede esconder sin romper la lectura, se deja mirar pero no tocar. */
+.ad-readonly .ad-switch input,
+.ad-readonly .ad-type-chip__name,
+.ad-readonly .ad-ops__item--link { pointer-events: none; }
+.ad-readonly .ad-ops__item--link { cursor: default; }
+.ad-readonly-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 30px; padding: 0 11px; border-radius: 999px;
+  background: var(--pb-white-06); color: var(--pb-muted);
+  font-size: 0.76rem; font-weight: 700; white-space: nowrap;
+}
+.ad-readonly-badge .ad-ico { width: 14px; height: 14px; }
+
+/* ---- roles ---- */
+.ad-pill--role { border: 1px solid transparent; }
+.ad-pill--role-admin  { background: var(--pb-blue-tint-18); color: #d2ecff; border-color: rgba(90,180,233,0.35); }
+.ad-pill--role-editor { background: rgba(255,179,0,0.14); color: var(--pb-amber-soft); border-color: rgba(255,179,0,0.32); }
+.ad-pill--role-viewer { background: var(--pb-white-06); color: var(--pb-muted); border-color: var(--pb-line); }
+
+.ad-roles-legend {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 10px;
+  margin-bottom: 14px;
+}
+.ad-roles-legend__item {
+  display: grid; gap: 6px; align-content: start;
+  padding: 11px 13px; border: 1px solid var(--pb-line); border-radius: var(--ad-radius-sm);
+  background: var(--pb-white-04);
+}
+.ad-roles-legend__item .ad-pill { justify-self: start; }
+.ad-roles-legend__item p { color: var(--pb-muted); font-size: 0.8rem; line-height: 1.45; margin: 0; }
+
+.ad-section-intro__note {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 8px !important; font-size: 0.82rem !important;
+}
+.ad-section-intro__note .ad-ico { width: 15px; height: 15px; flex: 0 0 15px; }
+
+/* ---- fila de usuario ---- */
+.ad-row--user { grid-template-columns: auto minmax(0,1fr) auto auto; }
+.ad-row--user.is-off { opacity: 0.62; }
+.ad-row__tags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+/* ---- modal de formulario ---- */
+.ad-confirm--form { width: min(430px, 100%); }
+.ad-form-modal__fields { display: grid; gap: 12px; }
+.ad-btn.is-loading { opacity: 0.65; cursor: progress; }
+
+@media (max-width: 620px) {
+  .ad-row--user {
+    grid-template-columns: auto minmax(0,1fr) auto;
+    grid-template-areas: "avatar main actions" ". tags tags";
+    row-gap: 9px;
+  }
+  .ad-row--user .ad-row__avatar  { grid-area: avatar; }
+  .ad-row--user .ad-row__main    { grid-area: main; }
+  .ad-row--user .ad-row__tags    { grid-area: tags; justify-content: flex-start; }
+  .ad-row--user .ad-row__actions { grid-area: actions; }
+  .ad-roles-legend { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  /* La topbar se apila y .ad-topbar__actions > * pasa a flex:1; el chip se
+     mantiene pegado a la derecha y con el nombre más corto. */
+  #adminUser { justify-content: flex-end; }
+  .ad-user__id strong { max-width: 12ch; }
 }

@@ -1,10 +1,220 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/producto/hershey-s-c4-whey-protein-2-lb",
+      "destination": "/producto/cellucor-c4-whey-protein-2-lb",
+      "permanent": true
+    },
+    {
+      "source": "/producto/reese-s-c4-whey-protein-5-8-lb",
+      "destination": "/producto/cellucor-c4-whey-protein-5-8-lb",
+      "permanent": true
+    },
+    {
+      "source": "/producto/nutrex-producto-sin-nombre-60-servidas",
+      "destination": "/producto/nutrex-creatine-monohydrate-60-servidas",
+      "permanent": true
+    },
+    {
+      "source": "/producto/biosport-magnesium-glycinate-60-capsulas",
+      "destination": "/producto/biosport-magnesium-glycinate-120-tabletas",
+      "permanent": true
+    },
+    {
+      "source": "/producto/biosport-absolute-iso-4-lb",
+      "destination": "/categoria/proteinas/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/raw-nutrition-grass-fed-isolate-protein-2-lb",
+      "destination": "/categoria/proteinas/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/bpi-sports-creatine-max-60-servidas",
+      "destination": "/categoria/creatina/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/skull-bcaa-eaa",
+      "destination": "/categoria/aminoacidos/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/primaforce-beta-alanine-100-servidas",
+      "destination": "/categoria/pre-entrenos-y-energia/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/h2o-diuretico",
+      "destination": "/categoria/quemadores/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/calcium-vitamin-d-240-capsulas",
+      "destination": "/categoria/salud-y-bienestar/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/mutant-multivitamin-60-tabletas",
+      "destination": "/categoria/salud-y-bienestar/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/cbum-energy-drink-355-ml",
+      "destination": "/supplements-page.html",
+      "permanent": true
+    },
+    {
+      "source": "/producto/tongkat-ali-complex-1000-mg-60-capsulas",
+      "destination": "/supplements-page.html",
+      "permanent": true
+    },
+    {
+      "source": "/categoria/potenciadores-hormonales",
+      "destination": "/supplements-page.html?fam=potenciadores",
+      "permanent": true
+    },
+    {
+      "source": "/categoria/potenciadores-hormonales/",
+      "destination": "/supplements-page.html?fam=potenciadores",
+      "permanent": true
+    },
+    {
+      "source": "/producto/adiplex",
+      "destination": "/producto/biosport-adiplex",
+      "permanent": true
+    },
+    {
+      "source": "/producto/aps-isomorph-5-lb",
+      "destination": "/producto/aps-nutrition-isomorph-5-lb",
+      "permanent": true
+    },
+    {
+      "source": "/producto/biosport-usa-xtreme-gainer-3-kg",
+      "destination": "/producto/biosport-xtreme-gainer-3-kg",
+      "permanent": true
+    },
+    {
+      "source": "/producto/biotin-vitamin-b7-120-capsulas",
+      "destination": "/producto/nutricost-biotin-vitamin-b7-120-capsulas",
+      "permanent": true
+    },
+    {
+      "source": "/producto/htp-h20-expulsion-60-tabletas",
+      "destination": "/producto/hi-tech-pharmaceuticals-h20-expulsion-60-tabletas",
+      "permanent": true
+    },
+    {
+      "source": "/producto/htp-precision-protein-2-lb",
+      "destination": "/producto/hi-tech-pharmaceuticals-precision-protein-2-lb",
+      "permanent": true
+    },
+    {
+      "source": "/producto/htp-precision-protein-2-lb-8260e6",
+      "destination": "/producto/hi-tech-pharmaceuticals-precision-protein-2-lb-8260e6",
+      "permanent": true
+    },
+    {
+      "source": "/producto/htp-precision-protein-5-lb",
+      "destination": "/producto/hi-tech-pharmaceuticals-precision-protein-5-lb",
+      "permanent": true
+    },
+    {
+      "source": "/producto/inositol-500-mg-240-capsulas",
+      "destination": "/producto/nutricost-inositol-500-mg-240-capsulas",
+      "permanent": true
+    },
+    {
+      "source": "/producto/maltodextrin-2-lb",
+      "destination": "/producto/nutricost-maltodextrin-2-lb",
+      "permanent": true
+    },
+    {
+      "source": "/producto/maltodextrin-8-lb",
+      "destination": "/producto/nutricost-maltodextrin-8-lb",
+      "permanent": true
+    },
+    {
+      "source": "/producto/olive-leaf-extract-75-mg-90-capsulas",
+      "destination": "/producto/nutricost-olive-leaf-extract-75-mg-90-capsulas",
+      "permanent": true
+    },
+    {
+      "source": "/producto/optimun-nutrition-gold-standard-100-whey-protein-1-85-lb",
+      "destination": "/producto/optimum-nutrition-gold-standard-100-whey-protein-1-85-lb",
+      "permanent": true
+    },
+    {
+      "source": "/producto/optimun-nutrition-serious-mass-6-lb",
+      "destination": "/producto/optimum-nutrition-serious-mass-6-lb",
+      "permanent": true
+    },
+    {
+      "source": "/producto/potassium-99-mg-30-capsulas",
+      "destination": "/producto/nutricost-potassium-99-mg-30-capsulas",
+      "permanent": true
+    },
+    {
+      "source": "/producto/r-ala-alpha-lipoic-acid-120-capsulas",
+      "destination": "/producto/nutricost-r-alpha-lipoic-acid-120-capsulas",
+      "permanent": true
+    },
+    {
+      "source": "/producto/resveratrol-120-capsulas",
+      "destination": "/producto/nutricost-resveratrol-120-capsulas",
+      "permanent": true
+    },
+    {
+      "source": "/producto/xpel-diuretico",
+      "destination": "/producto/mhp-xpel-diuretico",
+      "permanent": true
+    },
+    {
+      "source": "/producto/zinc-chelate-50-mg-120-capsulas",
+      "destination": "/producto/nutricost-zinc-chelate-50-mg-120-capsulas",
+      "permanent": true
+    },
+    {
+      "source": "/producto/zma-180-capsulas",
+      "destination": "/producto/primaforce-zma-180-capsulas",
+      "permanent": true
+    },
+    {
+      "source": "/producto/liv52-protector-hepatico",
+      "destination": "/producto/himalaya-liv-52-100-tabletas",
+      "permanent": true
+    },
+    {
+      "source": "/producto/maniac-extreme-pre-workout",
+      "destination": "/producto/terror-labz-maniac-extreme-30-servidas",
+      "permanent": true
+    },
+    {
+      "source": "/producto/nad",
+      "destination": "/producto/olympus-nad-120-tabletas",
+      "permanent": true
+    },
+    {
+      "source": "/producto/ashwagandha-90-capsulas",
+      "destination": "/categoria/salud-y-bienestar/",
+      "permanent": true
+    },
+    {
+      "source": "/producto/magnesium-complex-240-capsulas",
+      "destination": "/categoria/salud-y-bienestar/",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*).(js|mjs|css)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     }
   ]

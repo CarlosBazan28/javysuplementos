@@ -1,0 +1,51 @@
+/* ============================================================================
+   REVEAL — aparición al entrar en viewport (fade + desplazamiento corto).
+
+   Es la contraparte, al hacer scroll, de la entrada del hero: el hero anima al
+   cargar (va sobre el pliegue) y las secciones de más abajo animan cuando se
+   llega a ellas. Lo dispara js/reveal.js con un IntersectionObserver.
+
+   Regla de oro: el contenido NO puede depender de esto para ser legible. El
+   estado oculto se aplica solo cuando el JS confirma que va a poder revelarlo
+   (marca el <html> con .js-reveal). Sin JS, sin observer, o con movimiento
+   reducido, todo se pinta normal y esta hoja no hace nada.
+   ============================================================================ */
+
+.js-reveal .reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  /* Le avisa al navegador qué va a cambiar: evita el parpadeo del primer frame
+     en móvil, donde el compositor tarda en promover la capa. */
+  will-change: opacity, transform;
+}
+
+.js-reveal .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+  /* Terminada la entrada ya no hay nada que optimizar: soltar la capa libera
+     memoria de GPU, que en una grilla larga suma. */
+  will-change: auto;
+}
+
+/* Escalonado dentro de una misma grilla/fila: los hijos entran en cascada en
+   vez de todos juntos. Se corta en 6 a propósito — más allá el último tardaría
+   demasiado y se sentiría lento, no elegante. */
+.js-reveal .reveal--stagger > *:nth-child(1) { transition-delay: 0.05s; }
+.js-reveal .reveal--stagger > *:nth-child(2) { transition-delay: 0.10s; }
+.js-reveal .reveal--stagger > *:nth-child(3) { transition-delay: 0.15s; }
+.js-reveal .reveal--stagger > *:nth-child(4) { transition-delay: 0.20s; }
+.js-reveal .reveal--stagger > *:nth-child(5) { transition-delay: 0.25s; }
+.js-reveal .reveal--stagger > *:nth-child(n + 6) { transition-delay: 0.30s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .js-reveal .reveal,
+  .js-reveal .reveal.is-visible,
+  .js-reveal .reveal--stagger > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    transition-delay: 0s;
+    will-change: auto;
+  }
+}

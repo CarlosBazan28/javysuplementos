@@ -22,6 +22,9 @@
   align-items: center;
   justify-content: center;
   gap: var(--sp-2);
+  /* Piso tactil: 44px. El padding solo daba ~40px, y este es el boton que usa
+     todo el sitio. */
+  min-height: 44px;
   padding: var(--sp-3) var(--sp-5);
   border: 1px solid var(--_bd);
   border-radius: var(--radius-md);
@@ -68,7 +71,7 @@
   --_fg: var(--text);
   --_bd: var(--line-strong);
 }
-.btn--ghost:hover { --_bg: rgba(255, 255, 255, 0.06); }
+.btn--ghost:hover { --_bg: color-mix(in srgb, var(--text) 6%, transparent); }
 
 .btn--danger {    /* destructiva */
   --_bg: var(--danger-tint);
@@ -78,7 +81,10 @@
 .btn--danger:hover { --_bg: rgba(255, 79, 107, 0.22); --_bd: var(--danger); }
 
 /* ---- Tamaños ---- */
-.btn--sm { padding: var(--sp-2) var(--sp-3); font-size: 0.85rem; border-radius: var(--radius-sm); }
+/* EXCEPCION DELIBERADA al piso de 44px: --sm existe para barras densas
+   (filtros en linea, chips del admin) donde 44px rompe el layout. Se le baja el
+   min-height a proposito. No usarla en superficies tactiles principales. */
+.btn--sm { min-height: 36px; padding: var(--sp-2) var(--sp-3); font-size: 0.85rem; border-radius: var(--radius-sm); }
 .btn--lg { padding: var(--sp-4) var(--sp-6); font-size: 1.05rem; }
 
 /* ---- Modificadores ---- */
