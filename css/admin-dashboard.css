@@ -933,12 +933,14 @@ body.ad-body { min-height: 100vh; }
   .ad-topbar__sidebar-toggle { display: none; }
   .ad-main { padding: 14px 14px calc(78px + env(safe-area-inset-bottom, 0px)); }
 
-  /* La fila se mantiene (título a la izquierda, chip a la derecha): si el
-     subtítulo es largo, se trunca con "…" en vez de empujar el chip a otro
-     renglón. */
-  .ad-topbar { position: relative; top: auto; gap: 10px; margin: -14px -14px 14px; padding: 14px; }
+  /* La fila se mantiene (título a la izquierda, chip a la derecha) y el chip
+     queda pegado arriba (align-items: flex-start): si el subtítulo no
+     entra en una línea, envuelve a una segunda sin recortarse ni empujar
+     el chip hacia abajo. */
+  .ad-topbar { position: relative; top: auto; align-items: flex-start; gap: 10px; margin: -14px -14px 14px; padding: 14px; }
   .ad-topbar__title { min-width: 0; }
-  .ad-topbar__title h1, .ad-topbar__title p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ad-topbar__title h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ad-topbar__actions { padding-top: 2px; }
   .ad-search { flex: 1 1 100%; }
   .ad-search input { width: 100%; }
 
