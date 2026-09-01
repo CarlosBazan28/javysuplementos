@@ -291,7 +291,7 @@ const COMMON_SCRIPTS = [
   "/js/auth.js?v=session-state",
   "/js/icons.js?v=sidebar-toggle-1",
   "/js/dropdown.js?v=resize-fix-1",
-  "/js/cart.js?v=ferguson-label-1",
+  "/js/cart.js?v=quote-img-1",
 ];
 
 function renderScripts(extra = []) {
