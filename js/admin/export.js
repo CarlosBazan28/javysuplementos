@@ -3,7 +3,7 @@
    y generación de PDF (jsPDF + autotable, vendorizados en js/vendor) con guardado
    en el dispositivo o compartir nativo (Web Share API).
    ============================================================================ */
-import { esc } from "./helpers.js?v=adm-fe14b332";
+import { esc } from "./helpers.js?v=adm-b92077a6";
 
 const PDF = {
   ink: [13, 25, 39], muted: [91, 108, 125], line: [220, 227, 234],
@@ -50,7 +50,6 @@ async function imageData(url, maxSide = 128) {
     const response = await fetch(absoluteUrl(url));
     if (!response.ok) throw new Error("No se pudo cargar la imagen");
     const blob = await response.blob();
-    if (!blob.type.startsWith("image/")) throw new Error("Recurso no compatible");
     objectUrl = URL.createObjectURL(blob);
     const image = await loadImage(objectUrl);
     const width = image.naturalWidth || image.width;
@@ -105,7 +104,7 @@ function mainHeader(doc, title, meta, logo) {
   doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.setTextColor(...PDF.white);
   doc.text("JAVY SUPLEMENTOS", MARGIN + 62, 37);
   doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); doc.setTextColor(...PDF.sky);
-  doc.text("INFORME DE CATÁLOGO", MARGIN + 62, 51);
+  doc.text("INFORME DEL PANEL", MARGIN + 62, 51);
   doc.setFont("helvetica", "bold"); doc.setFontSize(20); doc.setTextColor(...PDF.ink);
   doc.text(String(title || "Informe"), MARGIN, 114);
   doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(...PDF.muted);
@@ -196,25 +195,30 @@ export async function buildReportPDF(title, meta, columns, rows, options = {}) {
     }
     categoryHeading(doc, category, cursorY);
     const head = detailLabel ? ["", "Producto", "Precio actual", detailLabel] : ["", "Producto", "Precio actual"];
+    const tableWidth = size(doc).width - MARGIN * 2;
     const body = group.map((item) => {
       const product = item.brand ? `${item.name || "—"}\n${item.brand}` : (item.name || "—");
-      return detailLabel ? ["", product, item.price || "Consultar", item.detail || "—"] : ["", product, item.price || "Consultar"];
+      return detailLabel ? [item.image || "", product, item.price || "Consultar", item.detail || "—"] : [item.image || "", product, item.price || "Consultar"];
     });
     doc.autoTable({
       ...baseTable(head, body, cursorY + 30, 116),
+      tableWidth,
       styles: { ...baseTable(head, body, 0).styles, minCellHeight: 46 },
       columnStyles: detailLabel
-        ? { 0: { cellWidth: 38 }, 1: { cellWidth: 210 }, 2: { cellWidth: 72, halign: "right", fontStyle: "bold" }, 3: { cellWidth: 130 } }
-        : { 0: { cellWidth: 38 }, 1: { cellWidth: 300 }, 2: { cellWidth: 90, halign: "right", fontStyle: "bold" } },
+        ? { 0: { cellWidth: 38 }, 1: { cellWidth: 240 }, 2: { cellWidth: 72, halign: "right", fontStyle: "bold" }, 3: { cellWidth: tableWidth - 350 } }
+        : { 0: { cellWidth: 38 }, 1: { cellWidth: tableWidth - 128 }, 2: { cellWidth: 90, halign: "right", fontStyle: "bold" } },
       willDrawPage: (data) => {
         if (data.pageNumber > 1) {
           continuationHeader(doc, title);
           categoryHeading(doc, category, 72);
         }
       },
+      didParseCell: (data) => {
+        if (data.section === "body" && data.column.index === 0) data.cell.text = [];
+      },
       didDrawCell: (data) => {
         if (data.section !== "body" || data.column.index !== 0) return;
-        const asset = assets.get(group[data.row.index]?.image);
+        const asset = assets.get(data.cell.raw);
         if (!asset) return;
         const max = 31;
         const ratio = asset.width / asset.height || 1;
@@ -308,7 +312,7 @@ export function printReport(title, meta, columns, rows, options = {}) {
     .catalog-group{break-inside:avoid-page;page-break-inside:avoid;margin:0 0 18px;}.catalog-group h2{font-size:11pt;color:#0191c6;background:#eff8fc;border-radius:5px;padding:7px 10px;margin:0 0 7px;}table{width:100%;border-collapse:collapse;font-size:9pt;}thead{display:table-header-group;}tr{break-inside:avoid;page-break-inside:avoid;}th,td{border-bottom:1px solid #dce3ea;padding:7px 8px;text-align:left;vertical-align:middle;}th{background:#0d1927;color:#fff;text-transform:uppercase;font-size:7.5pt;letter-spacing:.05em;}tbody tr:nth-child(even) td{background:#f7fafc;}td strong{display:block;font-size:9.5pt;}td small{display:block;color:#5b6c7d;margin-top:2px;}.image-col{width:42px;text-align:center;}.image-col img{width:30px;height:30px;object-fit:contain;}.price-col{text-align:right;font-weight:700;white-space:nowrap;}
     .report-footer{position:fixed;bottom:-11mm;left:0;right:0;border-top:1px solid #dce3ea;padding-top:4px;color:#5b6c7d;font-size:8pt;display:flex;justify-content:space-between;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
   </style></head><body>
-    <header class="report-header"><img src="${LOGO_URL}" alt="Javy Suplementos" /><div><p class="brand">JAVY SUPLEMENTOS · INFORME DE CATÁLOGO</p><h1>${esc(title)}</h1><p class="meta">${esc(meta)}</p></div></header>
+    <header class="report-header"><img src="${LOGO_URL}" alt="Javy Suplementos" /><div><p class="brand">JAVY SUPLEMENTOS · INFORME DEL PANEL</p><h1>${esc(title)}</h1><p class="meta">${esc(meta)}</p></div></header>
     ${content}<footer class="report-footer"><span>Javy Suplementos · Informe generado desde el panel administrativo</span><span>${esc(meta)}</span></footer>
     <script>window.onload=function(){setTimeout(function(){window.print();},250);};<\/script>
   </body></html>`;
