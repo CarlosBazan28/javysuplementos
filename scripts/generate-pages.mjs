@@ -675,7 +675,7 @@ ${categoryMarkup}            <h2 class="product-card__name"><a class="product-ca
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
-${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-unif", "css/pages/supplements.css?v=scroll-fix-1"] })}
+${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-unif", "css/pages/supplements.css?v=wide-grid-1"] })}
 ${renderScripts(["/js/categoria.js?v=cat-unif"])}
   </head>
   <body>
