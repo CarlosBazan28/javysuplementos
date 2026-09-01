@@ -3,11 +3,11 @@
    actividad, con fecha de generación, vista en pantalla, impresión y PDF
    (guardar en el dispositivo o compartir).
    ============================================================================ */
-import { state, catById } from "../state.js?v=adm-9250919f";
-import { esc, ico, peso, hasOffer, discountPct, isAvailable, agoLabel } from "../helpers.js?v=adm-9250919f";
-import { paint } from "../view.js?v=adm-9250919f";
-import { toast } from "../ui.js?v=adm-9250919f";
-import { buildTable, printReport, slugify, buildReportPDF, saveOrShare } from "../export.js?v=adm-9250919f";
+import { state, catById } from "../state.js?v=adm-1c6bf4a6";
+import { esc, ico, peso, hasOffer, discountPct, isAvailable, agoLabel } from "../helpers.js?v=adm-1c6bf4a6";
+import { paint } from "../view.js?v=adm-1c6bf4a6";
+import { toast } from "../ui.js?v=adm-1c6bf4a6";
+import { buildTable, printReport, slugify, buildReportPDF, saveOrShare } from "../export.js?v=adm-1c6bf4a6";
 
 export function renderReportsTab(container) {
   paint(container, `
@@ -74,28 +74,57 @@ function categoryLabel(p) {
   return p.category || (p.category_id ? (catById(p.category_id)?.name || "—") : "—");
 }
 
+// Datos exclusivos de PDF/impresión. La tabla visible no cambia de orden ni
+// columnas; el catálogo se agrupa por categoría solamente al exportar.
+function pdfCatalogItems(products, detail = () => "") {
+  return products.map((p) => ({
+    name: p.name || "—",
+    brand: p.brand || "",
+    category: categoryLabel(p),
+    price: peso(p.price),
+    detail: detail(p),
+    image: p.image || "",
+  }));
+}
+
 function repPrecios() {
-  const rows = state.products
+  const products = state.products.slice();
+  const rows = products
     .slice()
     .sort((a, b) => (a.name || "").localeCompare(b.name || "", "es"))
     .map((p) => [p.name || "—", categoryLabel(p), p.presentation || "—", peso(p.price), hasOffer(p) ? peso(p.old_price) : "—", isAvailable(p) ? "Disponible" : "Agotado"]);
-  return { title: "Lista de precios actuales", columns: ["Producto", "Categoría", "Presentación", "Precio", "Antes (oferta)", "Estado"], rows };
+  return {
+    title: "Lista de precios actuales",
+    columns: ["Producto", "Categoría", "Presentación", "Precio", "Antes (oferta)", "Estado"],
+    rows,
+    pdf: { products: pdfCatalogItems(products) },
+  };
 }
 
 function repStock() {
-  const rows = state.products
-    .filter((p) => !isAvailable(p))
+  const products = state.products.filter((p) => !isAvailable(p));
+  const rows = products
     .sort((a, b) => (a.name || "").localeCompare(b.name || "", "es"))
     .map((p) => [p.name || "—", categoryLabel(p), p.presentation || "—", peso(p.price), agoLabel(p.updated_at)]);
-  return { title: "Stock — agotados / por reponer", columns: ["Producto", "Categoría", "Presentación", "Precio", "Agotado"], rows, empty: "¡Todo el catálogo está disponible! No hay productos agotados." };
+  return {
+    title: "Stock — agotados / por reponer",
+    columns: ["Producto", "Categoría", "Presentación", "Precio", "Agotado"], rows,
+    empty: "¡Todo el catálogo está disponible! No hay productos agotados.",
+    pdf: { products: pdfCatalogItems(products, (p) => agoLabel(p.updated_at)), detailLabel: "Agotado" },
+  };
 }
 
 function repOfertas() {
-  const rows = state.products
-    .filter(hasOffer)
+  const products = state.products.filter(hasOffer);
+  const rows = products
     .sort((a, b) => discountPct(b) - discountPct(a))
     .map((p) => [p.name || "—", peso(p.old_price), peso(p.price), discountPct(p) + "%"]);
-  return { title: "Ofertas y descuentos", columns: ["Producto", "Precio anterior", "Precio oferta", "Descuento"], rows, empty: "No hay ofertas activas en este momento." };
+  return {
+    title: "Ofertas y descuentos",
+    columns: ["Producto", "Precio anterior", "Precio oferta", "Descuento"], rows,
+    empty: "No hay ofertas activas en este momento.",
+    pdf: { products: pdfCatalogItems(products, (p) => `${peso(p.old_price)} · ${discountPct(p)}%`), detailLabel: "Oferta" },
+  };
 }
 
 async function repActividad(days) {
@@ -149,7 +178,7 @@ function renderResult(result, rep) {
     const btn = e.currentTarget;
     btn.disabled = true;
     try {
-      const blob = buildReportPDF(rep.title, meta, rep.columns, rep.rows);
+      const blob = await buildReportPDF(rep.title, meta, rep.columns, rep.rows, rep.pdf);
       const mode = await saveOrShare(`${slugify(rep.title)}.pdf`, blob, {
         title: rep.title,
         text: `${rep.title} — ${meta}`,
@@ -163,7 +192,7 @@ function renderResult(result, rep) {
     }
   });
   result.querySelector("[data-rep-print]").addEventListener("click", () => {
-    if (!printReport(rep.title, meta, rep.columns, rep.rows)) {
+    if (!printReport(rep.title, meta, rep.columns, rep.rows, rep.pdf)) {
       toast({ tone: "err", msg: "El navegador bloqueó la ventana de impresión", sub: "Permite las ventanas emergentes e intenta de nuevo." });
     }
   });

@@ -3,12 +3,12 @@
    imagen, chips de sabores/tags, objetivos, validación inline y guardado con
    sincronización de sabores. Comportamiento idéntico al monolito original.
    ============================================================================ */
-import { state, catById, families, typesOf } from "../state.js?v=adm-9250919f";
-import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-9250919f";
-import { $, esc, ico } from "../helpers.js?v=adm-9250919f";
-import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-9250919f";
-import { requestRerender } from "../shell.js?v=adm-9250919f";
-import { reloadProducts } from "../data.js?v=adm-9250919f";
+import { state, catById, families, typesOf } from "../state.js?v=adm-1c6bf4a6";
+import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-1c6bf4a6";
+import { $, esc, ico } from "../helpers.js?v=adm-1c6bf4a6";
+import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-1c6bf4a6";
+import { requestRerender } from "../shell.js?v=adm-1c6bf4a6";
+import { reloadProducts } from "../data.js?v=adm-1c6bf4a6";
 
 // Arreglos de texto (beneficios/uso/descripción) ⇄ textarea (una línea por ítem).
 const linesToText = (v) => Array.isArray(v) ? v.join("\n") : (v || "");
@@ -207,7 +207,13 @@ export function openProductDrawer(product, opts = {}) {
     const name = (fEl("name").value || "").trim() || "Nombre del producto";
     const brand = (fEl("brand").value || "").trim() || "Marca";
     const pres = (fEl("presentation").value || "").trim();
-    const category = catById(typeId || famId)?.name || "Categoría";
+    const selectedCategory = catById(typeId || famId);
+    const familyCategory = selectedCategory?.parent_id ? catById(selectedCategory.parent_id) : selectedCategory;
+    const category = selectedCategory?.name || "Categoría";
+    const cardCategory = [
+      familyCategory?.name,
+      selectedCategory?.id !== familyCategory?.id ? selectedCategory?.name : "",
+    ].filter(Boolean).join(" · ") || category;
     const shortDescription = (fEl("description_short").value || "").trim();
     const longDescription = (fEl("description_long").value || "").trim();
     const benefits = textToLines(fEl("beneficios").value);
@@ -269,6 +275,7 @@ export function openProductDrawer(product, opts = {}) {
             <span class="product-card__brand">${esc(brand)}</span>
             <span class="product-card__status ${available ? "is-available" : "is-agotado"}">${available ? "Disponible" : "Agotado"}</span>
           </div>
+          <span class="product-card__category">${esc(cardCategory)}</span>
           <h3 class="product-card__name">${esc(name)}</h3>
           <div class="product-card__price-row">
             <span class="product-card__price-group">
@@ -283,7 +290,7 @@ export function openProductDrawer(product, opts = {}) {
           <span class="product-card__detail-link">Ver detalles</span>
         </div>
       </article>`;
-    get("[data-preview-note]").textContent = "La card muestra imagen, marca, disponibilidad, nombre, precio, oferta y presentación. Categorías, objetivos y tags se usan para búsqueda y filtros.";
+    get("[data-preview-note]").textContent = "La card muestra imagen, marca, categoría, disponibilidad, nombre, precio, oferta y presentación.";
   }
 
   // navegación por secciones: índice lateral + scroll-spy (resalta la sección visible)
