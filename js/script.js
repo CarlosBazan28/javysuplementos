@@ -307,6 +307,35 @@ function comboToQuoteProduct(combo) {
   };
 }
 
+// Selector de sabor de UN producto dentro de una card de combo. A diferencia
+// de renderFlavorOptions (cards de producto suelto), acá cada combo puede
+// tener varios de estos, uno por item, así que el id/label van indexados.
+function renderComboItemFlavorSelect(combo, item, index) {
+  const flavors = item.flavors || [];
+  const selectId = `combo-flavor-${slugify(combo.id)}-${index}`;
+
+  if (!flavors.length) {
+    return `
+      <label class="product-card__flavor-label" for="${selectId}">Sabor</label>
+      <select class="product-card__flavor-select" id="${selectId}" data-combo-flavor-select disabled>
+        <option>Sin sabor</option>
+      </select>
+    `;
+  }
+
+  return `
+    <label class="product-card__flavor-label" for="${selectId}">Sabor</label>
+    <select class="product-card__flavor-select" id="${selectId}" data-combo-flavor-select>
+      <option value="">Elegir sabor</option>
+      ${flavors.map((flavor) => `
+        <option value="${escapeHTML(flavor.id)}" ${flavor.available === false ? "disabled" : ""}>
+          ${escapeHTML(flavor.name)}${flavor.available === false ? " — No disponible" : ""}
+        </option>
+      `).join("")}
+    </select>
+  `;
+}
+
 function renderHomeCombos(combos) {
   if (!combosSection || !combosList) return;
   if (!combos.length) {
@@ -319,36 +348,73 @@ function renderHomeCombos(combos) {
   combos.forEach((combo) => {
     const card = document.createElement("article");
     card.className = "product-card combo-card";
+    // Cada producto del combo muestra su propia foto (reutilizada del catálogo)
+    // en vez de una imagen genérica del combo, y su propio selector de sabor.
     const itemsHtml = combo.items
-      .map((i) => `<li>${i.quantity}× ${escapeHTML(i.product_name)}${i.flavor_name ? ` <span>(${escapeHTML(i.flavor_name)})</span>` : ""}</li>`)
+      .map((item, index) => `
+        <li class="combo-card__item">
+          <div class="combo-card__item-media">
+            <img src="${escapeHTML(item.product_image)}" alt="${escapeHTML(item.product_name)}" loading="lazy" />
+          </div>
+          <div class="combo-card__item-body">
+            <div class="combo-card__item-name">${item.quantity > 1 ? `${item.quantity}× ` : ""}${escapeHTML(item.product_name)}</div>
+            ${renderComboItemFlavorSelect(combo, item, index)}
+          </div>
+        </li>
+      `)
       .join("");
 
     card.innerHTML = `
-      <div class="product-card__media">
-        <img src="${escapeHTML(combo.image)}" alt="${escapeHTML(combo.name)}" class="product-card__img" loading="lazy" />
-      </div>
+      <span class="combo-card__badge">Combo</span>
       <div class="product-card__info">
         <h3 class="product-card__name">${escapeHTML(combo.name)}</h3>
         ${combo.description ? `<p class="combo-card__desc">${escapeHTML(combo.description)}</p>` : ""}
-        <ul class="combo-card__items">${itemsHtml}</ul>
         <div class="product-card__price-row">
           <span class="product-card__price-group">
             <span class="product-card__price">${formatPrice(combo.price)}</span>
             ${hasOffer(combo) ? `<span class="product-card__price-old">${formatPrice(combo.old_price)}</span><span class="product-card__discount">-${discountPercent(combo)}%</span>` : ""}
           </span>
         </div>
+        <ul class="combo-card__items">${itemsHtml}</ul>
       </div>
       <div class="product-card__actions product-card__actions--catalog">
-        <button class="product-card__btn product-card__btn--buy" type="button">Agregar a cotización</button>
+        <button class="product-card__btn product-card__btn--buy" type="button">Agregar combo a cotización</button>
       </div>
     `;
 
+    // Saca el aviso de "elegí un sabor" apenas el cliente elige uno.
+    card.querySelectorAll("[data-combo-flavor-select]").forEach((select) => {
+      select.addEventListener("change", () => select.classList.remove("needs-selection"));
+    });
+
     card.querySelector(".product-card__btn--buy")?.addEventListener("click", () => {
+      const selects = Array.from(card.querySelectorAll("[data-combo-flavor-select]"));
+      let missingSelect = null;
+
+      const chosenItems = combo.items.map((item, index) => {
+        if (!item.flavors?.length) return item;
+        const select = selects[index];
+        const value = select?.value || "";
+        if (!value) {
+          select?.classList.add("needs-selection");
+          if (!missingSelect) missingSelect = select;
+          return null;
+        }
+        const flavor = item.flavors.find((f) => f.id === value);
+        return { ...item, flavor_id: flavor?.id || null, flavor_name: flavor?.name || null };
+      });
+
+      if (chosenItems.includes(null)) {
+        missingSelect?.focus();
+        window.consultation?.toast?.("Elegí un sabor para cada producto del combo");
+        return;
+      }
+
       if (window.consultation?.hasItem?.(combo.id, "")) {
         window.consultation?.toast?.("Ese combo ya está en tu cotización");
         return;
       }
-      window.consultation?.addItem?.(comboToQuoteProduct(combo), { quantity: 1 });
+      window.consultation?.addItem?.(comboToQuoteProduct({ ...combo, items: chosenItems }), { quantity: 1 });
       window.consultation?.toast?.("Combo agregado a tu cotización");
     });
 
