@@ -107,6 +107,34 @@
   margin: -4px;
 }
 
+/* Mismo scrollbar sutil de los filtros del catálogo. */
+.consultation-panel__checkout,
+.consultation-list {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text) 18%, transparent) transparent;
+}
+
+.consultation-panel__checkout::-webkit-scrollbar,
+.consultation-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.consultation-panel__checkout::-webkit-scrollbar-track,
+.consultation-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.consultation-panel__checkout::-webkit-scrollbar-thumb,
+.consultation-list::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text) 18%, transparent);
+  border-radius: var(--radius-pill);
+}
+
+.consultation-panel__checkout::-webkit-scrollbar-thumb:hover,
+.consultation-list::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--text) 32%, transparent);
+}
+
 .consultation-section__title {
   margin: 0;
   color: var(--muted);
