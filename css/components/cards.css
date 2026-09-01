@@ -10,6 +10,14 @@
   margin-top: var(--section-gap);
 }
 
+/* `display: flex` le gana al [hidden] del navegador, así que sin esta regla la
+   sección de Combos seguía ocupando lugar cuando no hay ninguno activo:
+   js/script.js le ponía el atributo, pero igual se veían el título, la bajada
+   y un hueco enorme donde iban las cards. */
+.top-products[hidden] {
+  display: none;
+}
+
 .top-products__list {
   display: grid;
   grid-auto-rows: auto;

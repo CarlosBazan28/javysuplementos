@@ -3,11 +3,11 @@
    actividad, con fecha de generación, vista en pantalla, impresión y PDF
    (guardar en el dispositivo o compartir).
    ============================================================================ */
-import { state, catById } from "../state.js?v=adm-b92077a6";
-import { esc, ico, peso, hasOffer, discountPct, isAvailable, agoLabel } from "../helpers.js?v=adm-b92077a6";
-import { paint } from "../view.js?v=adm-b92077a6";
-import { toast } from "../ui.js?v=adm-b92077a6";
-import { buildTable, printReport, slugify, buildReportPDF, saveOrShare } from "../export.js?v=adm-b92077a6";
+import { state, catById } from "../state.js?v=adm-1c6bf4a6";
+import { esc, ico, peso, hasOffer, discountPct, isAvailable, agoLabel } from "../helpers.js?v=adm-1c6bf4a6";
+import { paint } from "../view.js?v=adm-1c6bf4a6";
+import { toast } from "../ui.js?v=adm-1c6bf4a6";
+import { buildTable, printReport, slugify, buildReportPDF, saveOrShare } from "../export.js?v=adm-1c6bf4a6";
 
 export function renderReportsTab(container) {
   paint(container, `
