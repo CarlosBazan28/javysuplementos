@@ -51,6 +51,14 @@
 }
 
 html, body { margin: 0; background: var(--pb-bg-0); }
+html {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--pb-text) 18%, transparent) transparent;
+}
+html::-webkit-scrollbar { width: 8px; height: 8px; }
+html::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--pb-text) 18%, transparent); border-radius: var(--ad-radius); }
+html::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--pb-text) 32%, transparent); }
 body.ad-body { min-height: 100vh; }
 
 /* El atributo [hidden] debe ganar sobre las reglas de layout del kit
@@ -136,10 +144,8 @@ body.ad-body { min-height: 100vh; }
   backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
   padding: 20px 16px;
 }
-.ad-brand { display: flex; align-items: center; gap: 12px; min-height: 56px; color: var(--pb-text); text-decoration: none; }
+.ad-brand { display: flex; align-items: center; min-height: 56px; color: var(--pb-text); text-decoration: none; }
 .ad-brand img { width: 52px; height: auto; }
-.ad-brand strong { display: block; font-family: var(--font-heading); font-weight: 900; font-size: 1.15rem; line-height: 1; }
-.ad-brand small { display: block; color: var(--pb-muted); font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 3px; }
 
 .ad-nav { display: grid; gap: 6px; }
 .ad-nav__group-label { color: var(--pb-muted-2); font-size: 0.66rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; padding: 10px 12px 4px; }
@@ -506,45 +512,75 @@ body.ad-body { min-height: 100vh; }
 
 /* Scroll discreto y consistente con los filtros del catálogo. */
 .ad-drawer__body,
+.ad-table-wrap,
+.ad-modal__main,
 .ad-modal__rail,
 .ad-modal__content,
 .ad-modal__preview,
-.ad-modal--product .ad-modal__main {
+.ad-modal--product .ad-modal__main,
+.ad-error pre,
+.ad-toolbar__filters,
+.ad-rep-scroll,
+.ad-subtabs {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--pb-text) 18%, transparent) transparent;
 }
 
 .ad-drawer__body::-webkit-scrollbar,
+.ad-table-wrap::-webkit-scrollbar,
+.ad-modal__main::-webkit-scrollbar,
 .ad-modal__rail::-webkit-scrollbar,
 .ad-modal__content::-webkit-scrollbar,
 .ad-modal__preview::-webkit-scrollbar,
-.ad-modal--product .ad-modal__main::-webkit-scrollbar {
+.ad-modal--product .ad-modal__main::-webkit-scrollbar,
+.ad-error pre::-webkit-scrollbar,
+.ad-toolbar__filters::-webkit-scrollbar,
+.ad-rep-scroll::-webkit-scrollbar,
+.ad-subtabs::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 .ad-drawer__body::-webkit-scrollbar-track,
+.ad-table-wrap::-webkit-scrollbar-track,
+.ad-modal__main::-webkit-scrollbar-track,
 .ad-modal__rail::-webkit-scrollbar-track,
 .ad-modal__content::-webkit-scrollbar-track,
 .ad-modal__preview::-webkit-scrollbar-track,
-.ad-modal--product .ad-modal__main::-webkit-scrollbar-track {
+.ad-modal--product .ad-modal__main::-webkit-scrollbar-track,
+.ad-error pre::-webkit-scrollbar-track,
+.ad-toolbar__filters::-webkit-scrollbar-track,
+.ad-rep-scroll::-webkit-scrollbar-track,
+.ad-subtabs::-webkit-scrollbar-track {
   background: transparent;
 }
 
 .ad-drawer__body::-webkit-scrollbar-thumb,
+.ad-table-wrap::-webkit-scrollbar-thumb,
+.ad-modal__main::-webkit-scrollbar-thumb,
 .ad-modal__rail::-webkit-scrollbar-thumb,
 .ad-modal__content::-webkit-scrollbar-thumb,
 .ad-modal__preview::-webkit-scrollbar-thumb,
-.ad-modal--product .ad-modal__main::-webkit-scrollbar-thumb {
+.ad-modal--product .ad-modal__main::-webkit-scrollbar-thumb,
+.ad-error pre::-webkit-scrollbar-thumb,
+.ad-toolbar__filters::-webkit-scrollbar-thumb,
+.ad-rep-scroll::-webkit-scrollbar-thumb,
+.ad-subtabs::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--pb-text) 18%, transparent);
   border-radius: var(--ad-radius);
 }
 
 .ad-drawer__body::-webkit-scrollbar-thumb:hover,
+.ad-table-wrap::-webkit-scrollbar-thumb:hover,
+.ad-modal__main::-webkit-scrollbar-thumb:hover,
 .ad-modal__rail::-webkit-scrollbar-thumb:hover,
 .ad-modal__content::-webkit-scrollbar-thumb:hover,
 .ad-modal__preview::-webkit-scrollbar-thumb:hover,
-.ad-modal--product .ad-modal__main::-webkit-scrollbar-thumb:hover {
+.ad-modal--product .ad-modal__main::-webkit-scrollbar-thumb:hover,
+.ad-error pre::-webkit-scrollbar-thumb:hover,
+.ad-toolbar__filters::-webkit-scrollbar-thumb:hover,
+.ad-rep-scroll::-webkit-scrollbar-thumb:hover,
+.ad-subtabs::-webkit-scrollbar-thumb:hover {
   background: color-mix(in srgb, var(--pb-text) 32%, transparent);
 }
 

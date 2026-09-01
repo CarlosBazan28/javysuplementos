@@ -419,7 +419,14 @@
   color: var(--text);
   box-shadow: var(--shadow-lg);
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text) 18%, transparent) transparent;
 }
+
+.location-dialog::-webkit-scrollbar { width: 8px; }
+.location-dialog::-webkit-scrollbar-track { background: transparent; }
+.location-dialog::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--text) 18%, transparent); border-radius: var(--radius-pill); }
+.location-dialog::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--text) 32%, transparent); }
 
 .location-dialog::backdrop {
   background: rgb(from var(--bg) r g b / 0.78);
