@@ -535,7 +535,20 @@ function renderCategoryRedirect(oldSlug, familySlug, familyName) {
 `;
 }
 
-function renderCategoryPage(category, products, slugMap, categorySlug, types = []) {
+function cardCategoryLabel(product, categoriesById) {
+  const fallback = String(product.category || product.categoria || "").trim();
+  const own = product.category_id ? categoriesById.get(String(product.category_id)) : null;
+  if (!own) return fallback;
+  if (!own.parent_id) return String(own.name || fallback).trim();
+
+  const family = categoriesById.get(String(own.parent_id));
+  return [family?.name, own.name]
+    .map((name) => String(name || "").trim())
+    .filter(Boolean)
+    .join(" · ") || fallback;
+}
+
+function renderCategoryPage(category, products, slugMap, categorySlug, types = [], categoriesById = new Map()) {
   const url = `${SITE}${categoryPath(categorySlug)}`;
   const name = category.name || "Categoría";
   const title = `${name} en Panamá | Javy Suplementos`;
@@ -626,6 +639,10 @@ ${types
       const available = isAvailable(p);
       const img = p.image_url || p.imagen_url || PLACEHOLDER_IMAGE;
       const href = productPath(productSlug);
+      const categoryLabel = cardCategoryLabel(p, categoriesById);
+      const categoryMarkup = categoryLabel
+        ? `            <span class="product-card__category">${escapeHTML(categoryLabel)}</span>\n`
+        : "";
 
       // Los data-* llevan lo mínimo para cotizar sin depender de la red: si
       // Supabase no responde, js/categoria.js arma el producto con esto y el
@@ -640,7 +657,7 @@ ${featured ? `          <span class="product-card__badge">Destacado</span>\n` : 
               <span class="product-card__brand">${escapeHTML(p.brand || "Marca en revisión")}</span>
               <span class="product-card__status ${available ? "is-available" : "is-agotado"}">${available ? "Disponible" : "Agotado"}</span>
             </div>
-            <h2 class="product-card__name"><a class="product-card__name-link" href="${href}">${escapeHTML(name)}</a></h2>
+${categoryMarkup}            <h2 class="product-card__name"><a class="product-card__name-link" href="${href}">${escapeHTML(name)}</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">${escapeHTML(priceText)}</span>${hasOffer ? `<span class="product-card__price-old">$${oldPrice.toFixed(2)}</span><span class="product-card__discount">-${discount}%</span>` : ""}</span>
               ${p.presentation ? `<span class="product-card__pres">${escapeHTML(p.presentation)}</span>` : ""}
@@ -854,7 +871,7 @@ async function main() {
     const list = productsByFamily.get(String(category.id)) || [];
     const categorySlug = categorySlugs.get(String(category.id));
     const types = typesOfFamily.get(String(category.id)) || [];
-    const html = renderCategoryPage(category, list, slugMap, categorySlug, types);
+    const html = renderCategoryPage(category, list, slugMap, categorySlug, types, categoriesById);
     const dir = join(ROOT, "categoria", categorySlug);
     await mkdir(dir, { recursive: true });
     await writeFile(join(dir, "index.html"), html, "utf8");
