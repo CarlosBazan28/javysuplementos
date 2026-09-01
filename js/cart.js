@@ -1,5 +1,24 @@
 const CONSULTATION_KEY = "javy-consultation";
 const LEGACY_CART_KEY = "cart";
+
+// Imagen por defecto de un ítem de la cotización. Absoluta a propósito: ver
+// quoteImageSrc().
+const QUOTE_FALLBACK_IMAGE = "/img/icons/logo.png";
+
+/* La BD guarda las imágenes con ruta relativa ("img/products/x.webp"), pero el
+   panel de cotización se abre desde CUALQUIER página, incluidas las que viven
+   en un subdirectorio (/producto/<slug>/ y /categoria/<slug>/). Ahí el
+   navegador resolvía esa ruta contra el directorio de la página
+   —/producto/<slug>/img/products/x.webp— y daba 404: el ítem aparecía con la
+   imagen rota. Anclarlas a la raíz al pintarlas arregla también las
+   cotizaciones ya guardadas en localStorage, que tienen la ruta relativa
+   adentro. Mismo criterio que productImageSrc() en js/product-page.js. */
+function quoteImageSrc(path) {
+  const clean = String(path || "").trim();
+  if (!clean) return QUOTE_FALLBACK_IMAGE;
+  if (/^(https?:)?\/\//.test(clean) || clean.startsWith("data:")) return clean;
+  return clean.startsWith("/") ? clean : "/" + clean;
+}
 let consultationScrollY = 0;
 let consultationScrollLocked = false;
 
@@ -126,7 +145,7 @@ function getLegacyProductSnapshot(id) {
     category: product.categoria,
     price: Number(product.precio || 0),
     presentation: product.presentacion || "",
-    image: product.imagen || "img/icons/logo.png",
+    image: product.imagen || QUOTE_FALLBACK_IMAGE,
     available: product.disponible !== false,
   };
 }
@@ -141,7 +160,7 @@ function normalizeQuoteItem(item) {
       category: item.category || "",
       price: Number(item.price || 0),
       presentation: item.presentation || "",
-      image: item.image || "img/icons/logo.png",
+      image: item.image || QUOTE_FALLBACK_IMAGE,
       flavor: item.flavor || "",
       flavor_id: item.flavor_id || "",
       quantity: Math.max(1, Number(item.quantity || 1)),
@@ -157,7 +176,7 @@ function normalizeQuoteItem(item) {
       category: "",
       price: 0,
       presentation: "",
-      image: "img/icons/logo.png",
+      image: QUOTE_FALLBACK_IMAGE,
       flavor: item.flavor || "",
       quantity: Math.max(1, Number(item.quantity || 1)),
     };
@@ -179,7 +198,7 @@ function productToQuoteItem(product, options = {}) {
     category: product.category || product.categoria || "",
     price: Number(product.price ?? product.precio ?? 0),
     presentation: product.presentation || product.presentacion || "",
-    image: product.image || product.imagen || "img/icons/logo.png",
+    image: product.image || product.imagen || QUOTE_FALLBACK_IMAGE,
     flavor: options.flavor || "",
     flavor_id: options.flavor_id || "",
     quantity: Math.max(1, Number(options.quantity || 1)),
@@ -284,7 +303,7 @@ function renderConsultationPanel() {
     const row = document.createElement("li");
     row.className = "consultation-item";
     row.innerHTML = `
-      <img src="${escapeHTML(item.image)}" alt="${escapeHTML(item.name)}" class="consultation-item__img" />
+      <img src="${escapeHTML(quoteImageSrc(item.image))}" alt="${escapeHTML(item.name)}" class="consultation-item__img" />
       <div class="consultation-item__info">
         <strong class="consultation-item__name">${escapeHTML(item.name)}</strong>
         <span class="consultation-item__meta">${escapeHTML(item.brand || "Producto")} · ${escapeHTML(item.category || "Categoria por confirmar")}</span>
@@ -673,7 +692,7 @@ function openAddModal(productOrId) {
   const hasFlavors = flavors.length > 0;
   const name = product.name || product.nombre || "Producto";
   const brand = product.brand || product.marca || "";
-  const image = product.image || product.imagen || "img/icons/logo.png";
+  const image = product.image || product.imagen || QUOTE_FALLBACK_IMAGE;
   const price = Number(product.price ?? product.precio ?? 0);
 
   const flavorField = hasFlavors ? `
@@ -693,7 +712,7 @@ function openAddModal(productOrId) {
         <span class="btn-icon" data-javy-icon="x" aria-hidden="true"></span>
       </button>
       <div class="quick-add__head">
-        <img class="quick-add__img" src="${escapeHTML(image)}" alt="" />
+        <img class="quick-add__img" src="${escapeHTML(quoteImageSrc(image))}" alt="" />
         <div class="quick-add__headinfo">
           <strong class="quick-add__name">${escapeHTML(name)}</strong>
           <span class="quick-add__meta">${brand ? escapeHTML(brand) + " · " : ""}${escapeHTML(formatMoney(price))}</span>
