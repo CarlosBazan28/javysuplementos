@@ -210,6 +210,7 @@ function renderFeaturedProducts(productos) {
             ${canQuote ? "Disponible" : "Agotado"}
           </span>
         </div>
+        ${cardCategoryMarkup(product)}
         <h3 class="product-card__name"><a class="product-card__name-link" href="${detailUrl}">${escapeHTML(product.name)}</a></h3>
         <div class="product-card__price-row">
           <span class="product-card__price-group">
@@ -244,6 +245,13 @@ function renderFeaturedProducts(productos) {
   });
 }
 
+let homeCardCategories = [];
+
+function cardCategoryMarkup(product) {
+  const label = window.javyCardCategory?.format(product, homeCardCategories) || product.category || product.categoria || "";
+  return label ? `<span class="product-card__category">${escapeHTML(label)}</span>` : "";
+}
+
 if (heroProductsBtn) {
   heroProductsBtn.addEventListener("click", () => {
     // El CSS ya respeta prefers-reduced-motion (styles.css), pero el behavior
@@ -264,7 +272,11 @@ async function initHomeProducts() {
   lista.innerHTML = `<p class="product-card__disclaimer">Cargando productos destacados...</p>`;
 
   try {
-    const homeProducts = await window.catalogDb.getHomeProducts();
+    const [homeProducts, categories] = await Promise.all([
+      window.catalogDb.getHomeProducts(),
+      window.catalogDb.getCategories(),
+    ]);
+    homeCardCategories = categories;
     renderFeaturedProducts(homeProducts);
   } catch (error) {
     console.warn("No se pudieron cargar productos del inicio:", error.message);

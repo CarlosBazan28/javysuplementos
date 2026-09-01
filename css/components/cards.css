@@ -183,6 +183,21 @@
   white-space: nowrap;
 }
 
+/* La categoría va debajo de la marca: da contexto sin competir con el estado
+   ni con el precio. El contenido es texto informativo, no un filtro. */
+.product-card__category {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: color-mix(in srgb, var(--text) 62%, var(--muted));
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+}
+
 .product-card__status {
   flex-shrink: 0;
   padding: 4px 10px;
@@ -625,6 +640,10 @@
   .product-card__status {
     padding: 3px 8px;
     font-size: 0.58rem;
+  }
+
+  .product-card__category {
+    font-size: 0.62rem;
   }
 
   .product-card__name {

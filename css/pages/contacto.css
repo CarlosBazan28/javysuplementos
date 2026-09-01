@@ -353,34 +353,86 @@
 }
 
 .about-location__marker {
-  display: grid;
-  justify-items: center;
-  width: min(100%, 280px);
-  min-height: 48px;
+  position: relative;
+  display: block;
+  width: min(100%, 420px);
   margin-inline: auto;
-  padding: 12px 18px 16px;
-  border: 1px solid rgb(from var(--accent) r g b / 0.3);
-  border-radius: 26px;
-  background: color-mix(in srgb, var(--surface-1) 76%, transparent);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgb(from var(--accent) r g b / 0.42);
+  border-radius: 22px;
+  background: var(--surface-1);
   color: var(--text);
   cursor: pointer;
   font: inherit;
-  font-weight: 900;
   box-shadow: var(--shadow-sm);
-  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .about-location__marker:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
   border-color: var(--accent);
-  background: var(--surface-3);
+  box-shadow: 0 16px 34px rgb(from var(--brand) r g b / 0.2), var(--shadow);
+}
+
+.about-location__marker:focus-visible {
+  outline: none;
+  border-color: var(--neon);
+  box-shadow: var(--ring), var(--shadow);
 }
 
 .about-location__marker img {
-  width: min(66vw, 210px);
-  height: auto;
-  margin-bottom: 4px;
-  filter: drop-shadow(0 16px 26px rgba(0, 0, 0, calc(0.4 * var(--shadow-a))));
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  opacity: 0.94;
+  transition: transform 0.3s ease, opacity 0.18s ease;
+}
+
+.about-location__marker:hover img,
+.about-location__marker:focus-visible img {
+  transform: scale(1.035);
+  opacity: 1;
+}
+
+.about-location__marker::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 36%, rgb(from var(--bg) r g b / 0.18) 57%, rgb(from var(--bg) r g b / 0.9) 100%);
+  content: "";
+  pointer-events: none;
+}
+
+.about-location__marker-cta {
+  position: absolute;
+  z-index: 1;
+  right: 14px;
+  bottom: 14px;
+  left: 14px;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) 20px;
+  gap: 8px;
+  align-items: center;
+  min-height: 48px;
+  padding: 11px 13px;
+  border: 1px solid rgb(from var(--accent) r g b / 0.45);
+  border-radius: var(--radius-md);
+  background: rgb(from var(--bg-0) r g b / 0.82);
+  backdrop-filter: blur(8px);
+  color: var(--blanco);
+  font-weight: 900;
+  text-align: left;
+}
+
+.about-location__marker-cta svg {
+  width: 20px;
+  height: 20px;
+  color: var(--neon);
+}
+
+.about-location__marker-cta svg:last-child {
+  justify-self: end;
 }
 
 .about-final-cta {
@@ -572,7 +624,7 @@
   }
 
   .about-location__marker img {
-    width: min(24vw, 220px);
+    aspect-ratio: 3 / 2;
   }
 
   .about-final-cta {
@@ -605,6 +657,7 @@
 @media (prefers-reduced-motion: reduce) {
   .about-btn,
   .about-location__marker,
+  .about-location__marker img,
   .location-dialog__options a {
     transition: none;
   }
