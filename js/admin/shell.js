@@ -5,20 +5,20 @@
    Mantiene un registro key → renderFn; las secciones piden re-render con
    requestRerender() en vez de llamarse entre sí.
    ============================================================================ */
-import { state } from "./state.js?v=adm-3313decc";
-import { NAV } from "./config.js?v=adm-3313decc";
-import { $, $$, esc, ico } from "./helpers.js?v=adm-3313decc";
-import { showViewError } from "./view.js?v=adm-3313decc";
-import { renderDashboard } from "./sections/dashboard.js?v=adm-3313decc";
-import { renderProducts } from "./sections/products.js?v=adm-3313decc";
-import { renderHome } from "./sections/home.js?v=adm-3313decc";
-import { renderCategories } from "./sections/categories.js?v=adm-3313decc";
-import { renderCombos } from "./sections/combos.js?v=adm-3313decc";
-import { renderAccess } from "./sections/access.js?v=adm-3313decc";
-import { renderSettings } from "./sections/settings.js?v=adm-3313decc";
-import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-3313decc";
-import { canWrite } from "./permissions.js?v=adm-3313decc";
-import { renderUserChip } from "./user-chip.js?v=adm-3313decc";
+import { state } from "./state.js?v=adm-e26cac9b";
+import { NAV } from "./config.js?v=adm-e26cac9b";
+import { $, $$, esc, ico } from "./helpers.js?v=adm-e26cac9b";
+import { showViewError } from "./view.js?v=adm-e26cac9b";
+import { renderDashboard } from "./sections/dashboard.js?v=adm-e26cac9b";
+import { renderProducts } from "./sections/products.js?v=adm-e26cac9b";
+import { renderHome } from "./sections/home.js?v=adm-e26cac9b";
+import { renderCategories } from "./sections/categories.js?v=adm-e26cac9b";
+import { renderCombos } from "./sections/combos.js?v=adm-e26cac9b";
+import { renderAccess } from "./sections/access.js?v=adm-e26cac9b";
+import { renderSettings } from "./sections/settings.js?v=adm-e26cac9b";
+import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-e26cac9b";
+import { canWrite } from "./permissions.js?v=adm-e26cac9b";
+import { renderUserChip } from "./user-chip.js?v=adm-e26cac9b";
 
 const renderers = {
   dashboard: renderDashboard, products: renderProducts,
@@ -65,6 +65,9 @@ export function buildChrome() {
   const secondary = NAV.filter((n) => !n.primary);
 
   applySidebarState(getSidebarCollapsed());
+  // El primer estado viene de localStorage: se aplica sin animación. Las
+  // interacciones posteriores ya pueden transicionar suavemente.
+  requestAnimationFrame(() => $("#adminShell")?.setAttribute("data-motion-ready", ""));
 
   nav.innerHTML =
     `<span class="ad-nav__group-label">Operación</span>` +
