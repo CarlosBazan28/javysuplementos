@@ -312,6 +312,13 @@ body.ad-body { min-height: 100vh; }
 }
 .ad-chip.is-active { border-color: rgba(90,180,233,0.45); background: var(--pb-blue-tint-12); color: #fff; }
 .ad-result-count { color: var(--pb-muted); font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
+/* Alterna con .ad-toolbar__filters (los chips) en mobile: mismos filtros de
+   estado, sin ocupar varias filas apilados. Ver @media (max-width: 767px).
+   Envuelve al <select> (no es el propio <select>): window.javyDropdown lo
+   reemplaza visualmente por un widget .jdd insertado como hermano justo
+   antes del <select> real (que queda oculto dentro). Ocultar solo el
+   <select> no ocultaba ese widget — quedaba flotando en escritorio. */
+.ad-status-select { display: none; }
 
 /* ---- products filter bar (búsqueda + familia + estado) ---- */
 .ad-filterbar { display: grid; gap: 12px; margin-bottom: 16px; }
@@ -345,8 +352,11 @@ body.ad-body { min-height: 100vh; }
   .ad-filterbar .ad-search { flex: 1 1 100%; }
   .ad-filterbar__sel { width: 100%; flex: 1 1 100%; }
   .ad-filterbar__row .ad-btn--primary { flex: 1 1 100%; justify-content: center; }
-  /* chips envuelven en vez de salirse de la pantalla */
-  .ad-filterbar .ad-toolbar__filters { flex-wrap: wrap; overflow-x: visible; padding-bottom: 0; }
+  /* Los 7 chips de estado apilados ocupaban varias filas y empujaban el resto
+     de la sección hacia abajo; en mobile se reemplazan por un solo <select>
+     con las mismas opciones (misma fuente: STATUS_FILTERS en products.js). */
+  .ad-filterbar .ad-toolbar__filters { display: none; }
+  .ad-status-select { display: block; width: 100%; }
   .ad-filterbar__row--chips { flex-direction: column; align-items: stretch; gap: 10px; }
   .ad-filterbar__meta { justify-content: flex-end; }
 }
@@ -376,13 +386,15 @@ body.ad-body { min-height: 100vh; }
 
 /* product cards (mobile) */
 .ad-prod-cards { display: none; gap: 12px; }
-.ad-prod-card { border: 1px solid var(--pb-line); border-radius: var(--ad-radius); background: linear-gradient(145deg, rgba(17,25,37,0.88), rgba(9,14,20,0.88)); padding: 12px; display: grid; grid-template-columns: auto 64px minmax(0,1fr); align-items: start; gap: 12px; }
-.ad-prod-card .ad-check { align-self: start; }
+.ad-prod-card { border: 1px solid var(--pb-line); border-radius: var(--ad-radius); background: linear-gradient(145deg, rgba(17,25,37,0.88), rgba(9,14,20,0.88)); padding: 12px; display: grid; grid-template-columns: 64px minmax(0,1fr); align-items: start; gap: 12px; }
 .ad-prod-card img { width: 64px; height: 64px; border-radius: 12px; object-fit: contain; background: var(--pb-white-06); }
 .ad-prod-card h3 { font-size: 1rem; margin-bottom: 3px; }
 .ad-prod-card .ad-meta { color: var(--pb-muted); font-size: 0.8rem; margin: 0 0 9px; }
 .ad-prod-card .ad-card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; align-items: center; }
-.ad-prod-card .ad-card-actions { display: grid; grid-template-columns: 1fr auto auto; gap: 7px; grid-column: 1 / -1; }
+/* Editar + apagar/prender + duplicar + borrar: 4 botones, 4 columnas. Con
+   solo 3 columnas definidas el 4º (borrar) se desbordaba a una fila nueva
+   por auto-placement, angosto y desalineado. */
+.ad-prod-card .ad-card-actions { display: grid; grid-template-columns: minmax(0,1fr) auto auto auto; gap: 7px; grid-column: 1 / -1; }
 
 /* ---- status pills ---- */
 .ad-pill { display: inline-flex; align-items: center; gap: 5px; min-height: 26px; padding: 0 10px; border-radius: 999px; font-size: 0.76rem; font-weight: 800; }
@@ -1090,37 +1102,6 @@ body.ad-body { min-height: 100vh; }
   /* las tablas de informe SÍ se muestran en móvil (con scroll), a diferencia de .ad-table-wrap */
   .ad-rep-scroll .ad-table { min-width: 640px; }
 }
-
-/* ---- selección múltiple de productos + acciones en lote ----------------- */
-/* La barra aparece solo con algo seleccionado: no ocupa espacio permanente ni
-   compite con los filtros. */
-.ad-bulkbar {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 10px 0 4px;
-  padding: 10px 12px;
-  border: 1px solid var(--pb-brand);
-  border-radius: var(--ad-radius);
-  background: var(--pb-blue-tint-12);
-}
-.ad-bulkbar__count { font-size: 0.86rem; font-weight: 700; color: var(--pb-text); }
-.ad-bulkbar__select { min-width: 200px; }
-.ad-bulkbar .ad-link-btn { margin-left: auto; }
-
-/* Objetivo táctil de 44px sin agrandar la casilla visible. */
-.ad-check {
-  display: inline-grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  margin: -10px;
-  cursor: pointer;
-}
-.ad-check input { width: 17px; height: 17px; accent-color: var(--pb-brand); cursor: pointer; }
-.ad-table tr.is-selected { background: var(--pb-blue-tint-08); }
-.ad-prod-card.is-selected { border-color: var(--pb-brand); background: var(--pb-blue-tint-08); }
 
 /* ---- conteo por subcategoría y aviso de productos sueltos --------------- */
 /* El nombre es un botón que renombra. Antes se veía como texto plano y nadie
