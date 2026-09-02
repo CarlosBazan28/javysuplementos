@@ -284,10 +284,36 @@
 
 .pdp__data dd {
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
   color: var(--text);
   font-size: 0.9rem;
   line-height: 1.35;
   overflow-wrap: anywhere;
+}
+
+/* Familia / subcategoría dentro de la celda "Categoría": la familia queda
+   como contexto secundario y la subcategoría se destaca en el acento de
+   marca (el mismo celeste de precios y links), separadas por una flecha en
+   vez del punto anterior. */
+.pdp__cat-family,
+.pdp__cat-family a {
+  color: var(--muted);
+}
+
+.pdp__cat-family a:hover {
+  color: var(--accent);
+}
+
+.pdp__cat-sep {
+  flex-shrink: 0;
+  color: var(--muted-2);
+}
+
+.pdp__cat-type {
+  color: var(--accent);
+  font-weight: 700;
 }
 
 /* ---------- Sabores y cantidad ---------- */
