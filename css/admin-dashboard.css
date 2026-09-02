@@ -953,15 +953,20 @@ body.ad-body { min-height: 100vh; }
 
   .ad-tabbar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 80;
-    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px;
-    padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+    /* Las columnas salen del número real de tabs (grid-auto-flow: column), no de
+       un repeat(5) fijo: si NAV cambia cuántas secciones son primary, la barra
+       sigue repartiendo el ancho completo y no deja un hueco a la derecha. */
+    display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 3px;
+    padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid var(--pb-line);
     background: rgba(5,7,9,0.92); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
   }
   .ad-tab {
     display: grid; grid-template-rows: 22px auto; justify-items: center; align-content: center; gap: 4px;
     min-width: 0; min-height: 54px; padding: 4px 2px; border: 0; border-radius: 14px; background: transparent;
-    color: var(--pb-muted); font: inherit; font-size: 0.66rem; font-weight: 700; cursor: pointer;
+    /* La etiqueta escala con el ancho: en pantallas de 360px "Dashboard" ya no
+       entraba y se cortaba con puntos suspensivos. */
+    color: var(--pb-muted); font: inherit; font-size: clamp(0.55rem, 2.6vw, 0.66rem); font-weight: 700; cursor: pointer;
   }
   .ad-tab .ad-ico { width: 22px; height: 22px; }
   .ad-tab__label { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.15; }

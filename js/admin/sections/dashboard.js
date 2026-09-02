@@ -1,11 +1,11 @@
 /* ============================================================================
    Sección Dashboard: stats, centro de operaciones y últimos agregados.
    ============================================================================ */
-import { state } from "../state.js?v=adm-3d1e8e64";
-import { STALE_DAYS, HOME_MAX, HOME_MIN } from "../config.js?v=adm-3d1e8e64";
-import { $, esc, ico, imgTag, peso, isAvailable, isMissingImage, hasOffer, discountPct, daysSince, agoLabel } from "../helpers.js?v=adm-3d1e8e64";
-import { setView } from "../view.js?v=adm-3d1e8e64";
-import { go, bindEditClicks } from "../shell.js?v=adm-3d1e8e64";
+import { state } from "../state.js?v=adm-87a090f6";
+import { STALE_DAYS, HOME_MAX, HOME_MIN } from "../config.js?v=adm-87a090f6";
+import { $, esc, ico, imgTag, peso, isAvailable, isMissingImage, hasOffer, discountPct, daysSince, agoLabel } from "../helpers.js?v=adm-87a090f6";
+import { setView } from "../view.js?v=adm-87a090f6";
+import { go, bindEditClicks } from "../shell.js?v=adm-87a090f6";
 
 export function renderDashboard() {
   const p = state.products;
@@ -28,7 +28,7 @@ export function renderDashboard() {
       delta: out.length ? "requieren acción" : "todo disponible", dir: out.length ? "down" : "flat" },
     { key: "noimg", label: "Sin imagen", value: noImg, tone: noImg ? "bad" : "ok", icon: "upload",
       delta: noImg ? "faltan fotos" : "todas con foto", dir: noImg ? "down" : "flat" },
-    { key: "combos", label: "Combos activos", value: activeCombos, tone: "blue", icon: "package",
+    { key: "combos", label: "Combos activos", value: activeCombos, tone: "blue", icon: "layers",
       delta: `${state.combos.length} en total`, dir: "flat" },
   ];
 
