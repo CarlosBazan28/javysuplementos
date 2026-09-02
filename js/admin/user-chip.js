@@ -5,10 +5,10 @@
    sin importar la cuenta— y abre el menú con "Cambiar mi contraseña" y
    "Cerrar sesión".
    ============================================================================ */
-import { state } from "./state.js?v=adm-87a090f6";
-import { $, esc, ico, initials } from "./helpers.js?v=adm-87a090f6";
-import { formModal, toast } from "./ui.js?v=adm-87a090f6";
-import { roleLabel, canWrite } from "./permissions.js?v=adm-87a090f6";
+import { state } from "./state.js?v=adm-75df4cc8";
+import { $, esc, ico, initials } from "./helpers.js?v=adm-75df4cc8";
+import { formModal, toast } from "./ui.js?v=adm-75df4cc8";
+import { roleLabel, canWrite } from "./permissions.js?v=adm-75df4cc8";
 
 const MIN_PASSWORD = 8;
 

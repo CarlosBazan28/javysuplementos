@@ -99,8 +99,13 @@ function pubCategoryById(id) {
 }
 
 function cardCategoryMarkup(product) {
-  const label = window.javyCardCategory?.format(product, categories) || product.category || product.categoria || "";
-  return label ? `<span class="product-card__category">${escapeHTML(label)}</span>` : "";
+  const parts = window.javyCardCategory?.formatParts(product, categories);
+  const family = parts?.family || product.category || product.categoria || "";
+  if (!family) return "";
+  const type = parts?.type
+    ? `<span class="product-card__category-sep">›</span><span class="product-card__category-type">${escapeHTML(parts.type)}</span>`
+    : "";
+  return `<span class="product-card__category"><span class="product-card__category-family">${escapeHTML(family)}</span>${type}</span>`;
 }
 function productInFamily(product, familyId) {
   const cat = pubCategoryById(product.category_id);
