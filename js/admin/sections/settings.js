@@ -2,11 +2,11 @@
    Sección Ajustes con pestañas: Estado del sistema · Historial · Informes.
    La pestaña activa vive en state.settingsTab; cambiarla re-renderiza la sección.
    ============================================================================ */
-import { state, families } from "../state.js?v=adm-87a090f6";
-import { esc, ico } from "../helpers.js?v=adm-87a090f6";
-import { setView, paint } from "../view.js?v=adm-87a090f6";
-import { renderHistoryTab } from "./history.js?v=adm-87a090f6";
-import { renderReportsTab } from "./reports.js?v=adm-87a090f6";
+import { state, families } from "../state.js?v=adm-75df4cc8";
+import { esc, ico } from "../helpers.js?v=adm-75df4cc8";
+import { setView, paint } from "../view.js?v=adm-75df4cc8";
+import { renderHistoryTab } from "./history.js?v=adm-75df4cc8";
+import { renderReportsTab } from "./reports.js?v=adm-75df4cc8";
 
 const TABS = [
   { key: "estado", label: "Estado", icon: "settings" },
