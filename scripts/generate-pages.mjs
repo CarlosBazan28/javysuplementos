@@ -226,7 +226,7 @@ function renderHead({ title, description, canonical, image, ogType, jsonLd, extr
     "css/components/auth.css?v=session-state",
     "css/tokens.css?v=anim-1",
     "css/components/cart.css?v=ux-fix-1",
-    "css/components/cards.css?v=anim-1",
+    "css/components/cards.css?v=cat-arrow-1",
     "css/dropdown.css?v=anim-1",
     ...(extraCss || []),
   ];
@@ -370,7 +370,7 @@ function renderProductPage(product, ctx) {
 
   const priceText = price > 0 ? `$${price.toFixed(2)}` : "Consultar precio";
   const categoryLink = familySlug
-    ? `<a href="${categoryPath(familySlug)}">${escapeHTML(familyName)}</a>${typeName ? ` · ${escapeHTML(typeName)}` : ""}`
+    ? `<span class="pdp__cat-family"><a href="${categoryPath(familySlug)}">${escapeHTML(familyName)}</a></span>${typeName ? `<svg class="pdp__cat-sep" width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="pdp__cat-type">${escapeHTML(typeName)}</span>` : ""}`
     : escapeHTML(categoryName);
 
   // Breadcrumb de 3 tramos: Catálogo / Familia (enlazada) / Subcategoría. Sin
@@ -391,8 +391,8 @@ function renderProductPage(product, ctx) {
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
-${renderHead({ title, description, canonical: url, image, ogType: "product", jsonLd, extraCss: ["css/pages/product.css?v=eyebrow-chip"] })}
-${renderScripts(["/js/product-page.js?v=eyebrow-chip"])}
+${renderHead({ title, description, canonical: url, image, ogType: "product", jsonLd, extraCss: ["css/pages/product.css?v=cat-chevron-1"] })}
+${renderScripts(["/js/product-page.js?v=cat-chevron-1"])}
   </head>
   <body>
     <div id="site-header"></div>
@@ -535,17 +535,19 @@ function renderCategoryRedirect(oldSlug, familySlug, familyName) {
 `;
 }
 
-function cardCategoryLabel(product, categoriesById) {
+// Familia/tipo de una card: separados porque la card los pinta con distinto
+// peso, unidos por una flecha en vez de un punto.
+function cardCategoryParts(product, categoriesById) {
   const fallback = String(product.category || product.categoria || "").trim();
   const own = product.category_id ? categoriesById.get(String(product.category_id)) : null;
-  if (!own) return fallback;
-  if (!own.parent_id) return String(own.name || fallback).trim();
+  if (!own) return { family: fallback, type: "" };
+  if (!own.parent_id) return { family: String(own.name || fallback).trim(), type: "" };
 
   const family = categoriesById.get(String(own.parent_id));
-  return [family?.name, own.name]
-    .map((name) => String(name || "").trim())
-    .filter(Boolean)
-    .join(" · ") || fallback;
+  return {
+    family: String(family?.name || fallback).trim(),
+    type: String(own.name || "").trim(),
+  };
 }
 
 function renderCategoryPage(category, products, slugMap, categorySlug, types = [], categoriesById = new Map()) {
@@ -639,9 +641,12 @@ ${types
       const available = isAvailable(p);
       const img = p.image_url || p.imagen_url || PLACEHOLDER_IMAGE;
       const href = productPath(productSlug);
-      const categoryLabel = cardCategoryLabel(p, categoriesById);
-      const categoryMarkup = categoryLabel
-        ? `            <span class="product-card__category">${escapeHTML(categoryLabel)}</span>\n`
+      const categoryParts = cardCategoryParts(p, categoriesById);
+      const categoryTypeMarkup = categoryParts.type
+        ? `<span class="product-card__category-sep">›</span><span class="product-card__category-type">${escapeHTML(categoryParts.type)}</span>`
+        : "";
+      const categoryMarkup = categoryParts.family
+        ? `            <span class="product-card__category"><span class="product-card__category-family">${escapeHTML(categoryParts.family)}</span>${categoryTypeMarkup}</span>\n`
         : "";
 
       // Los data-* llevan lo mínimo para cotizar sin depender de la red: si
