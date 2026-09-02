@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Seguridad: CSP baseline versionada. El enforce real + frame-ancestors lo aplica Cloudflare (ver docs/seguridad-cloudflare.md). -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.instagram.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co https://*.cdninstagram.com https://*.fbcdn.net https://www.instagram.com; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com; frame-src https://www.instagram.com" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://cdn.jsdelivr.net https://connect.facebook.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co https://*.fbcdn.net https://www.facebook.com; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com https://www.facebook.com; frame-src 'none'" />
     <!-- Modo mantenimiento: bloquea el sitio público mientras esté activo (ver js/mantenimiento.js). -->
     <script src="/js/mantenimiento.js?v=abierto-1"></script>
     <!-- Modo claro: aplica la preferencia guardada ANTES de pintar, para que no haya parpadeo (ver js/theme-init.js). -->
@@ -15,23 +15,11 @@
     <!-- Verificación de dominio para Meta Business Manager -->
     <meta name="facebook-domain-verification" content="20qxx9fbcb82oyl4wccmn00jvvar4r" />
     
-    <!-- Meta Pixel Code -->
-    <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '3272013799852736');
-      fbq('track', 'PageView');
-      </script>
+    <!-- Meta Pixel: módulo local para mantener una CSP estricta sin script inline. -->
+    <script src="/js/meta-pixel.js?v=2" defer></script>
       <noscript><img height="1" width="1" style="display:none"
       src="https://www.facebook.com/tr?id=3272013799852736&ev=PageView&noscript=1"
       /></noscript>
-      <!-- End Meta Pixel Code -->
 
     <!-- SEO -->
     <meta name="description" content="Suplementos deportivos 100% originales en Panamá. Mira los precios, arma tu cotización y envíala directo por WhatsApp. Proteínas, creatinas, quemadores y más.">
@@ -148,9 +136,9 @@
     <script src="js/auth.js?v=session-state" defer></script>
     <script src="js/icons.js?v=sidebar-toggle-1" defer></script>
     <script src="js/dropdown.js?v=resize-fix-1" defer></script>
-    <script src="js/cart.js?v=quote-img-1" defer></script>
-    <script src="js/script.js?v=cat-arrow-1" defer></script>
-    <script src="js/include-nav.js?v=cat-icon-row-1" defer></script>
+    <script src="js/cart.js?v=merge-main-home-1" defer></script>
+    <script src="js/script.js?v=home-fast-main-1" defer></script>
+    <script src="js/include-nav.js?v=sin-testimonios-cat-icon-row-1" defer></script>
     <script src="js/reveal.js?v=reveal-1" defer></script>
     <script src="js/hero-visits.js?v=1" defer></script>
   </head>
@@ -179,6 +167,8 @@
         <img
           class="hero__img"
           src="img/images/javi.webp"
+          srcset="img/images/javi-430.webp 430w, img/images/javi-800.webp 800w, img/images/javi.webp 1313w"
+          sizes="(max-width: 520px) 430px, (max-width: 900px) 520px, 560px"
           alt="Javito posando con proteina"
           width="1313"
           height="1198"
@@ -206,7 +196,7 @@
 
       <section class="top-products" id="productos">
         <div class="title reveal">
-          <h2>Los Suplementos mas comprados</h2>
+          <h2>Los suplementos más comprados</h2>
           <p>
             Estos son los suplementos que más resultados han generado entre
             nuestros clientes. Fórmulas de calidad, efectivas y 100 % originales
@@ -232,44 +222,20 @@
             Cómo funcionan proteínas, creatinas, quemadores y más.
             Videos hechos por Javy, sin tecnicismos.
           </p>
-          <a class="instagram-videos__cta" href="https://www.instagram.com/javy.suplementos" target="_blank" rel="noopener">Ver mas reels</a>
+          <a class="instagram-videos__cta" href="https://www.instagram.com/javy.suplementos" target="_blank" rel="noopener">Ver más reels</a>
         </div>
       <div class="instagram-videos__grid reveal reveal--stagger" aria-label="Reels educativos de suplementos">
         <article class="reel-card">
-          <div class="reel-card__frame">
-            <blockquote
-              class="instagram-media"
-              data-instgrm-permalink="https://www.instagram.com/reel/Db0_BOrBkPt/"
-              data-instgrm-version="14"
-            ><a href="https://www.instagram.com/reel/Db0_BOrBkPt/" target="_blank" rel="noopener">Ver reel educativo</a></blockquote>
-          </div>
+          <a class="reel-card__preview" href="https://www.instagram.com/reel/Db0_BOrBkPt/" target="_blank" rel="noopener" aria-label="Ver reel educativo sobre suplementos en Instagram"><span>Reel educativo</span><strong>Ver en Instagram</strong></a>
         </article>
         <article class="reel-card">
-          <div class="reel-card__frame">
-            <blockquote
-              class="instagram-media"
-              data-instgrm-permalink="https://www.instagram.com/reel/Db1xz6zJFb3/"
-              data-instgrm-version="14"
-            ><a href="https://www.instagram.com/reel/Db1xz6zJFb3/" target="_blank" rel="noopener">Ver reel educativo</a></blockquote>
-          </div>
+          <a class="reel-card__preview" href="https://www.instagram.com/reel/Db1xz6zJFb3/" target="_blank" rel="noopener" aria-label="Ver reel educativo sobre suplementos en Instagram"><span>Reel educativo</span><strong>Ver en Instagram</strong></a>
         </article>
         <article class="reel-card">
-          <div class="reel-card__frame">
-            <blockquote
-              class="instagram-media"
-              data-instgrm-permalink="https://www.instagram.com/reel/Db_mD34Mcj7/"
-              data-instgrm-version="14"
-            ><a href="https://www.instagram.com/reel/Db_mD34Mcj7/" target="_blank" rel="noopener">Ver reel educativo</a></blockquote>
-          </div>
+          <a class="reel-card__preview" href="https://www.instagram.com/reel/Db_mD34Mcj7/" target="_blank" rel="noopener" aria-label="Ver reel educativo sobre suplementos en Instagram"><span>Reel educativo</span><strong>Ver en Instagram</strong></a>
         </article>
         <article class="reel-card">
-          <div class="reel-card__frame">
-            <blockquote
-              class="instagram-media"
-              data-instgrm-permalink="https://www.instagram.com/reel/Db_rjU4PY7t/"
-              data-instgrm-version="14"
-            ><a href="https://www.instagram.com/reel/Db_rjU4PY7t/" target="_blank" rel="noopener">Ver reel educativo</a></blockquote>
-          </div>
+          <a class="reel-card__preview" href="https://www.instagram.com/reel/Db_rjU4PY7t/" target="_blank" rel="noopener" aria-label="Ver reel educativo sobre suplementos en Instagram"><span>Reel educativo</span><strong>Ver en Instagram</strong></a>
         </article>
       </div>
     </section>

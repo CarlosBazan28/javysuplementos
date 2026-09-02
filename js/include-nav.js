@@ -124,7 +124,7 @@ recordVisit();
   // la página entera queda invisible, sin nav y sin cotización.
   let html = "";
   try {
-    const response = await fetch("/Editables/nav.html");
+    const response = await fetch("/Editables/nav.html?v=sin-testimonios-1");
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     html = await response.text();
   } catch (error) {

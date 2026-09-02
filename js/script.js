@@ -274,7 +274,8 @@ if (heroAdvisorBtn) {
 
 async function initHomeProducts() {
   if (!lista) return;
-  lista.innerHTML = `<p class="product-card__disclaimer">Cargando productos destacados...</p>`;
+  const fallbackProducts = getHomeFallbackProducts();
+  if (fallbackProducts.length) renderFeaturedProducts(fallbackProducts);
 
   try {
     const [homeProducts, categories] = await Promise.all([
@@ -285,9 +286,6 @@ async function initHomeProducts() {
     renderFeaturedProducts(homeProducts);
   } catch (error) {
     console.warn("No se pudieron cargar productos del inicio:", error.message);
-    const allProducts = await window.catalogDb.getProductsWithFlavors();
-    const featuredProducts = allProducts.filter((product) => product.featured).slice(0, 8);
-    renderFeaturedProducts(featuredProducts);
   }
 }
 
@@ -443,37 +441,6 @@ async function initHomeCombos() {
 
 initHomeCombos();
 
-// Carga el embed de Instagram (iframes pesados) solo cuando la sección de
-// reels está por entrar en pantalla, en vez de bloquear la carga inicial.
-function initInstagramLazyLoad() {
-  const section = document.getElementById("educacion");
-  if (!section) return;
-
-  const loadEmbedScript = () => {
-    if (document.querySelector('script[src*="instagram.com/embed.js"]')) return;
-    const script = document.createElement("script");
-    script.async = true;
-    script.src = "https://www.instagram.com/embed.js";
-    document.body.appendChild(script);
-  };
-
-  if (!("IntersectionObserver" in window)) {
-    loadEmbedScript();
-    return;
-  }
-
-  const observer = new IntersectionObserver((entries) => {
-    if (entries.some((entry) => entry.isIntersecting)) {
-      loadEmbedScript();
-      observer.disconnect();
-    }
-  }, { rootMargin: "400px 0px" });
-
-  observer.observe(section);
-}
-
-initInstagramLazyLoad();
-
 /* ============================================================================
    Compra por categoría + objetivos
    ----------------------------------------------------------------------------
@@ -549,9 +516,45 @@ function categorySkeletons(n = 8) {
     `<span class="home-cat home-cat--skeleton skeleton-box" aria-hidden="true"></span>`).join("");
 }
 
+function getLocalFallbackProducts() {
+  if (typeof PRODUCT_LIST === "undefined") return [];
+  return PRODUCT_LIST
+    .map((product) => ({
+      ...product,
+      name: product.nombre,
+      brand: product.marca,
+      category: product.categoria,
+      price: product.precio,
+      presentation: product.presentacion,
+      image: product.imagen || "img/products/product-placeholder.svg",
+      available: product.disponible !== false,
+      featured: product.destacado === true,
+      show_on_home: product.destacado === true,
+      goals: product.objetivos || [],
+      flavors: (product.sabores || []).map((flavor, index) => ({
+        id: `home-local-${product.id}-${index}-${slugify(flavor)}`,
+        name: flavor,
+        available: true,
+      })),
+    }));
+}
+
+function getHomeFallbackProducts() {
+  return getLocalFallbackProducts()
+    .filter((product) => product.featured)
+    .slice(0, 8);
+}
+
 async function initHomeCategories() {
   if (!homeCatsGrid) return;
-  homeCatsGrid.innerHTML = categorySkeletons();
+  const fallbackProducts = getLocalFallbackProducts();
+  if (fallbackProducts.length) {
+    renderHomeCategoriesFlat(fallbackProducts);
+    renderHomeGoals(fallbackProducts);
+    renderHomeBrands(fallbackProducts);
+  } else {
+    homeCatsGrid.innerHTML = categorySkeletons();
+  }
 
   let categories = [];
   let products = [];
