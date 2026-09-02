@@ -841,6 +841,13 @@ async function main() {
 
   // Se borran los directorios completos para que un producto dado de baja o
   // renombrado no deje su página vieja huérfana en el repo.
+  //
+  // OJO: cada carpeta que desaparezca acá es una URL que estaba en sitemap.xml y
+  // que Google tiene indexada; a partir de ahora devuelve 404. GitHub Pages no
+  // emite 301, así que el redirect va en Cloudflare y hay que anotarlo a mano:
+  // revisá `git status` después de correr esto y seguí el paso documentado en
+  // README.md ("Toda carpeta borrada es una URL que queda en 404"), que apunta a
+  // docs/seguridad-cloudflare.md §2.6 (categorías) y §2.7 (productos).
   for (const dir of ["producto", "categoria"]) {
     const full = join(ROOT, dir);
     if (existsSync(full)) await rm(full, { recursive: true });
