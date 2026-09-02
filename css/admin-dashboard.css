@@ -133,7 +133,7 @@ body.ad-body { min-height: 100vh; }
 @media (min-width: 761px) {
   /* La columna se encoge y el contenido se desvanece en vez de desaparecer de
      golpe. `data-motion-ready` evita animar el estado guardado al arrancar. */
-  .ad-shell[data-motion-ready] { transition: grid-template-columns .28s cubic-bezier(.4,0,.2,1); }
+  .ad-shell[data-motion-ready] { transition: grid-template-columns .16s ease-out; }
   .ad-shell.is-sidebar-collapsed { grid-template-columns: 0 minmax(0,1fr); }
   .ad-shell.is-sidebar-collapsed .ad-sidebar { opacity: 0; transform: translateX(-16px); pointer-events: none; }
 }
@@ -146,7 +146,7 @@ body.ad-body { min-height: 100vh; }
   background: rgba(12,16,24,0.86);
   backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
   padding: 20px 16px;
-  transition: opacity .2s ease, transform .28s cubic-bezier(.4,0,.2,1);
+  transition: opacity .12s linear, transform .16s ease-out;
   will-change: opacity, transform;
 }
 .ad-brand { display: flex; align-items: center; min-height: 56px; color: var(--pb-text); text-decoration: none; }
