@@ -5,10 +5,10 @@
    sin importar la cuenta— y abre el menú con "Cambiar mi contraseña" y
    "Cerrar sesión".
    ============================================================================ */
-import { state } from "./state.js?v=adm-3313decc";
-import { $, esc, ico, initials } from "./helpers.js?v=adm-3313decc";
-import { formModal, toast } from "./ui.js?v=adm-3313decc";
-import { roleLabel, canWrite } from "./permissions.js?v=adm-3313decc";
+import { state } from "./state.js?v=adm-e26cac9b";
+import { $, esc, ico, initials } from "./helpers.js?v=adm-e26cac9b";
+import { formModal, toast } from "./ui.js?v=adm-e26cac9b";
+import { roleLabel, canWrite } from "./permissions.js?v=adm-e26cac9b";
 
 const MIN_PASSWORD = 8;
 
@@ -37,8 +37,10 @@ export function renderUserChip() {
 
   const btn = $("[data-user-menu]", host);
   const menu = $(".ad-user__menu", host);
+  const user = $(".ad-user", host);
   const setOpen = (open) => {
     menu.hidden = !open;
+    user.classList.toggle("is-open", open);
     btn.setAttribute("aria-expanded", String(open));
   };
 
