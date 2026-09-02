@@ -21,5 +21,17 @@
     return [text(family?.name), text(own.name)].filter(Boolean).join(" · ") || fallback;
   }
 
-  window.javyCardCategory = { format };
+  // Igual que format(), pero separado en familia/tipo para que la card pueda
+  // pintarlos con distinto peso (flecha en vez de punto entre medio).
+  function formatParts(product = {}, categories = []) {
+    const fallback = text(product.category || product.categoria);
+    const own = categoryById(categories, product.category_id);
+    if (!own) return { family: fallback, type: "" };
+    if (!own.parent_id) return { family: text(own.name) || fallback, type: "" };
+
+    const family = categoryById(categories, own.parent_id);
+    return { family: text(family?.name) || fallback, type: text(own.name) };
+  }
+
+  window.javyCardCategory = { format, formatParts };
 })();

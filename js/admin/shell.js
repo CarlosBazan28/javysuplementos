@@ -5,20 +5,20 @@
    Mantiene un registro key → renderFn; las secciones piden re-render con
    requestRerender() en vez de llamarse entre sí.
    ============================================================================ */
-import { state } from "./state.js?v=adm-1c6bf4a6";
-import { NAV } from "./config.js?v=adm-1c6bf4a6";
-import { $, $$, esc, ico } from "./helpers.js?v=adm-1c6bf4a6";
-import { showViewError } from "./view.js?v=adm-1c6bf4a6";
-import { renderDashboard } from "./sections/dashboard.js?v=adm-1c6bf4a6";
-import { renderProducts } from "./sections/products.js?v=adm-1c6bf4a6";
-import { renderHome } from "./sections/home.js?v=adm-1c6bf4a6";
-import { renderCategories } from "./sections/categories.js?v=adm-1c6bf4a6";
-import { renderCombos } from "./sections/combos.js?v=adm-1c6bf4a6";
-import { renderAccess } from "./sections/access.js?v=adm-1c6bf4a6";
-import { renderSettings } from "./sections/settings.js?v=adm-1c6bf4a6";
-import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-1c6bf4a6";
-import { canWrite } from "./permissions.js?v=adm-1c6bf4a6";
-import { renderUserChip } from "./user-chip.js?v=adm-1c6bf4a6";
+import { state } from "./state.js?v=adm-48e30e27";
+import { NAV } from "./config.js?v=adm-48e30e27";
+import { $, $$, esc, ico } from "./helpers.js?v=adm-48e30e27";
+import { showViewError } from "./view.js?v=adm-48e30e27";
+import { renderDashboard } from "./sections/dashboard.js?v=adm-48e30e27";
+import { renderProducts } from "./sections/products.js?v=adm-48e30e27";
+import { renderHome } from "./sections/home.js?v=adm-48e30e27";
+import { renderCategories } from "./sections/categories.js?v=adm-48e30e27";
+import { renderCombos } from "./sections/combos.js?v=adm-48e30e27";
+import { renderAccess } from "./sections/access.js?v=adm-48e30e27";
+import { renderSettings } from "./sections/settings.js?v=adm-48e30e27";
+import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-48e30e27";
+import { canWrite } from "./permissions.js?v=adm-48e30e27";
+import { renderUserChip } from "./user-chip.js?v=adm-48e30e27";
 
 const renderers = {
   dashboard: renderDashboard, products: renderProducts,
@@ -72,7 +72,8 @@ export function buildChrome() {
     `<span class="ad-nav__group-label">Configuración</span>` +
     secondary.map(navItem).join("");
 
-  // tab-bar móvil: 4 primarias + "Más"
+  // tab-bar móvil: las secciones primary + "Más" (el CSS reparte las columnas
+  // según cuántos botones haya, así que agregar/quitar una primary no rompe la barra).
   $("#adminTabbar").innerHTML =
     primary.map((n) => `
       <button class="ad-tab" type="button" data-go="${n.key}">

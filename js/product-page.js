@@ -186,7 +186,11 @@ function renderCategoryTrail(family, type, fallbackLabel) {
   const categoryCell = document.getElementById("prod-category");
   if (!categoryCell) return;
   if (family) {
-    categoryCell.innerHTML = `${link(family.name)}${type ? ` · ${escapeHTML(type.name)}` : ""}`;
+    const familyChip = `<span class="pdp__cat-family">${link(family.name)}</span>`;
+    const typeChip = type
+      ? `<svg class="pdp__cat-sep" width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="pdp__cat-type">${escapeHTML(type.name)}</span>`
+      : "";
+    categoryCell.innerHTML = `${familyChip}${typeChip}`;
   } else {
     categoryCell.textContent = fallbackLabel;
   }

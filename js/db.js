@@ -65,7 +65,7 @@ const COMBO_BASE_SELECT = `
 const COMBO_ITEMS_FRAGMENT = `
   combo_items (
     id, product_id, flavor_id, quantity, sort_order,
-    products ( id, name, image_url, price, slug ),
+    products ( id, name, image_url, price, slug, product_flavors ( id, name, available, is_available ) ),
     product_flavors ( id, name )
   )
 `;
@@ -1311,6 +1311,12 @@ function normalizeCombo(combo) {
     .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
     .map((item) => {
       const product = item.products || null;
+      // Sabores disponibles del producto (para que el cliente elija en la card
+      // de combo), no solo el que dejó cargado el admin al armar el combo.
+      const flavors = (product?.product_flavors || [])
+        .map(normalizeFlavor)
+        .filter((flavor) => flavor.name)
+        .sort((a, b) => a.name.localeCompare(b.name, "es"));
       return {
         id: item.id,
         product_id: item.product_id,
@@ -1320,6 +1326,7 @@ function normalizeCombo(combo) {
         product_image: product?.image_url || DB_PLACEHOLDER_IMAGE,
         product_slug: product?.slug || null,
         flavor_name: item.product_flavors?.name || null,
+        flavors,
       };
     });
 
