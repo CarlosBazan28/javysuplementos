@@ -192,18 +192,37 @@
 }
 
 /* La categoría va debajo de la marca: da contexto sin competir con el estado
-   ni con el precio. El contenido es texto informativo, no un filtro. */
+   ni con el precio. El contenido es texto informativo, no un filtro. Va
+   atenuada (más que la marca, que ya usa --muted) para que no compita en
+   brillo con la marca ni con el nombre del producto. */
 .product-card__category {
   display: block;
   min-width: 0;
   overflow: hidden;
-  color: color-mix(in srgb, var(--text) 62%, var(--muted));
+  /* Respaldo para páginas estáticas todavía no regeneradas (sin los spans
+     de familia/tipo de abajo): que el texto plano se vea atenuado y no con
+     el color por defecto del navegador. */
+  color: var(--muted-2);
   font-size: 0.72rem;
   font-weight: 600;
   line-height: 1.25;
   text-overflow: ellipsis;
   text-transform: none;
   white-space: nowrap;
+}
+
+.product-card__category-family {
+  color: var(--muted-2);
+}
+
+.product-card__category-sep {
+  padding: 0 1px;
+  color: var(--muted-2);
+  opacity: 0.65;
+}
+
+.product-card__category-type {
+  color: var(--muted);
 }
 
 .product-card__status {
