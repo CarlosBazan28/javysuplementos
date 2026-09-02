@@ -1,6 +1,6 @@
 # Javy Suplementos
 
-**Tienda de suplementos deportivos en San Miguelito, Panamá.** No es un e-commerce con pago
+**Tienda de suplementos deportivos en Edificio Frontenac, Calle 50, Panamá.** No es un e-commerce con pago
 online: el cliente arma una **cotización** y la envía por **WhatsApp**. El cierre de venta es
 manual, por chat.
 

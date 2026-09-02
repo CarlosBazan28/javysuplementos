@@ -147,6 +147,27 @@ Es gratis, sin cookies y no requiere banner de consentimiento.
 
 ---
 
+## 2.6 — Redirecciones SEO de categorías retiradas
+
+GitHub Pages no permite respuestas 301 configurables. Crear estas reglas en
+**Cloudflare → Rules → Redirect Rules → Create rule**, con estado **301 - Permanent Redirect**
+y preservando los parámetros de consulta:
+
+| Path de origen | Destino |
+| --- | --- |
+| `/categoria/whey/` | `/categoria/proteinas/` |
+| `/categoria/iso-aislada/` | `/categoria/proteinas/` |
+| `/categoria/mass-gainer/` | `/categoria/proteinas/` |
+| `/categoria/ganadores-de-peso/` | `/categoria/proteinas/` |
+| `/categoria/pre-entrenos/` | `/categoria/pre-entrenos-y-energia/` |
+| `/categoria/energia-y-rendimiento/` | `/categoria/pre-entrenos-y-energia/` |
+
+Las páginas HTML de respaldo mantienen `canonical` y `noindex, follow` por compatibilidad,
+pero la respuesta 301 debe ser la señal principal. Verificar cada regla con una solicitud HEAD
+después de publicarla.
+
+---
+
 ## 3.1 — Caché de assets (evitar el "panel en negro" tras un deploy)
 
 **Síntoma:** tras desplegar, el panel admin se queda en negro en el navegador normal pero
