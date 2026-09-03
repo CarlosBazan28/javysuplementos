@@ -180,10 +180,12 @@ body {
   box-shadow: 0 22px 45px rgba(0, 0, 0, calc(0.44 * var(--shadow-a)));
 }
 
-.reel-card__frame {
+.reel-card__preview {
   position: relative;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
   width: 100%;
   /* Proporción real de un reel (9:16) en vez de una altura fija: antes eran
      520px sin importar el ancho de la card, que en mobile (1 columna) se
@@ -192,11 +194,15 @@ body {
   overflow: hidden;
   border-radius: 14px;
   background:
-    radial-gradient(circle at 50% 20%, rgba(90, 180, 233, 0.18), transparent 55%),
+    radial-gradient(circle at 50% 20%, rgba(90, 180, 233, 0.28), transparent 55%),
+    linear-gradient(145deg, rgba(0, 220, 109, 0.14), transparent 56%),
     var(--bg-1);
+  color: var(--text);
+  padding: clamp(18px, 3vw, 28px);
+  text-decoration: none;
 }
 
-.reel-card__frame::before {
+.reel-card__preview::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -205,63 +211,32 @@ body {
   border-radius: inherit;
 }
 
-.reel-card .instagram-media {
-  min-width: 0 !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  margin: 0 auto !important;
-  background: transparent !important;
-}
-
-.reel-card iframe {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-}
-
-.reel-card .instagram-media a {
-  color: #5ab4e9;
-  font-weight: 500;
-}
-
-/* Se muestra cuando el embed de Instagram no logra renderizar el reel (post
-   borrado, bloqueador de contenido, red lenta): reemplaza la card vacía por
-   un enlace directo, ver js/script.js `initInstagramLazyLoad`. */
-.reel-card__fallback {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  height: 100%;
-  padding: 16px;
-  text-align: center;
-  color: var(--text);
-  text-decoration: none;
-  font-size: 0.92rem;
+.reel-card__preview span {
+  position: relative;
+  color: var(--muted);
+  font-size: 0.84rem;
   font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.reel-card__fallback-icon {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  color: #5ab4e9;
-  background: rgba(90, 180, 233, 0.14);
+.reel-card__preview strong {
+  position: relative;
+  color: var(--accent);
+  font-size: clamp(1rem, 2vw, 1.2rem);
 }
 
-.reel-card__fallback-icon svg {
-  width: 22px;
-  height: 22px;
+.reel-card__preview:hover,
+.reel-card__preview:focus-visible {
+  background:
+    radial-gradient(circle at 50% 20%, rgba(90, 180, 233, 0.38), transparent 55%),
+    linear-gradient(145deg, rgba(0, 220, 109, 0.24), transparent 56%),
+    var(--bg-1);
 }
 
-.reel-card__fallback:hover,
-.reel-card__fallback:focus-visible {
-  color: #5ab4e9;
-  outline: none;
+.reel-card__preview:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
 }
 
 @media (max-width: 1080px) {
