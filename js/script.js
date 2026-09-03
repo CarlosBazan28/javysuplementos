@@ -366,11 +366,38 @@ function initInstagramLazyLoad() {
   const section = document.getElementById("educacion");
   if (!section) return;
 
+  const frames = Array.from(section.querySelectorAll(".reel-card__frame"));
+
+  // El embed de Instagram no avisa cuando falla (post borrado, bloqueador de
+  // contenido, red lenta): si no termina de meter su iframe, la card se queda
+  // en blanco. En vez de eso, pasado un tiempo prudente se reemplaza por un
+  // enlace directo al reel para que nunca quede una card vacía.
+  const showFallback = (frame) => {
+    if (frame.querySelector("iframe")) return;
+    const blockquote = frame.querySelector(".instagram-media");
+    const href = blockquote?.getAttribute("data-instgrm-permalink") || blockquote?.querySelector("a")?.href;
+    if (!href) return;
+    frame.innerHTML = `
+      <a class="reel-card__fallback" href="${escapeHTML(href)}" target="_blank" rel="noopener">
+        <span class="reel-card__fallback-icon" data-javy-icon="instagram"></span>
+        <span>Ver reel en Instagram</span>
+      </a>`;
+    window.javyIcons?.enhance?.(frame);
+  };
+
+  const checkEmbeds = () => frames.forEach(showFallback);
+
   const loadEmbedScript = () => {
-    if (document.querySelector('script[src*="instagram.com/embed.js"]')) return;
+    if (document.querySelector('script[src*="instagram.com/embed.js"]')) {
+      window.instgrm?.Embeds?.process?.();
+      setTimeout(checkEmbeds, 8000);
+      return;
+    }
     const script = document.createElement("script");
     script.async = true;
     script.src = "https://www.instagram.com/embed.js";
+    script.onerror = checkEmbeds;
+    script.onload = () => setTimeout(checkEmbeds, 8000);
     document.body.appendChild(script);
   };
 

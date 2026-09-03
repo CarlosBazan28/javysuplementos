@@ -220,6 +220,46 @@ body {
   font-weight: 500;
 }
 
+/* Se muestra cuando el embed de Instagram no logra renderizar el reel (post
+   borrado, bloqueador de contenido, red lenta): reemplaza la card vacía por
+   un enlace directo, ver js/script.js `initInstagramLazyLoad`. */
+.reel-card__fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  text-align: center;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.reel-card__fallback-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: #5ab4e9;
+  background: rgba(90, 180, 233, 0.14);
+}
+
+.reel-card__fallback-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.reel-card__fallback:hover,
+.reel-card__fallback:focus-visible {
+  color: #5ab4e9;
+  outline: none;
+}
+
 @media (max-width: 1080px) {
   .instagram-videos__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
