@@ -1,6 +1,6 @@
 # Javy Suplementos
 
-**Tienda de suplementos deportivos en San Miguelito, Panamá.** No es un e-commerce con pago
+**Tienda de suplementos deportivos en Edificio Frontenac, Calle 50, Panamá.** No es un e-commerce con pago
 online: el cliente arma una **cotización** y la envía por **WhatsApp**. El cierre de venta es
 manual, por chat.
 
@@ -52,6 +52,35 @@ manual, por chat.
 Además, `node scripts/generate-pages.mjs` regenera las páginas estáticas del catálogo
 (`producto/`, `categoria/`, `js/product-urls.js` y `sitemap.xml`) desde Supabase. **Corrélo
 cada vez que cambien productos o categorías** y revisá el `git diff` antes de commitear.
+
+> ### ⚠️ Toda carpeta borrada es una URL que queda en 404
+>
+> El script borra `producto/` y `categoria/` completas y las regenera, así que **cada producto o
+> categoría que dejes inactivo en Supabase pierde su página**. Eso está bien; el problema es que
+> su dirección web ya estaba en `sitemap.xml` e indexada en Google, y pasa a devolver 404.
+> GitHub Pages no puede emitir un 301, así que el redirect va sí o sí en Cloudflare.
+>
+> **Después de correr el script, mirá `git status`.** Por cada carpeta que aparezca como
+> `deleted:`:
+>
+> 1. Anotá la regla `301` en [`docs/seguridad-cloudflare.md`](docs/seguridad-cloudflare.md) —
+>    §2.6 si es una categoría, §2.7 si es un producto. El destino es la categoría a la que
+>    pertenecía (sale del breadcrumb de la propia ficha, visible con
+>    `git show HEAD~1:producto/<slug>/index.html`).
+> 2. Aplicala en **Cloudflare → Rules → Redirect Rules** (o Bulk Redirects si son muchas)
+>    **antes** de que el cambio llegue a producción.
+>
+> Para categorías hay además un segundo paso en el código: agregar el slug viejo a
+> `LEGACY_CATEGORY_REDIRECTS` (`scripts/generate-pages.mjs`), que le deja una página puente con
+> `canonical` + `noindex, follow`. Es un respaldo, no un reemplazo del 301. Para productos no
+> existe ese respaldo: sin la regla de Cloudflare, la URL simplemente muere.
+>
+> Comando para listar lo borrado en la última corrida:
+>
+> ```bash
+> # cubre tanto los borrados en stage ("D ") como los que no lo están (" D")
+> git status --porcelain | grep -E '^(D.| D)' | grep -oE '(producto|categoria)/[^/]+' | sort -u
+> ```
 
 La lógica de `/guardar` y `/estado-ramas` vive en `scripts/guardar.sh` y `scripts/estado-ramas.sh`
 (usables también desde cualquier terminal, por Claude y por Codex).

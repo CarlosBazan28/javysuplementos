@@ -147,6 +147,122 @@ Es gratis, sin cookies y no requiere banner de consentimiento.
 
 ---
 
+## 2.6 — Redirecciones SEO de categorías retiradas
+
+GitHub Pages no permite respuestas 301 configurables. Crear estas reglas en
+**Cloudflare → Rules → Redirect Rules → Create rule**, con estado **301 - Permanent Redirect**
+y preservando los parámetros de consulta:
+
+| Path de origen | Destino |
+| --- | --- |
+| `/categoria/whey/` | `/categoria/proteinas/` |
+| `/categoria/iso-aislada/` | `/categoria/proteinas/` |
+| `/categoria/mass-gainer/` | `/categoria/proteinas/` |
+| `/categoria/ganadores-de-peso/` | `/categoria/proteinas/` |
+| `/categoria/pre-entrenos/` | `/categoria/pre-entrenos-y-energia/` |
+| `/categoria/energia-y-rendimiento/` | `/categoria/pre-entrenos-y-energia/` |
+
+Las páginas HTML de respaldo mantienen `canonical` y `noindex, follow` por compatibilidad,
+pero la respuesta 301 debe ser la señal principal. Verificar cada regla con una solicitud HEAD
+después de publicarla.
+
+---
+
+## 2.7 — Redirecciones SEO de productos dados de baja
+
+Mismo problema que la 2.6, pero para fichas de producto — y con una diferencia importante:
+las categorías retiradas **sí** tienen respaldo en el repo (`LEGACY_CATEGORY_REDIRECTS` en
+`scripts/generate-pages.mjs` les deja una página con `canonical` + `noindex, follow`), mientras que
+un producto dado de baja **no deja nada**: `generate-pages.mjs` borra `producto/` entero en cada
+corrida y lo regenera desde Supabase, así que su URL pasa directo a 404.
+
+Las de abajo son las 58 fichas dadas de baja entre el 2026-08-28 y el 2026-09-02. Las 58 estaban
+publicadas en `sitemap.xml`, o sea que Google las tiene indexadas. El destino de cada una es la
+categoría que la propia ficha declaraba en su breadcrumb.
+
+Crear las reglas en **Cloudflare → Rules → Redirect Rules → Create rule** con estado
+**301 - Permanent Redirect**, preservando los parámetros de consulta. Si son demasiadas para el
+plan contratado (Redirect Rules tiene cupo bajo), usar **Bulk Redirects**, que acepta la lista
+completa de una vez.
+
+> **Nota:** los `redirects` de `vercel.json` **no sirven para esto**. Solo corren en los previews
+> de Vercel; producción es GitHub Pages tras Cloudflare.
+
+| Path de origen (404 hoy) | Destino |
+| --- | --- |
+| `/producto/mutant-bcaa-caps-200-capsulas/` | `/categoria/aminoacidos/` |
+| `/producto/mutant-geaar-420-g/` | `/categoria/aminoacidos/` |
+| `/producto/mutant-glutamine-300-g/` | `/categoria/aminoacidos/` |
+| `/producto/mutant-hardcore-bcaa-390-g/` | `/categoria/aminoacidos/` |
+| `/producto/nutrex-glutamine-300-g-60-servidas/` | `/categoria/aminoacidos/` |
+| `/producto/nutrex-hmb-1000-120-capsulas/` | `/categoria/aminoacidos/` |
+| `/producto/nutricost-l-glutamina-60-servidas/` | `/categoria/aminoacidos/` |
+| `/producto/optimum-nutrition-amino-energy-65-servidas/` | `/categoria/aminoacidos/` |
+| `/producto/optimum-nutrition-essential-amino-energy-30-servidas/` | `/categoria/aminoacidos/` |
+| `/producto/gat-sport-creatina-masticable-5-g/` | `/categoria/creatina/` |
+| `/producto/muscletech-platinum-100-creatina-monohidratada-80-servidas/` | `/categoria/creatina/` |
+| `/producto/mutant-100-pure-creatina-monohidratada-300-g/` | `/categoria/creatina/` |
+| `/producto/mutant-creakong-cx8-249-g/` | `/categoria/creatina/` |
+| `/producto/mutant-creatina-bytz-80-tabletas/` | `/categoria/creatina/` |
+| `/producto/nutrex-creatina-monohidratada-300-g/` | `/categoria/creatina/` |
+| `/producto/nutrex-creatina-para-mujer-327-g/` | `/categoria/creatina/` |
+| `/producto/nutricost-creatina-monohidratada-300-g/` | `/categoria/creatina/` |
+| `/producto/nutricost-creatine-45-servidas-saborizada/` | `/categoria/creatina/` |
+| `/producto/olympus-creatina-para-mujer-30-servidas/` | `/categoria/creatina/` |
+| `/producto/optimum-nutrition-creatina-monohidratada-300-g/` | `/categoria/creatina/` |
+| `/producto/ronnie-coleman-creatina-adventure-20-servidas/` | `/categoria/creatina/` |
+| `/producto/nutrex-anabol-60-capsulas/` | `/categoria/potenciadores-hormonales/` |
+| `/producto/nutrex-t-up-max-60-capsulas/` | `/categoria/potenciadores-hormonales/` |
+| `/producto/nutrex-tribulus-90-capsulas/` | `/categoria/potenciadores-hormonales/` |
+| `/producto/nutricost-dhea-50mg-30-tabletas/` | `/categoria/potenciadores-hormonales/` |
+| `/producto/mutant-all-in-500-g/` | `/categoria/pre-entrenos-y-energia/` |
+| `/producto/mutant-madness-270-g/` | `/categoria/pre-entrenos-y-energia/` |
+| `/producto/nutrex-caffeine-200-powder-caps-60-capsulas/` | `/categoria/pre-entrenos-y-energia/` |
+| `/producto/nutrex-outlift-22-servidas/` | `/categoria/pre-entrenos-y-energia/` |
+| `/producto/nutricost-l-arginine-citruline-120-tabletas/` | `/categoria/pre-entrenos-y-energia/` |
+| `/producto/nutricost-nitric-oxide-booster-90-tabletas/` | `/categoria/pre-entrenos-y-energia/` |
+| `/producto/raw-nutrition-cbum-essential-30-servidas/` | `/categoria/pre-entrenos-y-energia/` |
+| `/producto/skull-pre-workout-xtreme/` | `/categoria/pre-entrenos-y-energia/` |
+| `/producto/terror-labz-maniac-extreme-30-servidas/` | `/categoria/pre-entrenos-y-energia/` |
+| `/producto/cellucor-c4-whey-protein-5-lb/` | `/categoria/proteinas/` |
+| `/producto/mutant-hardcore-whey/` | `/categoria/proteinas/` |
+| `/producto/mutant-mass-5-lb/` | `/categoria/proteinas/` |
+| `/producto/mutant-mass-extreme-2500-20-lb/` | `/categoria/proteinas/` |
+| `/producto/mutant-mass-extreme-2500-6-lb/` | `/categoria/proteinas/` |
+| `/producto/mutant-whey-10-lb/` | `/categoria/proteinas/` |
+| `/producto/mutant-whey-cookies-cream-flavor-5-lb/` | `/categoria/proteinas/` |
+| `/producto/mutant-whey-triple-chocolate-flavor-5-lb/` | `/categoria/proteinas/` |
+| `/producto/mutant-whey-vanilla-ice-cream-flavor-5-lb/` | `/categoria/proteinas/` |
+| `/producto/nutricost-casein-protein-71-servidas/` | `/categoria/proteinas/` |
+| `/producto/nutricost-casein-protein-micellar-26-servidas/` | `/categoria/proteinas/` |
+| `/producto/prosupps-whey-concentrate-5-lb/` | `/categoria/proteinas/` |
+| `/producto/prosupps-whey-protein-2-lb/` | `/categoria/proteinas/` |
+| `/producto/terror-labz-brutal-mass-gainer-7-5-lb/` | `/categoria/proteinas/` |
+| `/producto/nutrex-carniburn-fuego/` | `/categoria/quemadores/` |
+| `/producto/nutrex-cla-1000-180-capsulas/` | `/categoria/quemadores/` |
+| `/producto/nutricost-yohimbine-hci-5-30-tabletas/` | `/categoria/quemadores/` |
+| `/producto/prosupps-cla-3000-90-tabletas/` | `/categoria/quemadores/` |
+| `/producto/mutant-big-greens-246-g/` | `/categoria/salud-y-bienestar/` |
+| `/producto/mutant-big-greens-294-g/` | `/categoria/salud-y-bienestar/` |
+| `/producto/mutant-multi-60-capsulas/` | `/categoria/salud-y-bienestar/` |
+| `/producto/nutricost-collagen-peptides-1-lb/` | `/categoria/salud-y-bienestar/` |
+| `/producto/potassium-99-mg-240-capsulas/` | `/categoria/salud-y-bienestar/` |
+| `/producto/primaforce-tudca-500-mg-30-capsulas/` | `/categoria/salud-y-bienestar/` |
+
+Verificar cada regla con una solicitud HEAD después de publicarla:
+
+```bash
+curl -sI https://javysuplementos.com/producto/mutant-glutamine-300-g/ | head -1
+# esperado: HTTP/2 301
+curl -sI https://javysuplementos.com/producto/mutant-glutamine-300-g/ | grep -i location
+# esperado: location: /categoria/aminoacidos/
+```
+
+**Cada vez que se den de baja más productos hay que ampliar esta tabla.** El paso está
+documentado en el `README.md`, en la sección de `generate-pages.mjs`.
+
+---
+
 ## 3.1 — Caché de assets (evitar el "panel en negro" tras un deploy)
 
 **Síntoma:** tras desplegar, el panel admin se queda en negro en el navegador normal pero

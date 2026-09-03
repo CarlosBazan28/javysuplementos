@@ -97,6 +97,16 @@ function pubTypesOf(familyId) {
 function pubCategoryById(id) {
   return id ? categories.find((c) => c.id === id) : null;
 }
+
+function cardCategoryMarkup(product) {
+  const parts = window.javyCardCategory?.formatParts(product, categories);
+  const family = parts?.family || product.category || product.categoria || "";
+  if (!family) return "";
+  const type = parts?.type
+    ? `<span class="product-card__category-sep">›</span><span class="product-card__category-type">${escapeHTML(parts.type)}</span>`
+    : "";
+  return `<span class="product-card__category"><span class="product-card__category-family">${escapeHTML(family)}</span>${type}</span>`;
+}
 function productInFamily(product, familyId) {
   const cat = pubCategoryById(product.category_id);
   return Boolean(cat && (cat.id === familyId || cat.parent_id === familyId));
@@ -812,6 +822,7 @@ function renderProductCard(product) {
           ${canQuote ? "Disponible" : "Agotado"}
         </span>
       </div>
+      ${cardCategoryMarkup(product)}
       <h3 class="product-card__name">
         <a class="product-card__name-link" href="${detailUrl}">${escapeHTML(product.name)}</a>
       </h3>

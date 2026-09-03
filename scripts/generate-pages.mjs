@@ -36,7 +36,10 @@ const DRY_RUN = process.argv.includes("--dry-run");
 const INPUT_INDEX = process.argv.indexOf("--input");
 const INPUT_FILE = INPUT_INDEX > -1 ? process.argv[INPUT_INDEX + 1] : null;
 
-const DEFAULT_IMAGE = `${SITE}/img/icons/javy-web-app-icon-1024.png`;
+// Cambiar esta versión cuando se reemplace el creativo: fuerza a los rastreadores
+// sociales a volver a descargar la miniatura, incluso si cachearon una previa sin imagen.
+const SOCIAL_IMAGE = `${SITE}/img/images/javy-og-social-1200x630.jpg?v=20260831-3`;
+const DEFAULT_IMAGE = SOCIAL_IMAGE;
 const PLACEHOLDER_IMAGE = "/img/products/product-placeholder.svg";
 
 // Una categoría con uno o dos productos es contenido pobre para Google: no
@@ -89,7 +92,7 @@ function entidadesDelSitio() {
       "@id": `${SITE}/#business`,
       name: "Javy Suplementos",
       url: `${SITE}/`,
-      image: `${SITE}/img/icons/javy-web-app-icon-1024.png`,
+      image: SOCIAL_IMAGE,
       logo: `${SITE}/img/icons/javy-web-app-icon-1024.png`,
       telephone: "+50766494509",
       priceRange: "$$",
@@ -143,6 +146,22 @@ function absoluteUrl(path) {
   if (!path) return DEFAULT_IMAGE;
   if (/^https?:\/\//i.test(path)) return path;
   return `${SITE}/${String(path).replace(/^\/+/, "")}`;
+}
+
+function imageMimeType(imageUrl) {
+  const extension = new URL(imageUrl, SITE).pathname.split(".").pop()?.toLowerCase();
+  return {
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    webp: "image/webp",
+  }[extension] || null;
+}
+
+// El marcador visual sirve dentro de la interfaz, pero no representa al SKU.
+// Nunca debe llegar a Open Graph ni a datos estructurados de producto.
+function hasRealProductImage(path) {
+  return Boolean(path) && !String(path).includes("product-placeholder.svg");
 }
 
 function toList(value) {
@@ -199,13 +218,15 @@ async function loadData() {
 // Head compartido. Las rutas van absolutas porque estas páginas viven en
 // subdirectorios (/producto/<slug>/), donde las relativas de la raíz romperían.
 function renderHead({ title, description, canonical, image, ogType, jsonLd, extraCss }) {
+  const imageType = imageMimeType(image);
+  const isSocialImage = image === SOCIAL_IMAGE;
   const css = [
     "css/styles.css?v=anim-1",
     "css/components/nav.css?v=cat-cta-1",
     "css/components/auth.css?v=session-state",
     "css/tokens.css?v=anim-1",
     "css/components/cart.css?v=ux-fix-1",
-    "css/components/cards.css?v=anim-1",
+    "css/components/cards.css?v=cat-arrow-1",
     "css/dropdown.css?v=anim-1",
     ...(extraCss || []),
   ];
@@ -232,6 +253,9 @@ function renderHead({ title, description, canonical, image, ogType, jsonLd, extr
     <meta property="og:title" content="${escapeHTML(title)}">
     <meta property="og:description" content="${escapeHTML(description)}">
     <meta property="og:image" content="${escapeHTML(image)}">
+    <meta property="og:image:secure_url" content="${escapeHTML(image)}">
+    ${imageType ? `<meta property="og:image:type" content="${imageType}">` : ""}
+    ${isSocialImage ? '<meta property="og:image:width" content="1200">\n    <meta property="og:image:height" content="630">' : ""}
     <meta property="og:locale" content="es_PA">
     <meta property="og:site_name" content="Javy Suplementos">
 
@@ -267,7 +291,7 @@ const COMMON_SCRIPTS = [
   "/js/auth.js?v=session-state",
   "/js/icons.js?v=sidebar-toggle-1",
   "/js/dropdown.js?v=resize-fix-1",
-  "/js/cart.js?v=ferguson-label-1",
+  "/js/cart.js?v=quote-img-1",
 ];
 
 function renderScripts(extra = []) {
@@ -288,8 +312,10 @@ function renderProductPage(product, ctx) {
   const presentation = product.presentation || "";
   const price = productPrice(product);
   const available = isAvailable(product);
-  const image = absoluteUrl(product.image_url || product.imagen_url);
-  const imageSrc = product.image_url || product.imagen_url || PLACEHOLDER_IMAGE;
+  const productImage = product.image_url || product.imagen_url;
+  const hasProductImage = hasRealProductImage(productImage);
+  const image = hasProductImage ? absoluteUrl(productImage) : SOCIAL_IMAGE;
+  const imageSrc = productImage || PLACEHOLDER_IMAGE;
 
   const shortDescription = String(product.description_short || product.subtitulo || "").trim();
   const description = shortDescription
@@ -307,7 +333,7 @@ function renderProductPage(product, ctx) {
       {
         "@type": "Product",
         name,
-        image,
+        ...(hasProductImage ? { image } : {}),
         description,
         url,
         ...(brand ? { brand: { "@type": "Brand", name: brand } } : {}),
@@ -344,7 +370,7 @@ function renderProductPage(product, ctx) {
 
   const priceText = price > 0 ? `$${price.toFixed(2)}` : "Consultar precio";
   const categoryLink = familySlug
-    ? `<a href="${categoryPath(familySlug)}">${escapeHTML(familyName)}</a>${typeName ? ` · ${escapeHTML(typeName)}` : ""}`
+    ? `<span class="pdp__cat-family"><a href="${categoryPath(familySlug)}">${escapeHTML(familyName)}</a></span>${typeName ? `<svg class="pdp__cat-sep" width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="pdp__cat-type">${escapeHTML(typeName)}</span>` : ""}`
     : escapeHTML(categoryName);
 
   // Breadcrumb de 3 tramos: Catálogo / Familia (enlazada) / Subcategoría. Sin
@@ -365,8 +391,8 @@ function renderProductPage(product, ctx) {
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
-${renderHead({ title, description, canonical: url, image, ogType: "product", jsonLd, extraCss: ["css/pages/product.css?v=eyebrow-chip"] })}
-${renderScripts(["/js/product-page.js?v=eyebrow-chip"])}
+${renderHead({ title, description, canonical: url, image, ogType: "product", jsonLd, extraCss: ["css/pages/product.css?v=cat-chevron-1"] })}
+${renderScripts(["/js/product-page.js?v=cat-chevron-1"])}
   </head>
   <body>
     <div id="site-header"></div>
@@ -509,12 +535,28 @@ function renderCategoryRedirect(oldSlug, familySlug, familyName) {
 `;
 }
 
-function renderCategoryPage(category, products, slugMap, categorySlug, types = []) {
+// Familia/tipo de una card: separados porque la card los pinta con distinto
+// peso, unidos por una flecha en vez de un punto.
+function cardCategoryParts(product, categoriesById) {
+  const fallback = String(product.category || product.categoria || "").trim();
+  const own = product.category_id ? categoriesById.get(String(product.category_id)) : null;
+  if (!own) return { family: fallback, type: "" };
+  if (!own.parent_id) return { family: String(own.name || fallback).trim(), type: "" };
+
+  const family = categoriesById.get(String(own.parent_id));
+  return {
+    family: String(family?.name || fallback).trim(),
+    type: String(own.name || "").trim(),
+  };
+}
+
+function renderCategoryPage(category, products, slugMap, categorySlug, types = [], categoriesById = new Map()) {
   const url = `${SITE}${categoryPath(categorySlug)}`;
   const name = category.name || "Categoría";
   const title = `${name} en Panamá | Javy Suplementos`;
   const description = `${name}: ${products.length} producto${products.length === 1 ? "" : "s"} original${products.length === 1 ? "" : "es"} con precio. Arma tu cotización y envíala por WhatsApp con Javy Suplementos.`;
-  const image = absoluteUrl(products[0]?.image_url || products[0]?.imagen_url);
+  const categoryImage = products[0]?.image_url || products[0]?.imagen_url;
+  const image = hasRealProductImage(categoryImage) ? absoluteUrl(categoryImage) : SOCIAL_IMAGE;
 
   const jsonLd = jsonForScript({
     "@context": "https://schema.org",
@@ -539,7 +581,9 @@ function renderCategoryPage(category, products, slugMap, categorySlug, types = [
           item: {
             "@type": "Product",
             name: p.name || p.nombre,
-            image: absoluteUrl(p.image_url || p.imagen_url),
+            ...(hasRealProductImage(p.image_url || p.imagen_url)
+              ? { image: absoluteUrl(p.image_url || p.imagen_url) }
+              : {}),
             url: `${SITE}${productPath(slugMap.get(String(p.id)))}`,
             ...(p.brand ? { brand: { "@type": "Brand", name: p.brand } } : {}),
             ...(productPrice(p) > 0
@@ -597,6 +641,13 @@ ${types
       const available = isAvailable(p);
       const img = p.image_url || p.imagen_url || PLACEHOLDER_IMAGE;
       const href = productPath(productSlug);
+      const categoryParts = cardCategoryParts(p, categoriesById);
+      const categoryTypeMarkup = categoryParts.type
+        ? `<span class="product-card__category-sep">›</span><span class="product-card__category-type">${escapeHTML(categoryParts.type)}</span>`
+        : "";
+      const categoryMarkup = categoryParts.family
+        ? `            <span class="product-card__category"><span class="product-card__category-family">${escapeHTML(categoryParts.family)}</span>${categoryTypeMarkup}</span>\n`
+        : "";
 
       // Los data-* llevan lo mínimo para cotizar sin depender de la red: si
       // Supabase no responde, js/categoria.js arma el producto con esto y el
@@ -611,7 +662,7 @@ ${featured ? `          <span class="product-card__badge">Destacado</span>\n` : 
               <span class="product-card__brand">${escapeHTML(p.brand || "Marca en revisión")}</span>
               <span class="product-card__status ${available ? "is-available" : "is-agotado"}">${available ? "Disponible" : "Agotado"}</span>
             </div>
-            <h2 class="product-card__name"><a class="product-card__name-link" href="${href}">${escapeHTML(name)}</a></h2>
+${categoryMarkup}            <h2 class="product-card__name"><a class="product-card__name-link" href="${href}">${escapeHTML(name)}</a></h2>
             <div class="product-card__price-row">
               <span class="product-card__price-group"><span class="product-card__price">${escapeHTML(priceText)}</span>${hasOffer ? `<span class="product-card__price-old">$${oldPrice.toFixed(2)}</span><span class="product-card__discount">-${discount}%</span>` : ""}</span>
               ${p.presentation ? `<span class="product-card__pres">${escapeHTML(p.presentation)}</span>` : ""}
@@ -629,7 +680,7 @@ ${featured ? `          <span class="product-card__badge">Destacado</span>\n` : 
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
-${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-unif", "css/pages/supplements.css?v=scroll-fix-1"] })}
+${renderHead({ title, description, canonical: url, image, ogType: "website", jsonLd, extraCss: ["css/pages/product.css?v=cat-unif", "css/pages/supplements.css?v=wide-grid-1"] })}
 ${renderScripts(["/js/categoria.js?v=cat-unif"])}
   </head>
   <body>
@@ -795,6 +846,13 @@ async function main() {
 
   // Se borran los directorios completos para que un producto dado de baja o
   // renombrado no deje su página vieja huérfana en el repo.
+  //
+  // OJO: cada carpeta que desaparezca acá es una URL que estaba en sitemap.xml y
+  // que Google tiene indexada; a partir de ahora devuelve 404. GitHub Pages no
+  // emite 301, así que el redirect va en Cloudflare y hay que anotarlo a mano:
+  // revisá `git status` después de correr esto y seguí el paso documentado en
+  // README.md ("Toda carpeta borrada es una URL que queda en 404"), que apunta a
+  // docs/seguridad-cloudflare.md §2.6 (categorías) y §2.7 (productos).
   for (const dir of ["producto", "categoria"]) {
     const full = join(ROOT, dir);
     if (existsSync(full)) await rm(full, { recursive: true });
@@ -825,7 +883,7 @@ async function main() {
     const list = productsByFamily.get(String(category.id)) || [];
     const categorySlug = categorySlugs.get(String(category.id));
     const types = typesOfFamily.get(String(category.id)) || [];
-    const html = renderCategoryPage(category, list, slugMap, categorySlug, types);
+    const html = renderCategoryPage(category, list, slugMap, categorySlug, types, categoriesById);
     const dir = join(ROOT, "categoria", categorySlug);
     await mkdir(dir, { recursive: true });
     await writeFile(join(dir, "index.html"), html, "utf8");
@@ -859,7 +917,6 @@ async function main() {
       priority: "0.7",
     })),
     { loc: `${SITE}/contacto.html`, changefreq: "monthly", priority: "0.7" },
-    { loc: `${SITE}/testimonios.html`, changefreq: "monthly", priority: "0.6" },
   ];
   await writeFile(join(ROOT, "sitemap.xml"), renderSitemap(urls), "utf8");
 
