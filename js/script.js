@@ -40,6 +40,16 @@ function slugify(value = "") {
     .replace(/^-|-$/g, "");
 }
 
+/* El badge "Destacado" de la card. El catálogo y la ficha de producto lo pintan
+   con `featured` a secas; en la home vale también `show_on_home` porque los dos
+   campos viven desincronizados en la base: hay productos curados en el inicio
+   con `featured` en false, y sin esto la sección salía con unas cards con badge
+   y otras sin, sin ninguna diferencia visible para el cliente. Estar curado en
+   el inicio ES ser destacado. */
+function isFeatured(product) {
+  return product?.featured === true || product?.show_on_home === true;
+}
+
 function productCanBeQuoted(product) {
   if (product.available === false) return false;
   if (!product.flavors?.length) return true;
@@ -200,6 +210,7 @@ function renderFeaturedProducts(productos) {
     const detailUrl = window.javyProductUrl?.forProduct?.(product) || `product-page.html?id=${encodeURIComponent(product.id)}`;
     card.innerHTML = `
       <a class="product-card__media product-card__media-link" href="${detailUrl}" aria-label="Ver ${escapeHTML(product.name)}">
+        ${isFeatured(product) ? '<span class="product-card__badge">Destacado</span>' : ""}
         <img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.name)}" class="product-card__img" loading="lazy" />
       </a>
 
