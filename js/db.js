@@ -885,9 +885,15 @@ async function updateHomeProducts(productIds = []) {
     throw new Error("No puedes mostrar mas de 8 productos en el inicio.");
   }
 
+  /* Se apaga SOLO la curación del inicio. Antes esta línea también ponía
+     is_featured/featured en false en TODO el catálogo, así que guardar el
+     inicio borraba de un saque los destacados que vivían fuera de él: quedaban
+     productos marcados como destacados en el drawer y apagados en la base sin
+     que nadie los hubiera tocado. "Destacado" (resalta en su categoría) y
+     "en el inicio" son cosas distintas; solo la segunda se administra acá. */
   const { error: resetError } = await supabaseClient
     .from("products")
-    .update({ show_on_home: false, home_order: null, is_featured: false, featured: false })
+    .update({ show_on_home: false, home_order: null })
     .not("id", "is", null);
 
   if (resetError) throw resetError;

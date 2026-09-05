@@ -3,16 +3,42 @@
    imagen, chips de sabores/tags, objetivos, validación inline y guardado con
    sincronización de sabores. Comportamiento idéntico al monolito original.
    ============================================================================ */
-import { state, catById, families, typesOf } from "../state.js?v=adm-217c243e";
-import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-217c243e";
-import { $, esc, ico } from "../helpers.js?v=adm-217c243e";
-import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-217c243e";
-import { requestRerender } from "../shell.js?v=adm-217c243e";
-import { reloadProducts } from "../data.js?v=adm-217c243e";
+import { state, catById, families, typesOf } from "../state.js?v=adm-977b9358";
+import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-977b9358";
+import { $, esc, ico } from "../helpers.js?v=adm-977b9358";
+import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-977b9358";
+import { requestRerender } from "../shell.js?v=adm-977b9358";
+import { reloadProducts } from "../data.js?v=adm-977b9358";
 
 // Arreglos de texto (beneficios/uso/descripción) ⇄ textarea (una línea por ítem).
 const linesToText = (v) => Array.isArray(v) ? v.join("\n") : (v || "");
 const textToLines = (v) => String(v || "").split("\n").map((s) => s.trim()).filter(Boolean);
+
+/* Posición del producto entre los destacados del home.
+
+   Esto arregla el bug que desordenaba el inicio solo. Antes era
+   `values.home_order || null`: con el campo "Orden en inicio" vacío -que es
+   como queda siempre que el orden se curó desde la sección Inicio, porque esa
+   pantalla no escribe en este formulario- se guardaba null. Y un null hace que
+   getHomeProducts() (js/db.js) mande el producto al fondo con valor 999 y
+   reordene alfabéticamente. O sea: bastaba editarle el precio a un producto
+   destacado para que el orden de todo el home se rompiera.
+
+   Ahora, con el campo vacío: si el producto ya tenía posición se conserva, y si
+   recién entra al inicio se le da la siguiente libre en vez de dejarlo sin. */
+function resolveHomeOrder(typed, data) {
+  const escrito = Number(String(typed || "").trim());
+  if (Number.isFinite(escrito) && escrito > 0) return escrito;
+
+  const previo = Number(data.home_order);
+  if (Number.isFinite(previo) && previo > 0) return previo;
+
+  const ocupados = state.products
+    .filter((p) => p.show_on_home && String(p.id) !== String(data.id))
+    .map((p) => Number(p.home_order))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  return ocupados.length ? Math.max(...ocupados) + 1 : 1;
+}
 
 export function openProductDrawer(product, opts = {}) {
   const isNew = !product || !product.id;
@@ -169,7 +195,7 @@ export function openProductDrawer(product, opts = {}) {
               ${switchRow("featured", "Destacado", "Resalta el producto en su categoría", data.featured)}
               ${switchRow("home", "Mostrar en inicio", "Aparece entre los productos del home (máx. " + HOME_MAX + ")", data.home)}
             </div>
-            <div data-home-order-slot>${data.home ? field("Orden en inicio", false, `<input class="ad-input" inputmode="numeric" data-f="home_order" value="${esc(data.home_order)}" placeholder="Ej. 1" style="max-width:120px" />`, null, "Posición entre los destacados del home") : ""}</div>
+            <div data-home-order-slot>${data.home ? field("Orden en inicio", false, `<input class="ad-input" inputmode="numeric" data-f="home_order" value="${esc(data.home_order)}" placeholder="Dejalo vacío y se acomoda solo" style="max-width:220px" />`, null, "Vacío = conserva la posición que ya tenía, o va al final si es nuevo.") : ""}</div>
           `)}
         </div>
         <aside class="ad-modal__preview" aria-label="Vista previa del producto">
@@ -483,8 +509,12 @@ export function openProductDrawer(product, opts = {}) {
   homeSwitch.addEventListener("change", () => {
     const slot = get("[data-home-order-slot]");
     slot.innerHTML = homeSwitch.checked
-      ? field("Orden en inicio", false, `<input class="ad-input" inputmode="numeric" data-f="home_order" value="${esc(data.home_order)}" placeholder="Ej. 1" style="max-width:120px" />`, null, "Posición entre los destacados del home")
+      ? field("Orden en inicio", false, `<input class="ad-input" inputmode="numeric" data-f="home_order" value="${esc(data.home_order)}" placeholder="Dejalo vacío y se acomoda solo" style="max-width:220px" />`, null, "Vacío = conserva la posición que ya tenía, o va al final si es nuevo.")
       : "";
+    // El guardado fuerza featured cuando home está activo; se refleja acá para
+    // que el switch no muestre una cosa y la base termine con otra.
+    const featuredSwitch = overlay.querySelector('[data-sw="featured"]');
+    if (homeSwitch.checked && featuredSwitch) featuredSwitch.checked = true;
   });
 
   // validation
@@ -619,10 +649,13 @@ async function saveProduct(ctx) {
     flavor_mode: values.flavor_mode,
     available: values.available,
     is_available: values.available,
-    featured: values.featured,
-    is_featured: values.featured,
+    // Estar curado en el inicio ES ser destacado: sin esto los dos campos se
+    // separaban y quedaban productos en el home con featured en false (que es
+    // justo lo que dejaba cards sin badge en la página principal).
+    featured: values.featured || values.home,
+    is_featured: values.featured || values.home,
     show_on_home: values.home,
-    home_order: values.home ? (values.home_order || null) : null,
+    home_order: values.home ? resolveHomeOrder(values.home_order, data) : null,
     tags: values.tags,
     goals: values.goals,
   };
