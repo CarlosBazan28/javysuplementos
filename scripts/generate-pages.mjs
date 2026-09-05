@@ -221,7 +221,7 @@ function renderHead({ title, description, canonical, image, ogType, jsonLd, extr
   const imageType = imageMimeType(image);
   const isSocialImage = image === SOCIAL_IMAGE;
   const css = [
-    "css/styles.css?v=fase7-copy-1",
+    "css/styles.css?v=hidden-global-1",
     "css/components/nav.css?v=cat-cta-1",
     "css/components/auth.css?v=session-state",
     "css/tokens.css?v=anim-1",
@@ -287,11 +287,11 @@ const COMMON_SCRIPTS = [
   "/js/whatsapp-config.js?v=num-2026-08",
   "/js/product-data.js",
   "/js/product-urls.js?v=seo-urls",
-  "/js/db.js?v=sin-combos-1",
+  "/js/db.js?v=tuteo-1",
   "/js/auth.js?v=session-state",
   "/js/icons.js?v=sidebar-toggle-1",
   "/js/dropdown.js?v=resize-fix-1",
-  "/js/cart.js?v=fase7-copy-1",
+  "/js/cart.js?v=tuteo-1",
 ];
 
 function renderScripts(extra = []) {
@@ -461,7 +461,7 @@ ${renderScripts(["/js/product-page.js?v=cat-chevron-1"])}
 
           <section class="pdp__details" aria-labelledby="pdp-details-heading"${longDescription.length || benefits.length || usage.length ? "" : " hidden"}>
             <div class="pdp__details-head">
-              <p class="pdp__details-kicker">Conocé el producto</p>
+              <p class="pdp__details-kicker">Conoce el producto</p>
               <h2 id="pdp-details-heading" class="pdp__details-title">Información completa</h2>
             </div>
 
@@ -697,7 +697,7 @@ ${renderScripts(["/js/categoria.js?v=cat-unif"])}
         <h1 class="catalog-hero__title">${escapeHTML(name)} en Panamá</h1>
         <p class="catalog-hero__text">
           ${products.length} producto${products.length === 1 ? "" : "s"} original${products.length === 1 ? "" : "es"} en stock con precio de catálogo.
-          Agregá lo que te interese y enviá tu cotización por WhatsApp para confirmar disponibilidad.
+          Agrega lo que te interese y envía tu cotización por WhatsApp para confirmar disponibilidad.
         </p>
         <a class="catalog-hero__link" href="/supplements-page.html">Ver el catálogo completo con filtros</a>
       </section>
@@ -850,7 +850,7 @@ async function main() {
   // OJO: cada carpeta que desaparezca acá es una URL que estaba en sitemap.xml y
   // que Google tiene indexada; a partir de ahora devuelve 404. GitHub Pages no
   // emite 301, así que el redirect va en Cloudflare y hay que anotarlo a mano:
-  // revisá `git status` después de correr esto y seguí el paso documentado en
+  // revisa `git status` después de correr esto y sigue el paso documentado en
   // README.md ("Toda carpeta borrada es una URL que queda en 404"), que apunta a
   // docs/seguridad-cloudflare.md §2.6 (categorías) y §2.7 (productos).
   for (const dir of ["producto", "categoria"]) {

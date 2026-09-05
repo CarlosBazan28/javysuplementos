@@ -3,11 +3,11 @@
    actividad, con fecha de generación, vista en pantalla, impresión y PDF
    (guardar en el dispositivo o compartir).
    ============================================================================ */
-import { state, catById, families, typesOf } from "../state.js?v=adm-9019bb41";
-import { esc, ico, peso, hasOffer, discountPct, isAvailable, isMissingImage, agoLabel } from "../helpers.js?v=adm-9019bb41";
-import { paint } from "../view.js?v=adm-9019bb41";
-import { toast } from "../ui.js?v=adm-9019bb41";
-import { buildTable, printReport, slugify, buildReportPDF, saveOrShare } from "../export.js?v=adm-9019bb41";
+import { state, catById, families, typesOf } from "../state.js?v=adm-e7cb895c";
+import { esc, ico, peso, hasOffer, discountPct, isAvailable, isMissingImage, agoLabel } from "../helpers.js?v=adm-e7cb895c";
+import { paint } from "../view.js?v=adm-e7cb895c";
+import { toast } from "../ui.js?v=adm-e7cb895c";
+import { buildTable, printReport, slugify, buildReportPDF, saveOrShare } from "../export.js?v=adm-e7cb895c";
 
 export function renderReportsTab(container) {
   paint(container, `
@@ -170,7 +170,7 @@ function repMedida(f) {
     title: tituloMedida(f),
     columns: ["Producto", "Marca", "Categoría", "Presentación", "Precio", "Estado"],
     rows,
-    empty: "Ningún producto coincide con esos filtros. Aflojá alguno y volvé a generar.",
+    empty: "Ningún producto coincide con esos filtros. Afloja alguno y vuelve a generar.",
     pdf: { products: pdfCatalogItems(products, (p) => (isAvailable(p) ? "" : "Agotado")) },
   };
 }

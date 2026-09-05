@@ -642,7 +642,7 @@ async function createCategory({ name, parentId = null, sortOrder = 100 }) {
     (c) => (c.name || "").trim().toLowerCase() === trimmed.toLowerCase(),
   );
   if (clash) {
-    throw new Error(`Ya existe «${clash.name}» en este nivel. Usá esa o elegí otro nombre.`);
+    throw new Error(`Ya existe «${clash.name}» en este nivel. Usa esa o elige otro nombre.`);
   }
   // Slug único: fam- para familias, tipo- para tipos, + base del nombre.
   const base = categorySlugify(trimmed) || "categoria";

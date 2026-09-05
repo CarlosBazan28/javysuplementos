@@ -50,8 +50,8 @@ manual, por chat.
 | `/revisar-cambios` | Lanza en paralelo la revisión de diseño + lógica de tus cambios. |
 
 Además, `node scripts/generate-pages.mjs` regenera las páginas estáticas del catálogo
-(`producto/`, `categoria/`, `js/product-urls.js` y `sitemap.xml`) desde Supabase. **Corrélo
-cada vez que cambien productos o categorías** y revisá el `git diff` antes de commitear.
+(`producto/`, `categoria/`, `js/product-urls.js` y `sitemap.xml`) desde Supabase. **Córrelo
+cada vez que cambien productos o categorías** y revisa el `git diff` antes de commitear.
 
 > ### ⚠️ Toda carpeta borrada es una URL que queda en 404
 >
@@ -60,14 +60,14 @@ cada vez que cambien productos o categorías** y revisá el `git diff` antes de 
 > su dirección web ya estaba en `sitemap.xml` e indexada en Google, y pasa a devolver 404.
 > GitHub Pages no puede emitir un 301, así que el redirect va sí o sí en Cloudflare.
 >
-> **Después de correr el script, mirá `git status`.** Por cada carpeta que aparezca como
+> **Después de correr el script, mira `git status`.** Por cada carpeta que aparezca como
 > `deleted:`:
 >
-> 1. Anotá la regla `301` en [`docs/seguridad-cloudflare.md`](docs/seguridad-cloudflare.md) —
+> 1. Anota la regla `301` en [`docs/seguridad-cloudflare.md`](docs/seguridad-cloudflare.md) —
 >    §2.6 si es una categoría, §2.7 si es un producto. El destino es la categoría a la que
 >    pertenecía (sale del breadcrumb de la propia ficha, visible con
 >    `git show HEAD~1:producto/<slug>/index.html`).
-> 2. Aplicala en **Cloudflare → Rules → Redirect Rules** (o Bulk Redirects si son muchas)
+> 2. Aplícala en **Cloudflare → Rules → Redirect Rules** (o Bulk Redirects si son muchas)
 >    **antes** de que el cambio llegue a producción.
 >
 > Para categorías hay además un segundo paso en el código: agregar el slug viejo a
@@ -248,7 +248,7 @@ administrador": se mantuvo el nombre para no reescribir las ~20 políticas que y
 
 En el panel, `js/admin/permissions.js` expone `canWrite()` / `canManageUsers()`. Cuando el usuario
 es Lector, `shell.js` pone la clase `ad-readonly` en el `<body>` y el CSS esconde todo lo marcado
-con `data-write-only`. **Eso es cosmética**: si querés verificar un permiso de verdad, probalo
+con `data-write-only`. **Eso es cosmética**: si quieres verificar un permiso de verdad, pruébalo
 contra la base, no contra la UI.
 
 Crear y eliminar usuarios toca `auth.users` y necesita la `service_role key`, que no puede vivir en
