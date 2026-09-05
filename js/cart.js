@@ -895,7 +895,6 @@ function createConsultationPanel() {
   panel.innerHTML = `
     <div class="consultation-panel__header">
       <div>
-        <p class="consultation-panel__eyebrow">WhatsApp con Javy</p>
         <h2>Mi cotizacion</h2>
       </div>
       <button class="consultation-panel__close" type="button" aria-label="Cerrar cotizacion">

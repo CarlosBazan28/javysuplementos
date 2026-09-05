@@ -225,9 +225,9 @@ function renderHead({ title, description, canonical, image, ogType, jsonLd, extr
     "css/components/nav.css?v=cat-cta-1",
     "css/components/auth.css?v=session-state",
     "css/tokens.css?v=anim-1",
-    "css/components/cart.css?v=delivery-2",
+    "css/components/cart.css?v=fase3-ui-1",
     "css/components/cards.css?v=cat-arrow-1",
-    "css/dropdown.css?v=anim-1",
+    "css/dropdown.css?v=fase3-ui-1",
     ...(extraCss || []),
   ];
 
@@ -291,7 +291,7 @@ const COMMON_SCRIPTS = [
   "/js/auth.js?v=session-state",
   "/js/icons.js?v=sidebar-toggle-1",
   "/js/dropdown.js?v=resize-fix-1",
-  "/js/cart.js?v=delivery-1",
+  "/js/cart.js?v=fase3-ui-1",
 ];
 
 function renderScripts(extra = []) {
