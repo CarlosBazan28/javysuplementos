@@ -854,7 +854,7 @@ function openAddModal(productOrId) {
           flavorSelect.classList.remove("needs-selection");
           visibleTrigger.removeAttribute("aria-invalid");
         }, 1200);
-        showToast("Elegí un sabor");
+        showToast("Elige un sabor");
         visibleTrigger.focus?.();
         return;
       }

@@ -1,13 +1,13 @@
 /* ============================================================================
    Sección Inicio: curación de los productos destacados del home (orden + cupo).
    ============================================================================ */
-import { state } from "../state.js?v=adm-9019bb41";
-import { HOME_MAX, HOME_MIN } from "../config.js?v=adm-9019bb41";
-import { $, esc, ico, imgTag, peso } from "../helpers.js?v=adm-9019bb41";
-import { setView } from "../view.js?v=adm-9019bb41";
-import { bindEditClicks } from "../shell.js?v=adm-9019bb41";
-import { toast } from "../ui.js?v=adm-9019bb41";
-import { reloadProducts } from "../data.js?v=adm-9019bb41";
+import { state } from "../state.js?v=adm-e7cb895c";
+import { HOME_MAX, HOME_MIN } from "../config.js?v=adm-e7cb895c";
+import { $, esc, ico, imgTag, peso } from "../helpers.js?v=adm-e7cb895c";
+import { setView } from "../view.js?v=adm-e7cb895c";
+import { bindEditClicks } from "../shell.js?v=adm-e7cb895c";
+import { toast } from "../ui.js?v=adm-e7cb895c";
+import { reloadProducts } from "../data.js?v=adm-e7cb895c";
 
 export function renderHome() {
   const curados = () => state.products
@@ -27,7 +27,7 @@ export function renderHome() {
   const estadoTexto = () => {
     if (ids.length < HOME_MIN) {
       const faltan = HOME_MIN - ids.length;
-      return `El inicio no puede quedar con menos de ${HOME_MIN} productos (te ${faltan === 1 ? "falta 1" : `faltan ${faltan}`}). Para sacar uno, agregá otro en su lugar.`;
+      return `El inicio no puede quedar con menos de ${HOME_MIN} productos (te ${faltan === 1 ? "falta 1" : `faltan ${faltan}`}). Para quitar uno, agrega otro en su lugar.`;
     }
     if (ids.length > HOME_MAX) return `Máximo ${HOME_MAX} productos.`;
     return sinGuardar() ? "Cambios sin guardar." : "Todo guardado.";
@@ -43,10 +43,10 @@ export function renderHome() {
 
     setView(`
       <div class="ad-section-intro">
-        <div><p class="ad-kicker">Home</p><p>Curá los productos destacados que aparecen en la página principal. Ordená con las flechas. Entre ${HOME_MIN} y ${HOME_MAX} productos.</p></div>
+        <div><p class="ad-kicker">Home</p><p>Elige los productos destacados que aparecen en la página principal. Ordénalos con las flechas. Entre ${HOME_MIN} y ${HOME_MAX} productos.</p></div>
         <span class="ad-counter${full ? " ad-counter--full" : ""}"><strong>${ids.length}</strong> / ${HOME_MAX} en el inicio</span>
       </div>
-      ${sinGuardar() ? `<div class="ad-panel ad-home-dirty"><p><strong>Tenés cambios sin guardar.</strong> Lo que ves acá todavía no está en la página principal: apretá <em>Guardar inicio</em> para aplicarlo.</p></div>` : ""}
+      ${sinGuardar() ? `<div class="ad-panel ad-home-dirty"><p><strong>Tienes cambios sin guardar.</strong> Lo que ves acá todavía no está en la página principal: pulsa <em>Guardar inicio</em> para aplicarlo.</p></div>` : ""}
       <div class="ad-panel">
         <div class="ad-slots">
           ${items.map((p, i) => `
@@ -62,12 +62,12 @@ export function renderHome() {
               </div>
             </div>`).join("")}
           ${Array.from({ length: emptySlots }).map((_, i) => `
-            <div class="ad-slot ad-slot--empty"><span class="ad-slot__order">${ids.length + i + 1}</span><span>Espacio libre — agregá un producto destacado</span></div>`).join("")}
+            <div class="ad-slot ad-slot--empty"><span class="ad-slot__order">${ids.length + i + 1}</span><span>Espacio libre — agrega un producto destacado</span></div>`).join("")}
         </div>
         <div class="ad-field ad-home-add" data-write-only>
           <label class="ad-field__label">Agregar producto al inicio</label>
           <select class="ad-select" data-pool aria-label="Agregar producto al inicio" ${full ? "disabled" : ""}><option value="">Elegir…</option>${poolOptions}</select>
-          ${full ? `<span class="ad-field__help">Cupo lleno (${HOME_MAX}). Quitá uno para agregar otro.</span>` : ""}
+          ${full ? `<span class="ad-field__help">Cupo lleno (${HOME_MAX}). Quita uno para agregar otro.</span>` : ""}
         </div>
         <div class="ad-save-row" data-write-only>
           <button class="ad-btn ad-btn--primary" type="button" data-save-home>${ico("save")}Guardar inicio</button>
@@ -105,7 +105,7 @@ export function renderHome() {
 
 async function saveHome(ids) {
   if (ids.length < HOME_MIN) {
-    toast({ tone: "err", msg: `El inicio necesita ${HOME_MIN} productos`, sub: "Agregá otro en lugar del que sacaste y volvé a guardar." });
+    toast({ tone: "err", msg: `El inicio necesita ${HOME_MIN} productos`, sub: "Agrega otro en lugar del que quitaste y vuelve a guardar." });
     return;
   }
   if (ids.length > HOME_MAX) { toast({ tone: "err", msg: `Máximo ${HOME_MAX} productos.` }); return; }

@@ -3,12 +3,12 @@
    imagen, chips de sabores/tags, objetivos, validación inline y guardado con
    sincronización de sabores. Comportamiento idéntico al monolito original.
    ============================================================================ */
-import { state, catById, families, typesOf } from "../state.js?v=adm-9019bb41";
-import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-9019bb41";
-import { $, esc, ico } from "../helpers.js?v=adm-9019bb41";
-import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-9019bb41";
-import { requestRerender } from "../shell.js?v=adm-9019bb41";
-import { reloadProducts } from "../data.js?v=adm-9019bb41";
+import { state, catById, families, typesOf } from "../state.js?v=adm-e7cb895c";
+import { PLACEHOLDER, HOME_MAX, GOAL_SUGGESTIONS } from "../config.js?v=adm-e7cb895c";
+import { $, esc, ico } from "../helpers.js?v=adm-e7cb895c";
+import { field, affix, switchRow, switchMarkup, chipTag, bindChips, confirmModal, toast } from "../ui.js?v=adm-e7cb895c";
+import { requestRerender } from "../shell.js?v=adm-e7cb895c";
+import { reloadProducts } from "../data.js?v=adm-e7cb895c";
 
 // Arreglos de texto (beneficios/uso/descripción) ⇄ textarea (una línea por ítem).
 const linesToText = (v) => Array.isArray(v) ? v.join("\n") : (v || "");
@@ -94,7 +94,7 @@ export function openProductDrawer(product, opts = {}) {
 
   const metaLine = (!isNew && product.updated_by)
     ? `${esc(product.brand || "")} · última edición por ${esc(product.updated_by)}`
-    : (isNew ? (opts.duplicateOf ? `Copia de ${esc(opts.duplicateOf)}` : "Completá los datos esenciales") : esc(product.brand || "Editar producto"));
+    : (isNew ? (opts.duplicateOf ? `Copia de ${esc(opts.duplicateOf)}` : "Completa los datos esenciales") : esc(product.brand || "Editar producto"));
 
   function familyOptions() {
     return `<option value="">Elegir…</option>` + families().map((f) => `<option value="${esc(f.id)}"${f.id === famId ? " selected" : ""}>${esc(f.name)}</option>`).join("");
@@ -176,7 +176,7 @@ export function openProductDrawer(product, opts = {}) {
                   <button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-flavor-add-btn>${ico("plus")}Agregar</button>
                 </div>
                 <span class="ad-field__error" data-flavor-msg></span>
-              `, null, "Marcá cada sabor como disponible o agotado")}
+              `, null, "Marca cada sabor como disponible o agotado")}
             </div>
           `)}
           ${sec("descripcion", `
@@ -195,7 +195,7 @@ export function openProductDrawer(product, opts = {}) {
               ${switchRow("featured", "Destacado", "Resalta el producto en su categoría", data.featured)}
               ${switchRow("home", "Mostrar en inicio", "Aparece entre los productos del home (máx. " + HOME_MAX + ")", data.home)}
             </div>
-            <div data-home-order-slot>${data.home ? field("Orden en inicio", false, `<input class="ad-input" inputmode="numeric" data-f="home_order" value="${esc(data.home_order)}" placeholder="Dejalo vacío y se acomoda solo" style="max-width:220px" />`, null, "Vacío = conserva la posición que ya tenía, o va al final si es nuevo.") : ""}</div>
+            <div data-home-order-slot>${data.home ? field("Orden en inicio", false, `<input class="ad-input" inputmode="numeric" data-f="home_order" value="${esc(data.home_order)}" placeholder="Déjalo vacío y se acomoda solo" style="max-width:220px" />`, null, "Vacío = conserva la posición que ya tenía, o va al final si es nuevo.") : ""}</div>
           `)}
         </div>
         <aside class="ad-modal__preview" aria-label="Vista previa del producto">
@@ -286,7 +286,7 @@ export function openProductDrawer(product, opts = {}) {
             </section>
           </div>
         </article>`;
-      get("[data-preview-note]").textContent = "El detalle refleja la información editorial mientras escribís; las secciones vacías se ocultarán en la tienda.";
+      get("[data-preview-note]").textContent = "El detalle refleja la información editorial mientras escribes; las secciones vacías se ocultarán en la tienda.";
       return;
     }
 
@@ -348,7 +348,7 @@ export function openProductDrawer(product, opts = {}) {
     overlay.remove();
   }
   async function close() {
-    if (dirty && !(await confirmModal({ title: "Descartar cambios", body: "Tenés cambios sin guardar. ¿Querés descartarlos?", confirmLabel: "Descartar", danger: true }))) return;
+    if (dirty && !(await confirmModal({ title: "Descartar cambios", body: "Tienes cambios sin guardar. ¿Quieres descartarlos?", confirmLabel: "Descartar", danger: true }))) return;
     destroy();
   }
   const onKey = (e) => {
@@ -409,7 +409,7 @@ export function openProductDrawer(product, opts = {}) {
         <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" data-img-clear style="margin-top:8px">${ico("trash")}Quitar imagen</button>
         <input type="file" accept="image/*" data-img-input hidden />`;
     } else {
-      imageSlot.innerHTML = `<label class="ad-drop">${ico("upload")}<strong>Subir imagen del producto</strong><small>PNG o WebP con fondo transparente · tocá para elegir</small><input type="file" accept="image/*" data-img-input hidden /></label>`;
+      imageSlot.innerHTML = `<label class="ad-drop">${ico("upload")}<strong>Subir imagen del producto</strong><small>PNG o WebP con fondo transparente · toca para elegir</small><input type="file" accept="image/*" data-img-input hidden /></label>`;
     }
     if (window.javyIcons) window.javyIcons.enhance(imageSlot);
     const input = imageSlot.querySelector("[data-img-input]");
@@ -449,7 +449,7 @@ export function openProductDrawer(product, opts = {}) {
           ${switchMarkup(f.available, `data-flavor-toggle="${i}" aria-label="Disponible: ${esc(f.name)}"`)}
           <button class="ad-icon-btn ad-icon-btn--danger" type="button" data-flavor-del="${i}" title="Quitar">${ico("trash")}</button>
         </div>`).join("")
-      : `<p class="ad-flavor-empty">Sin sabores todavía. Agregá uno abajo.</p>`;
+      : `<p class="ad-flavor-empty">Sin sabores todavía. Agrega uno abajo.</p>`;
     if (window.javyIcons) window.javyIcons.enhance(flavorListEl);
     flavorListEl.querySelectorAll("[data-flavor-toggle]").forEach((cb) => cb.addEventListener("change", () => {
       flavorRows[+cb.getAttribute("data-flavor-toggle")].available = cb.checked; markDirty();
@@ -509,7 +509,7 @@ export function openProductDrawer(product, opts = {}) {
   homeSwitch.addEventListener("change", () => {
     const slot = get("[data-home-order-slot]");
     slot.innerHTML = homeSwitch.checked
-      ? field("Orden en inicio", false, `<input class="ad-input" inputmode="numeric" data-f="home_order" value="${esc(data.home_order)}" placeholder="Dejalo vacío y se acomoda solo" style="max-width:220px" />`, null, "Vacío = conserva la posición que ya tenía, o va al final si es nuevo.")
+      ? field("Orden en inicio", false, `<input class="ad-input" inputmode="numeric" data-f="home_order" value="${esc(data.home_order)}" placeholder="Déjalo vacío y se acomoda solo" style="max-width:220px" />`, null, "Vacío = conserva la posición que ya tenía, o va al final si es nuevo.")
       : "";
     // El guardado fuerza featured cuando home está activo; se refleja acá para
     // que el switch no muestre una cosa y la base termine con otra.
@@ -523,12 +523,12 @@ export function openProductDrawer(product, opts = {}) {
     const old = fEl("old_price").value.trim();
     return {
       name: !fEl("name").value.trim() ? "El nombre es obligatorio" : "",
-      family: !famId ? "Elegí una familia" : "",
+      family: !famId ? "Elige una familia" : "",
       // Si la familia tiene subcategorías, hay que decidir: una de ellas o
       // "Sin subcategoría" a propósito. Dejarlo vacío es lo que vació el
       // segundo nivel del catálogo público.
       type: famId && typesOf(famId).length && !typeId
-        ? "Elegí una subcategoría (o marcá “Sin subcategoría”)"
+        ? "Elige una subcategoría (o marca “Sin subcategoría”)"
         : "",
       price: !price ? "El precio es obligatorio" : (isNaN(+price) || +price <= 0) ? "Precio inválido" : "",
       old_price: old && (isNaN(+old) || +old <= +price) ? "Debe ser mayor al precio actual" : "",
@@ -556,7 +556,7 @@ export function openProductDrawer(product, opts = {}) {
     if (!validate()) {
       const firstErr = railItems.find((b) => b.classList.contains("has-error"));
       if (firstErr) firstErr.click();
-      toast({ tone: "err", msg: "Revisá los campos marcados" });
+      toast({ tone: "err", msg: "Revisa los campos marcados" });
       return;
     }
     // aviso de duplicado al crear (mismo nombre + marca)
@@ -601,7 +601,7 @@ export function openProductDrawer(product, opts = {}) {
       saveBtn.innerHTML = `${ico("save")}${isNew ? "Crear producto" : "Guardar cambios"}`;
       if (window.javyIcons) window.javyIcons.enhance(saveBtn);
       if (e.code === "CONFLICT") {
-        const force = await confirmModal({ title: "Otro admin editó esto", body: "Otro administrador modificó este producto mientras lo editabas. ¿Querés sobrescribir sus cambios con los tuyos?", confirmLabel: "Sobrescribir", danger: true });
+        const force = await confirmModal({ title: "Otro admin editó esto", body: "Otro administrador modificó este producto mientras lo editabas. ¿Quieres sobrescribir sus cambios con los tuyos?", confirmLabel: "Sobrescribir", danger: true });
         if (force) { data.updated_at = null; doSave(); }
       } else {
         toast({ tone: "err", msg: "No se pudo guardar", sub: e.message });

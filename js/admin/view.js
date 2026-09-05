@@ -1,7 +1,7 @@
 /* ============================================================================
    Render de la vista principal (#adminView) y pantalla de error de sección.
    ============================================================================ */
-import { $, esc, ico, wireImageFallbacks } from "./helpers.js?v=adm-9019bb41";
+import { $, esc, ico, wireImageFallbacks } from "./helpers.js?v=adm-e7cb895c";
 
 export function setView(html) {
   const view = $("#adminView");
