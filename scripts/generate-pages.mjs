@@ -221,7 +221,7 @@ function renderHead({ title, description, canonical, image, ogType, jsonLd, extr
   const imageType = imageMimeType(image);
   const isSocialImage = image === SOCIAL_IMAGE;
   const css = [
-    "css/styles.css?v=fase7-copy-1",
+    "css/styles.css?v=hidden-global-1",
     "css/components/nav.css?v=cat-cta-1",
     "css/components/auth.css?v=session-state",
     "css/tokens.css?v=anim-1",
