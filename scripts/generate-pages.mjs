@@ -221,11 +221,11 @@ function renderHead({ title, description, canonical, image, ogType, jsonLd, extr
   const imageType = imageMimeType(image);
   const isSocialImage = image === SOCIAL_IMAGE;
   const css = [
-    "css/styles.css?v=anim-1",
+    "css/styles.css?v=hidden-fix-1",
     "css/components/nav.css?v=cat-cta-1",
     "css/components/auth.css?v=session-state",
     "css/tokens.css?v=anim-1",
-    "css/components/cart.css?v=delivery-1",
+    "css/components/cart.css?v=delivery-2",
     "css/components/cards.css?v=cat-arrow-1",
     "css/dropdown.css?v=anim-1",
     ...(extraCss || []),

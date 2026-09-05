@@ -373,6 +373,19 @@
    total. El domicilio aparece y desaparece segun el metodo elegido, por eso
    vive aca (pegado al selector) y no junto a la lista de productos: en mobile
    esa lista esta en otro paso del stepper. */
+/* El [hidden] del navegador es `display:none` con especificidad 0-0-0, así que
+   cualquier regla de layout de acá abajo le gana y el elemento sigue a la
+   vista aunque el JS lo haya ocultado. Es lo que dejaba la línea "Domicilio
+   $4.00" colgada al cambiar a Retiro o a Ferguson: el total se recalculaba
+   bien, pero la fila no se iba. Mismo criterio que en cards.css y
+   supplements.css. */
+.consultation-total[hidden],
+.consultation-summary[hidden],
+.consultation-summary__row[hidden],
+.consultation-summary__note[hidden] {
+  display: none;
+}
+
 .consultation-summary {
   display: grid;
   gap: 8px;
