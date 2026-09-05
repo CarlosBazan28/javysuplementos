@@ -32,8 +32,6 @@ export const NAV = [
     subtitle: "Gestiona el catálogo, precios y disponibilidad" },
   { key: "home", label: "Inicio", icon: "home", primary: true,
     subtitle: "Productos destacados en el inicio" },
-  { key: "combos", label: "Combos", icon: "layers", primary: true,
-    subtitle: "Paquetes con precio especial" },
   { key: "categories", label: "Categorías", icon: "tags", primary: false,
     subtitle: "Categorías y subcategorías del catálogo" },
   { key: "access", label: "Accesos", icon: "log-in", primary: false,

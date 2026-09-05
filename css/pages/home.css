@@ -27,7 +27,6 @@
 /* Mismo motivo que arriba: los enlaces del footer saltan a estas secciones y el
    header sticky les tapaba el título. */
 #productos,
-#combos,
 #educacion {
   scroll-margin-top: 112px;
 }
