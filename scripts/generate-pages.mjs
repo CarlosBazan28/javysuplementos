@@ -221,13 +221,13 @@ function renderHead({ title, description, canonical, image, ogType, jsonLd, extr
   const imageType = imageMimeType(image);
   const isSocialImage = image === SOCIAL_IMAGE;
   const css = [
-    "css/styles.css?v=hidden-fix-1",
+    "css/styles.css?v=fase7-copy-1",
     "css/components/nav.css?v=cat-cta-1",
     "css/components/auth.css?v=session-state",
     "css/tokens.css?v=anim-1",
-    "css/components/cart.css?v=delivery-2",
-    "css/components/cards.css?v=cat-arrow-1",
-    "css/dropdown.css?v=anim-1",
+    "css/components/cart.css?v=fase7-copy-1",
+    "css/components/cards.css?v=sin-combos-1",
+    "css/dropdown.css?v=fase3-ui-1",
     ...(extraCss || []),
   ];
 
@@ -287,11 +287,11 @@ const COMMON_SCRIPTS = [
   "/js/whatsapp-config.js?v=num-2026-08",
   "/js/product-data.js",
   "/js/product-urls.js?v=seo-urls",
-  "/js/db.js?v=solo-activos",
+  "/js/db.js?v=sin-combos-1",
   "/js/auth.js?v=session-state",
   "/js/icons.js?v=sidebar-toggle-1",
   "/js/dropdown.js?v=resize-fix-1",
-  "/js/cart.js?v=delivery-1",
+  "/js/cart.js?v=fase7-copy-1",
 ];
 
 function renderScripts(extra = []) {

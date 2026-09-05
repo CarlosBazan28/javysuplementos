@@ -623,7 +623,7 @@ body.ad-body { min-height: 100vh; }
 .ad-collapse__body { padding: 4px 14px 16px; display: grid; gap: 14px; }
 .ad-collapse:not(.is-open) .ad-collapse__body { display: none; }
 
-/* ---- modal de formulario (producto / combo): centrado con índice lateral ---- */
+/* ---- modal de formulario (producto): centrado con índice lateral ---- */
 .ad-modal-overlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 24px; }
 .ad-modal__scrim { position: absolute; inset: 0; background: rgba(0,0,0,0.62); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); animation: adFade .2s ease; }
 .ad-modal {
@@ -916,30 +916,13 @@ body.ad-body { min-height: 100vh; }
 .ad-type-chip__del .ad-ico { width: 12px; height: 12px; }
 .ad-type-chip--add { cursor: pointer; color: var(--pb-muted); border: 1px dashed var(--pb-line-strong); background: transparent; }
 
-/* ---- combos ---- */
-.ad-combos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
-.ad-combo-card { border: 1px solid var(--pb-line); border-radius: var(--ad-radius); background: linear-gradient(145deg, rgba(17,25,37,0.9), rgba(9,14,20,0.9)); padding: 14px; display: grid; gap: 12px; }
-.ad-combo-card.is-inactive { opacity: 0.6; }
-.ad-combo-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-.ad-combo-card__head h3 { font-size: 1.02rem; font-weight: 700; }
-.ad-combo-items { display: grid; gap: 7px; }
-.ad-combo-item { display: grid; grid-template-columns: 38px minmax(0,1fr) auto; gap: 10px; align-items: center; }
-.ad-combo-item img { width: 38px; height: 38px; border-radius: 8px; object-fit: contain; background: var(--pb-white-06); }
-.ad-combo-item small { color: var(--pb-muted); font-size: 0.76rem; }
-.ad-combo-item strong { font-size: 0.84rem; font-weight: 600; }
-.ad-combo-item__qty { color: var(--pb-muted); font-size: 0.8rem; font-weight: 700; }
-.ad-combo-card__price { display: flex; align-items: baseline; gap: 9px; padding-top: 11px; border-top: 1px solid var(--pb-line); flex-wrap: wrap; }
-.ad-combo-card__price .ad-price { font-size: 1.4rem; }
-.ad-combo-card__price s { color: var(--pb-muted); font-weight: 600; font-size: 0.95rem; }
-.ad-combo-card__save { margin-left: auto; }
-
-/* combo builder rows */
-.ad-builder-row { display: grid; grid-template-columns: 44px minmax(0,1.4fr) minmax(0,1fr) 76px auto; gap: 9px; align-items: end; }
-.ad-builder-row img { width: 44px; height: 44px; border-radius: 9px; object-fit: contain; background: var(--pb-white-06); align-self: center; }
-.ad-builder-summary { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding: 14px; border-radius: var(--ad-radius-sm); background: var(--pb-blue-tint-08); border: 1px solid rgba(90,180,233,0.22); margin-top: 4px; }
-.ad-builder-summary__totals { display: flex; align-items: baseline; gap: 12px; }
-.ad-builder-summary__totals .ad-price { font-size: 1.6rem; }
-.ad-builder-summary__totals s { color: var(--pb-muted); font-weight: 600; }
+/* ---- informe a medida ---- */
+.ad-rep-medida { margin-bottom: 14px; }
+.ad-rep-medida__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+.ad-rep-medida__head h3 { font-size: 1.05rem; font-weight: 700; margin: 2px 0 4px; }
+/* auto-fit y no columnas fijas: los cuatro filtros entran en una fila en
+   escritorio y se apilan solos en el panel angosto, sin media query aparte. */
+.ad-rep-medida__filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
 
 /* ---- settings status ---- */
 .ad-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }

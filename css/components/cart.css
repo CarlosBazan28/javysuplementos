@@ -50,14 +50,6 @@
   align-items: flex-start;
 }
 
-.consultation-panel__eyebrow {
-  color: var(--accent);
-  font-size: 0.75rem;
-  font-weight: 500;
-  margin-bottom: 4px;
-  text-transform: uppercase;
-}
-
 .consultation-panel h2 {
   font-size: 1.35rem;
   margin: 0;
@@ -329,7 +321,7 @@
 }
 
 .consultation-form select,
-.consultation-form input,
+.consultation-form input:not(.jdd__input),
 .consultation-form textarea {
   width: 100%;
   border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
@@ -512,6 +504,17 @@
   background: #f0595e;
 }
 
+/* Va pegado al botón de enviar, que es donde aparece la duda: el sitio no
+   cobra, y quien nunca compró así no lo sabe hasta que se lo dicen. */
+.consultation-panel__reassure {
+  flex-shrink: 0;
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
 .consultation-panel__footer {
   display: flex;
   gap: 10px;
@@ -566,7 +569,7 @@
 }
 
 .consultation-panel button:focus-visible,
-.consultation-form input:focus-visible,
+.consultation-form input:not(.jdd__input):focus-visible,
 .consultation-form select:focus-visible,
 .consultation-form textarea:focus-visible {
   outline: 2px solid var(--brand);

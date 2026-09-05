@@ -238,7 +238,7 @@ Hay tres roles, guardados en `admin_profiles.role`:
 | Rol | Valor | Puede |
 | --- | --- | --- |
 | Admin | `admin` | Todo. El único que crea, edita y elimina usuarios y resetea contraseñas ajenas. |
-| Editor | `editor` | Catálogo completo (productos, combos, categorías, inicio). No toca usuarios. |
+| Editor | `editor` | Catálogo completo (productos, categorías, inicio). No toca usuarios. |
 | Lector | `viewer` | Solo consulta. Entra al panel y ve todo, pero no modifica nada. |
 
 Tres funciones de Postgres deciden el permiso (`supabase/migrations/fase9-roles.sql`):
@@ -260,7 +260,7 @@ Supabase sola. Cambiar la **propia** contraseña no pasa por ahí (lo hace el ch
 esquina superior derecha con `auth.updateUser`).
 
 El panel cubre: Dashboard, Productos, Sabores/variantes, Inicio (curación del home), Categorías,
-Combos, Accesos y Ajustes, más el **drawer de edición de producto**. Filtros de revisión:
+Accesos y Ajustes, más el **drawer de edición de producto**. Filtros de revisión:
 sin imagen, sin sabor, faltan sabores, sin sabores activos, revisar tipo de sabor, no disponibles,
 precio vacío, destacados.
 

@@ -381,12 +381,12 @@ function renderQuoteSummary(itemsArg) {
 
   const avisos = [];
   if (needsDelivery && freeDelivery) {
-    avisos.push(`Delivery gratis por llevar ${FREE_DELIVERY_MIN_UNITS} productos o mas. El punto de entrega lo confirmamos por WhatsApp.`);
+    avisos.push(`Delivery gratis por llevar ${FREE_DELIVERY_MIN_UNITS} productos o más. El punto de entrega lo confirmamos por WhatsApp.`);
   } else if (needsDelivery) {
     avisos.push(unitsToFree === 1
-      ? "Agrega 1 producto mas y el delivery te sale gratis."
-      : `Agrega ${unitsToFree} productos mas y el delivery te sale gratis.`);
-    avisos.push("El costo puede variar segun que tan lejos quede la direccion: te lo confirmamos por WhatsApp antes de despachar.");
+      ? "Agrega 1 producto más y el delivery te sale gratis."
+      : `Agrega ${unitsToFree} productos más y el delivery te sale gratis.`);
+    avisos.push("El costo puede variar según qué tan lejos quede la dirección: te lo confirmamos por WhatsApp antes de despachar.");
   }
   if (hasUnpriced) avisos.push("Hay productos con precio por confirmar.");
 
@@ -895,7 +895,6 @@ function createConsultationPanel() {
   panel.innerHTML = `
     <div class="consultation-panel__header">
       <div>
-        <p class="consultation-panel__eyebrow">WhatsApp con Javy</p>
         <h2>Mi cotizacion</h2>
       </div>
       <button class="consultation-panel__close" type="button" aria-label="Cerrar cotizacion">
@@ -906,7 +905,7 @@ function createConsultationPanel() {
     <div class="consultation-panel__body">
       <section class="consultation-panel__products" aria-label="Productos de la cotizacion">
         <h3 class="consultation-section__title">Productos</h3>
-        <p class="consultation-empty" id="consultationEmpty">Aun no agregaste productos a la cotizacion.</p>
+        <p class="consultation-empty" id="consultationEmpty">Arma tu pedido aquí y te lo cotizamos al instante por WhatsApp. Sin compromiso.</p>
         <ul class="consultation-list" id="consultationList"></ul>
         <div class="consultation-total" id="consultationTotal" hidden>
           <span>Subtotal</span>
@@ -959,6 +958,8 @@ function createConsultationPanel() {
         </div>
       </div>
     </div>
+
+    <p class="consultation-panel__reassure">No pagas nada aquí. Envías tu lista y cerramos el pedido por el chat.</p>
 
     <div class="consultation-panel__footer">
       <button class="consultation-nav__back" id="consultationBack" type="button">‹ Volver</button>
