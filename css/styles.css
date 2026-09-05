@@ -603,6 +603,54 @@ body {
    con especificidad 0-0-0) y el badge se ve vacío mientras js/hero-visits.js
    todavía no tiene el número, que es justo lo que el HTML dice que quiere
    evitar. */
+/* Barra de confianza del hero. Chips sobrios: acompañan al CTA, no compiten
+   con él. En mobile se envuelven en vez de recortarse. */
+.hero__trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin-top: 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.hero__trust li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  color: color-mix(in srgb, var(--text) 82%, transparent);
+  font-size: 0.84rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* La viñeta es decorativa: no aporta nada a un lector de pantalla y, sin
+   aria-hidden en un ::before, tampoco lo molesta. */
+.hero__trust li::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand, var(--accent));
+  flex: 0 0 auto;
+}
+
+@media (max-width: 520px) {
+  .hero__trust {
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+  .hero__trust li {
+    padding: 6px 11px;
+    font-size: 0.78rem;
+  }
+}
+
 .hero__visits[hidden] {
   display: none;
 }
