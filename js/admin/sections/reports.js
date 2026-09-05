@@ -3,17 +3,18 @@
    actividad, con fecha de generación, vista en pantalla, impresión y PDF
    (guardar en el dispositivo o compartir).
    ============================================================================ */
-import { state, catById } from "../state.js?v=adm-0d01ae57";
-import { esc, ico, peso, hasOffer, discountPct, isAvailable, agoLabel } from "../helpers.js?v=adm-0d01ae57";
-import { paint } from "../view.js?v=adm-0d01ae57";
-import { toast } from "../ui.js?v=adm-0d01ae57";
-import { buildTable, printReport, slugify, buildReportPDF, saveOrShare } from "../export.js?v=adm-0d01ae57";
+import { state, catById, families, typesOf } from "../state.js?v=adm-9019bb41";
+import { esc, ico, peso, hasOffer, discountPct, isAvailable, isMissingImage, agoLabel } from "../helpers.js?v=adm-9019bb41";
+import { paint } from "../view.js?v=adm-9019bb41";
+import { toast } from "../ui.js?v=adm-9019bb41";
+import { buildTable, printReport, slugify, buildReportPDF, saveOrShare } from "../export.js?v=adm-9019bb41";
 
 export function renderReportsTab(container) {
   paint(container, `
     <div class="ad-section-intro">
       <div><p class="ad-kicker">Informes</p><p>Genera un resumen del catálogo o de la actividad. Cada informe muestra su fecha de generación y puede imprimirse o guardarse y compartirse en PDF.</p></div>
     </div>
+    ${cardMedida()}
     <div class="ad-rep-grid">
       ${card("precios", "file-text", "Lista de precios", "Todos los productos con su precio actual, oferta y estado.")}
       ${card("stock", "package", "Stock: agotados", "Productos agotados o no disponibles y desde cuándo.")}
@@ -26,6 +27,152 @@ export function renderReportsTab(container) {
   container.querySelectorAll("[data-rep]").forEach((btn) => {
     btn.addEventListener("click", () => onGenerate(container, btn.getAttribute("data-rep")));
   });
+
+  // Contador en vivo: saber cuántos productos entran ANTES de generar evita el
+  // ida y vuelta de armar un PDF para descubrir que quedó vacío.
+  const refrescarConteo = () => {
+    const n = filtrarProductos(leerFiltros(container)).length;
+    const el = container.querySelector("[data-rep-count]");
+    if (el) el.textContent = n === 1 ? "1 producto" : `${n} productos`;
+    const btn = container.querySelector('[data-rep="medida"]');
+    if (btn) btn.disabled = n === 0;
+  };
+  container.querySelectorAll("[data-mf]").forEach((el) => el.addEventListener("change", refrescarConteo));
+  refrescarConteo();
+}
+
+/* ----------------------------- informe a medida ----------------------------- */
+/* Los filtros son los que pidió el dueño: disponibilidad y categoría ("solo
+   disponibles", "solo proteínas"), más marca y oferta, que salen gratis del
+   mismo modelo. Cada uno es un <select> simple en vez de una cascada
+   familia→tipo: para elegir "Creatinas" no hace falta elegir antes su familia. */
+const MEDIDA_ESTADOS = [
+  ["todos", "Disponibles y agotados"],
+  ["disponibles", "Solo disponibles"],
+  ["agotados", "Solo agotados"],
+];
+
+function opcionesCategoria() {
+  // Una opción por familia y otra por cada tipo, agrupadas bajo su familia.
+  return families().map((fam) => {
+    const tipos = typesOf(fam.id);
+    const propias = [`<option value="fam:${esc(fam.id)}">Toda la familia ${esc(fam.name)}</option>`]
+      .concat(tipos.map((t) => `<option value="cat:${esc(t.id)}">${esc(t.name)}</option>`));
+    return `<optgroup label="${esc(fam.name)}">${propias.join("")}</optgroup>`;
+  }).join("");
+}
+
+function opcionesMarca() {
+  const marcas = [...new Set(state.products.map((p) => (p.brand || "").trim()).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, "es"));
+  return marcas.map((m) => `<option value="${esc(m)}">${esc(m)}</option>`).join("");
+}
+
+function cardMedida() {
+  return `<div class="ad-panel ad-rep-medida">
+    <div class="ad-rep-medida__head">
+      <div>
+        <p class="ad-kicker">Informe a medida</p>
+        <h3>Arma el PDF con lo que necesites</h3>
+        <p class="ad-field__help">Combina los filtros y genera solo esa parte del catálogo.</p>
+      </div>
+      <span class="ad-counter"><strong data-rep-count>—</strong></span>
+    </div>
+    <div class="ad-rep-medida__filtros">
+      <div class="ad-field">
+        <label class="ad-field__label" for="repEstado">Disponibilidad</label>
+        <select class="ad-select" id="repEstado" data-mf="estado">
+          ${MEDIDA_ESTADOS.map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="ad-field">
+        <label class="ad-field__label" for="repCategoria">Categoría</label>
+        <select class="ad-select" id="repCategoria" data-mf="categoria">
+          <option value="">Todas las categorías</option>
+          ${opcionesCategoria()}
+        </select>
+      </div>
+      <div class="ad-field">
+        <label class="ad-field__label" for="repMarca">Marca</label>
+        <select class="ad-select" id="repMarca" data-mf="marca">
+          <option value="">Todas las marcas</option>
+          ${opcionesMarca()}
+        </select>
+      </div>
+      <div class="ad-field">
+        <label class="ad-field__label" for="repExtra">Filtro extra</label>
+        <select class="ad-select" id="repExtra" data-mf="extra">
+          <option value="">Sin filtro extra</option>
+          <option value="oferta">Solo en oferta</option>
+          <option value="inicio">Solo los del inicio</option>
+          <option value="sin-precio">Solo sin precio cargado</option>
+          <option value="sin-imagen">Solo sin imagen</option>
+        </select>
+      </div>
+    </div>
+    <div class="ad-save-row">
+      <button class="ad-btn ad-btn--primary" type="button" data-rep="medida">${ico("file-text")}Generar informe</button>
+    </div>
+  </div>`;
+}
+
+function leerFiltros(container) {
+  const v = (k) => container.querySelector(`[data-mf="${k}"]`)?.value || "";
+  return { estado: v("estado") || "todos", categoria: v("categoria"), marca: v("marca"), extra: v("extra") };
+}
+
+function filtrarProductos(f) {
+  // Los hijos de una familia se resuelven una vez, no por producto.
+  let hijos = null;
+  if (f.categoria.startsWith("fam:")) {
+    const famId = f.categoria.slice(4);
+    hijos = new Set([famId, ...typesOf(famId).map((t) => String(t.id))].map(String));
+  }
+
+  return state.products.filter((p) => {
+    if (f.estado === "disponibles" && !isAvailable(p)) return false;
+    if (f.estado === "agotados" && isAvailable(p)) return false;
+
+    if (hijos && !hijos.has(String(p.category_id))) return false;
+    if (f.categoria.startsWith("cat:") && String(p.category_id) !== f.categoria.slice(4)) return false;
+
+    if (f.marca && (p.brand || "").trim() !== f.marca) return false;
+
+    if (f.extra === "oferta" && !hasOffer(p)) return false;
+    if (f.extra === "inicio" && !p.show_on_home) return false;
+    if (f.extra === "sin-precio" && Number(p.price) > 0) return false;
+    if (f.extra === "sin-imagen" && !isMissingImage(p)) return false;
+    return true;
+  });
+}
+
+// Título que dice qué se filtró: un PDF guardado sin esto no se sabe qué trae.
+function tituloMedida(f) {
+  const partes = [];
+  if (f.categoria.startsWith("fam:")) partes.push(catById(f.categoria.slice(4))?.name || "categoría");
+  else if (f.categoria.startsWith("cat:")) partes.push(catById(f.categoria.slice(4))?.name || "categoría");
+  if (f.marca) partes.push(f.marca);
+  if (f.estado !== "todos") partes.push(f.estado === "disponibles" ? "disponibles" : "agotados");
+  if (f.extra === "oferta") partes.push("en oferta");
+  if (f.extra === "inicio") partes.push("destacados del inicio");
+  if (f.extra === "sin-precio") partes.push("sin precio");
+  if (f.extra === "sin-imagen") partes.push("sin imagen");
+  return partes.length ? `Catálogo — ${partes.join(" · ")}` : "Catálogo completo";
+}
+
+function repMedida(f) {
+  const products = filtrarProductos(f);
+  const rows = products
+    .slice()
+    .sort((a, b) => (a.name || "").localeCompare(b.name || "", "es"))
+    .map((p) => [p.name || "—", p.brand || "—", categoryLabel(p), p.presentation || "—", peso(p.price), isAvailable(p) ? "Disponible" : "Agotado"]);
+  return {
+    title: tituloMedida(f),
+    columns: ["Producto", "Marca", "Categoría", "Presentación", "Precio", "Estado"],
+    rows,
+    empty: "Ningún producto coincide con esos filtros. Aflojá alguno y volvé a generar.",
+    pdf: { products: pdfCatalogItems(products, (p) => (isAvailable(p) ? "" : "Agotado")) },
+  };
 }
 
 function card(key, icon, title, desc) {
@@ -57,7 +204,8 @@ async function onGenerate(container, key) {
   paint(result, `<div class="ad-panel"><p class="ad-feed__loading">Generando informe…</p></div>`);
   let rep;
   try {
-    if (key === "precios") rep = repPrecios();
+    if (key === "medida") rep = repMedida(leerFiltros(container));
+    else if (key === "precios") rep = repPrecios();
     else if (key === "stock") rep = repStock();
     else if (key === "ofertas") rep = repOfertas();
     else if (key === "actividad") rep = await repActividad(Number(container.querySelector("[data-rep-period]")?.value || 30));

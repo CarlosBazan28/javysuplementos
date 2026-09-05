@@ -916,6 +916,14 @@ body.ad-body { min-height: 100vh; }
 .ad-type-chip__del .ad-ico { width: 12px; height: 12px; }
 .ad-type-chip--add { cursor: pointer; color: var(--pb-muted); border: 1px dashed var(--pb-line-strong); background: transparent; }
 
+/* ---- informe a medida ---- */
+.ad-rep-medida { margin-bottom: 14px; }
+.ad-rep-medida__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+.ad-rep-medida__head h3 { font-size: 1.05rem; font-weight: 700; margin: 2px 0 4px; }
+/* auto-fit y no columnas fijas: los cuatro filtros entran en una fila en
+   escritorio y se apilan solos en el panel angosto, sin media query aparte. */
+.ad-rep-medida__filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+
 /* ---- settings status ---- */
 .ad-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
 .ad-status { display: grid; gap: 6px; border: 1px solid var(--pb-line); border-radius: var(--ad-radius-sm); background: var(--pb-white-04); padding: 14px; }
