@@ -5,19 +5,19 @@
    Mantiene un registro key → renderFn; las secciones piden re-render con
    requestRerender() en vez de llamarse entre sí.
    ============================================================================ */
-import { state } from "./state.js?v=adm-e7cb895c";
-import { NAV } from "./config.js?v=adm-e7cb895c";
-import { $, $$, esc, ico } from "./helpers.js?v=adm-e7cb895c";
-import { showViewError } from "./view.js?v=adm-e7cb895c";
-import { renderDashboard } from "./sections/dashboard.js?v=adm-e7cb895c";
-import { renderProducts } from "./sections/products.js?v=adm-e7cb895c";
-import { renderHome } from "./sections/home.js?v=adm-e7cb895c";
-import { renderCategories } from "./sections/categories.js?v=adm-e7cb895c";
-import { renderAccess } from "./sections/access.js?v=adm-e7cb895c";
-import { renderSettings } from "./sections/settings.js?v=adm-e7cb895c";
-import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-e7cb895c";
-import { canWrite } from "./permissions.js?v=adm-e7cb895c";
-import { renderUserChip } from "./user-chip.js?v=adm-e7cb895c";
+import { state } from "./state.js?v=adm-10ca6ea7";
+import { NAV } from "./config.js?v=adm-10ca6ea7";
+import { $, $$, esc, ico } from "./helpers.js?v=adm-10ca6ea7";
+import { showViewError } from "./view.js?v=adm-10ca6ea7";
+import { renderDashboard } from "./sections/dashboard.js?v=adm-10ca6ea7";
+import { renderProducts } from "./sections/products.js?v=adm-10ca6ea7";
+import { renderHome } from "./sections/home.js?v=adm-10ca6ea7";
+import { renderCategories } from "./sections/categories.js?v=adm-10ca6ea7";
+import { renderAccess } from "./sections/access.js?v=adm-10ca6ea7";
+import { renderSettings } from "./sections/settings.js?v=adm-10ca6ea7";
+import { openProductDrawer } from "./drawers/product-drawer.js?v=adm-10ca6ea7";
+import { canWrite } from "./permissions.js?v=adm-10ca6ea7";
+import { renderUserChip } from "./user-chip.js?v=adm-10ca6ea7";
 
 const renderers = {
   dashboard: renderDashboard, products: renderProducts,

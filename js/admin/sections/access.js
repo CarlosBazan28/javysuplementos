@@ -6,11 +6,11 @@
    secreta). Cambiar rol y activar/desactivar va directo a la tabla, donde RLS
    deja pasar solo a un Admin.
    ============================================================================ */
-import { state } from "../state.js?v=adm-e7cb895c";
-import { $, $$, esc, ico, initials } from "../helpers.js?v=adm-e7cb895c";
-import { setView } from "../view.js?v=adm-e7cb895c";
-import { switchMarkup, toast, confirmModal, formModal, ensureMenuListeners, closeAllMenus } from "../ui.js?v=adm-e7cb895c";
-import { ROLES, roleLabel, canManageUsers } from "../permissions.js?v=adm-e7cb895c";
+import { state } from "../state.js?v=adm-10ca6ea7";
+import { $, $$, esc, ico, initials } from "../helpers.js?v=adm-10ca6ea7";
+import { setView } from "../view.js?v=adm-10ca6ea7";
+import { switchMarkup, toast, confirmModal, formModal, ensureMenuListeners, closeAllMenus } from "../ui.js?v=adm-10ca6ea7";
+import { ROLES, roleLabel, canManageUsers } from "../permissions.js?v=adm-10ca6ea7";
 
 const MIN_PASSWORD = 8;
 
