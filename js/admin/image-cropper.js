@@ -10,8 +10,8 @@
    compositor mueve la imagen a 60fps sin repintar, y como exportamos ese mismo
    <img>, la orientación EXIF de las fotos de celular se respeta sola.
    ============================================================================ */
-import { esc, ico } from "./helpers.js?v=adm-e4c575f0";
-import { toast } from "./ui.js?v=adm-e4c575f0";
+import { esc, ico } from "./helpers.js?v=adm-10ca6ea7";
+import { toast } from "./ui.js?v=adm-10ca6ea7";
 
 const RANGE = 1000;          // resolución del slider de zoom
 const MAX_ZOOM_FACTOR = 4;   // cuánto se puede acercar más allá de "llenar"
@@ -79,7 +79,7 @@ export function openImageCropper(o = {}) {
         </div>
 
         <div class="ad-cropper__frame" data-crop-frame tabindex="0" role="application"
-             aria-label="Arrastrá para mover la imagen; usá la barra de zoom para acercar">
+             aria-label="Arrastra para mover la imagen; usa la barra de zoom para acercar">
           <img class="ad-cropper__img" data-crop-img alt="" draggable="false" />
           <div class="ad-cropper__guides" aria-hidden="true"></div>
           <p class="ad-cropper__loading" data-crop-loading>Cargando imagen…</p>
@@ -166,6 +166,18 @@ export function openImageCropper(o = {}) {
     };
     const doFit = () => { scale = scaleContain; doCenter(); syncRange(); };
     const doFill = () => { scale = scaleCover; doCenter(); syncRange(); };
+
+    // Espera (hasta ~1,5 s de frames) a que el marco tenga tamaño real.
+    function waitForFrameSize() {
+      return new Promise((res) => {
+        let tries = 90;
+        const tick = () => {
+          if (closed || (frameEl.clientWidth && frameEl.clientHeight) || tries-- <= 0) return res();
+          requestAnimationFrame(tick);
+        };
+        tick();
+      });
+    }
 
     function measure(keepFraming) {
       const prevW = frameW, prevH = frameH;
@@ -339,7 +351,7 @@ export function openImageCropper(o = {}) {
       } catch (err) {
         okBtn.disabled = false;
         showError(err && err.message ? err.message : "No se pudo recortar la imagen.");
-        toast({ tone: "err", msg: "No se pudo recortar la imagen", sub: "Probá subiendo el archivo original." });
+        toast({ tone: "err", msg: "No se pudo recortar la imagen", sub: "Prueba subiendo el archivo original." });
       }
     });
 
@@ -362,6 +374,11 @@ export function openImageCropper(o = {}) {
         imgEl.style.height = natH + "px";
         imgEl.style.transformOrigin = "0 0";
 
+        // El marco puede medir 0 en el primer frame (hoja de estilos todavía sin
+        // aplicar, o el drawer en plena animación de apertura). Se espera a que
+        // el layout le dé tamaño en vez de fallar de entrada.
+        await waitForFrameSize();
+        if (closed) return;
         measure(false);
         if (!frameW || !frameH) throw new Error("No se pudo medir el área de recorte.");
         doFill();               // llenar + centrado: para una foto cuadrada es la foto entera

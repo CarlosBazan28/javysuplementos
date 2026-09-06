@@ -1,11 +1,11 @@
 /* ============================================================================
    Sección Dashboard: stats, centro de operaciones y últimos agregados.
    ============================================================================ */
-import { state } from "../state.js?v=adm-e4c575f0";
-import { STALE_DAYS, HOME_MAX, HOME_MIN } from "../config.js?v=adm-e4c575f0";
-import { $, esc, ico, imgTag, peso, isAvailable, isMissingImage, hasOffer, discountPct, daysSince, agoLabel } from "../helpers.js?v=adm-e4c575f0";
-import { setView } from "../view.js?v=adm-e4c575f0";
-import { go, bindEditClicks } from "../shell.js?v=adm-e4c575f0";
+import { state } from "../state.js?v=adm-10ca6ea7";
+import { STALE_DAYS, HOME_MAX, HOME_MIN } from "../config.js?v=adm-10ca6ea7";
+import { $, esc, ico, imgTag, peso, isAvailable, isMissingImage, hasOffer, discountPct, daysSince, agoLabel } from "../helpers.js?v=adm-10ca6ea7";
+import { setView } from "../view.js?v=adm-10ca6ea7";
+import { go, bindEditClicks } from "../shell.js?v=adm-10ca6ea7";
 
 export function renderDashboard() {
   const p = state.products;
@@ -15,7 +15,6 @@ export function renderDashboard() {
   const out = p.filter((x) => !isAvailable(x));
   const stale = out.filter((x) => daysSince(x.updated_at) >= STALE_DAYS);
   const noImg = p.filter(isMissingImage).length;
-  const activeCombos = state.combos.filter((c) => c.is_active).length;
 
   const stats = [
     { key: "products", label: "Productos activos", value: activeCount, tone: "ok", icon: "layout-dashboard",
@@ -28,8 +27,6 @@ export function renderDashboard() {
       delta: out.length ? "requieren acción" : "todo disponible", dir: out.length ? "down" : "flat" },
     { key: "noimg", label: "Sin imagen", value: noImg, tone: noImg ? "bad" : "ok", icon: "upload",
       delta: noImg ? "faltan fotos" : "todas con foto", dir: noImg ? "down" : "flat" },
-    { key: "combos", label: "Combos activos", value: activeCombos, tone: "blue", icon: "layers",
-      delta: `${state.combos.length} en total`, dir: "flat" },
   ];
 
   const statCard = (s) => {
@@ -99,7 +96,6 @@ export function renderDashboard() {
   view.querySelectorAll("[data-stat]").forEach((b) => b.addEventListener("click", () => {
     const k = b.getAttribute("data-stat");
     if (k === "home") return go("home");
-    if (k === "combos") return go("combos");
     if (k === "offers") { state.productFilter = "offers"; return go("products"); }
     if (k === "out") { state.productFilter = "out"; return go("products"); }
     if (k === "noimg") { state.productFilter = "noimg"; return go("products"); }

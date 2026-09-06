@@ -143,7 +143,7 @@ Al estar el sitio proxied por Cloudflare, no hace falta pegar ningún script: Cl
 **inyectar el beacon automáticamente**.
 
 1. **Cloudflare → Analytics & Logs → Web Analytics → Add a site / Enable.**
-2. Elegí el sitio `javysuplementos.com` y activá **Automatic Setup** (inyección automática).
+2. Elige el sitio `javysuplementos.com` y activa **Automatic Setup** (inyección automática).
 3. La CSP ya permite `static.cloudflareinsights.com` (script) y `cloudflareinsights.com` (beacon),
    así que no se rompe nada.
 

@@ -2,13 +2,13 @@
    Sección Productos: barra de búsqueda + filtros (familia + estado) y la
    tabla/cards con acciones por fila.
    ============================================================================ */
-import { state, families, typesOf, catById } from "../state.js?v=adm-e4c575f0";
-import { $, esc, ico, imgTag, peso, hasOffer, isAvailable, isMissingImage, stockTone, wireImageFallbacks } from "../helpers.js?v=adm-e4c575f0";
-import { setView } from "../view.js?v=adm-e4c575f0";
-import { bindEditClicks } from "../shell.js?v=adm-e4c575f0";
-import { confirmModal, toast } from "../ui.js?v=adm-e4c575f0";
-import { reloadProducts } from "../data.js?v=adm-e4c575f0";
-import { openProductDrawer } from "../drawers/product-drawer.js?v=adm-e4c575f0";
+import { state, families, typesOf, catById } from "../state.js?v=adm-10ca6ea7";
+import { $, esc, ico, imgTag, peso, hasOffer, isAvailable, isMissingImage, stockTone, wireImageFallbacks } from "../helpers.js?v=adm-10ca6ea7";
+import { setView } from "../view.js?v=adm-10ca6ea7";
+import { bindEditClicks } from "../shell.js?v=adm-10ca6ea7";
+import { confirmModal, toast } from "../ui.js?v=adm-10ca6ea7";
+import { reloadProducts } from "../data.js?v=adm-10ca6ea7";
+import { openProductDrawer } from "../drawers/product-drawer.js?v=adm-10ca6ea7";
 
 const STATUS_FILTERS = [
   ["all", "Todos"], ["home", "En inicio"], ["offers", "En oferta"], ["out", "Agotados"], ["noimg", "Sin imagen"],
@@ -72,7 +72,7 @@ const toggleButton = (p) => {
 // Tabla (desktop) + cards (móvil) o estado vacío. Es lo único que se re-renderiza al teclear.
 function resultsHTML(list) {
   if (list.length === 0) {
-    return `<div class="ad-empty"><span class="ad-empty__icon">${ico("search")}</span><h3>Sin resultados</h3><p>No hay productos que coincidan. Probá con otra búsqueda o tocá “Limpiar”.</p></div>`;
+    return `<div class="ad-empty"><span class="ad-empty__icon">${ico("search")}</span><h3>Sin resultados</h3><p>No hay productos que coincidan. Prueba con otra búsqueda o toca “Limpiar”.</p></div>`;
   }
   const rows = list.map((p) => `
     <tr>

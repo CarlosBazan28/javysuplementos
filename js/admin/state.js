@@ -5,7 +5,6 @@
 export const state = {
   products: [],
   categories: [],
-  combos: [],
   admins: [],
   userId: null,
   userEmail: null,
@@ -17,7 +16,6 @@ export const state = {
   productCategory: "all",
   productSubcategory: "all",
   search: "",
-  combosSupported: true,
   categoriesSupported: true,
 };
 
