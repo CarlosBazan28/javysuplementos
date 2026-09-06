@@ -71,8 +71,12 @@ default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; fram
 **CSP público** (una sola línea — incluye Meta Pixel y analítica):
 
 ```
-default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests; script-src 'self' https://cdn.jsdelivr.net https://connect.facebook.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co https://*.fbcdn.net https://www.facebook.com; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com https://www.facebook.com; frame-src 'none'
+default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests; script-src 'self' https://cdn.jsdelivr.net https://connect.facebook.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://fodwjfiyfmscklqsqrip.supabase.co https://*.fbcdn.net https://www.facebook.com; media-src 'self' https://fodwjfiyfmscklqsqrip.supabase.co; connect-src 'self' https://cdn.jsdelivr.net https://fodwjfiyfmscklqsqrip.supabase.co wss://fodwjfiyfmscklqsqrip.supabase.co https://cloudflareinsights.com https://www.facebook.com; frame-src 'none'
 ```
+
+> `media-src` se agregó para permitir los videos de producto autoalojados en Supabase Storage
+> (bucket `product-videos`, sección "Aprende sobre tus suplementos" de la home). Sin esto el
+> navegador cae a `default-src 'self'` y bloquea la carga de los `<video>`.
 
 ### Desplegar la CSP con red de seguridad (Report-Only primero)
 
